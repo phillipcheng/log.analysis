@@ -2,10 +2,10 @@ log.analysis
 ============
 1. hadoop based mediation platform
 2. file based mediation operations supported
-    a. file merge
-    b. column merge
-    c. column split
-    d. column replace
+    1. file merge
+    2. column merge
+    3. column split
+    4. column replace
 3. multiple format supported
-    a. csv
-    b. ksv
+    1. csv : comma seperated value
+    2. kcv : key colon value
