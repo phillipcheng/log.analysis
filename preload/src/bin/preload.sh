@@ -1,9 +1,13 @@
 #/bin/bash
+set JAVA_HOME=
+set LA_HOME=
+
 CL=
 
-for file in ./lib/*
+for file in $LA_HOME/../lib/*
 do
 	CL=$CL:$file
 done
 echo $CL
-java -Xmx2048m -cp "target/classes:$CL" org.cld.book.Main
+
+$JAVA_HOME/bin/java -Xmx2048m -cp "$LA_EXT:$LA_HOME/preload-0.0.1.jar:$CL" log.analysis.preload.Preload $@

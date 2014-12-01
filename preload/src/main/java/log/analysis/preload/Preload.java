@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cld.util.StringUtil;
 
 public class Preload {
 	public static final Logger logger = Logger.getLogger(Preload.class);
@@ -84,13 +85,13 @@ public class Preload {
 		for (int tIdx=0; tIdx<totalTokens; tIdx++){
 			String item = items.get(tIdx);
 			//process remover, no output of this, continue processing
-			Remover remover = plc.getRemover(tIdx);
+			ColRemover remover = plc.getRemover(tIdx);
 			if (remover!=null){
 				item = item.replace(remover.getRm(), "");
 			}
 			
 			//process merge
-			Merger merger = plc.getMerger(tIdx);
+			ColMerger merger = plc.getMerger(tIdx);
 			if (merger!=null){
 				if (merger.add(tIdx, item)){
 					output+=merger.getValue();
@@ -100,7 +101,7 @@ public class Preload {
 			}
 			
 			//process split
-			Spliter spliter = plc.getSpliter(tIdx);
+			ColSpliter spliter = plc.getSpliter(tIdx);
 			if (spliter!=null){
 				String[] subitems = item.split(Pattern.quote(spliter.getSep()));
 				for(int i=0; i<subitems.length; i++){

@@ -64,9 +64,9 @@ public class PreloadConf {
 	private boolean recordKeep = false;
 	
 	//operations
-	private List<Merger> mergers = new ArrayList<Merger>(); 
-	private Map<Integer, Spliter> splits = new TreeMap<Integer, Spliter>();
-	private Map<Integer, Remover> removers = new TreeMap<Integer, Remover>();
+	private List<ColMerger> mergers = new ArrayList<ColMerger>(); 
+	private Map<Integer, ColSpliter> splits = new TreeMap<Integer, ColSpliter>();
+	private Map<Integer, ColRemover> removers = new TreeMap<Integer, ColRemover>();
 	//event
 	private int eventIdx;
 	private Map<String, Pattern> evtPtnMap = new HashMap<String, Pattern>();//event pattern map
@@ -82,24 +82,24 @@ public class PreloadConf {
 	private CountryCode ccMap = new CountryCode();
 	private NanpaCode nanpaMap = new NanpaCode();
 		
-	public Remover getRemover(int idx){
+	public ColRemover getRemover(int idx){
 		return removers.get(idx);
 	}
 	
-	public Spliter getSpliter(int idx){
+	public ColSpliter getSpliter(int idx){
 		return splits.get(idx);
 	}
 	
 	public void clearMerger(){
 		for (int i=0; i<mergers.size(); i++){
-			Merger m = mergers.get(i);
+			ColMerger m = mergers.get(i);
 			m.reinit();
 		}	
 	}
 	
-	public Merger getMerger(int idx){
+	public ColMerger getMerger(int idx){
 		for (int i=0; i<mergers.size(); i++){
-			Merger m = mergers.get(i);
+			ColMerger m = mergers.get(i);
 			if (m.contains(idx)){
 				return m;
 			}
@@ -164,7 +164,7 @@ public class PreloadConf {
 				}
 				i++;
 			}
-			Remover remover = new Remover(rmIdx, rm);
+			ColRemover remover = new ColRemover(rmIdx, rm);
 			removers.put(rmIdx, remover);
 		}
 		
@@ -191,7 +191,7 @@ public class PreloadConf {
 			for (i=0; i<size; i++){
 				midx[i]=start+i;
 			}
-			Merger merger = new Merger(midx, joiner);
+			ColMerger merger = new ColMerger(midx, joiner);
 			mergers.add(merger);
 		}
 		
@@ -211,7 +211,7 @@ public class PreloadConf {
 				}
 				i++;
 			}
-			Spliter spliter = new Spliter(splitIdx, sep);
+			ColSpliter spliter = new ColSpliter(splitIdx, sep);
 			splits.put(splitIdx, spliter);
 		}
 		
