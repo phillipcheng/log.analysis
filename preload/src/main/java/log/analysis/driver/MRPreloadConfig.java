@@ -19,7 +19,10 @@ public class MRPreloadConfig {
 	public static final String PROCESSING_FOLDER="processing.folder";
 	public static final String SUC_FOLDER="suc.folder";
 	public static final String ERROR_FOLDER="err.folder";
-	public static final String HADOOP_HOME="hadoop.home";
+	public static final String HADOOP_EXE="hadoop.exe";
+	public static final String REDUCE_TASKS="reduce.tasks";
+	public static final String REDUCE_MEOMRY="reduce.memory";
+	
 	public static final String MRPROCESS_JAR="mrprocess.jar";
 	public static final String REDUCE_COMMAND="reduce.command";
 	
@@ -32,7 +35,10 @@ public class MRPreloadConfig {
 	private String processingFolder = "processing";
 	private String sucFolder = "success";
 	private String errFolder = "error";
-	private String hadoopHome;
+	private String hadoopExe;
+	private int reduceTasks=3;
+	private int reduceMemory=1024;//in MB
+	
 	private String mrprocessJar;
 	private String reduceCommand;
 
@@ -89,9 +95,19 @@ public class MRPreloadConfig {
 			params.put(PROCESSING_FOLDER, processingFolder);
 		}
 		
-		strVal = pc.getString(HADOOP_HOME);
+		strVal = pc.getString(HADOOP_EXE);
 		if (strVal!=null){
-			setHadoopHome(strVal);
+			setHadoopExe(strVal);
+		}
+		
+		strVal = pc.getString(REDUCE_TASKS);
+		if (strVal!=null){
+			setReduceTasks(Integer.parseInt(strVal));
+		}
+		
+		strVal = pc.getString(REDUCE_MEOMRY);
+		if (strVal!=null){
+			setReduceMemory(Integer.parseInt(strVal));
 		}
 		
 		strVal = pc.getString(MRPROCESS_JAR);
@@ -112,11 +128,13 @@ public class MRPreloadConfig {
 		strVal = pc.getString(SUC_FOLDER);
 		if (strVal!=null){
 			setSucFolder(strVal);
+			params.put(SUC_FOLDER, strVal);
 		}
 		
 		strVal = pc.getString(ERROR_FOLDER);
 		if (strVal!=null){
 			setErrFolder(strVal);
+			params.put(ERROR_FOLDER, strVal);
 		}
 	}
 
@@ -192,14 +210,6 @@ public class MRPreloadConfig {
 		this.mrprocessJar = mrprocessJar;
 	}
 
-	public String getHadoopHome() {
-		return hadoopHome;
-	}
-
-	public void setHadoopHome(String hadoopHome) {
-		this.hadoopHome = hadoopHome;
-	}
-
 	public String getSucFolder() {
 		return sucFolder;
 	}
@@ -214,6 +224,30 @@ public class MRPreloadConfig {
 
 	public void setErrFolder(String errFolder) {
 		this.errFolder = errFolder;
+	}
+
+	public int getReduceTasks() {
+		return reduceTasks;
+	}
+
+	public void setReduceTasks(int reduceTasks) {
+		this.reduceTasks = reduceTasks;
+	}
+
+	public String getHadoopExe() {
+		return hadoopExe;
+	}
+
+	public void setHadoopExe(String hadoopExe) {
+		this.hadoopExe = hadoopExe;
+	}
+
+	public int getReduceMemory() {
+		return reduceMemory;
+	}
+
+	public void setReduceMemory(int reduceMemory) {
+		this.reduceMemory = reduceMemory;
 	}
 
 }

@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -55,11 +53,17 @@ public class InputMonitor {
 				fin.writeBytes(fileContent);
 				fin.close();
 				
-				//start the mr job like a shell program
-				String command=mrpc.getHadoopHome() + "\\bin\\hadoop.cmd jar ";
+				//calculate the mapred.reduce.tasks
+				int javaOptMemory = mrpc.getReduceMemory()/10*9;
+				String command=mrpc.getHadoopExe() + " jar ";
 				command += mrpc.getMrprocessJar() + " ";
 				command += "log.analysis.driver.MRProcessor" + " ";
+				command += "-Dmapreduce.job.reduces=" + mrpc.getReduceTasks() + " ";
+				command += "-Dmapreduce.reduce.memory.mb=" + mrpc.getReduceMemory() + " ";
+				command += "-Dmapreduce.reduce.java.opts=-Xmx" + javaOptMemory + "M ";
+				command += "-Dmapreduce.task.timeout=0 ";
 				command += fileName;
+				//start the mr job like a shell program
 				CommandLine cmdLine = CommandLine.parse(command);
 				DefaultExecutor executor = new DefaultExecutor();
 				int exitValue = executor.execute(cmdLine);
@@ -83,6 +87,7 @@ public class InputMonitor {
 		if (args.length>=1){
 			mrpreloadProperties=args[0];
 		}
+		logger.info("properties used:" + mrpreloadProperties);
 		MRPreloadConfig mrpc = new MRPreloadConfig(mrpreloadProperties);
 		InputMonitor.processInput(mrpc);
 	}

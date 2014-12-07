@@ -1,10 +1,11 @@
 #/bin/bash
-set JAVA_HOME=
-set LA_HOME=
+
+JAVA_HOME=/usr/lib/jvm/jre-1.7.0-openjdk.x86_64
+LA_HOME=/data/log.analysis
 
 CL=
 
-for file in $LA_HOME/../lib/*
+for file in $LA_HOME/lib/*
 do
 	CL=$CL:$file
 done

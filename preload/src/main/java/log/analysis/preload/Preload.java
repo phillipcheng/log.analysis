@@ -192,7 +192,7 @@ public class Preload {
 				}
 			}
 		
-			if (outputEvtTypeFile!=null){
+			if (outputEvtTypeFile!=null && !"nothing.evt".equals(outputEvtTypeFile)){
 				//open this in append mode
 				etfw = new PrintWriter(new FileWriter(outputEvtTypeFile));
 				Iterator<String> its = evtDefMap.keySet().iterator();
