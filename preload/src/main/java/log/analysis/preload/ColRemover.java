@@ -1,8 +1,11 @@
 package log.analysis.preload;
 
 public class ColRemover {
+	public static final String COMMAND="merge.idx";
+	
 	private int idx;
 	private String rm;
+	
 	
 	public ColRemover(int idx, String rm){
 		this.idx = idx;

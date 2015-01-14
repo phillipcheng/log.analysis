@@ -90,6 +90,20 @@ public class Preload {
 				item = item.replace(remover.getRm(), "");
 			}
 			
+			ColAppender appender = plc.getAppender(tIdx);
+			if (appender!=null){
+				StringBuilder sb = new StringBuilder(item);
+				sb = sb.insert(item.length()-appender.getAfterIdx(), appender.getSuffix());
+				item = sb.toString();
+			}
+			
+			ColPrepender prepender = plc.getPrepender(tIdx);
+			if (prepender!=null){
+				StringBuilder sb = new StringBuilder(item);
+				sb = sb.insert(prepender.getBeforeIdx(), prepender.getPrefix());
+				item = sb.toString();
+			}
+			
 			//process merge
 			ColMerger merger = plc.getMerger(tIdx);
 			if (merger!=null){
@@ -192,7 +206,7 @@ public class Preload {
 				}
 			}
 		
-			if (outputEvtTypeFile!=null && !"nothing.evt".equals(outputEvtTypeFile)){
+			if (outputEvtTypeFile!=null && !PreloadConf.NO_EVENT_OUTPUT.equals(outputEvtTypeFile)){
 				//open this in append mode
 				etfw = new PrintWriter(new FileWriter(outputEvtTypeFile));
 				Iterator<String> its = evtDefMap.keySet().iterator();

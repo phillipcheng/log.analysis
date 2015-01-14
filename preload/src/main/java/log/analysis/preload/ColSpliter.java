@@ -1,8 +1,11 @@
 package log.analysis.preload;
 
 public class ColSpliter {
+	public static final String COMMAND="split.idx";
+	
 	private int idx;
 	private String sep;
+	
 	
 	public ColSpliter(int idx, String sep){
 		this.idx = idx;

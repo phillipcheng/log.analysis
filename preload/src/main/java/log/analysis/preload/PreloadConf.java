@@ -32,11 +32,9 @@ public class PreloadConf {
 		public static final int RECORD_FIELDNUM_DEFAULT=-1; //extract all fields recognized
 		
 	public static final String RECORD_KEEP="record.keep";
-	
-	//record wise preprocessing
-	public static final String REMOVE_IDX="remove.idx";
-	public static final String MERGE_IDX="merge.idx";
-	public static final String SPLIT_IDX="split.idx";
+
+	public static final String NO_EVENT_OUTPUT="nothing.evt";
+	//record wise preprocessing	
 	
 	//record type specification
 	public static final String EVT_IDX="event.idx";
@@ -67,6 +65,9 @@ public class PreloadConf {
 	private List<ColMerger> mergers = new ArrayList<ColMerger>(); 
 	private Map<Integer, ColSpliter> splits = new TreeMap<Integer, ColSpliter>();
 	private Map<Integer, ColRemover> removers = new TreeMap<Integer, ColRemover>();
+	private Map<Integer, ColAppender> appenders = new TreeMap<Integer, ColAppender>();
+	private Map<Integer, ColPrepender> prependers = new TreeMap<Integer, ColPrepender>();
+	
 	//event
 	private int eventIdx;
 	private Map<String, Pattern> evtPtnMap = new HashMap<String, Pattern>();//event pattern map
@@ -88,6 +89,14 @@ public class PreloadConf {
 	
 	public ColSpliter getSpliter(int idx){
 		return splits.get(idx);
+	}
+	
+	public ColAppender getAppender(int idx){
+		return appenders.get(idx);
+	}
+	
+	public ColPrepender getPrepender(int idx){
+		return prependers.get(idx);
 	}
 	
 	public void clearMerger(){
@@ -148,8 +157,8 @@ public class PreloadConf {
 		}
 		
 		//record preprocessing
-		//
-		List<String> removeIdxStrs = pc.getList(REMOVE_IDX);
+		//remove
+		List<String> removeIdxStrs = pc.getList(ColRemover.COMMAND);
 		for (String removeIdxStr:removeIdxStrs){
 			StringTokenizer st = new StringTokenizer(removeIdxStr,":");
 			int i=0;
@@ -168,8 +177,8 @@ public class PreloadConf {
 			removers.put(rmIdx, remover);
 		}
 		
-		//
-		List<String> mergeIdxStrs = pc.getList(MERGE_IDX);
+		//merge
+		List<String> mergeIdxStrs = pc.getList(ColMerger.COMMAND);
 		for (String mergeIdxStr:mergeIdxStrs){
 			StringTokenizer st = new StringTokenizer(mergeIdxStr,":");
 			int i=0;
@@ -195,8 +204,8 @@ public class PreloadConf {
 			mergers.add(merger);
 		}
 		
-		//
-		List<String> splitIdxStrs = pc.getList(SPLIT_IDX);
+		//split
+		List<String> splitIdxStrs = pc.getList(ColSpliter.COMMAND);
 		for (String splitIdxStr:splitIdxStrs){
 			StringTokenizer st = new StringTokenizer(splitIdxStr,":");
 			int i=0;
@@ -213,6 +222,52 @@ public class PreloadConf {
 			}
 			ColSpliter spliter = new ColSpliter(splitIdx, sep);
 			splits.put(splitIdx, spliter);
+		}
+		
+		//append
+		List<String> appendIdxStrs = pc.getList(ColAppender.COMMAND);
+		for (String appendIdxStr:appendIdxStrs){
+			StringTokenizer st = new StringTokenizer(appendIdxStr,":");
+			int i=0;
+			String suffix="";
+			int appendIdx=0;
+			int afterIdx=0;
+			while(st.hasMoreTokens()){
+				String token = st.nextToken();
+				if (i==0){
+					appendIdx = Integer.parseInt(token);
+				}else if (i==1){
+					afterIdx = Integer.parseInt(token);
+				}else if (i==2){
+					suffix = token;
+				}
+				i++;
+			}
+			ColAppender appender = new ColAppender(appendIdx, afterIdx, suffix);
+			appenders.put(appendIdx, appender);
+		}
+		
+		//prepend
+		List<String> prependIdxStrs = pc.getList(ColPrepender.COMMAND);
+		for (String prependIdxStr:prependIdxStrs){
+			StringTokenizer st = new StringTokenizer(prependIdxStr,":");
+			int i=0;
+			String prefix="";
+			int beforeIdx=0;
+			int idx=0;
+			while(st.hasMoreTokens()){
+				String token = st.nextToken();
+				if (i==0){
+					idx = Integer.parseInt(token);
+				}else if (i==1){
+					beforeIdx = Integer.parseInt(token);
+				}else if (i==2){
+					prefix = token;
+				}
+				i++;
+			}
+			ColPrepender prepender = new ColPrepender(idx, beforeIdx, prefix);
+			prependers.put(idx, prepender);
 		}
 		
 		//evt conf
