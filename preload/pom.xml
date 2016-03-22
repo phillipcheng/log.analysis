@@ -44,11 +44,6 @@
        <scope>provided</scope>
        <version>2.5.2</version>
      </dependency>
-     <dependency>
-       <groupId>org.cld.utils</groupId>
-       <artifactId>cld-util</artifactId>
-       <version>1.0.0</version>
-     </dependency>
   </dependencies>
   
   <build>

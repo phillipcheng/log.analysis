@@ -14,7 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.cld.util.StringUtil;
+
+import log.analysis.driver.StringUtil;
 
 public class Preload {
 	public static final Logger logger = Logger.getLogger(Preload.class);

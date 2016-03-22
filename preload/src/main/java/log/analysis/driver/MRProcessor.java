@@ -31,11 +31,7 @@ public class MRProcessor extends Configured implements Tool {
 		Configuration conf = getConf();
 		Job job = Job.getInstance(conf, "MRProcessor");
 		job.setJarByClass(MRProcessor.class);
-		job.setMapperClass(TokenizerMapper.class);
-		job.setPartitionerClass(MyPartitioner.class);
-		job.setReducerClass(InvokeReducer.class);
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(LongWritable.class);
+		job.setMapperClass(InvokeMapper.class);
 		job.setOutputFormatClass(NullOutputFormat.class);
 		Path in = new Path(args[0]);
 		FileInputFormat.addInputPath(job, in);
