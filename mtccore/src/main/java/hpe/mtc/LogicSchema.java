@@ -32,7 +32,13 @@ public class LogicSchema {
 	}
 	
 	public void updateOrAddAttributes(String tableName, List<String> attributes){
-		schemas.put(tableName, attributes);
+		List<String> originAttr = schemas.get(tableName);
+		if (originAttr==null){
+			schemas.put(tableName, attributes);
+		}else{
+			originAttr.addAll(attributes);
+			schemas.put(tableName, originAttr);
+		}
 	}
 	
 	public static final String charset="utf8";

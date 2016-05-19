@@ -48,11 +48,12 @@ public class GenCmd {
 	/*
 	 * if -s input-schema not specified, system will 
 	 * 		generate input-scheam, table.sql and copy.sql under output-folder
-	 * if -s input-schema is specified, system will generate multiple csv files, 1 for each type
+	 * if -s input-schema is specified, and no update detected
+	 * 		system will generate multiple csv files, 1 for each type
 	 * if new attributes detected, system will generate following files under output-folder
-	 * 		updated-input-schema, alter-table.sql and updated-copy.sql with original names
+	 * 		updated-input-schema, alter-table.sql, create-table.sql and updated-copy.sql with original names
 	 * and backing up the 
-	 * 		old input-schema, table.sql and copy.sql to history folder with timestamp.
+	 * 		old input-schema, create-table.sql and copy.sql to history folder with timestamp.
 	 */
 	public static void usage(){
 		System.out.println("GenVsql -s input-schema -i input-xml -o output-folder -p prefix");
@@ -68,18 +69,6 @@ public class GenCmd {
 			return null;
 		}
 	}
-	
-	public static String guessType(String value){
-		boolean atleastOneAlpha = value.matches(".*[a-zA-Z]+.*");
-		if (atleastOneAlpha){
-			int len = value.length();
-			return String.format("varchar(%d)", Math.max(20, 2*len));
-		}else{
-			return String.format("numeric(%d,%d)", 15,5);
-		}
-	}
-	
-	
 	
 	public static String generateTableName(TreeMap<String, String> moldParams){
 		StringBuffer sb = new StringBuffer();
@@ -98,9 +87,9 @@ public class GenCmd {
 	
 	public static void process(MeasCollecFile mf, String outputFolder, String inputSchema, String prefix){
 		List<MeasInfo> ml = mf.getMeasData().getMeasInfo();
-		LogicSchema ls = new LogicSchema();
+		LogicSchema logicSchema = new LogicSchema();
 		if (inputSchema!=null){
-			ls = LogicSchema.fromFile(inputSchema);
+			logicSchema = LogicSchema.fromFile(inputSchema);
 		}
 		boolean schemaUpdated=false;
 		Map<String, List<String>> schemaAttrNameUpdates = new HashMap<String, List<String>>();//store updated attribute parts' name (compared with the org schema)
@@ -112,7 +101,7 @@ public class GenCmd {
 			String moldn = mv0.getMeasObjLdn();
 			TreeMap<String, String> moldParams = Util.parseMapParams(moldn);
 			String tableName = generateTableName(moldParams);
-			List<String> orgSchemaAttributes = ls.getAttributes(tableName);
+			List<String> orgSchemaAttributes = logicSchema.getAttributes(tableName);
 			{//merge the origin and newUpdates
 				List<String> newSchemaAttributes = schemaAttrNameUpdates.get(tableName);
 				if (newSchemaAttributes!=null){
@@ -135,7 +124,7 @@ public class GenCmd {
 					String mtc = mtcl.get(i);
 					if (!orgSchemaAttributes.contains(mtc)){
 						newAttrNames.add(mtc);
-						newAttrTypes.add(guessType(mv0.getR().get(i).getContent()));
+						newAttrTypes.add(Util.guessType(mv0.getR().get(i).getContent()));
 					}
 				}
 				if (newAttrNames.size()>0){
@@ -185,7 +174,7 @@ public class GenCmd {
 				}
 				List<String> onlyAttrTypesList = new ArrayList<String>();
 				for (R r: mv0.getR()){
-					onlyAttrTypesList.add(guessType(r.getContent()));
+					onlyAttrTypesList.add(Util.guessType(r.getContent()));
 				}
 				schemaAttrNameUpdates.put(tableName, onlyAttrNamesList);
 				schemaAttrTypeUpdates.put(tableName, onlyAttrTypesList);
@@ -194,7 +183,7 @@ public class GenCmd {
 				List<String> objTypeList = new ArrayList<String>();
 				for (String key: moldParams.keySet()){
 					objNameList.add(key);
-					objTypeList.add(guessType(moldParams.get(key)));
+					objTypeList.add(Util.guessType(moldParams.get(key)));
 				}
 				objNameAdded.put(tableName, objNameList);
 				objTypeAdded.put(tableName, objTypeList);
@@ -203,13 +192,11 @@ public class GenCmd {
 		}
 		
 		//generate
-		StringBuffer tablesql = new StringBuffer();
-		StringBuffer copysql = new StringBuffer();
+		String tablesql = null;
+		String copysql = null;
 		if (schemaUpdated){
-			//update the ls
-			//gen tables.sql and copy.sql
 			for(String tn:schemaAttrNameUpdates.keySet()){
-				if (ls.getAttributes(tn)!=null){
+				if (logicSchema.getAttributes(tn)!=null){
 					//update
 				}else{
 					//create
@@ -226,36 +213,24 @@ public class GenCmd {
 					//adding attr fields
 					fieldNameList.addAll(schemaAttrNameUpdates.get(tn));
 					fieldTypeList.addAll(schemaAttrTypeUpdates.get(tn));
-					//removing .
-					for (int i=0; i<fieldNameList.size(); i++){
-						String name = fieldNameList.get(i);
-						if (name.contains(".")){
-							name = name.substring(name.lastIndexOf(".")+1);
-							fieldNameList.set(i, name);
-						}
-					}
-					//gen table sql
-					tablesql.append(String.format("drop table %s;\n", tn));
-					tablesql.append(String.format("create table if not exists %s(\n", tn));
-					for (int i=0; i<fieldNameList.size(); i++){
-						String name = fieldNameList.get(i);
-						String type = fieldTypeList.get(i);
-						tablesql.append(String.format("%s %s", name, type));
-						if (i<fieldNameList.size()-1){
-							tablesql.append(",");
-						}
-					}
-					tablesql.append(");\n");
+					tablesql = Util.genCreateTableSql(fieldNameList, fieldTypeList, tn);
 				}
+				//update to logic schema
+				logicSchema.updateOrAddAttributes(tn, schemaAttrNameUpdates.get(tn));
 			}
-			//get copy sql
+			//gen copy sql
+			
+			//gen schema
+			
 		}else{
 			//gen data.csv
 		}
-		
+		//gen files
+		String outputPrefix = prefix==null? outputFolder:outputFolder+prefix;
 		try {
-			String outputPrefix = prefix==null? outputFolder:outputFolder+prefix;
-			FileUtils.writeStringToFile(new File(outputPrefix + tablesql_name), tablesql.toString(), Charset.defaultCharset());
+			if (schemaUpdated){
+				FileUtils.writeStringToFile(new File(outputPrefix + tablesql_name), tablesql, Charset.defaultCharset());
+			}
 		}catch(Exception e){
 			logger.error("", e);
 		}
