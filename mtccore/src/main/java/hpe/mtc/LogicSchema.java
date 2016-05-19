@@ -84,6 +84,11 @@ public class LogicSchema {
 				out.close();
 		}
 	}
+	
+	public LogicSchema clone(){
+		String str = LogicSchema.toJsonString(this);
+		return LogicSchema.fromJsonString(str);
+	}
 
 	public Map<String, List<String>> getSchemas() {
 		return schemas;

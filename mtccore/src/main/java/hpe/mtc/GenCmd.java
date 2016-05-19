@@ -34,6 +34,7 @@ public class GenCmd {
 	public static final String tablesql_name="tables.sql";
 	public static final String copysql_name="copys.sql";
 	public static final String schema_name="schemas.txt";
+	//used to generate table name
 	public static List<String> keyWithValue = new ArrayList<String>();
 	public static List<String> keySkip = new ArrayList<String>();
 	
@@ -41,6 +42,8 @@ public class GenCmd {
 		keyWithValue.add("PoolType");
 		keySkip.add("Machine");
 		keySkip.add("UUID");
+		keySkip.add("PoolId");
+		keySkip.add("PoolMember");
 	}
 	/*
 	 * if -s input-schema not specified, system will 
@@ -52,7 +55,7 @@ public class GenCmd {
 	 * 		old input-schema, table.sql and copy.sql to history folder with timestamp.
 	 */
 	public static void usage(){
-		System.out.println("GenVsql -s input-schema -i input-xml -o output-folder");
+		System.out.println("GenVsql -s input-schema -i input-xml -o output-folder -p prefix");
 	}
 	
 	public static MeasCollecFile unmarshal(String inputXml){
@@ -93,26 +96,34 @@ public class GenCmd {
 		return sb.toString();
 	}
 	
-	public static void process(MeasCollecFile mf, String outputPrefix, String inputSchema){
+	public static void process(MeasCollecFile mf, String outputFolder, String inputSchema, String prefix){
 		List<MeasInfo> ml = mf.getMeasData().getMeasInfo();
-		StringBuffer tablesql = new StringBuffer();
-		StringBuffer copysql = new StringBuffer();
 		LogicSchema ls = new LogicSchema();
 		if (inputSchema!=null){
 			ls = LogicSchema.fromFile(inputSchema);
 		}
 		boolean schemaUpdated=false;
-		Map<String, List<String>> schemaAttrNameUpdates = new HashMap<String, List<String>>();
-		Map<String, List<String>> schemaAttrTypeUpdates = new HashMap<String, List<String>>();
+		Map<String, List<String>> schemaAttrNameUpdates = new HashMap<String, List<String>>();//store updated attribute parts' name (compared with the org schema)
+		Map<String, List<String>> schemaAttrTypeUpdates = new HashMap<String, List<String>>();//store updated attribute parts' type (compared with the org schema)
+		Map<String, List<String>> objNameAdded = new HashMap<String, List<String>>();
+		Map<String, List<String>> objTypeAdded = new HashMap<String, List<String>>();
 		for (MeasInfo mi:ml){
 			MeasValue mv0 = mi.getMeasValue().get(0);
 			String moldn = mv0.getMeasObjLdn();
 			TreeMap<String, String> moldParams = Util.parseMapParams(moldn);
 			String tableName = generateTableName(moldParams);
-			List<String> schemaAttributes = ls.getAttributes(tableName);
-			GranPeriod gp = mi.getGranPeriod();
-			
-			if (schemaAttributes!=null){
+			List<String> orgSchemaAttributes = ls.getAttributes(tableName);
+			{//merge the origin and newUpdates
+				List<String> newSchemaAttributes = schemaAttrNameUpdates.get(tableName);
+				if (newSchemaAttributes!=null){
+					if (orgSchemaAttributes == null)
+						orgSchemaAttributes = newSchemaAttributes;
+					else{
+						orgSchemaAttributes.addAll(newSchemaAttributes);
+					}
+				}
+			}
+			if (orgSchemaAttributes!=null){
 				List<String> mtcl = new ArrayList<String>();
 				for (MeasType mt: mi.getMeasType()){
 					mtcl.add(mt.getContent());
@@ -122,27 +133,26 @@ public class GenCmd {
 				List<String> newAttrTypes = new ArrayList<String>();
 				for (int i=0; i<mtcl.size(); i++){
 					String mtc = mtcl.get(i);
-					if (!schemaAttributes.contains(mtc)){
+					if (!orgSchemaAttributes.contains(mtc)){
 						newAttrNames.add(mtc);
 						newAttrTypes.add(guessType(mv0.getR().get(i).getContent()));
 					}
 				}
 				if (newAttrNames.size()>0){
-					schemaAttributes.addAll(newAttrNames);
 					if (schemaAttrNameUpdates.containsKey(tableName)){
-						newAttrNames.addAll(schemaAttrNameUpdates.get(tableName));
-						newAttrTypes.addAll(schemaAttrTypeUpdates.get(tableName));
+						newAttrNames.addAll(0, schemaAttrNameUpdates.get(tableName));
+						newAttrTypes.addAll(0, schemaAttrTypeUpdates.get(tableName));
 					}
 					schemaAttrNameUpdates.put(tableName, newAttrNames);
 					schemaAttrTypeUpdates.put(tableName, newAttrTypes);
-					ls.updateOrAddAttributes(tableName, schemaAttributes);
 					schemaUpdated=true;
 				}else{
 					if (!schemaUpdated){//gen data
+						GranPeriod gp = mi.getGranPeriod();
 						//gen value idx mapping
 						Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//current attribute maps to which schema attribute
-						for (int i=0; i<schemaAttributes.size(); i++){
-							String attr = schemaAttributes.get(i);
+						for (int i=0; i<orgSchemaAttributes.size(); i++){
+							String attr = orgSchemaAttributes.get(i);
 							int idx = mtcl.indexOf(attr);
 							if (idx!=-1){
 								mapping.put(idx, i);
@@ -157,7 +167,7 @@ public class GenCmd {
 							for (String v:kvs.values()){
 								fieldValues.add(v);
 							}
-							String[] vs = new String[schemaAttributes.size()];
+							String[] vs = new String[orgSchemaAttributes.size()];
 							for (int i=0; i<mvl.getR().size(); i++){
 								String v = mvl.getR().get(i).getContent();
 								vs[mapping.get(i)]=v;
@@ -168,39 +178,55 @@ public class GenCmd {
 					}
 				}
 			}else{
-				List<String> newAttrNamesList = new ArrayList<String>();
-				newAttrNamesList.add("endTime");
-				newAttrNamesList.add("duration");
-				List<String> newAttrTypesList = new ArrayList<String>();
-				newAttrTypesList.add("TIMESTAMP not null");
-				newAttrTypesList.add("int");
+				//update schemaAttrName/TypeUpdates
+				List<String> onlyAttrNamesList = new ArrayList<String>();
 				for (MeasType mt: mi.getMeasType()){
-					newAttrNamesList.add(mt.getContent());
+					onlyAttrNamesList.add(mt.getContent());
 				}
-				for (String key: moldParams.keySet()){
-					newAttrNamesList.add(key);
-					newAttrTypesList.add(guessType(moldParams.get(key)));
-				}
+				List<String> onlyAttrTypesList = new ArrayList<String>();
 				for (R r: mv0.getR()){
-					newAttrTypesList.add(guessType(r.getContent()));
+					onlyAttrTypesList.add(guessType(r.getContent()));
 				}
-				schemaAttrNameUpdates.put(tableName, newAttrNamesList);
-				schemaAttrTypeUpdates.put(tableName, newAttrTypesList);
-				ls.updateOrAddAttributes(tableName, schemaAttributes);
+				schemaAttrNameUpdates.put(tableName, onlyAttrNamesList);
+				schemaAttrTypeUpdates.put(tableName, onlyAttrTypesList);
+				//
+				List<String> objNameList = new ArrayList<String>();
+				List<String> objTypeList = new ArrayList<String>();
+				for (String key: moldParams.keySet()){
+					objNameList.add(key);
+					objTypeList.add(guessType(moldParams.get(key)));
+				}
+				objNameAdded.put(tableName, objNameList);
+				objTypeAdded.put(tableName, objTypeList);
 				schemaUpdated=true;
 			}
 		}
 		
 		//generate
+		StringBuffer tablesql = new StringBuffer();
+		StringBuffer copysql = new StringBuffer();
 		if (schemaUpdated){
+			//update the ls
 			//gen tables.sql and copy.sql
 			for(String tn:schemaAttrNameUpdates.keySet()){
 				if (ls.getAttributes(tn)!=null){
 					//update
 				}else{
 					//create
-					List<String> fieldNameList = schemaAttrNameUpdates.get(tn);
-					List<String> fieldTypeList = schemaAttrTypeUpdates.get(tn);
+					List<String> fieldNameList = new ArrayList<String>(); 
+					List<String> fieldTypeList = new ArrayList<String>();
+					//adding sys fields
+					fieldNameList.add("endTime");
+					fieldNameList.add("duration");
+					fieldTypeList.add("TIMESTAMP not null");
+					fieldTypeList.add("int");
+					//adding obj fields
+					fieldNameList.addAll(objNameAdded.get(tn));
+					fieldTypeList.addAll(objTypeAdded.get(tn));
+					//adding attr fields
+					fieldNameList.addAll(schemaAttrNameUpdates.get(tn));
+					fieldTypeList.addAll(schemaAttrTypeUpdates.get(tn));
+					//removing .
 					for (int i=0; i<fieldNameList.size(); i++){
 						String name = fieldNameList.get(i);
 						if (name.contains(".")){
@@ -228,6 +254,7 @@ public class GenCmd {
 		}
 		
 		try {
+			String outputPrefix = prefix==null? outputFolder:outputFolder+prefix;
 			FileUtils.writeStringToFile(new File(outputPrefix + tablesql_name), tablesql.toString(), Charset.defaultCharset());
 		}catch(Exception e){
 			logger.error("", e);
@@ -240,10 +267,12 @@ public class GenCmd {
 		Option optionInput = Option.builder("i").hasArgs().required(true).longOpt("input-xml").build();
 		Option optionOutput = Option.builder("o").hasArgs().required(true).longOpt("output-folder").build();
 		Option optionSchema = Option.builder("s").hasArgs().longOpt("input-schema").build();
+		Option optionPrefix = Option.builder("p").hasArgs().longOpt("prefix").build();
 		Options options = new Options();
 		options.addOption(optionInput);
 		options.addOption(optionOutput);
 		options.addOption(optionSchema);
+		options.addOption(optionPrefix);
 		CommandLineParser parser = new DefaultParser();
 		try{
 			commandLine = parser.parse(options, args);
@@ -253,8 +282,12 @@ public class GenCmd {
 			if (commandLine.hasOption("s")){
 				inputSchema = commandLine.getOptionValue("s");
 			}
+			String prefix = null;
+			if (commandLine.hasOption("p")){
+				prefix = commandLine.getOptionValue("p");
+			}
 			MeasCollecFile mf = unmarshal(inputXml);
-			process(mf, outputFolder, inputSchema);
+			process(mf, outputFolder, inputSchema, prefix);
 			
 		}catch (ParseException exception){
 			usage();
