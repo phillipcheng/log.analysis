@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!--W3C Schema 由 XMLSpy v2006 U 创建 (http://www.altova.com)-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.3gpp.org/ftp/specs/latest/rel-5/32_series/32401-540.zip#measCollec" targetNamespace="http://www.3gpp.org/ftp/specs/latest/rel-5/32_series/32401-540.zip#measCollec" elementFormDefault="qualified">
+	<xs:element name="fileFooter">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="measCollec"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="fileHeader">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="fileSender"/>
+				<xs:element ref="measCollec"/>
+			</xs:sequence>
+			<xs:attribute name="fileFormatVersion" type="xs:string" use="required"/>
+			<xs:attribute name="vendorName" type="xs:string" use="required"/>
+			<xs:attribute name="dnPrefix" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="fileSender">
+		<xs:complexType>
+			<xs:attribute name="localDn" type="xs:string" use="required"/>
+			<xs:attribute name="elementType" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="granPeriod">
+		<xs:complexType>
+			<xs:attribute name="duration" type="xs:string" use="required"/>
+			<xs:attribute name="endTime" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="managedElement">
+		<xs:complexType>
+			<xs:attribute name="localDn" type="xs:string" use="required"/>
+			<xs:attribute name="userLabel" type="xs:string" use="required"/>
+			<xs:attribute name="swVersion" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="measCollec">
+		<xs:complexType>
+			<xs:attribute name="beginTime">
+				<xs:simpleType>
+					<xs:restriction base="xs:dateTime">
+						<xs:enumeration value="2016-03-09T07:45:00+00:00"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="endTime">
+				<xs:simpleType>
+					<xs:restriction base="xs:dateTime">
+						<xs:enumeration value="2016-03-09T07:50:00+00:00"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="measCollecFile">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="fileHeader"/>
+				<xs:element ref="measData"/>
+				<xs:element ref="fileFooter"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="measData">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="managedElement"/>
+				<xs:element ref="measInfo" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="measInfo">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="granPeriod"/>
+				<xs:element ref="measType" maxOccurs="unbounded"/>
+				<xs:element ref="measValue" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="measType">
+		<xs:complexType mixed="true">
+			<xs:attribute name="p" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="measValue">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="r" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="measObjLdn" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="r">
+		<xs:complexType mixed="true">
+			<xs:attribute name="p" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
