@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 public class ColMerger {
 	public static final Logger logger = Logger.getLogger(ColMerger.class);
 
-	public static final String COMMAND="remove.idx";
+	public static final String COMMAND="merge.idx";
 	
 	int size;
 	int currentSize;
