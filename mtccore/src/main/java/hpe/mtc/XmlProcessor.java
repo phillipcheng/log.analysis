@@ -271,10 +271,11 @@ public class XmlProcessor {
 		try {
 			boolean schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames, strProcessStartTime);
 			//generate schema files
-			List<String> createTableSqls = new ArrayList<String>();
-			List<String> dropTableSqls = new ArrayList<String>();
-			List<String> truncTableSqls = new ArrayList<String>();
 			if (schemaUpdated){
+				List<String> createTableSqls = new ArrayList<String>();
+				List<String> dropTableSqls = new ArrayList<String>();
+				List<String> truncTableSqls = new ArrayList<String>();
+				List<String> copysqls = new ArrayList<String>();
 				for(String tn:schemaAttrNameUpdates.keySet()){
 					List<String> fieldNameList = new ArrayList<String>(); 
 					List<String> fieldTypeList = new ArrayList<String>();
@@ -299,6 +300,13 @@ public class XmlProcessor {
 						dropTableSqls.add(Util.genDropTableSql(tn, prefix));
 						truncTableSqls.add(Util.genTruncTableSql(tn, prefix));
 					}
+					//gen copys.sql for reference
+					fieldNameList.clear();
+					fieldNameList.addAll(systemFieldNames);
+					fieldNameList.addAll(logicSchema.getObjParams(tn));
+					fieldNameList.addAll(logicSchema.getAttrNames(tn));
+					String copySql = Util.genCopySql(fieldNameList, tn, csvFolder, prefix);//having %s as the placeholder for real file name
+					copysqls.add(copySql);
 				}
 				//execute the schemas
 				Util.executeSqls(createTableSqls);
@@ -307,6 +315,7 @@ public class XmlProcessor {
 				Util.writeFile(String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, strProcessStartTime), createTableSqls);
 				Util.writeFile(String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, droptablesql_name, strProcessStartTime), dropTableSqls);
 				Util.writeFile(String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, trunctablesql_name, strProcessStartTime), truncTableSqls);
+				Util.writeFile(String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, copysql_name, strProcessStartTime), copysqls);
 				
 				//gen logic schema
 				LogicSchema.toFile(schemaFileName, logicSchema);
@@ -316,7 +325,7 @@ public class XmlProcessor {
 				schemaAttrNameUpdates.clear();
 				checkSchemaUpdateOrGenData(inputFileNames, strProcessStartTime);
 				
-				//mv the raw-xml files to history
+				//mv the raw-xml files to lake
 				//TODO
 			}
 			//copy the data to db
@@ -331,8 +340,9 @@ public class XmlProcessor {
 				copysqls.add(copySql);
 			}
 			Util.executeSqls(copysqls);
-			//copy the csv files to backup
-			//Util.writeFile(String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, copysql_name, strProcessStartTime), copysqls);
+			
+			//mv the csv files to lake
+			//TODO
 		}catch(Exception e){
 			logger.error("", e);
 		}

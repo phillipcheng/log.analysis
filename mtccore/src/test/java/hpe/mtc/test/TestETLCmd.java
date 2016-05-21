@@ -15,7 +15,7 @@ public class TestETLCmd {
 	}
 	
 	@Test
-	public void test2(){
+	public void testAddTables(){
 		ETLCmd.main(new String[]{"-x", working_dir+"xmldata1\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
 				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
 		ETLCmd.main(new String[]{"-x", working_dir+"xmldata2\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
@@ -23,10 +23,18 @@ public class TestETLCmd {
 	}
 	
 	@Test
-	public void test3(){
+	public void testMergeTable(){
 		ETLCmd.main(new String[]{"-x", working_dir+"xmldata3\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
 				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
 		ETLCmd.main(new String[]{"-x", working_dir+"xmldata4\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
+				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
+	}
+	
+	@Test
+	public void testGenDataOnly(){
+		ETLCmd.main(new String[]{"-x", working_dir+"xmldata1\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
+				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
+		ETLCmd.main(new String[]{"-x", working_dir+"xmldata1\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
 				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
 	}
 
