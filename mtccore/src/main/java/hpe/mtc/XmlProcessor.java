@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
 import nokia.xml.GranPeriod;
@@ -31,6 +32,14 @@ public class XmlProcessor {
 	public static final Logger logger = Logger.getLogger(XmlProcessor.class);
 	
 	public static final String schema_name="schemas.txt";
+	
+	public static final String cfgkey_xml_folder="xml-folder";
+	public static final String cfgkey_csv_folder="csv-folder";
+	public static final String cfgkey_schema_folder="schema-folder";
+	public static final String cfgkey_schema_history_folder="schema-history-folder";
+	public static final String cfgkey_data_history_folder="data-history-folder";
+	public static final String cfgkey_prefix="prefix";
+	
 	
 	public static final String createtablesql_name="createtables.sql";
 	public static final String droptablesql_name="droptables.sql";
@@ -47,6 +56,7 @@ public class XmlProcessor {
 	private List<String> systemFieldNames = new ArrayList<String>();
 	private List<String> systemFieldTypes = new ArrayList<String>();
 	
+	private PropertiesConfiguration pc;
 	private String xmlFolder;
 	private String csvFolder;
 	private String schemaHistoryFolder;
@@ -61,8 +71,9 @@ public class XmlProcessor {
 	private Map<String, BufferedWriter> fvWriterMap = new HashMap<String, BufferedWriter>();//store all the data files generated, key by file name
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
-	public XmlProcessor(String xmlFolder, String csvFolder, String schemaFolder, String schemaHistoryFolder, 
-			String dataHistoryFolder, String prefix){
+	public XmlProcessor(PropertiesConfiguration pc){
+		this.pc = pc;
+		
 		keyWithValue.add("PoolType");
 		
 		keySkip.add("Machine");
@@ -80,12 +91,12 @@ public class XmlProcessor {
 		systemFieldTypes.add("varchar(70)");
 		systemFieldTypes.add("varchar(70)");
 		
-		this.xmlFolder = xmlFolder;
-		this.csvFolder = csvFolder;
-		this.schemaHistoryFolder = schemaHistoryFolder;
-		this.dataHistoryFolder = dataHistoryFolder;
-		this.prefix = prefix;
-		this.schemaFileName = schemaFolder + prefix +"." + schema_name;
+		this.xmlFolder = pc.getString(cfgkey_xml_folder);
+		this.csvFolder = pc.getString(cfgkey_csv_folder);
+		this.schemaHistoryFolder = pc.getString(cfgkey_schema_history_folder);
+		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
+		this.prefix = pc.getString(cfgkey_prefix);
+		this.schemaFileName = pc.getString(cfgkey_schema_folder) + prefix +"." + schema_name;
 		this.logicSchema = new LogicSchema();
 		if (new File(schemaFileName).exists()){
 			logicSchema = LogicSchema.fromFile(schemaFileName);
@@ -309,7 +320,7 @@ public class XmlProcessor {
 					copysqls.add(copySql);
 				}
 				//execute the schemas
-				Util.executeSqls(createTableSqls);
+				Util.executeSqls(createTableSqls, pc);
 				
 				//gen schema files to history dir for reference
 				Util.writeFile(String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, strProcessStartTime), createTableSqls);
@@ -339,7 +350,7 @@ public class XmlProcessor {
 				copySql = copySql.replace("%s", getOutputDataFileName(tn, strProcessStartTime));
 				copysqls.add(copySql);
 			}
-			Util.executeSqls(copysqls);
+			Util.executeSqls(copysqls, pc);
 			
 			//mv the csv files to lake
 			//TODO

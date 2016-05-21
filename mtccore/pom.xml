@@ -32,6 +32,12 @@
     <artifactId>jackson-databind</artifactId>
     <version>2.7.4</version>
 </dependency>
+<!-- http://mvnrepository.com/artifact/commons-configuration/commons-configuration -->
+<dependency>
+    <groupId>commons-configuration</groupId>
+    <artifactId>commons-configuration</artifactId>
+    <version>1.10</version>
+</dependency>
 
 	<!-- http://mvnrepository.com/artifact/org.json/json -->
 	<dependency>

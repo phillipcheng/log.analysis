@@ -10,32 +10,25 @@ public class TestETLCmd {
 	//public static String working_dir="/Users/chengyi/git/log.analysis/mtccore/src/test/resources/";
 	@Test
 	public void test1(){
-		ETLCmd.main(new String[]{"-x", working_dir+"xmldata\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
-				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
+		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata\\"});
 	}
 	
 	@Test
 	public void testAddTables(){
-		ETLCmd.main(new String[]{"-x", working_dir+"xmldata1\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
-				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
-		ETLCmd.main(new String[]{"-x", working_dir+"xmldata2\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
-				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
+		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata1\\"});
+		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata2\\"});
 	}
 	
 	@Test
 	public void testMergeTable(){
-		ETLCmd.main(new String[]{"-x", working_dir+"xmldata3\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
-				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
-		ETLCmd.main(new String[]{"-x", working_dir+"xmldata4\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
-				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
+		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata3\\"});
+		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata4\\"});
 	}
 	
 	@Test
 	public void testGenDataOnly(){
-		ETLCmd.main(new String[]{"-x", working_dir+"xmldata1\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
-				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
-		ETLCmd.main(new String[]{"-x", working_dir+"xmldata1\\", "-c", working_dir+"csvdata\\", "-s", working_dir+"schema\\", 
-				"-m", working_dir+"schemahistory\\", "-d", working_dir+"datahistory\\", "-p", "sgsiwf"});
+		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata\\"});
+		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata\\"});
 	}
 
 }

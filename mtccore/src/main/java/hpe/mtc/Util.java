@@ -1,23 +1,48 @@
 package hpe.mtc;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
 public class Util {
 	public static final Logger logger = Logger.getLogger(XmlProcessor.class);
+	
+	public static final String key_db_driver="db.driver";
+	public static final String key_db_url="db.url";
+	public static final String key_db_user="db.user";
+	public static final String key_db_password="db.password";
+	public static final String key_db_loginTimeout="db.loginTimeout";
+	
+	
+	public static PropertiesConfiguration getPropertiesConfig(String conf){
+		PropertiesConfiguration pc = null;
+		try {
+			URL url = Thread.currentThread().getContextClassLoader().getResource(conf);
+			pc = new PropertiesConfiguration(url);
+		} catch (ConfigurationException e) {
+			File f = new File(conf);
+			try {
+				pc = new PropertiesConfiguration(f);
+			}catch(Exception e1){
+				logger.error("", e1);
+			}
+		}
+		return pc;
+	}
 	
 	//k1=v1,k2=v2 =>{{k1,v1},{k2,v2}}
 	public static TreeMap<String, String> parseMapParams(String params){
@@ -146,22 +171,19 @@ public class Util {
 		}
 	}
 	
-	private static Connection getConnection(){
+	private static Connection getConnection(PropertiesConfiguration pc){
 		Connection conn = null;
 		try { 
-        	Class.forName("com.vertica.jdbc.Driver"); 
+        	Class.forName(pc.getString(key_db_driver)); 
         } catch (ClassNotFoundException e) {
         	logger.error("", e);
         }
-        
         Properties myProp = new Properties();
-        myProp.put("user", "dbadmin");
-        myProp.put("password", "password");
-        myProp.put("loginTimeout", "35");
-        myProp.put("binaryBatchInsert", "true");
-        
+        myProp.put("user", pc.getString(key_db_user));
+        myProp.put("password", pc.getString(key_db_password));
+        myProp.put("loginTimeout", pc.getString(key_db_loginTimeout));
         try {
-            conn = DriverManager.getConnection("jdbc:vertica://192.85.247.104:5433/cmslab", myProp);
+            conn = DriverManager.getConnection(pc.getString(key_db_url), myProp);
             logger.debug("connected!");
         }catch(Exception e){
             logger.error("", e);
@@ -169,10 +191,10 @@ public class Util {
         return conn;
 	}
 	
-	public static void executeSqls(List<String> sqls){
+	public static void executeSqls(List<String> sqls, PropertiesConfiguration pc){
         Connection conn = null;
         try {
-            conn = getConnection();
+            conn = getConnection(pc);
             if (conn!=null){
 	            for (String sql:sqls){
 	            	Statement stmt = conn.createStatement();

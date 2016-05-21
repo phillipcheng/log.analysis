@@ -1,13 +1,12 @@
 package hpe.mtc;
 
-import java.io.File;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
 public class ETLCmd {
@@ -18,7 +17,7 @@ public class ETLCmd {
 	 * detect new files coming in the folder, sftp them to our input dir
 	 * 
 	 * -- xml processor --
-	 * if schema file not found
+	 * if schema file not found (initial running)
 	 * 		check all input files to generate schema, table.sql and copy.sql under schema-folder
 	 * else
 	 *		check all input files to see any schema update needed
@@ -39,33 +38,28 @@ public class ETLCmd {
 	}
 	public static void main(String[] args){
 		CommandLine commandLine;
-		Option optionInput = Option.builder("x").hasArgs().required(true).longOpt("xml-folder").build();
-		Option optionOutput = Option.builder("c").hasArgs().required(true).longOpt("csv-folder").build();
-		Option optionSchema = Option.builder("s").hasArgs().required(true).longOpt("schema-folder").build();
-		Option optionSchemaHistory = Option.builder("m").hasArgs().required(true).longOpt("schema-history-folder").build();
-		Option optionDataHistory = Option.builder("d").hasArgs().required(true).longOpt("data-history-folder").build();
-		Option optionPrefix = Option.builder("p").hasArgs().required(true).longOpt("prefix").build();
+		Option optionCfg = Option.builder("c").hasArgs().required(true).longOpt("config-file").build();
+		Option optionInput = Option.builder("x").hasArgs().longOpt("xml-folder").build();
+		Option optionPrefix = Option.builder("p").hasArgs().longOpt("prefix").build();
 		Options options = new Options();
+		options.addOption(optionCfg);
 		options.addOption(optionInput);
-		options.addOption(optionOutput);
-		options.addOption(optionSchema);
-		options.addOption(optionSchemaHistory);
-		options.addOption(optionDataHistory);
 		options.addOption(optionPrefix);
 		CommandLineParser parser = new DefaultParser();
 		try{
 			commandLine = parser.parse(options, args);
-			String xmlFolder = commandLine.getOptionValue("x");
-			String csvFolder = commandLine.getOptionValue("c");
-			String schemaFolder = commandLine.getOptionValue("s");
-			String schemaHistoryFolder = commandLine.getOptionValue("m");
-			String dataHistoryFolder = commandLine.getOptionValue("d");
-			
-			String prefix = null;
-			if (commandLine.hasOption("p")){
-				prefix = commandLine.getOptionValue("p");
+			String cfg = commandLine.getOptionValue("c");
+			PropertiesConfiguration pc = Util.getPropertiesConfig(cfg);
+			pc.setAutoSave(false);
+			if (commandLine.hasOption("x")){
+				String xmlFolder = commandLine.getOptionValue("x");
+				pc.setProperty(XmlProcessor.cfgkey_xml_folder, xmlFolder);
 			}
-			XmlProcessor xmlProcessor = new XmlProcessor(xmlFolder, csvFolder, schemaFolder, schemaHistoryFolder, dataHistoryFolder, prefix);
+			if (commandLine.hasOption("p")){
+				String prefix = commandLine.getOptionValue("p");
+				pc.setProperty(XmlProcessor.cfgkey_prefix, prefix);
+			}
+			XmlProcessor xmlProcessor = new XmlProcessor(pc);
 			xmlProcessor.process();
 			
 		}catch (ParseException exception){
