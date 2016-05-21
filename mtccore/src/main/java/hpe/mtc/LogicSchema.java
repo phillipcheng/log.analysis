@@ -19,28 +19,46 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 public class LogicSchema {
 	public static final Logger logger = Logger.getLogger(LogicSchema.class);
 	
-	private Map<String, List<String>> schemas = null;
-	// table-name to table definition (list of attributes)
+	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
+	private Map<String, List<String>> objParamMap = null; //table-name to table object parameter names mapping
 	
 	public LogicSchema(){
-		schemas = new HashMap<String, List<String>>();
+		attrNameMap = new HashMap<String, List<String>>();
+		setObjParamMap(new HashMap<String, List<String>>());
 	}
 	
 	@JsonIgnore
-	public List<String> getAttributes(String tableName){
-		return schemas.get(tableName);
+	public List<String> getAttrNames(String tableName){
+		return attrNameMap.get(tableName);
 	}
 	
-	public void updateOrAddAttributes(String tableName, List<String> attributes){
-		List<String> originAttr = schemas.get(tableName);
+	public boolean hasAttrNames(String tableName){
+		return attrNameMap.containsKey(tableName);
+	}
+	
+	public void addAttributes(String tableName, List<String> attributes){
+		List<String> originAttr = attrNameMap.get(tableName);
 		if (originAttr==null){
-			schemas.put(tableName, attributes);
+			attrNameMap.put(tableName, attributes);
 		}else{
 			originAttr.addAll(attributes);
-			schemas.put(tableName, originAttr);
+			attrNameMap.put(tableName, originAttr);
 		}
 	}
+	@JsonIgnore
+	public List<String> getObjParams(String tableName){
+		return objParamMap.get(tableName);
+	}
 	
+	public void addObjParams(String tableName, List<String> objParams){
+		objParamMap.put(tableName, objParams);
+	}
+	
+	public LogicSchema clone(){
+		String str = LogicSchema.toJsonString(this);
+		return LogicSchema.fromJsonString(str);
+	}
+	//json serialization
 	public static final String charset="utf8";
 	public static LogicSchema fromJsonString(String json){
 		ObjectMapper mapper = new ObjectMapper();
@@ -90,17 +108,17 @@ public class LogicSchema {
 				out.close();
 		}
 	}
-	
-	public LogicSchema clone(){
-		String str = LogicSchema.toJsonString(this);
-		return LogicSchema.fromJsonString(str);
-	}
 
 	public Map<String, List<String>> getSchemas() {
-		return schemas;
+		return attrNameMap;
 	}
-
 	public void setSchemas(Map<String, List<String>> schemas) {
-		this.schemas = schemas;
+		this.attrNameMap = schemas;
+	}
+	public Map<String, List<String>> getObjParamMap() {
+		return objParamMap;
+	}
+	public void setObjParamMap(Map<String, List<String>> objParamMap) {
+		this.objParamMap = objParamMap;
 	}
 }
