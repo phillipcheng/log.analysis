@@ -19,7 +19,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
 public class Util {
-	public static final Logger logger = Logger.getLogger(XmlProcessor.class);
+	public static final Logger logger = Logger.getLogger(Util.class);
 	
 	public static final String key_db_driver="db.driver";
 	public static final String key_db_url="db.url";

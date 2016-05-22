@@ -53,14 +53,15 @@ public class ETLCmd {
 			pc.setAutoSave(false);
 			if (commandLine.hasOption("x")){
 				String xmlFolder = commandLine.getOptionValue("x");
-				pc.setProperty(XmlProcessor.cfgkey_xml_folder, xmlFolder);
+				pc.setProperty(XpathProcessor.cfgkey_xml_folder, xmlFolder);
 			}
 			if (commandLine.hasOption("p")){
 				String prefix = commandLine.getOptionValue("p");
-				pc.setProperty(XmlProcessor.cfgkey_prefix, prefix);
+				pc.setProperty(XpathProcessor.cfgkey_prefix, prefix);
 			}
-			XmlProcessor xmlProcessor = new XmlProcessor(pc);
-			xmlProcessor.process();
+			//XmlProcessor processor = new XmlProcessor(pc);
+			XpathProcessor processor = new XpathProcessor(pc);
+			processor.process();
 			
 		}catch (ParseException exception){
 			logger.info(exception);

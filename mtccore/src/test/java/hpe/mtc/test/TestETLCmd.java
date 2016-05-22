@@ -28,7 +28,6 @@ public class TestETLCmd {
 	@Test
 	public void testGenDataOnly(){
 		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata\\"});
-		ETLCmd.main(new String[]{"-c", "sgsiwf.detl.properties", "-x", working_dir+"xmldata\\"});
 	}
 
 }

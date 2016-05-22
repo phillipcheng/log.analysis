@@ -15,21 +15,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import nokia.xml.GranPeriod;
-import nokia.xml.MeasCollecFile;
-import nokia.xml.MeasInfo;
-import nokia.xml.MeasType;
-import nokia.xml.MeasValue;
-import nokia.xml.R;
-
-public class XmlProcessor {
-	public static final Logger logger = Logger.getLogger(XmlProcessor.class);
+public class XpathProcessor {
+	public static final Logger logger = Logger.getLogger(XpathProcessor.class);
 	
 	public static final String schema_name="schemas.txt";
 	
@@ -64,6 +64,17 @@ public class XmlProcessor {
 	private String prefix;//used as dbschema name
 	private String schemaFileName;
 	private LogicSchema logicSchema;
+	//
+	private XPathExpression xpathExpFileSystemAttr1;//file level
+	private XPathExpression xpathExpTables;
+	private XPathExpression xpathExpTableRow0;
+	private XPathExpression xpathExpTableObjDesc;
+	private XPathExpression xpathExpTableAttrNames;
+	private XPathExpression xpathExpTableRows;
+	private XPathExpression xpathExpTableSystemAttr1;//table level
+	private XPathExpression xpathExpTableSystemAttr2;//table level
+	private XPathExpression xpathExpTableRowValues;
+	//
 	private Map<String, List<String>> schemaAttrNameUpdates = new HashMap<String, List<String>>();//store updated/new tables' attribute parts' name (compared with the org schema)
 	private Map<String, List<String>> schemaAttrTypeUpdates = new HashMap<String, List<String>>();//store updated/new tables' attribute parts' type (compared with the org schema)
 	private Map<String, List<String>> newTableObjNamesAdded = new HashMap<String, List<String>>();//store new tables' obj name
@@ -71,7 +82,7 @@ public class XmlProcessor {
 	private Map<String, BufferedWriter> fvWriterMap = new HashMap<String, BufferedWriter>();//store all the data files generated, key by file name
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
-	public XmlProcessor(PropertiesConfiguration pc){
+	public XpathProcessor(PropertiesConfiguration pc){
 		this.pc = pc;
 		
 		keyWithValue.add("PoolType");
@@ -90,6 +101,22 @@ public class XmlProcessor {
 		systemFieldTypes.add("varchar(10)");
 		systemFieldTypes.add("varchar(70)");
 		systemFieldTypes.add("varchar(70)");
+		//
+		XPathFactory xPathfactory = XPathFactory.newInstance();
+		XPath xpath = xPathfactory.newXPath();
+		try {
+			xpathExpFileSystemAttr1 = xpath.compile("/measCollecFile/fileHeader/fileSender/@localDn");
+			xpathExpTables = xpath.compile("/measCollecFile/measData/measInfo");
+			xpathExpTableRow0 = xpath.compile("measValue[1]");
+			xpathExpTableObjDesc = xpath.compile("./@measObjLdn");
+			xpathExpTableAttrNames = xpath.compile("./measType");
+			xpathExpTableRows = xpath.compile("./measValue");//values under table
+			xpathExpTableRowValues = xpath.compile("./r");//values under row
+			xpathExpTableSystemAttr1 = xpath.compile("./granPeriod/@endTime");
+			xpathExpTableSystemAttr2 = xpath.compile("./granPeriod/@duration");
+		}catch(Exception e){
+			logger.info("", e);
+		}
 		
 		this.xmlFolder = pc.getString(cfgkey_xml_folder);
 		this.csvFolder = pc.getString(cfgkey_csv_folder);
@@ -103,11 +130,12 @@ public class XmlProcessor {
 		}	
 	}
 	
-	public static MeasCollecFile unmarshal(String inputXml){
+	public static Document getDocument(String inputXml){
 		try {
-			JAXBContext jc = JAXBContext.newInstance("nokia.xml");
-		    Unmarshaller u = jc.createUnmarshaller();
-		    return (MeasCollecFile) u.unmarshal(new File(inputXml));
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(inputXml);
+			return doc;
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
@@ -144,9 +172,10 @@ public class XmlProcessor {
 	private String getOutputDataFileName(String tableName, String timeStr){
 		return csvFolder + timeStr + "_" + tableName + ".csv";
 	}
-	private void genData(MeasInfo mi, Map<String, String> localDnMap, List<String> orgSchemaAttributes, List<String> mtcl, String tableName, 
+	private void genData(Node mi, Map<String, String> localDnMap, List<String> orgSchemaAttributes, List<String> mtcl, String tableName, 
 			Map<String, BufferedWriter> fvWriterMap, String startProcessTime) throws Exception {
-		GranPeriod gp = mi.getGranPeriod();
+		String sysValue1 = (String) xpathExpTableSystemAttr1.evaluate(mi, XPathConstants.STRING);
+		String sysValue2 = (String) xpathExpTableSystemAttr2.evaluate(mi, XPathConstants.STRING);
 		//gen value idx mapping
 		Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//current attribute maps to which schema attribute
 		for (int i=0; i<orgSchemaAttributes.size(); i++){
@@ -156,21 +185,27 @@ public class XmlProcessor {
 				mapping.put(idx, i);
 			}
 		}
-		for (MeasValue mvl:mi.getMeasValue()){
+		NodeList mvl = (NodeList) xpathExpTableRows.evaluate(mi, XPathConstants.NODESET);
+		for (int k=0; k<mvl.getLength(); k++){
+			Node mv = mvl.item(k);
+			mv.getParentNode().removeChild(mv);//for performance
 			List<String> fieldValues = new ArrayList<String>();
 			//system values
-			fieldValues.add(gp.getEndTime());
-			fieldValues.add(gp.getDuration());
+			fieldValues.add(sysValue1);
+			fieldValues.add(sysValue2);
 			fieldValues.add(localDnMap.get(SYSTEM_FIELD_SUBNETWORK));
 			fieldValues.add(localDnMap.get(SYSTEM_FIELD_MANAGEDELEMENT));
 			//object values
-			TreeMap<String, String> kvs = Util.parseMapParams(mvl.getMeasObjLdn());
+			String moldn = (String) xpathExpTableObjDesc.evaluate(mv, XPathConstants.STRING);
+			TreeMap<String, String> kvs = Util.parseMapParams(moldn);
 			for (String v:kvs.values()){
 				fieldValues.add(v);
 			}
 			String[] vs = new String[orgSchemaAttributes.size()];
-			for (int i=0; i<mvl.getR().size(); i++){
-				String v = mvl.getR().get(i).getContent();
+			NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
+			for (int i=0; i<rlist.getLength(); i++){
+				Node r = rlist.item(i);
+				String v = r.getTextContent();
 				vs[mapping.get(i)]=v;
 			}
 			fieldValues.addAll(Arrays.asList(vs));
@@ -189,16 +224,20 @@ public class XmlProcessor {
 		boolean schemaUpdated=false;
 		try {
 			for (String inputFileName: inputFileNames){
+				logger.debug(String.format("process %s", inputFileName));
 				String ifn = xmlFolder + inputFileName;
-				MeasCollecFile mf = XmlProcessor.unmarshal(ifn);
-				Map<String, String> localDnMap = Util.parseMapParams(mf.getFileHeader().getFileSender().getLocalDn());
-				List<MeasInfo> ml = mf.getMeasData().getMeasInfo();
-				for (MeasInfo mi:ml){
-					MeasValue mv0 = mi.getMeasValue().get(0);
-					String moldn = mv0.getMeasObjLdn();
+				Document mf = XpathProcessor.getDocument(ifn);
+				Map<String, String> localDnMap = Util.parseMapParams((String)xpathExpFileSystemAttr1.evaluate(mf, XPathConstants.STRING));
+				NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
+				for (int i=0; i<ml.getLength(); i++){
+					Node mi = ml.item(i);
+					mi.getParentNode().removeChild(mi);//for performance
+					Node mv0 = (Node)xpathExpTableRow0.evaluate(mi, XPathConstants.NODE);
+					String moldn = (String) xpathExpTableObjDesc.evaluate(mv0, XPathConstants.STRING);
 					TreeMap<String, String> moldParams = Util.parseMapParams(moldn);
 					String tableName = generateTableName(moldParams);
 					tablesUsed.add(tableName);
+					NodeList mv0vs = (NodeList) xpathExpTableRowValues.evaluate(mv0, XPathConstants.NODESET);
 					List<String> orgSchemaAttributes = null;
 					if (logicSchema.hasAttrNames(tableName)){
 						orgSchemaAttributes = new ArrayList<String>();
@@ -214,19 +253,20 @@ public class XmlProcessor {
 							}
 						}
 					}
+					List<String> tableAttrNamesList = new ArrayList<String>();//table attr name list
+					NodeList mts = (NodeList) xpathExpTableAttrNames.evaluate(mi, XPathConstants.NODESET);
+					for (int j=0; j<mts.getLength(); j++){
+						tableAttrNamesList.add(mts.item(j).getTextContent());
+					}
 					if (orgSchemaAttributes!=null){
-						List<String> mtcl = new ArrayList<String>();
-						for (MeasType mt: mi.getMeasType()){
-							mtcl.add(mt.getContent());
-						}
 						//check new attribute
 						List<String> newAttrNames = new ArrayList<String>();
 						List<String> newAttrTypes = new ArrayList<String>();
-						for (int i=0; i<mtcl.size(); i++){
-							String mtc = mtcl.get(i);
+						for (int j=0; j<tableAttrNamesList.size(); j++){
+							String mtc = tableAttrNamesList.get(j);
 							if (!orgSchemaAttributes.contains(mtc)){
 								newAttrNames.add(mtc);
-								newAttrTypes.add(Util.guessType(mv0.getR().get(i).getContent()));
+								newAttrTypes.add(Util.guessType(mv0vs.item(j).getTextContent()));
 							}
 						}
 						if (newAttrNames.size()>0){
@@ -239,20 +279,16 @@ public class XmlProcessor {
 							schemaUpdated=true;
 						}else{
 							if (!schemaUpdated){//gen data
-								genData(mi, localDnMap, orgSchemaAttributes, mtcl, tableName, fvWriterMap, strProcessStartTime);
+								genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName, fvWriterMap, strProcessStartTime);
 							}
 						}
 					}else{
 						//new table needed
-						List<String> onlyAttrNamesList = new ArrayList<String>();
-						for (MeasType mt: mi.getMeasType()){
-							onlyAttrNamesList.add(mt.getContent());
-						}
 						List<String> onlyAttrTypesList = new ArrayList<String>();
-						for (R r: mv0.getR()){
-							onlyAttrTypesList.add(Util.guessType(r.getContent()));
+						for (int j=0; j<mv0vs.getLength(); j++){
+							onlyAttrTypesList.add(Util.guessType(mv0vs.item(j).getTextContent()));
 						}
-						schemaAttrNameUpdates.put(tableName, onlyAttrNamesList);
+						schemaAttrNameUpdates.put(tableName, tableAttrNamesList);
 						schemaAttrTypeUpdates.put(tableName, onlyAttrTypesList);
 						//
 						List<String> objNameList = new ArrayList<String>();

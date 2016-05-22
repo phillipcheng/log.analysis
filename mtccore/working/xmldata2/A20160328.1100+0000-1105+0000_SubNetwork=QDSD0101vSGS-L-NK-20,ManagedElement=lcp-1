@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="MeasDataCollection.xsl"?>
 <measCollecFile
 	xmlns="http://www.3gpp.org/ftp/specs/latest/rel-5/32_series/32401-540.zip#measCollec">
 	<fileHeader fileFormatVersion="32.401 V5.0"
