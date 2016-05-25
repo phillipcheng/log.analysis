@@ -1,4 +1,4 @@
-package log.analysis.preload;
+package etl.preload;
 
 public class ColPrepender {
 	public static final String COMMAND="prepend.idx";

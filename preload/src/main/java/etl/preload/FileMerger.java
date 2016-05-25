@@ -1,4 +1,4 @@
-package log.analysis.preload;
+package etl.preload;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

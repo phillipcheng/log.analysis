@@ -1,4 +1,4 @@
-package log.analysis.preload;
+package etl.preload;
 
 public class ColAppender {
 	public static final String COMMAND="append.idx";

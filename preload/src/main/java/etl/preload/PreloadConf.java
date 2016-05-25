@@ -1,4 +1,4 @@
-package log.analysis.preload;
+package etl.preload;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,8 +73,8 @@ public class PreloadConf {
 	private Map<String, Pattern> evtPtnMap = new HashMap<String, Pattern>();//event pattern map
 	//message
 	private int msgIdx;
-	private List<String> msgFields;
-	private Map<String, List<String>> msgAttrMap = new HashMap<String, List<String>>();//attr map
+	private String[] msgFields;
+	private Map<String, String[]> msgAttrMap = new HashMap<String, String[]>();//attr map
 	
 	//unidentified evt types
 	private Set<String> missedEvtType = new HashSet<String>();
@@ -158,116 +158,126 @@ public class PreloadConf {
 		
 		//record preprocessing
 		//remove
-		List<String> removeIdxStrs = pc.getList(ColRemover.COMMAND);
-		for (String removeIdxStr:removeIdxStrs){
-			StringTokenizer st = new StringTokenizer(removeIdxStr,":");
-			int i=0;
-			String rm="";
-			int rmIdx=0;
-			while(st.hasMoreTokens()){
-				String token = st.nextToken();
-				if (i==0){
-					rmIdx = Integer.parseInt(token);
-				}else if (i==1){
-					rm = token;
+		String[] removeIdxStrs = pc.getStringArray(ColRemover.COMMAND);
+		if (removeIdxStrs!=null){
+			for (String removeIdxStr:removeIdxStrs){
+				StringTokenizer st = new StringTokenizer(removeIdxStr,":");
+				int i=0;
+				String rm="";
+				int rmIdx=0;
+				while(st.hasMoreTokens()){
+					String token = st.nextToken();
+					if (i==0){
+						rmIdx = Integer.parseInt(token);
+					}else if (i==1){
+						rm = token;
+					}
+					i++;
 				}
-				i++;
+				ColRemover remover = new ColRemover(rmIdx, rm);
+				removers.put(rmIdx, remover);
 			}
-			ColRemover remover = new ColRemover(rmIdx, rm);
-			removers.put(rmIdx, remover);
 		}
 		
 		//merge
-		List<String> mergeIdxStrs = pc.getList(ColMerger.COMMAND);
-		for (String mergeIdxStr:mergeIdxStrs){
-			StringTokenizer st = new StringTokenizer(mergeIdxStr,":");
-			int i=0;
-			int start=0,end=0;
-			String joiner="-";
-			while(st.hasMoreTokens()){
-				String token = st.nextToken();
-				if (i==0){
-					start = Integer.parseInt(token);
-				}else if (i==1){
-					end = Integer.parseInt(token);
-				}else if (i==2){
-					joiner = token;
+		String[] mergeIdxStrs = pc.getStringArray(ColMerger.COMMAND);
+		if (mergeIdxStrs!=null){
+			for (String mergeIdxStr:mergeIdxStrs){
+				StringTokenizer st = new StringTokenizer(mergeIdxStr,":");
+				int i=0;
+				int start=0,end=0;
+				String joiner="-";
+				while(st.hasMoreTokens()){
+					String token = st.nextToken();
+					if (i==0){
+						start = Integer.parseInt(token);
+					}else if (i==1){
+						end = Integer.parseInt(token);
+					}else if (i==2){
+						joiner = token;
+					}
+					i++;
 				}
-				i++;
+				int size = end-start+1;
+				int[] midx = new int[size];
+				for (i=0; i<size; i++){
+					midx[i]=start+i;
+				}
+				ColMerger merger = new ColMerger(midx, joiner);
+				mergers.add(merger);
 			}
-			int size = end-start+1;
-			int[] midx = new int[size];
-			for (i=0; i<size; i++){
-				midx[i]=start+i;
-			}
-			ColMerger merger = new ColMerger(midx, joiner);
-			mergers.add(merger);
 		}
 		
 		//split
-		List<String> splitIdxStrs = pc.getList(ColSpliter.COMMAND);
-		for (String splitIdxStr:splitIdxStrs){
-			StringTokenizer st = new StringTokenizer(splitIdxStr,":");
-			int i=0;
-			String sep=".";
-			int splitIdx=0;
-			while(st.hasMoreTokens()){
-				String token = st.nextToken();
-				if (i==0){
-					splitIdx = Integer.parseInt(token);
-				}else if (i==1){
-					sep = token;
+		String[] splitIdxStrs = pc.getStringArray(ColSpliter.COMMAND);
+		if (splitIdxStrs!=null){
+			for (String splitIdxStr:splitIdxStrs){
+				StringTokenizer st = new StringTokenizer(splitIdxStr,":");
+				int i=0;
+				String sep=".";
+				int splitIdx=0;
+				while(st.hasMoreTokens()){
+					String token = st.nextToken();
+					if (i==0){
+						splitIdx = Integer.parseInt(token);
+					}else if (i==1){
+						sep = token;
+					}
+					i++;
 				}
-				i++;
+				ColSpliter spliter = new ColSpliter(splitIdx, sep);
+				splits.put(splitIdx, spliter);
 			}
-			ColSpliter spliter = new ColSpliter(splitIdx, sep);
-			splits.put(splitIdx, spliter);
 		}
 		
 		//append
-		List<String> appendIdxStrs = pc.getList(ColAppender.COMMAND);
-		for (String appendIdxStr:appendIdxStrs){
-			StringTokenizer st = new StringTokenizer(appendIdxStr,":");
-			int i=0;
-			String suffix="";
-			int appendIdx=0;
-			int afterIdx=0;
-			while(st.hasMoreTokens()){
-				String token = st.nextToken();
-				if (i==0){
-					appendIdx = Integer.parseInt(token);
-				}else if (i==1){
-					afterIdx = Integer.parseInt(token);
-				}else if (i==2){
-					suffix = token;
+		String[] appendIdxStrs = pc.getStringArray(ColAppender.COMMAND);
+		if (appendIdxStrs!=null){
+			for (String appendIdxStr:appendIdxStrs){
+				StringTokenizer st = new StringTokenizer(appendIdxStr,":");
+				int i=0;
+				String suffix="";
+				int appendIdx=0;
+				int afterIdx=0;
+				while(st.hasMoreTokens()){
+					String token = st.nextToken();
+					if (i==0){
+						appendIdx = Integer.parseInt(token);
+					}else if (i==1){
+						afterIdx = Integer.parseInt(token);
+					}else if (i==2){
+						suffix = token;
+					}
+					i++;
 				}
-				i++;
+				ColAppender appender = new ColAppender(appendIdx, afterIdx, suffix);
+				appenders.put(appendIdx, appender);
 			}
-			ColAppender appender = new ColAppender(appendIdx, afterIdx, suffix);
-			appenders.put(appendIdx, appender);
 		}
 		
 		//prepend
-		List<String> prependIdxStrs = pc.getList(ColPrepender.COMMAND);
-		for (String prependIdxStr:prependIdxStrs){
-			StringTokenizer st = new StringTokenizer(prependIdxStr,":");
-			int i=0;
-			String prefix="";
-			int beforeIdx=0;
-			int idx=0;
-			while(st.hasMoreTokens()){
-				String token = st.nextToken();
-				if (i==0){
-					idx = Integer.parseInt(token);
-				}else if (i==1){
-					beforeIdx = Integer.parseInt(token);
-				}else if (i==2){
-					prefix = token;
+		String[] prependIdxStrs = pc.getStringArray(ColPrepender.COMMAND);
+		if (prependIdxStrs!=null){
+			for (String prependIdxStr:prependIdxStrs){
+				StringTokenizer st = new StringTokenizer(prependIdxStr,":");
+				int i=0;
+				String prefix="";
+				int beforeIdx=0;
+				int idx=0;
+				while(st.hasMoreTokens()){
+					String token = st.nextToken();
+					if (i==0){
+						idx = Integer.parseInt(token);
+					}else if (i==1){
+						beforeIdx = Integer.parseInt(token);
+					}else if (i==2){
+						prefix = token;
+					}
+					i++;
 				}
-				i++;
+				ColPrepender prepender = new ColPrepender(idx, beforeIdx, prefix);
+				prependers.put(idx, prepender);
 			}
-			ColPrepender prepender = new ColPrepender(idx, beforeIdx, prefix);
-			prependers.put(idx, prepender);
 		}
 		
 		//evt conf
@@ -276,13 +286,15 @@ public class PreloadConf {
 		}catch(NoSuchElementException nsee){
 			eventIdx=-1;
 		}
-		List<String> evtTypes = pc.getList(EVT_TYPE_KEY);
+		String[] evtTypes = pc.getStringArray(EVT_TYPE_KEY);
 		for (String et:evtTypes){
 			String regexp = pc.getString(et + "." + REGEXP_KEY);
 			Pattern p = Pattern.compile("^" + regexp + "$");
 			evtPtnMap.put(et, p);
-			List<String> attrs=pc.getList(et + "." + ATTR_KEY);
-			msgAttrMap.put(et, attrs);
+			String[] attrs = pc.getStringArray(et + "." + ATTR_KEY);
+			if (attrs!=null){
+				msgAttrMap.put(et, attrs);
+			}
 		}
 		
 		//message conf
@@ -291,7 +303,7 @@ public class PreloadConf {
 		}catch(NoSuchElementException nsee){
 			msgIdx=-1;
 		}
-		msgFields = pc.getList(MESSAGE_FIELDS);
+		msgFields = pc.getStringArray(MESSAGE_FIELDS);
 		
 		//plugin
 		String ccFile = pc.getString(COUNTRY_CODE_LIST);
@@ -305,7 +317,7 @@ public class PreloadConf {
 	
 	public String getOutputValues(String evtType, String input){
 		Pattern p = null;
-		List<String> attrs = null;
+		String[] attrs = null;
 		if (evtPtnMap.containsKey(evtType)){
 			p = evtPtnMap.get(evtType);
 			attrs = msgAttrMap.get(evtType);
@@ -321,64 +333,65 @@ public class PreloadConf {
 		Matcher m = p.matcher(input);
 		if (m.find()){
 			for (int i=1; i<=m.groupCount(); i++){
-				String key = attrs.get(i-1);
+				String key = attrs[i-1];
 				String val = m.group(i);
 				values.put(key, val);
 			}
 		}
 		String output="";
-		for (int i=0; i<msgFields.size();i++){
-			String fieldName = msgFields.get(i);
-			if (values.containsKey(fieldName)){
-				String value = values.get(fieldName);
-				output+=value;
-				if (SPECIAL_TREAT_E164.equals(fieldName)){
-					//append country code
-					output+=",";
-					String cc = ccMap.getCode(value);
-					if (cc!=null){
-						output+=cc;
-					}else{
-						logger.error(String.format("country code not found for %s", value));
-					}
-					output+=",";
-					//append nanpa code
-					if (cc!=null && "1".equals(cc)){
-						value = value.substring(cc.length());
-						if (value.length()>6){
-							String str1 = value.substring(0, 3);
-							String str2 = value.substring(3,6);
-							String nanpaCode = str1 + "-" + str2;
-							if (nanpaMap.hasNanpa(nanpaCode)){
-								output+=nanpaCode;
+		if (msgFields!=null){
+			for (String fieldName: msgFields){
+				if (values.containsKey(fieldName)){
+					String value = values.get(fieldName);
+					output+=value;
+					if (SPECIAL_TREAT_E164.equals(fieldName)){
+						//append country code
+						output+=",";
+						String cc = ccMap.getCode(value);
+						if (cc!=null){
+							output+=cc;
+						}else{
+							logger.error(String.format("country code not found for %s", value));
+						}
+						output+=",";
+						//append nanpa code
+						if (cc!=null && "1".equals(cc)){
+							value = value.substring(cc.length());
+							if (value.length()>6){
+								String str1 = value.substring(0, 3);
+								String str2 = value.substring(3,6);
+								String nanpaCode = str1 + "-" + str2;
+								if (nanpaMap.hasNanpa(nanpaCode)){
+									output+=nanpaCode;
+								}else{
+									logger.error("nanpaCode not found for:" + value);
+								}
 							}else{
 								logger.error("nanpaCode not found for:" + value);
 							}
-						}else{
-							logger.error("nanpaCode not found for:" + value);
 						}
 					}
-				}
-				if (SPECIAL_TREAT_GTAddr.equals(fieldName)){
-					//append country code
-					output+=",";
-					String cc = ccMap.getCode(value);
-					if (cc!=null){
-						output+=cc;
-					}else{
-						logger.error(String.format("country code not found for %s", value));
+					if (SPECIAL_TREAT_GTAddr.equals(fieldName)){
+						//append country code
+						output+=",";
+						String cc = ccMap.getCode(value);
+						if (cc!=null){
+							output+=cc;
+						}else{
+							logger.error(String.format("country code not found for %s", value));
+						}
+					}
+				}else{
+					//value does not have the field, still needs to add padding for special treated fields
+					if (SPECIAL_TREAT_E164.equals(fieldName)){
+						output+=",,";
+					}
+					if (SPECIAL_TREAT_GTAddr.equals(fieldName)){
+						output+=",";
 					}
 				}
-			}else{
-				//value does not have the field, still needs to add padding for special treated fields
-				if (SPECIAL_TREAT_E164.equals(fieldName)){
-					output+=",,";
-				}
-				if (SPECIAL_TREAT_GTAddr.equals(fieldName)){
-					output+=",";
-				}
+				output+=",";
 			}
-			output+=",";
 		}
 		return output;
 	}

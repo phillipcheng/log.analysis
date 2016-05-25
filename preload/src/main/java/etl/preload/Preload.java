@@ -1,4 +1,4 @@
-package log.analysis.preload;
+package etl.preload;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import log.analysis.driver.StringUtil;
+import etl.driver.StringUtil;
 
 public class Preload {
 	public static final Logger logger = Logger.getLogger(Preload.class);

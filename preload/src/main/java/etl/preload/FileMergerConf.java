@@ -1,4 +1,4 @@
-package log.analysis.preload;
+package etl.preload;
 
 
 import org.apache.commons.configuration.PropertiesConfiguration;

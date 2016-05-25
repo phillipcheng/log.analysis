@@ -1,4 +1,4 @@
-package log.analysis.driver;
+package etl.driver;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
