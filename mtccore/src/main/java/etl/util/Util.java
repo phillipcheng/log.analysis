@@ -1,9 +1,16 @@
-package hpe.mtc;
+package etl.util;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,10 +20,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 
 public class Util {
 	public static final Logger logger = Logger.getLogger(Util.class);
@@ -42,6 +61,28 @@ public class Util {
 			}
 		}
 		return pc;
+	}
+	
+	public static PropertiesConfiguration getPropertiesConfigFromDfs(FileSystem fs, String conf){
+		BufferedReader br = null;
+		try {
+			Path ip = new Path(conf);
+	        br=new BufferedReader(new InputStreamReader(fs.open(ip)));
+	        PropertiesConfiguration pc = new PropertiesConfiguration();
+	        pc.load(br);
+	        return pc;
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}finally{
+			if (br!=null){
+				try{
+					br.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
+		}
 	}
 	
 	//k1=v1,k2=v2 =>{{k1,v1},{k2,v2}}
@@ -72,7 +113,7 @@ public class Util {
 			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
 		}
 		//gen table sql
-		tablesql.append(String.format("create table if not exists %s.%s(\n", dbschema, tn));
+		tablesql.append(String.format("create table if not exists %s.%s(", dbschema, tn));
 		for (int i=0; i<fieldNameList.size(); i++){
 			String name = fieldNameList.get(i);
 			String type = fieldTypeList.get(i);
@@ -81,7 +122,7 @@ public class Util {
 				tablesql.append(",");
 			}
 		}
-		tablesql.append(");\n");
+		tablesql.append(");");
 		return tablesql.toString();
 	}
 	
@@ -106,14 +147,13 @@ public class Util {
 		return tablesql.toString();
 	}
 	
-	//with the input file as %s
-	public static String genCopySql(List<String> fieldNameList, String tn, String csvFolder, String dbschema){
+	public static String genCopyLocalSql(List<String> fieldNameList, String tn, String dbschema, String csvFileName){
 		StringBuffer copysql = new StringBuffer();
 		for (int i=0; i<fieldNameList.size(); i++){
 			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
 		}
 		//gen table sql
-		copysql.append(String.format("copy %s.%s(\n", dbschema, tn));
+		copysql.append(String.format("copy %s.%s(", dbschema, tn));
 		for (int i=0; i<fieldNameList.size(); i++){
 			String name = fieldNameList.get(i);
 			copysql.append(String.format("%s enclosed by '\"'", name));
@@ -121,18 +161,38 @@ public class Util {
 				copysql.append(",");
 			}
 		}
-		csvFolder = csvFolder.replace("\\", "/");
-		copysql.append(") from local '%s' delimiter ',' direct;\n");
+		copysql.append(String.format(") from local '%s' delimiter ',' direct;", csvFileName));
+		return copysql.toString();
+	}
+	
+	public static String genCopyHdfsSql(List<String> fieldNameList, String tn, String dbschema, 
+			String rootWebHdfs, String csvFileName, String username){
+		StringBuffer copysql = new StringBuffer();
+		for (int i=0; i<fieldNameList.size(); i++){
+			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
+		}
+		//gen table sql
+		copysql.append(String.format("copy %s.%s(", dbschema, tn));
+		for (int i=0; i<fieldNameList.size(); i++){
+			String name = fieldNameList.get(i);
+			copysql.append(String.format("%s enclosed by '\"'", name));
+			if (i<fieldNameList.size()-1){
+				copysql.append(",");
+			}
+		}
+		copysql.append(String.format(") SOURCE Hdfs(url='%s%s',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
 		return copysql.toString();
 	}
 	
 	public static String getCsv(List<String> csv){
 		StringBuffer sb = new StringBuffer();
-		for (String v:csv){
+		for (int i=0; i<csv.size(); i++){
+			String v = csv.get(i);
 			if (v!=null){
 				v = "\"" + v + "\"";//always enclosed by "\""
-				sb.append(v).append(",");
-			}else{
+				sb.append(v);
+			}
+			if (i<csv.size()-1){
 				sb.append(",");
 			}
 		}
@@ -150,20 +210,57 @@ public class Util {
 		}
 	}
 	
-	public static void writeFile(String fileName, List<String> contents){
-		BufferedWriter osw = null;
+	//json serialization
+	public static final String charset="utf8";
+	public static Object fromJsonString(String json, Class clazz){
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 		try {
-			osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName)));
-			for (String line:contents){
-				osw.write(line);
-				osw.write("\n");
-			}
+			Object t = mapper.readValue(json, clazz);
+			return t;
+		} catch (Exception e) {
+			logger.error("", e);
+			return null;
+		}
+	}
+
+	public static String toJsonString(Object ls){
+		ObjectMapper om = new ObjectMapper();
+		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		ObjectWriter ow = om.writer().with(new MinimalPrettyPrinter());
+		try {
+			String json = ow.writeValueAsString(ls);
+			return json;
+		} catch (JsonProcessingException e) {
+			logger.error("",e );
+			return null;
+		}
+	}
+	
+	public static void toFile(String file, Object ls){
+		PrintWriter out = null;
+		try{
+			out = new PrintWriter(file, charset);
+			out.println(toJsonString(ls));
 		}catch(Exception e){
-			logger.error("",e);
+			logger.error("", e);
 		}finally{
-			if (osw!=null){
-				try {
-					osw.close();
+			if (out!=null)
+				out.close();
+		}
+	}
+	
+	public static void toDfsFile(FileSystem fs, String file, Object ls){
+		BufferedWriter out = null;
+		try{
+			out = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(file))));
+			out.write(toJsonString(ls));
+		}catch(Exception e){
+			logger.error("", e);
+		}finally{
+			if (out!=null){
+				try{
+					out.close();
 				}catch(Exception e){
 					logger.error("", e);
 				}
@@ -171,6 +268,35 @@ public class Util {
 		}
 	}
 	
+	public static Object fromDfsFile(FileSystem fs, String file, Class clazz){
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			IOUtils.copy(fs.open(new Path(file)), baos);
+			String content = baos.toString(charset);
+			return fromJsonString(content, clazz);
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	public static List<String> stringsFromDfsFile(FileSystem fs, String file){
+		BufferedReader in = null;
+		List<String> sl = new ArrayList<String>();
+		try {
+			in = new BufferedReader(new InputStreamReader(fs.open(new Path(file))));
+			String s =null;
+			while ((s=in.readLine())!=null){
+				sl.add(s);
+			}
+			return sl;
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	//db
 	private static Connection getConnection(PropertiesConfiguration pc){
 		Connection conn = null;
 		try { 
@@ -224,5 +350,70 @@ public class Util {
         		logger.error("", e);
         	}
         }
+	}
+	
+	//files
+	public static void zipFiles(ZipOutputStream zos, String inputFolder, List<String> inputFileNames) throws IOException {
+		byte[] buffer = new byte[1024];
+		for(String file : inputFileNames){
+    		ZipEntry ze= new ZipEntry(file);
+        	zos.putNextEntry(ze);
+        	FileInputStream in = new FileInputStream(inputFolder + file);
+        	int len;
+        	while ((len = in.read(buffer)) > 0) {
+        		zos.write(buffer, 0, len);
+        	}
+        	in.close();
+        	zos.closeEntry();
+    	}
+	}
+	
+	public static void deleteFiles(String folder, List<String> fileNames) throws IOException {
+		for (String fileName : fileNames){
+			File file = new File(folder + fileName);
+			file.delete();
+		}
+	}
+	
+	public static void writeFile(String fileName, List<String> contents){
+		BufferedWriter osw = null;
+		try {
+			osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName)));
+			for (String line:contents){
+				osw.write(line);
+				osw.write("\n");
+			}
+		}catch(Exception e){
+			logger.error("",e);
+		}finally{
+			if (osw!=null){
+				try {
+					osw.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
+		}
+	}
+	
+	public static void writeDfsFile(FileSystem fs, String fileName, List<String> contents){
+		BufferedWriter osw = null;
+		try {
+			osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(fileName))));
+			for (String line:contents){
+				osw.write(line);
+				osw.write("\n");
+			}
+		}catch(Exception e){
+			logger.error("",e);
+		}finally{
+			if (osw!=null){
+				try {
+					osw.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
+		}
 	}
 }

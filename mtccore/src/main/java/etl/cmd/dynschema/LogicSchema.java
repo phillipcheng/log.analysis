@@ -1,5 +1,9 @@
-package hpe.mtc;
+package etl.cmd.dynschema;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -7,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,6 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+
+import etl.util.Util;
 
 
 public class LogicSchema {
@@ -55,58 +64,8 @@ public class LogicSchema {
 	}
 	
 	public LogicSchema clone(){
-		String str = LogicSchema.toJsonString(this);
-		return LogicSchema.fromJsonString(str);
-	}
-	//json serialization
-	public static final String charset="utf8";
-	public static LogicSchema fromJsonString(String json){
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-		try {
-			Object t = mapper.readValue(json, LogicSchema.class);
-			return (LogicSchema) t;
-		} catch (Exception e) {
-			logger.error("", e);
-			return null;
-		}
-	}
-	
-	public static LogicSchema fromFile(String file){
-		try {
-			byte[] encoded = Files.readAllBytes(Paths.get(file));
-			String content = new String(encoded, charset);
-			return fromJsonString(content);
-		}catch(Exception e){
-			logger.error("", e);
-			return null;
-		}
-	}
-	
-	public static String toJsonString(LogicSchema ls){
-		ObjectMapper om = new ObjectMapper();
-		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-		ObjectWriter ow = om.writer().with(new MinimalPrettyPrinter());
-		try {
-			String json = ow.writeValueAsString(ls);
-			return json;
-		} catch (JsonProcessingException e) {
-			logger.error("",e );
-			return null;
-		}
-	}
-	
-	public static void toFile(String file, LogicSchema ls){
-		PrintWriter out = null;
-		try{
-			out = new PrintWriter(file, charset);
-			out.println(toJsonString(ls));
-		}catch(Exception e){
-			logger.error("", e);
-		}finally{
-			if (out!=null)
-				out.close();
-		}
+		String str = Util.toJsonString(this);
+		return (LogicSchema) Util.fromJsonString(str, LogicSchema.class);
 	}
 
 	public Map<String, List<String>> getSchemas() {
