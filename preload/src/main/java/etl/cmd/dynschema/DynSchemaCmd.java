@@ -21,10 +21,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.Configuration;
-
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -35,7 +32,7 @@ import org.xml.sax.InputSource;
 import etl.engine.ETLCmd;
 import etl.util.Util;
 
-public class DynSchemaCmd implements ETLCmd{
+public class DynSchemaCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(DynSchemaCmd.class);
 	
 	public static final String schema_name="schemas.txt";
@@ -68,7 +65,6 @@ public class DynSchemaCmd implements ETLCmd{
 	public static final String droptablesql_name="droptables.sql";
 	public static final String trunctablesql_name="trunctables.sql";
 	public static final String copysql_name="copys.sql";
-	public static final String dynCfg_name="dyncfg";
 	
 	public static final String dynCfg_Key_TABLES_USED="tables.used";
 	public static final String dynCfg_Key_CREATETABLE_SQL_FILE="create.table.sql.file";
@@ -82,9 +78,6 @@ public class DynSchemaCmd implements ETLCmd{
 	private List<String> tableLvlSystemFieldNames = new ArrayList<String>();
 	private List<String> tableLvlSystemFieldTypes = new ArrayList<String>();
 	
-	private PropertiesConfiguration pc;
-	private FileSystem fs;
-	private String wfid;//batchid
 	private String xmlFolder;
 	private String csvFolder;
 	private String schemaHistoryFolder;
@@ -108,16 +101,8 @@ public class DynSchemaCmd implements ETLCmd{
 	private Map<String, BufferedWriter> fvWriterMap = new HashMap<String, BufferedWriter>();//store all the data files generated, key by file name
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
-	public DynSchemaCmd(String defaultFs, String wfid, String staticCfg, String dynCfg){
-		this.wfid = wfid;
-		try {
-			Configuration conf = new Configuration();
-			conf.set("fs.defaultFS", defaultFs);
-			this.fs = FileSystem.get(conf);
-		}catch(Exception e){
-			logger.error("", e);
-		}
-		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
+	public DynSchemaCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
+		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
 		setup(pc);
 	}
 	
@@ -452,8 +437,7 @@ public class DynSchemaCmd implements ETLCmd{
 			}
 			dynCfgOutput.put(dynCfg_Key_TABLES_USED, utl);
 			dynCfgOutput.put(dynCfg_Key_XML_FILES, rawFiles);
-			String dynCfgFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, dynCfg_name, wfid);
-			Util.toDfsFile(fs, dynCfgFileName, dynCfgOutput);
+			Util.toDfsFile(fs, this.outDynCfg, dynCfgOutput);
 		}catch(Exception e){
 			logger.error("", e);
 		}

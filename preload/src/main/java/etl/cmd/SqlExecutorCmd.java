@@ -15,18 +15,14 @@ import etl.cmd.dynschema.LogicSchema;
 import etl.engine.ETLCmd;
 import etl.util.Util;
 
-public class SqlExecutorCmd implements ETLCmd{
+public class SqlExecutorCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(SqlExecutorCmd.class);
 	
 	public static final String cfgkey_webhdfs="hdfs.webhdfs.root";
 	public static final String cfgkey_systemAttrs_name="systemAttrs.name";
 	
-	private FileSystem fs;
 	private String webhdfsRoot;
 	private String userName;
-	private String wfid;//batchid
-	private PropertiesConfiguration pc;
-	private Map<String, List<String>> dynCfgMap;
 	private String csvFolder;
 	private String schemaHistoryFolder;
 	private String prefix;//used as dbschema name
@@ -34,17 +30,8 @@ public class SqlExecutorCmd implements ETLCmd{
 	private LogicSchema logicSchema;
 	public String[] systemFieldNames;
 	
-	public SqlExecutorCmd(String defaultFs, String wfid, String staticCfg, String dynCfg){
-		this.wfid = wfid;
-		try {
-			Configuration conf = new Configuration();
-			conf.set("fs.defaultFS", defaultFs);
-			this.fs = FileSystem.get(conf);
-		}catch(Exception e){
-			logger.error("", e);
-		}
-		dynCfgMap = (Map<String, List<String>>) Util.fromDfsFile(fs, dynCfg, Map.class);
-		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
+	public SqlExecutorCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
+		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
 		this.schemaHistoryFolder = pc.getString(DynSchemaCmd.cfgkey_schema_history_folder);
 		this.csvFolder = pc.getString(DynSchemaCmd.cfgkey_csv_folder);
 		this.prefix = pc.getString(DynSchemaCmd.cfgkey_prefix);

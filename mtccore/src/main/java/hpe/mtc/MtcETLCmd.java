@@ -1,4 +1,4 @@
-package hpe.mtc.test;
+package hpe.mtc;
 
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
@@ -15,46 +15,34 @@ import org.junit.Test;
 import etl.cmd.BackupCmd;
 import etl.engine.ETLCmdMain;
 
-public class TestETLCmd {
+public class MtcETLCmd {
 	
-	public static final Logger logger = Logger.getLogger(TestETLCmd.class);
+	public static final Logger logger = Logger.getLogger(MtcETLCmd.class);
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	@Test
 	public void testLab() throws Exception{
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 	    ugi.doAs(new PrivilegedExceptionAction<Void>() {
 	      public Void run() throws Exception {
-	    	//CmdClassName wfid staticConfigFile dynamicConfigFile
-	  		String wfid = sdf.format(new Date());
+	    	String wfid = sdf.format(new Date());
+	  		String dynCfg = "/mtccore/schemahistory/sgsiwf.dyncfg_"+wfid;
 	  		String defaultFs = "hdfs://192.85.247.104:19000";
-	  		ETLCmdMain.main(new String[]{"etl.cmd.LoadRawFileCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.loadrawfile.properties", ""});
-	  		ETLCmdMain.main(new String[]{"etl.cmd.dynschema.DynSchemaCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.dynschema.properties", ""});
-	  		ETLCmdMain.main(new String[]{"etl.cmd.SqlExecutorCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.sqlexecutor.properties", "/mtccore/schemahistory/sgsiwf.dyncfg_"+wfid});
-	  		ETLCmdMain.main(new String[]{"etl.cmd.BackupCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.backup.properties", "/mtccore/schemahistory/sgsiwf.dyncfg_"+wfid});
+	  		ETLCmdMain.main(new String[]{"etl.cmd.UploadCmd", wfid, 
+	  				"/mtccore/etlcfg/sgsiwf.upload.properties", "unused", "unused", defaultFs});
+	  		ETLCmdMain.main(new String[]{"etl.cmd.dynschema.DynSchemaCmd", wfid, 
+	  				"/mtccore/etlcfg/sgsiwf.dynschema.properties", "unused", dynCfg, defaultFs});
+	  		ETLCmdMain.main(new String[]{"etl.cmd.SqlExecutorCmd", wfid, 
+	  				"/mtccore/etlcfg/sgsiwf.sqlexecutor.properties", dynCfg, "unused", defaultFs});
+	  		ETLCmdMain.main(new String[]{"etl.cmd.BackupCmd", wfid, 
+	  				"/mtccore/etlcfg/sgsiwf.backup.properties", dynCfg, "unused", defaultFs});
 			return null;
 	      }
 	    });
 	}
 	
 	@Test
-	public void testLocal() throws Exception{	
-		//CmdClassName wfid staticConfigFile dynamicConfigFile
-  		String wfid = "aaa";
-  		String defaultFs = "hdfs://127.0.0.1:19000";
-  		ETLCmdMain.main(new String[]{"etl.cmd.LoadRawFileCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.loadrawfile.properties", ""});
-  		ETLCmdMain.main(new String[]{"etl.cmd.dynschema.DynSchemaCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.dynschema.properties", ""});
-  		//ETLCmdMain.main(new String[]{"etl.cmd.SqlExecutorCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.sqlexecutor.properties", "/mtccore/schemahistory/sgsiwf.dyncfg_"+wfid});
-  		//ETLCmdMain.main(new String[]{"etl.cmd.LoadRawFileCmd", defaultFs, wfid, "/mtccore/etlcfg/sgsiwf.loadrawfile.properties", "/mtccore/schemahistory/sgsiwf.dyncfg_"+wfid});
-	}
-	
-	@Test
-	public void setupLocalETLCfg() {
-		setupETLCfg("hdfs://127.0.0.1:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\test\\resources");
-	}
-	
-	@Test
 	public void setupLabETLCfg() {
-		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\test\\resources");
+		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\main\\resources");
 	}
 	
 	public void realSetupEtlCfg(String defaultFs, String localCfgDir) throws Exception{
@@ -62,16 +50,19 @@ public class TestETLCmd {
     	conf.set("fs.defaultFS", defaultFs);
     	FileSystem fs = FileSystem.get(conf);
 		String remoteEtlcfg = "/mtccore/etlcfg";
+		String xmldir = "/mtccore/xmldata";
 		String csvdir = "/mtccore/csvdata";
 		String schemadir = "/mtccore/schema";
 		String schemaHistoryDir = "/mtccore/schemahistory";
 		fs.delete(new Path(remoteEtlcfg), true);
 		fs.delete(new Path(csvdir), true);
+		fs.delete(new Path(xmldir), true);
 		fs.delete(new Path(schemadir), true);
 		fs.delete(new Path(schemaHistoryDir), true);
 		
-		fs.mkdirs(new Path(schemadir));
 		fs.mkdirs(new Path(csvdir));
+		fs.mkdirs(new Path(xmldir));
+		fs.mkdirs(new Path(schemadir));
 		fs.mkdirs(new Path(schemaHistoryDir));
 		File localDir = new File(localCfgDir);
 		String[] cfgs = localDir.list();
@@ -80,6 +71,16 @@ public class TestETLCmd {
 			String rcfg = remoteEtlcfg + "/" + cfg;
 			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
 		}
+		String workflow = localCfgDir + File.separator + "workflow.xml";
+		String remoteWorkflow = "/user/dbadmin/mtccore/workflow.xml";
+		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\target\\";
+		String localLibFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\lib\\";
+		String libName = "mtccore-0.1.0-jar-with-dependencies.jar";
+		String verticaLibName = "vertica-jdbc-7.0.1-0.jar";
+		String remoteLibFolder="/user/dbadmin/mtccore/lib/";
+		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder+libName));
+		fs.copyFromLocalFile(new Path(localLibFolder + verticaLibName), new Path(remoteLibFolder+verticaLibName));
 	}
 	
 	public void setupETLCfg(final String defaultFs, final String localCfgDir) {
