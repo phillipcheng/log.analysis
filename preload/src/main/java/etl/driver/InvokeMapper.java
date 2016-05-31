@@ -11,6 +11,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
+import etl.util.StringUtil;
+
 public class InvokeMapper extends Mapper<Object, Text, Text, LongWritable>{
 	public static final Logger logger = Logger.getLogger(InvokeMapper.class);
 	public static final String PARAM_KEY="key";

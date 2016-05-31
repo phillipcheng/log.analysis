@@ -1,0 +1,22 @@
+<project name="pde" default="oozie-dist" basedir=".">
+    <description>
+        simple example build file
+    </description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="target" location="target"/>
+  <property name="dist"  location="oozie-dist"/>
+
+  <target name="oozie-dist">
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/pde"/>
+    <copy file="${target}/classes/job.properties" todir="${dist}/pde"/>
+    <copy file="${target}/classes/workflow.xml" todir="${dist}/pde"/>
+    <mkdir dir="${dist}/pde/lib"/>
+    <copy file="${target}/pde-0.0.1-jar-with-dependencies.jar" todir="${dist}/pde/lib"/>
+  </target>
+
+  <target name="clean" description="clean up" >
+    <delete dir="${dist}"/>
+  </target>
+</project>

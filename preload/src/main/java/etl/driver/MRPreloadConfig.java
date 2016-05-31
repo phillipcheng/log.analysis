@@ -6,6 +6,8 @@ import java.util.Map;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
+import etl.util.StringUtil;
+
 public class MRPreloadConfig {
 	public static final Logger logger = Logger.getLogger(MRPreloadConfig.class);
 	
