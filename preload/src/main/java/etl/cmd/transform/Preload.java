@@ -1,4 +1,4 @@
-package etl.preload;
+package etl.cmd.transform;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

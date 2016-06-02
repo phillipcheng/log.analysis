@@ -36,7 +36,7 @@ public class ETLCmdMain {
 				Class clazz = Class.forName(cmdClassName);
 				ETLCmd cmd = (ETLCmd) clazz.getConstructor(String.class, String.class, String.class, String.class, String.class).
 						newInstance(wfid, staticCfg, dynInCfg, dynOutCfg, defaultFs);
-				cmd.process();
+				cmd.process(null);
 			}catch(Exception e){
 				logger.error("", e);
 			}

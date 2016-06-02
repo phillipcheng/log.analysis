@@ -10,9 +10,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import etl.preload.FileMerger;
-import etl.preload.Preload;
-import etl.preload.PreloadConf;
+import etl.cmd.transform.FileMerger;
+import etl.cmd.transform.Preload;
+import etl.cmd.transform.PreloadConf;
 
 public class TestPreProcess {
 	public static final Logger logger = Logger.getLogger(TestPreProcess.class);
@@ -72,10 +72,13 @@ public class TestPreProcess {
 		String workflow = localCfgDir + File.separator + "workflow.xml";
 		String remoteWorkflow = "/user/dbadmin/pde/workflow.xml";
 		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+		String localSourceFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\src\\main\\resources\\";
 		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\target\\";
 		String libName = "pde-0.1.0-jar-with-dependencies.jar";
+		String staticCfg="mrpreload.properties";
 		String remoteLibFolder="/user/dbadmin/pde/lib/";
 		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder+libName));
+		fs.copyFromLocalFile(new Path(localSourceFolder + staticCfg), new Path(remoteLibFolder+staticCfg));
 	}
 	
 	public void setupETLCfg(final String defaultFs, final String localCfgDir) {

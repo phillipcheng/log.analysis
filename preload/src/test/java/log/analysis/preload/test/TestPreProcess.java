@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import etl.preload.Preload;
+import etl.cmd.transform.Preload;
 
 public class TestPreProcess {
 

@@ -1,4 +1,4 @@
-package etl.preload;
+package etl.cmd.transform;
 
 public class ColAppender {
 	public static final String COMMAND="append.idx";

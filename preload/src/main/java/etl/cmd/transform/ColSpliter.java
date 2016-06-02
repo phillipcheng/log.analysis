@@ -1,4 +1,4 @@
-package etl.preload;
+package etl.cmd.transform;
 
 public class ColSpliter {
 	public static final String COMMAND="split.idx";

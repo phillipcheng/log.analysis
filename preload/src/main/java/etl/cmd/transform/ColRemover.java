@@ -1,4 +1,4 @@
-package etl.preload;
+package etl.cmd.transform;
 
 public class ColRemover {
 	public static final String COMMAND="remove.idx";

@@ -10,7 +10,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
-			<main-class>etl.driver.SeedInputGen</main-class>
+			<main-class>etl.engine.SeedInputGen</main-class>
 			<arg>${HDFS_WORK_FOLDER}</arg>
 			<arg>${RAW_INPUT_FOLDER}</arg>
 			<arg>${INPUT_FILES_THRESHOLD}</arg>
@@ -44,11 +44,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>mapreduce.job.map.class</name>
-					<value>etl.driver.InvokeMapper</value>
-				</property>
-				<property>
-					<name>mapreduce.job.partitioner.class</name>
-					<value>etl.driver.MyPartitioner</value>
+					<value>etl.engine.InvokeMapper</value>
 				</property>
 				<property>
 					<name>mapreduce.job.inputformat.class</name>
@@ -69,6 +65,18 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				<property>
 					<name>mapreduce.input.fileinputformat.inputdir</name>
 					<value>${wf:actionData('SeedInputGen')['seed.input.filename']}</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.ShellCmd</value>
+				</property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>pde/lib/mrpreload.properties</value>
 				</property>
 			</configuration>
 		</map-reduce>

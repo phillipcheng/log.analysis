@@ -47,7 +47,7 @@ public class SqlExecutorCmd extends ETLCmd{
 	}
 	
 	@Override
-	public void process() {
+	public void process(String param) {
 		//1. execute sql to update db and load data to db
 		if (dynCfgMap.containsKey(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE)){
 			//execute the schemas

@@ -360,7 +360,7 @@ public class DynSchemaCmd extends ETLCmd{
 		  		used-tables: (used to generate csv file names)
 	*/
 	@Override
-	public void process(){
+	public void process(String param){
 		try {
 			Map<String, List<String>> dynCfgOutput = new HashMap<String, List<String>>();
 			String createsqlFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, wfid);

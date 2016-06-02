@@ -1,4 +1,4 @@
-package etl.preload;
+package etl.cmd.transform;
 
 
 import org.apache.commons.configuration.PropertiesConfiguration;

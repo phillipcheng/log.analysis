@@ -28,7 +28,7 @@ public class UploadCmd extends ETLCmd{
 	}
 	
 	@Override
-	public void process() {
+	public void process(String param) {
 		try {
 			File dir = new File(fromDir);
 			FileFilter fileFilter = new WildcardFileFilter(fileExp);

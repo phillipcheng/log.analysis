@@ -1,4 +1,4 @@
-package etl.preload;
+package etl.cmd.transform;
 
 public class ColPrepender {
 	public static final String COMMAND="prepend.idx";

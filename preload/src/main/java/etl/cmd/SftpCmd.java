@@ -39,7 +39,7 @@ public class SftpCmd extends ETLCmd{
 	}
 	
 	@Override
-	public void process() {
+	public void process(String param) {
 		try {
 			//connect
 			
