@@ -69,16 +69,35 @@ public class TestPreProcess {
 		Configuration conf = new Configuration();
     	conf.set("fs.defaultFS", defaultFs);
     	FileSystem fs = FileSystem.get(conf);
-		String workflow = localCfgDir + File.separator + "workflow.xml";
-		String remoteWorkflow = "/user/dbadmin/pde/workflow.xml";
+    	
+    	String remoteLibFolder = "/user/dbadmin/pde";
+    	Path remoteLibPath = new Path(remoteLibFolder);
+    	if (fs.exists(remoteLibPath)){
+    		fs.delete(remoteLibPath, true);
+    	}
+    	//
+    	String workflow = localCfgDir + File.separator + "workflow.xml";
+		String remoteWorkflow = remoteLibFolder + File.separator + "workflow.xml";
 		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
-		String localSourceFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\src\\main\\resources\\";
+		//
+		String jobProperties = localCfgDir + File.separator + "job.properties";
+		String remoteJobProperties = remoteLibFolder + File.separator + "job.properties";
+		fs.copyFromLocalFile(new Path(jobProperties), new Path(remoteJobProperties));
+		//
 		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\target\\";
 		String libName = "pde-0.1.0-jar-with-dependencies.jar";
-		String staticCfg="mrpreload.properties";
-		String remoteLibFolder="/user/dbadmin/pde/lib/";
-		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder+libName));
-		fs.copyFromLocalFile(new Path(localSourceFolder + staticCfg), new Path(remoteLibFolder+staticCfg));
+		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder + "/lib/" +libName));
+
+		//copy etlcfg
+		String remoteCfgFolder = "/pde/etlcfg/";
+		Path remoteCfgPath = new Path(remoteCfgFolder);
+		if (fs.exists(remoteCfgPath)){
+			fs.delete(new Path(remoteCfgFolder), true);
+		}
+		String staticCfg1="pde.genseedinput.properties";
+		String staticCfg2="pde.preload.shell.properties";
+		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + staticCfg1), new Path(remoteCfgFolder+staticCfg1));
+		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + staticCfg2), new Path(remoteCfgFolder+staticCfg2));
 	}
 	
 	public void setupETLCfg(final String defaultFs, final String localCfgDir) {

@@ -1,4 +1,4 @@
-package etl.engine;
+package etl.cmd;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -18,25 +17,47 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
+import etl.engine.ETLCmd;
+
 /**
  * Monitor the input hdfs directory
  * Generate input file for mapreduce job 
  * Start the mapreduce job
  */
-public class SeedInputGen {
-	public static final Logger logger = Logger.getLogger(SeedInputGen.class);
+public class GenSeedInputCmd extends ETLCmd{
+	
+	public static final String cfgkey_workingfolder="working.folder";
+	public static final String cfgkey_inputfolder="input.folder";
+	public static final String cfgkey_inputfilesthreshold="input.files.threshold";
+	public static final String cfgkey_outputseedfolder="output.seed.folder";
+	
+	private String workingFolder;
+	private String inputFolder;
+	private int inputFilesThreshold;
+	private String outputSeedFolder;
+	
+	public GenSeedInputCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
+		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+		workingFolder = pc.getString(cfgkey_workingfolder);
+		inputFolder = pc.getString(cfgkey_inputfolder);
+		inputFilesThreshold = pc.getInt(cfgkey_inputfilesthreshold);
+		outputSeedFolder = pc.getString(cfgkey_outputseedfolder);
+	}
+
+	public static final Logger logger = Logger.getLogger(GenSeedInputCmd.class);
 	
 	private static final String dateFormat = "yyyyMMddHHmmssSSS";
 	private static final SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
 	
 	public static final String seedInputFileNameKey="seed.input.filename";
 	
-	public static void processInput(String hdfsWorkFolder, String rawInputFolder, int inputFilesThreshold, String outputSeedFolder){
+	@Override
+	public void process(String param){
 		try {
 			Date d = new Date();
 			FileSystem fs = FileSystem.get(new Configuration());
-			String inputFolder = hdfsWorkFolder + "/" + rawInputFolder;
-			FileStatus[] files = fs.listStatus(new Path(inputFolder));
+			String wiFolder = workingFolder + "/" + inputFolder;
+			FileStatus[] files = fs.listStatus(new Path(wiFolder));
 			if (files.length>=inputFilesThreshold){
 				int processFileNumber=inputFilesThreshold;
 				if (inputFilesThreshold==-1){
@@ -51,7 +72,7 @@ public class SeedInputGen {
 					inputfiles.add(fn);
 				}
 				//generate the hdfs seed file
-				String fileName=hdfsWorkFolder + "/" + outputSeedFolder + "/" + "seed" + sdf.format(d);
+				String fileName=workingFolder + "/" + outputSeedFolder + "/" + "seed" + sdf.format(d);
 				Path fileNamePath = new Path(fileName);
 				FSDataOutputStream fin = fs.create(fileNamePath);
 				fin.writeBytes(fileContent);
@@ -68,14 +89,5 @@ public class SeedInputGen {
 		} catch (IOException e) {
 			logger.error("", e);
 		}
-	}
-	
-	public static void main(String[] args){
-		logger.info(Arrays.toString(args));
-		String hdfsWorkFolder = args[0];
-		String rawInputFolder = args[1];
-		int inputFilesThreshold = Integer.parseInt(args[2]);
-		String outputSeedFolder = args[3];
-		processInput(hdfsWorkFolder, rawInputFolder, inputFilesThreshold, outputSeedFolder);
 	}
 }

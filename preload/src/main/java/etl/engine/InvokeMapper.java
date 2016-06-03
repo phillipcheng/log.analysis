@@ -39,8 +39,9 @@ public class InvokeMapper extends Mapper<Object, Text, Text, LongWritable>{
 			Class clazz = Class.forName(cmdClassName);
 			ETLCmd cmd = (ETLCmd) clazz.getConstructor(String.class, String.class, String.class, String.class, String.class).
 					newInstance(wfid, staticConfigFile, null, null, null);
+			logger.info(String.format("invoking cmd.process %s", value.toString()));
 			cmd.process(value.toString());
-		}catch(Exception e){
+		}catch(Throwable e){
 			logger.error("", e);
 		}
 	}

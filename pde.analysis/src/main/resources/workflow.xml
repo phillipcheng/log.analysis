@@ -10,11 +10,12 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.SeedInputGen</main-class>
-			<arg>${HDFS_WORK_FOLDER}</arg>
-			<arg>${RAW_INPUT_FOLDER}</arg>
-			<arg>${INPUT_FILES_THRESHOLD}</arg>
-			<arg>${OUTPUT_SEED_FOLDER}</arg>
+			<main-class>etl.engine.ETLCmdMain</main-class>
+			<arg>etl.cmd.GenSeedInputCmd</arg>
+			<arg>${wf:id()}</arg>
+			<arg>/pde/etlcfg/pde.genseedinput.properties</arg>
+			<arg>unused</arg>
+			<arg>unused</arg>
 			<capture-output/>
 		</java>
 		<ok to="decision1"/>
@@ -76,7 +77,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>staticConfigFile</name>
-					<value>pde/lib/mrpreload.properties</value>
+					<value>/pde/etlcfg/pde.preload.shell.properties</value>
 				</property>
 			</configuration>
 		</map-reduce>
