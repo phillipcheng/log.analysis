@@ -12,7 +12,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import etl.cmd.BackupCmd;
 import etl.engine.ETLCmdMain;
 
 public class MtcETLCmd {
