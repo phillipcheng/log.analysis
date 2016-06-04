@@ -8,7 +8,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 
-import etl.cmd.BackupCmd;
 import etl.util.Util;
 
 public abstract class ETLCmd {

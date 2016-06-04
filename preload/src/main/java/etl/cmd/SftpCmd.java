@@ -19,7 +19,7 @@ import etl.engine.ETLCmd;
 import etl.util.Util;
 
 public class SftpCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(BackupCmd.class);
+	public static final Logger logger = Logger.getLogger(SftpCmd.class);
 	
 	public static final String cfgkey_incoming_folder = "incoming.folder";
 	public static final String cfgkey_sftp_host = "sftp.host";

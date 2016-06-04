@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import etl.engine.ETLCmd;
 
 public class UploadCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(BackupCmd.class);
+	public static final Logger logger = Logger.getLogger(UploadCmd.class);
 	
 	public static final String cfgkey_from_dir = "from.dir";
 	public static final String cfgkey_file_filter = "file.filter";
