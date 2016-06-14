@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow-app xmlns:ssh="uri:oozie:ssh-action:0.2" xmlns:shell="uri:oozie:shell-action:0.3" xmlns="uri:oozie:workflow:0.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="uri:oozie:workflow:0.5
+C:\Java\oozie\wf-0.5.xsd
+uri:oozie:shell-action:0.3
+C:\Java\oozie\shell-action-0.3.xsd
+uri:oozie:ssh-action:0.2
+C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
+	<start to="SftpGetRawFiles"/>
+	<action name="SftpGetRawFiles">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>etl.engine.InvokeMapper</value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.input.lineinputformat.linespermap</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.task.timeout</name>
+					<value>0</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>/mtccore/etlcfg/sgsiwf.sftp.map.properties</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.SftpCmd</value>
+				</property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>/mtccore/etlcfg/sgsiwf.sftp.properties</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="end"/>
+		<error to="fail"/>
+	</action>
+	<kill name="fail">
+		<message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<end name="end"/>
+</workflow-app>

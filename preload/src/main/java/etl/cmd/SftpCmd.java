@@ -2,6 +2,7 @@ package etl.cmd;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -46,7 +47,7 @@ public class SftpCmd extends ETLCmd{
 	}
 	
 	@Override
-	public void process(String param) {
+	public List<String> process(String param) {
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		try {
@@ -100,5 +101,6 @@ public class SftpCmd extends ETLCmd{
 				session.disconnect();
 			}
 		}
+		return null;
 	}
 }

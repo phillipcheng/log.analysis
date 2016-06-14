@@ -3,11 +3,6 @@ package etl.cmd;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 
 import etl.cmd.dynschema.DynSchemaCmd;
@@ -24,7 +19,6 @@ public class SqlExecutorCmd extends ETLCmd{
 	private String webhdfsRoot;
 	private String userName;
 	private String csvFolder;
-	private String schemaHistoryFolder;
 	private String prefix;//used as dbschema name
 	private String schemaFileName;
 	private LogicSchema logicSchema;
@@ -32,7 +26,7 @@ public class SqlExecutorCmd extends ETLCmd{
 	
 	public SqlExecutorCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
-		this.schemaHistoryFolder = pc.getString(DynSchemaCmd.cfgkey_schema_history_folder);
+		pc.getString(DynSchemaCmd.cfgkey_schema_history_folder);
 		this.csvFolder = pc.getString(DynSchemaCmd.cfgkey_csv_folder);
 		this.prefix = pc.getString(DynSchemaCmd.cfgkey_prefix);
 		this.schemaFileName = pc.getString(DynSchemaCmd.cfgkey_schema_folder) + prefix +"." + DynSchemaCmd.schema_name;
@@ -47,7 +41,7 @@ public class SqlExecutorCmd extends ETLCmd{
 	}
 	
 	@Override
-	public void process(String param) {
+	public List<String> process(String param) {
 		//1. execute sql to update db and load data to db
 		if (dynCfgMap.containsKey(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE)){
 			//execute the schemas
@@ -70,5 +64,6 @@ public class SqlExecutorCmd extends ETLCmd{
 			copysqls.add(copySql);
 		}
 		Util.executeSqls(copysqls, pc);
+		return null;
 	}
 }

@@ -2,6 +2,7 @@ package etl.cmd;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.List;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +29,7 @@ public class UploadCmd extends ETLCmd{
 	}
 	
 	@Override
-	public void process(String param) {
+	public List<String> process(String param) {
 		try {
 			File dir = new File(fromDir);
 			FileFilter fileFilter = new WildcardFileFilter(fileExp);
@@ -41,5 +42,6 @@ public class UploadCmd extends ETLCmd{
 		}catch(Exception e){
 			logger.error("", e);
 		}
+		return null;
 	}
 }

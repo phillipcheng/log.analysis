@@ -85,19 +85,25 @@ public class TestPreProcess {
 		fs.copyFromLocalFile(new Path(jobProperties), new Path(remoteJobProperties));
 		//
 		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\target\\";
+		String localLibFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\lib\\";
 		String libName = "pde-0.1.0-jar-with-dependencies.jar";
 		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder + "/lib/" +libName));
-
+		String verticaLibName = "vertica-jdbc-7.0.1-0.jar";
+		fs.copyFromLocalFile(new Path(localLibFolder + verticaLibName), new Path(remoteLibFolder+ "/lib/" + verticaLibName));
+		
 		//copy etlcfg
 		String remoteCfgFolder = "/pde/etlcfg/";
 		Path remoteCfgPath = new Path(remoteCfgFolder);
 		if (fs.exists(remoteCfgPath)){
 			fs.delete(new Path(remoteCfgFolder), true);
 		}
-		String staticCfg1="pde.genseedinput.properties";
-		String staticCfg2="pde.preload.shell.properties";
-		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + staticCfg1), new Path(remoteCfgFolder+staticCfg1));
-		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + staticCfg2), new Path(remoteCfgFolder+staticCfg2));
+		File localDir = new File(localCfgDir);
+		String[] cfgs = localDir.list();
+		for (String cfg:cfgs){
+			String lcfg = localCfgDir + File.separator + cfg;
+			String rcfg = remoteCfgFolder + "/" + cfg;
+			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
+		}
 	}
 	
 	public void setupETLCfg(final String defaultFs, final String localCfgDir) {

@@ -2,6 +2,7 @@ package etl.cmd;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
@@ -21,9 +22,8 @@ public class ShellCmd extends ETLCmd{
 	}
 
 	@Override
-	public void process(String param) {
+	public List<String> process(String param) {
 		try {
-			//"mrpreload.properties"
 			String command = pc.getString(PROP_CMD);
 			Map<String, Object> params = new HashMap<String, Object>();
 			Iterator<String> keys = pc.getKeys();
@@ -33,6 +33,8 @@ public class ShellCmd extends ETLCmd{
 			}
 			params.put(PARAM_KEY, param);//value is file name
 			command = StringUtil.fillParams(command, params, "$", "");
+			//pass wfid as the last parameter to the shell script
+			command += " " + this.wfid;
 			logger.info(String.format("mr command is %s", command));
 			CommandLine cmdLine = CommandLine.parse(command);
 			DefaultExecutor executor = new DefaultExecutor();
@@ -41,5 +43,6 @@ public class ShellCmd extends ETLCmd{
 		}catch(Exception e){
 			logger.error("", e);
 		}
+		return null;
 	}
 }

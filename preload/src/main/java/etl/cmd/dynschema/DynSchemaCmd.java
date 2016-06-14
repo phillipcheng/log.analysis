@@ -101,11 +101,6 @@ public class DynSchemaCmd extends ETLCmd{
 	private Map<String, BufferedWriter> fvWriterMap = new HashMap<String, BufferedWriter>();//store all the data files generated, key by file name
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
-	public DynSchemaCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
-		setup(pc);
-	}
-	
 	public void setup(PropertiesConfiguration pc){
 		keyWithValue.add("PoolType");
 		
@@ -157,6 +152,13 @@ public class DynSchemaCmd extends ETLCmd{
 			logger.info("", e);
 		}
 	}
+	
+	public DynSchemaCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
+		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+		setup(pc);
+	}
+	
+	
 	
 	public Document getDocument(FileStatus inputXml){
 		try {
@@ -360,7 +362,7 @@ public class DynSchemaCmd extends ETLCmd{
 		  		used-tables: (used to generate csv file names)
 	*/
 	@Override
-	public void process(String param){
+	public List<String> process(String param){
 		try {
 			Map<String, List<String>> dynCfgOutput = new HashMap<String, List<String>>();
 			String createsqlFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, wfid);
@@ -441,5 +443,6 @@ public class DynSchemaCmd extends ETLCmd{
 		}catch(Exception e){
 			logger.error("", e);
 		}
+		return null;
 	}
 }

@@ -39,6 +39,23 @@ public class MtcETLCmd {
 	    });
 	}
 	
+	//step by step
+	@Test
+	public void setupLabWorkflow() {
+		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\main\\resources");
+	}
+	
+	public void realSetupWorkflow(String defaultFs, String localCfgDir) throws Exception{
+		Configuration conf = new Configuration();
+    	conf.set("fs.defaultFS", defaultFs);
+    	FileSystem fs = FileSystem.get(conf);
+		String workflow = localCfgDir + File.separator + "workflow.xml";
+		String remoteWorkflow = "/user/dbadmin/mtccore/workflow.xml";
+		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+	}
+	
+	
+	//for whole flow
 	@Test
 	public void setupLabETLCfg() {
 		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\main\\resources");

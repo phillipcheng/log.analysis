@@ -1,17 +1,12 @@
 package etl.cmd;
 
 import java.util.List;
-import java.util.Map;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import etl.cmd.dynschema.DynSchemaCmd;
 import etl.engine.ETLCmd;
-import etl.util.Util;
 
 public class BackupCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(BackupCmd.class);
@@ -26,7 +21,7 @@ public class BackupCmd extends ETLCmd{
 	}
 	
 	@Override
-	public void process(String param) {
+	public List<String> process(String param) {
 		List<String> xmlFiles = dynCfgMap.get(DynSchemaCmd.dynCfg_Key_XML_FILES);
 		try {
 			for (String xmlFile: xmlFiles){
@@ -36,5 +31,6 @@ public class BackupCmd extends ETLCmd{
 		}catch(Exception e){
 			logger.error("", e);
 		}
+		return null;
 	}
 }

@@ -5,15 +5,15 @@ uri:oozie:shell-action:0.3
 C:\Java\oozie\shell-action-0.3.xsd
 uri:oozie:ssh-action:0.2
 C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
-	<start to="SeedInputGen"/>
-	<action name="SeedInputGen">
+	<start to="GenBinSeedInput"/>
+	<action name="GenBinSeedInput">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.GenSeedInputCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/pde.genseedinput.properties</arg>
+			<arg>/pde/etlcfg/pde.bin.genseedinput.properties</arg>
 			<arg>unused</arg>
 			<arg>unused</arg>
 			<capture-output/>
@@ -23,14 +23,14 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 	</action>
 	<decision name="decision1">
 		<switch>
-			<case to="MRJob">${(wf:actionData('SeedInputGen')['seed.input.filename'] != null)}</case>
+			<case to="TraceFilter">${(wf:actionData('GenBinSeedInput')['seed.input.filename'] != null)}</case>
 			<default to="fail"/>
 		</switch>
 	</decision>
 	<kill name="fail">
 		<message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
 	</kill>
-	<action name="MRJob">
+	<action name="TraceFilter">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
@@ -65,7 +65,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>mapreduce.input.fileinputformat.inputdir</name>
-					<value>${wf:actionData('SeedInputGen')['seed.input.filename']}</value>
+					<value>${wf:actionData('GenBinSeedInput')['seed.input.filename']}</value>
 				</property>
 				<property>
 					<name>cmdClassName</name>
@@ -77,20 +77,192 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>staticConfigFile</name>
-					<value>/pde/etlcfg/pde.preload.shell.properties</value>
+					<value>/pde/etlcfg/tracefilter.shell.properties</value>
 				</property>
 			</configuration>
 		</map-reduce>
-		<ok to="ssh"/>
+		<ok to="forking"/>
 		<error to="fail"/>
 	</action>
-	<action name="ssh">
-		<ssh:ssh>
-			<ssh:host>192.85.247.104</ssh:host>
-			<ssh:command>/data/pde/bin/pde_merge_call_load.sh</ssh:command>
-		</ssh:ssh>
-		<ok to="end"/>
+	<fork name="forking">
+        <path start="CsvTransform"/>
+        <path start="GenFixSeedInput"/>
+    </fork>
+    
+	<action name="CsvTransform">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>etl.engine.InvokeMapper</value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.NullWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.task.timeout</name>
+					<value>0</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${concat("/pde/csv/", wf:id())}</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${concat("/pde/csv1/", wf:id())}</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.transform.CsvTransformCmd</value>
+				</property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>/pde/etlcfg/pde.csv.csvtrans.properties</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="loadCsvCmd"/>
 		<error to="fail"/>
 	</action>
+	<action name="loadCsvCmd">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>etl.engine.ETLCmdMain</main-class>
+			<arg>etl.cmd.LoadDataCmd</arg>
+			<arg>${wf:id()}</arg>
+			<arg>/pde/etlcfg/pde.loadcsv1.properties</arg>
+			<arg>unused</arg>
+			<arg>unused</arg>
+			<capture-output/>
+		</java>
+		<ok to="joining"/>
+		<error to="fail"/>
+	</action>
+	
+	<action name="GenFixSeedInput">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>etl.engine.ETLCmdMain</main-class>
+			<arg>etl.cmd.GenSeedInputCmd</arg>
+			<arg>${wf:id()}</arg>
+			<arg>/pde/etlcfg/pde.fix.genseedinput.properties</arg>
+			<arg>unused</arg>
+			<arg>unused</arg>
+			<capture-output/>
+		</java>
+		<ok to="KcvToCsv"/>
+		<error to="fail"/>
+	</action>
+	<action name="KcvToCsv">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>etl.engine.InvokeMapper</value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.input.lineinputformat.linespermap</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.NullWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.task.timeout</name>
+					<value>0</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${wf:actionData('GenFixSeedInput')['seed.input.filename']}</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${concat("/pde/fixcsv/", wf:id())}</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.transform.KcvToCsvCmd</value>
+				</property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>/pde/etlcfg/pde.fix.kcv2csv.properties</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="loadCsv2Cmd"/>
+		<error to="fail"/>
+	</action>
+	<action name="loadCsv2Cmd">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>etl.engine.ETLCmdMain</main-class>
+			<arg>etl.cmd.LoadDataCmd</arg>
+			<arg>${wf:id()}</arg>
+			<arg>/pde/etlcfg/pde.loadcsv2.properties</arg>
+			<arg>unused</arg>
+			<arg>unused</arg>
+			<capture-output/>
+		</java>
+		<ok to="joining"/>
+		<error to="fail"/>
+	</action>
+	<join name="joining" to="end"/>
 	<end name="end"/>
 </workflow-app>

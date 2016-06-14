@@ -28,11 +28,13 @@ public class GenSeedInputCmd extends ETLCmd{
 	
 	public static final String cfgkey_workingfolder="working.folder";
 	public static final String cfgkey_inputfolder="input.folder";
+	public static final String cfgkey_usewfid="use.wfid";
 	public static final String cfgkey_inputfilesthreshold="input.files.threshold";
 	public static final String cfgkey_outputseedfolder="output.seed.folder";
 	
 	private String workingFolder;
 	private String inputFolder;
+	private boolean useWfid = false;//for inputFolder
 	private int inputFilesThreshold;
 	private String outputSeedFolder;
 	
@@ -40,6 +42,7 @@ public class GenSeedInputCmd extends ETLCmd{
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
 		workingFolder = pc.getString(cfgkey_workingfolder);
 		inputFolder = pc.getString(cfgkey_inputfolder);
+		useWfid = pc.getBoolean(cfgkey_usewfid, false);
 		inputFilesThreshold = pc.getInt(cfgkey_inputfilesthreshold);
 		outputSeedFolder = pc.getString(cfgkey_outputseedfolder);
 	}
@@ -52,11 +55,14 @@ public class GenSeedInputCmd extends ETLCmd{
 	public static final String seedInputFileNameKey="seed.input.filename";
 	
 	@Override
-	public void process(String param){
+	public List<String> process(String param){
 		try {
 			Date d = new Date();
 			FileSystem fs = FileSystem.get(new Configuration());
 			String wiFolder = workingFolder + "/" + inputFolder;
+			if (useWfid){
+				wiFolder = wiFolder + "/" + wfid;
+			}
 			FileStatus[] files = fs.listStatus(new Path(wiFolder));
 			if (files.length>=inputFilesThreshold){
 				int processFileNumber=inputFilesThreshold;
@@ -89,5 +95,6 @@ public class GenSeedInputCmd extends ETLCmd{
 		} catch (IOException e) {
 			logger.error("", e);
 		}
+		return null;
 	}
 }

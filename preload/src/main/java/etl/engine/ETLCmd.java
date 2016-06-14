@@ -42,5 +42,5 @@ public abstract class ETLCmd {
 		this.outDynCfg = outDynCfg;
 	}
 	
-	public abstract void process(String param);
+	public abstract List<String> process(String param);
 }
