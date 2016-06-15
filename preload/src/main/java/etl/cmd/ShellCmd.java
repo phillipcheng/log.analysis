@@ -7,6 +7,9 @@ import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
@@ -22,7 +25,7 @@ public class ShellCmd extends ETLCmd{
 	}
 
 	@Override
-	public List<String> process(String param) {
+	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
 		try {
 			String command = pc.getString(PROP_CMD);
 			Map<String, Object> params = new HashMap<String, Object>();

@@ -27,7 +27,7 @@ public class InvokeMapper extends Mapper<Object, Text, Text, NullWritable>{
 			logger.info(String.format("input file:%s, cmdClassName:%s, wfid:%s, staticConfigFile:%s", inputdir, cmdClassName, wfid, staticConfigFile));
 			try{
 				cmd = (ETLCmd) Class.forName(cmdClassName).getConstructor(String.class, String.class, String.class, String.class, String.class).
-						newInstance(wfid, staticConfigFile, null, null, null);
+						newInstance(wfid, staticConfigFile, null, null, context.getConfiguration().get("fs.defaultFS"));
 			}catch(Throwable e){
 				logger.error("", e);
 			}
@@ -49,7 +49,7 @@ public class InvokeMapper extends Mapper<Object, Text, Text, NullWritable>{
 	public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 		logger.info(String.format("in mapper, key:%s, values:%s", key, value));
 		try{
-			List<String> output = cmd.process(value.toString());
+			List<String> output = cmd.process(value.toString(), context);
 			if (output!=null){
 				for (String line:output){
 					context.write(new Text(line), NullWritable.get());

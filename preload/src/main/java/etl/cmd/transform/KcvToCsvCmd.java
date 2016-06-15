@@ -1,24 +1,23 @@
 package etl.cmd.transform;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
+import etl.engine.FileETLCmd;
 
 //key colon value format to csv
-public class KcvToCsvCmd extends ETLCmd{
-
+public class KcvToCsvCmd extends FileETLCmd{
+	public static final Logger logger = Logger.getLogger(KcvToCsvCmd.class);
 	public static final String cfgkey_kcv_folder="kcv.folder";
 	public static final String cfgkey_use_wfid="use.wfid";
 	
@@ -34,7 +33,7 @@ public class KcvToCsvCmd extends ETLCmd{
 	}
 
 	//
-	private String processRecord(String record){
+	private String processRecord(String record, String filename){
 		String output="";
 		
 		//get the list of items from the record
@@ -73,12 +72,17 @@ public class KcvToCsvCmd extends ETLCmd{
 				output+=",";
 			}
 		}
+		if (isAddFileName()){
+			output+=",";
+			output+=getAbbreFileName(filename);
+		}
 		return output;
 	}
 	
 	//fix file name
 	@Override
-	public List<String> process(String param) {
+	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
+		String filename = param;
 		List<String> outputList = new ArrayList<String>();
 		Path kcvFile = null;
 		if (useWfid){
@@ -98,7 +102,6 @@ public class KcvToCsvCmd extends ETLCmd{
 					record=line;
 					lastRecord = record;
 					found=true;
-					record = line;
 				}else{
 					Matcher m = plc.getRecordStartPattern().matcher(line);
 					if (!m.matches()){
@@ -110,14 +113,14 @@ public class KcvToCsvCmd extends ETLCmd{
 					}
 				}
 				if (found && !"".equals(lastRecord)){
-					outputList.add(processRecord(lastRecord));
+					outputList.add(processRecord(lastRecord, filename));
 					lastRecord="";
 					found=false;
 				}
 			}
 			//last record
 			if (!"".equals(lastRecord)){
-				outputList.add(processRecord(lastRecord));	
+				outputList.add(processRecord(lastRecord, filename));	
 				lastRecord="";
 				found=false;
 			}

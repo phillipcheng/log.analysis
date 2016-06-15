@@ -6,6 +6,9 @@ import java.util.Map;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.util.Util;
@@ -42,5 +45,5 @@ public abstract class ETLCmd {
 		this.outDynCfg = outDynCfg;
 	}
 	
-	public abstract List<String> process(String param);
+	public abstract List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context);
 }

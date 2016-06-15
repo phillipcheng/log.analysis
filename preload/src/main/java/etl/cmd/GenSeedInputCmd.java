@@ -15,6 +15,9 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
@@ -55,7 +58,7 @@ public class GenSeedInputCmd extends ETLCmd{
 	public static final String seedInputFileNameKey="seed.input.filename";
 	
 	@Override
-	public List<String> process(String param){
+	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
 		try {
 			Date d = new Date();
 			FileSystem fs = FileSystem.get(new Configuration());
