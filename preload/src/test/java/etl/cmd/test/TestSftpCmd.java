@@ -24,12 +24,13 @@ public class TestSftpCmd {
 			Configuration conf = new Configuration();
 			conf.set("fs.defaultFS", defaultFS);
 			FileSystem fs = FileSystem.get(conf);
-			String localFolder = "C:\\mydoc\\myprojects\\log.analysis\\preload\\src\\test\\resources\\";
+			String localFolder = "C:\\Punitha\\Verizon\\";
 	    	String dfsFolder = "/mtccore/etlcfg/";
 	    	String cfg = "sftp.properties";
 			fs.copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
 			SftpCmd cmd = new SftpCmd(null, dfsFolder+cfg, null, null, defaultFS);
 			cmd.process("sftp.host=192.85.247.104, sftp.folder=/data/log.analysis/bin/");
+			System.out.println("Commit Sample");
 			return null;
 	      }
 	    });
