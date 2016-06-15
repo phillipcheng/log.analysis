@@ -32,6 +32,7 @@ public class BackupCmd extends ETLCmd{
 			for (String xmlFile: xmlFiles){
 				FileUtil.copy(fs, new Path(xmlFolder+xmlFile), fs, new Path(dataHistoryFolder+xmlFile), true, this.getHadoopConf());
 				logger.info(String.format("copy and remove %s to %s", xmlFolder+xmlFile, dataHistoryFolder+xmlFile));
+				System.out.println("Example Commit");
 			}
 		}catch(Exception e){
 			logger.error("", e);
