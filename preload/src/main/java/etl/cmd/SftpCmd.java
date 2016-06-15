@@ -78,6 +78,7 @@ public class SftpCmd extends ETLCmd{
             channel.connect();
             sftpChannel = (ChannelSftp) channel;
             sftpChannel.cd(fromDir);
+            System.out.println("From Dir:"+fromDir);
             Vector<LsEntry> v = sftpChannel.ls("*");
             for (LsEntry entry:v){
             	String srcFile = fromDir + entry.getFilename();
