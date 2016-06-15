@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import org.apache.avro.generic.GenericData.Array;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
-import etl.engine.ETLCmd;
+import etl.engine.FileETLCmd;
 
-public class CsvTransformCmd extends ETLCmd{
+public class CsvTransformCmd extends FileETLCmd{
 
 	private CsvTransformConf plc;
 	
@@ -20,7 +23,7 @@ public class CsvTransformCmd extends ETLCmd{
 	}
 
 	@Override
-	public List<String> process(String record) {
+	public List<String> process(String record, Mapper<Object, Text, Text, NullWritable>.Context context) {
 		String output="";
 		plc.clearMerger();//clear all the state from last line
 		
@@ -82,6 +85,10 @@ public class CsvTransformCmd extends ETLCmd{
 				output+=item;
 				output+=",";
 			}
+		}
+		if (isAddFileName()){
+			output+=",";
+			output+=getAbbreFileName(((FileSplit) context.getInputSplit()).getPath().getName());
 		}
 		return Arrays.asList(new String[]{output});
 	}

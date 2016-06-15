@@ -16,15 +16,12 @@ public class KcvToCsvConf {
 		
 	public static final String RECORD_FIELDNUM="record.fieldnum";
 		public static final int RECORD_FIELDNUM_DEFAULT=-1; //extract all fields recognized
-		
-	public static final String RECORD_KEEP="record.keep";
 
 	//record format definition
 	private String recordStart = RECORD_SINGLELINE;
 	private Pattern recordStartPattern = null;
 	private Pattern recordVKExp = null;
 	private int recordFieldNum = RECORD_FIELDNUM_DEFAULT;
-	private boolean recordKeep = false;
 	
 	public KcvToCsvConf(PropertiesConfiguration pc){
 		//record overall configuration
@@ -43,11 +40,6 @@ public class KcvToCsvConf {
 		if (strVal!=null){
 			this.recordFieldNum = Integer.parseInt(strVal);
 		}
-		
-		strVal = pc.getString(KcvToCsvConf.RECORD_KEEP);
-		if (strVal!=null){
-			this.recordKeep = Boolean.parseBoolean(strVal);
-		}
 	}
 
 	public String getRecordStart() {
@@ -64,14 +56,6 @@ public class KcvToCsvConf {
 
 	public void setRecordFieldNum(int recordFieldNum) {
 		this.recordFieldNum = recordFieldNum;
-	}
-
-	public boolean isRecordKeep() {
-		return recordKeep;
-	}
-
-	public void setRecordKeep(boolean recordKeep) {
-		this.recordKeep = recordKeep;
 	}
 
 	public Pattern getRecordStartPattern() {

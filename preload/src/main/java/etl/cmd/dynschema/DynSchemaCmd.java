@@ -22,6 +22,9 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -362,7 +365,7 @@ public class DynSchemaCmd extends ETLCmd{
 		  		used-tables: (used to generate csv file names)
 	*/
 	@Override
-	public List<String> process(String param){
+	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
 		try {
 			Map<String, List<String>> dynCfgOutput = new HashMap<String, List<String>>();
 			String createsqlFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, wfid);

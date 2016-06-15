@@ -8,6 +8,9 @@ import java.util.Vector;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import com.jcraft.jsch.Channel;
@@ -47,7 +50,7 @@ public class SftpCmd extends ETLCmd{
 	}
 	
 	@Override
-	public List<String> process(String param) {
+	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		try {

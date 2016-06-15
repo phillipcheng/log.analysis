@@ -3,6 +3,9 @@ package etl.cmd;
 import java.util.List;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.cmd.dynschema.DynSchemaCmd;
@@ -21,7 +24,7 @@ public class BackupCmd extends ETLCmd{
 	}
 	
 	@Override
-	public List<String> process(String param) {
+	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
 		List<String> xmlFiles = dynCfgMap.get(DynSchemaCmd.dynCfg_Key_XML_FILES);
 		try {
 			for (String xmlFile: xmlFiles){

@@ -1,8 +1,5 @@
 package etl.cmd.test;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
 import java.security.PrivilegedExceptionAction;
 
 import org.apache.hadoop.conf.Configuration;
@@ -20,8 +17,8 @@ public class TestSftpCmd {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 	    ugi.doAs(new PrivilegedExceptionAction<Void>() {
 	      public Void run() throws Exception {
+	    	Configuration conf = new Configuration();
 	    	String defaultFS = "hdfs://192.85.247.104:19000";
-			Configuration conf = new Configuration();
 			conf.set("fs.defaultFS", defaultFS);
 			FileSystem fs = FileSystem.get(conf);
 			String localFolder = "C:\\mydoc\\myprojects\\log.analysis\\preload\\src\\test\\resources\\";
@@ -29,7 +26,7 @@ public class TestSftpCmd {
 	    	String cfg = "sftp.properties";
 			fs.copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
 			SftpCmd cmd = new SftpCmd(null, dfsFolder+cfg, null, null, defaultFS);
-			cmd.process("sftp.host=192.85.247.104, sftp.folder=/data/log.analysis/bin/");
+			cmd.process("sftp.host=192.85.247.104, sftp.folder=/data/log.analysis/bin/", null);
 			return null;
 	      }
 	    });
