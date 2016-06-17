@@ -46,6 +46,7 @@ public class DynSchemaCmd extends ETLCmd{
 	public static final String cfgkey_schema_folder="schema-folder";
 	public static final String cfgkey_schema_history_folder="schema-history-folder";
 	public static final String cfgkey_data_history_folder="data-history-folder";
+	public static final String cfgkey_backup_history_folder="backup-history";
 	public static final String cfgkey_prefix="prefix";
 	
 	public static final String cfgkey_FileLvelSystemAttrs_xpath="FileSystemAttrs.xpath";
