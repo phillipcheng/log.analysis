@@ -64,23 +64,9 @@ public class CsvTransformCmd extends FileETLCmd{
 		for (int tIdx=0; tIdx<totalTokens; tIdx++){
 			String item = items.get(tIdx);
 			//process remover, no output of this, continue processing
-			ColRemover remover = tfCfg.getRemover(tIdx);
-			if (remover!=null){
-				item = item.replace(remover.getRm(), "");
-			}
-			
-			ColAppender appender = tfCfg.getAppender(tIdx);
-			if (appender!=null){
-				StringBuilder sb = new StringBuilder(item);
-				sb = sb.insert(item.length()-appender.getAfterIdx(), appender.getSuffix());
-				item = sb.toString();
-			}
-			
-			ColPrepender prepender = tfCfg.getPrepender(tIdx);
-			if (prepender!=null){
-				StringBuilder sb = new StringBuilder(item);
-				sb = sb.insert(prepender.getBeforeIdx(), prepender.getPrefix());
-				item = sb.toString();
+			ColUpdate updater = tfCfg.getUpdater(tIdx);
+			if (updater!=null){
+				item = updater.process(item);
 			}
 			
 			//process merge

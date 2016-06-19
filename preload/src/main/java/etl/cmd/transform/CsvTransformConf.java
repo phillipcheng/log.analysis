@@ -20,9 +20,7 @@ public class CsvTransformConf {
 	//operations
 	private List<ColMerger> mergers = new ArrayList<ColMerger>(); 
 	private Map<Integer, ColSpliter> splits = new TreeMap<Integer, ColSpliter>();
-	private Map<Integer, ColRemover> removers = new TreeMap<Integer, ColRemover>();
-	private Map<Integer, ColAppender> appenders = new TreeMap<Integer, ColAppender>();
-	private Map<Integer, ColPrepender> prependers = new TreeMap<Integer, ColPrepender>();
+	private Map<Integer, ColUpdate> updates = new TreeMap<Integer, ColUpdate>();
 	//
 	private boolean skipHeader=false;
 	private String rowValidation;
@@ -34,25 +32,24 @@ public class CsvTransformConf {
 		setInputEndWithComma(pc.getBoolean(cfgkey_input_endwithcomma, false));
 		
 		//record preprocessing
-		//remove
-		String[] removeIdxStrs = pc.getStringArray(ColRemover.COMMAND);
-		if (removeIdxStrs!=null){
-			for (String removeIdxStr:removeIdxStrs){
-				StringTokenizer st = new StringTokenizer(removeIdxStr,":");
+		//single column updates
+		String[] updateIdxStrs = pc.getStringArray(ColUpdate.COMMAND);
+		if (updateIdxStrs!=null){
+			for (String updateIdxStr:updateIdxStrs){
+				StringTokenizer st = new StringTokenizer(updateIdxStr,":");
 				int i=0;
-				String rm="";
-				int rmIdx=0;
+				String exp="";
+				int colIdx=0;
 				while(st.hasMoreTokens()){
 					String token = st.nextToken();
 					if (i==0){
-						rmIdx = Integer.parseInt(token);
+						colIdx = Integer.parseInt(token);
 					}else if (i==1){
-						rm = token;
+						exp = token;
 					}
 					i++;
 				}
-				ColRemover remover = new ColRemover(rmIdx, rm);
-				removers.put(rmIdx, remover);
+				updates.put(colIdx, new ColUpdate(colIdx, exp));
 			}
 		}
 		
@@ -106,72 +103,14 @@ public class CsvTransformConf {
 				splits.put(splitIdx, spliter);
 			}
 		}
-		
-		//append
-		String[] appendIdxStrs = pc.getStringArray(ColAppender.COMMAND);
-		if (appendIdxStrs!=null){
-			for (String appendIdxStr:appendIdxStrs){
-				StringTokenizer st = new StringTokenizer(appendIdxStr,":");
-				int i=0;
-				String suffix="";
-				int appendIdx=0;
-				int afterIdx=0;
-				while(st.hasMoreTokens()){
-					String token = st.nextToken();
-					if (i==0){
-						appendIdx = Integer.parseInt(token);
-					}else if (i==1){
-						afterIdx = Integer.parseInt(token);
-					}else if (i==2){
-						suffix = token;
-					}
-					i++;
-				}
-				ColAppender appender = new ColAppender(appendIdx, afterIdx, suffix);
-				appenders.put(appendIdx, appender);
-			}
-		}
-		
-		//prepend
-		String[] prependIdxStrs = pc.getStringArray(ColPrepender.COMMAND);
-		if (prependIdxStrs!=null){
-			for (String prependIdxStr:prependIdxStrs){
-				StringTokenizer st = new StringTokenizer(prependIdxStr,":");
-				int i=0;
-				String prefix="";
-				int beforeIdx=0;
-				int idx=0;
-				while(st.hasMoreTokens()){
-					String token = st.nextToken();
-					if (i==0){
-						idx = Integer.parseInt(token);
-					}else if (i==1){
-						beforeIdx = Integer.parseInt(token);
-					}else if (i==2){
-						prefix = token;
-					}
-					i++;
-				}
-				ColPrepender prepender = new ColPrepender(idx, beforeIdx, prefix);
-				prependers.put(idx, prepender);
-			}
-		}
 	}
 	
-	public ColRemover getRemover(int idx){
-		return removers.get(idx);
+	public ColUpdate getUpdater(int idx){
+		return updates.get(idx);
 	}
 	
 	public ColSpliter getSpliter(int idx){
 		return splits.get(idx);
-	}
-	
-	public ColAppender getAppender(int idx){
-		return appenders.get(idx);
-	}
-	
-	public ColPrepender getPrepender(int idx){
-		return prependers.get(idx);
 	}
 	
 	public void clearMerger(){

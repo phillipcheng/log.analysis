@@ -46,7 +46,6 @@ public class Preload {
 	private String processRecord(String record){
 		String output="";
 		String evtType="";
-		plc.clearMerger();//clear all the state from last line
 		
 		//get the list of items from the record
 		List<String> items = new ArrayList<String>();
@@ -85,46 +84,6 @@ public class Preload {
 		int totalTokens = items.size();
 		for (int tIdx=0; tIdx<totalTokens; tIdx++){
 			String item = items.get(tIdx);
-			//process remover, no output of this, continue processing
-			ColRemover remover = plc.getRemover(tIdx);
-			if (remover!=null){
-				item = item.replace(remover.getRm(), "");
-			}
-			
-			ColAppender appender = plc.getAppender(tIdx);
-			if (appender!=null){
-				StringBuilder sb = new StringBuilder(item);
-				sb = sb.insert(item.length()-appender.getAfterIdx(), appender.getSuffix());
-				item = sb.toString();
-			}
-			
-			ColPrepender prepender = plc.getPrepender(tIdx);
-			if (prepender!=null){
-				StringBuilder sb = new StringBuilder(item);
-				sb = sb.insert(prepender.getBeforeIdx(), prepender.getPrefix());
-				item = sb.toString();
-			}
-			
-			//process merge
-			ColMerger merger = plc.getMerger(tIdx);
-			if (merger!=null){
-				if (merger.add(tIdx, item)){
-					output+=merger.getValue();
-					output+=",";
-				}
-				continue;
-			}
-			
-			//process split
-			ColSpliter spliter = plc.getSpliter(tIdx);
-			if (spliter!=null){
-				String[] subitems = item.split(Pattern.quote(spliter.getSep()));
-				for(int i=0; i<subitems.length; i++){
-					output +=subitems[i];
-					output +=",";
-				}
-				continue;
-			}
 			
 			//event idx
 			if (tIdx == plc.getEventIdx()){
