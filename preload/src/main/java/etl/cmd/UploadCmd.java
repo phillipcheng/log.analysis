@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -32,7 +33,7 @@ public class UploadCmd extends ETLCmd{
 	}
 	
 	@Override
-	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
+	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		try {
 			File dir = new File(fromDir);
 			FileFilter fileFilter = new WildcardFileFilter(fileExp);

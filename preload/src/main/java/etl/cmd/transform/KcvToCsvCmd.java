@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -81,14 +82,14 @@ public class KcvToCsvCmd extends FileETLCmd{
 	
 	//fix file name
 	@Override
-	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
-		String filename = param;
+	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+		String filename = row;
 		List<String> outputList = new ArrayList<String>();
 		Path kcvFile = null;
 		if (useWfid){
-			kcvFile = new Path(kcvFolder + "/" + wfid + "/" + param);
+			kcvFile = new Path(kcvFolder + "/" + wfid + "/" + row);
 		}else{
-			kcvFile = new Path(kcvFolder + "/" + param);
+			kcvFile = new Path(kcvFolder + "/" + row);
 		}
 		BufferedReader br = null;
 		try {

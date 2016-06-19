@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -45,7 +46,7 @@ public class SqlExecutorCmd extends ETLCmd{
 	}
 	
 	@Override
-	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
+	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		//1. execute sql to update db and load data to db
 		if (dynCfgMap.containsKey(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE)){
 			//execute the schemas

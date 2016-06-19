@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -25,7 +26,7 @@ public class ShellCmd extends ETLCmd{
 	}
 
 	@Override
-	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
+	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		try {
 			String command = pc.getString(PROP_CMD);
 			Map<String, Object> params = new HashMap<String, Object>();
@@ -34,7 +35,7 @@ public class ShellCmd extends ETLCmd{
 				String key = keys.next();
 				params.put(key, pc.getProperty(key));
 			}
-			params.put(PARAM_KEY, param);//value is file name
+			params.put(PARAM_KEY, row);//value is file name
 			command = StringUtil.fillParams(command, params, "$", "");
 			//pass wfid as the last parameter to the shell script
 			command += " " + this.wfid;
@@ -42,7 +43,7 @@ public class ShellCmd extends ETLCmd{
 			CommandLine cmdLine = CommandLine.parse(command);
 			DefaultExecutor executor = new DefaultExecutor();
 			int exitValue = executor.execute(cmdLine);
-			logger.info(String.format("process for key:%s ended with exitValue %d.", param, exitValue));
+			logger.info(String.format("process for key:%s ended with exitValue %d.", row, exitValue));
 		}catch(Exception e){
 			logger.error("", e);
 		}

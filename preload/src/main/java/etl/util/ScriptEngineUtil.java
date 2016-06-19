@@ -3,13 +3,11 @@ package etl.util;
 import java.util.Date;
 import java.util.Map;
 
-
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.apache.log4j.Logger;
-
 
 public class ScriptEngineUtil {
 	public static final Logger logger = Logger.getLogger(ScriptEngineUtil.class);

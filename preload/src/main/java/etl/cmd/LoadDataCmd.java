@@ -3,6 +3,7 @@ package etl.cmd;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -36,7 +37,7 @@ public class LoadDataCmd extends ETLCmd{
 	}
 
 	@Override
-	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
+	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		List<String> copysqls = new ArrayList<String>();
 		if (useWfid){
 			String sql = String.format("%s SOURCE Hdfs(url='%s%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, wfid, userName);

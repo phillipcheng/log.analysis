@@ -26,7 +26,7 @@ public class TestSftpCmd {
 	    	String cfg = "sftp.properties";
 			fs.copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
 			SftpCmd cmd = new SftpCmd(null, dfsFolder+cfg, null, null, defaultFS);
-			cmd.process("sftp.host=192.85.247.104, sftp.folder=/data/log.analysis/bin/", null);
+			cmd.process(0, "sftp.host=192.85.247.104, sftp.folder=/data/log.analysis/bin/", null);
 			return null;
 	      }
 	    });

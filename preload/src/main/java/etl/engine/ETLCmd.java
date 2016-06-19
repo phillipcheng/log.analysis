@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -45,5 +46,5 @@ public abstract class ETLCmd {
 		this.outDynCfg = outDynCfg;
 	}
 	
-	public abstract List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context);
+	public abstract List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context);
 }

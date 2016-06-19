@@ -11,47 +11,27 @@ import org.apache.log4j.Logger;
 public class CsvTransformConf {
 	public static final Logger logger = Logger.getLogger(CsvTransformConf.class);
 
+	public static final String cfgkey_skip_header="skip.header";
+	public static final String cfgkey_row_validation="row.validation";
+	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
+	
+	public static final String VAR_NAME_fields="fields";
+	
 	//operations
 	private List<ColMerger> mergers = new ArrayList<ColMerger>(); 
 	private Map<Integer, ColSpliter> splits = new TreeMap<Integer, ColSpliter>();
 	private Map<Integer, ColRemover> removers = new TreeMap<Integer, ColRemover>();
 	private Map<Integer, ColAppender> appenders = new TreeMap<Integer, ColAppender>();
 	private Map<Integer, ColPrepender> prependers = new TreeMap<Integer, ColPrepender>();
-	
-	public ColRemover getRemover(int idx){
-		return removers.get(idx);
-	}
-	
-	public ColSpliter getSpliter(int idx){
-		return splits.get(idx);
-	}
-	
-	public ColAppender getAppender(int idx){
-		return appenders.get(idx);
-	}
-	
-	public ColPrepender getPrepender(int idx){
-		return prependers.get(idx);
-	}
-	
-	public void clearMerger(){
-		for (int i=0; i<mergers.size(); i++){
-			ColMerger m = mergers.get(i);
-			m.reinit();
-		}
-	}
-	
-	public ColMerger getMerger(int idx){
-		for (int i=0; i<mergers.size(); i++){
-			ColMerger m = mergers.get(i);
-			if (m.contains(idx)){
-				return m;
-			}
-		}
-		return null;
-	}
+	//
+	private boolean skipHeader=false;
+	private String rowValidation;
+	private boolean inputEndWithComma=false;
 	
 	public CsvTransformConf(PropertiesConfiguration pc){
+		setSkipHeader(pc.getBoolean(cfgkey_skip_header, false));
+		setRowValidation(pc.getString(cfgkey_row_validation));
+		setInputEndWithComma(pc.getBoolean(cfgkey_input_endwithcomma, false));
 		
 		//record preprocessing
 		//remove
@@ -83,7 +63,7 @@ public class CsvTransformConf {
 				StringTokenizer st = new StringTokenizer(mergeIdxStr,":");
 				int i=0;
 				int start=0,end=0;
-				String joiner="-";
+				String joiner="";
 				while(st.hasMoreTokens()){
 					String token = st.nextToken();
 					if (i==0){
@@ -176,5 +156,62 @@ public class CsvTransformConf {
 				prependers.put(idx, prepender);
 			}
 		}
+	}
+	
+	public ColRemover getRemover(int idx){
+		return removers.get(idx);
+	}
+	
+	public ColSpliter getSpliter(int idx){
+		return splits.get(idx);
+	}
+	
+	public ColAppender getAppender(int idx){
+		return appenders.get(idx);
+	}
+	
+	public ColPrepender getPrepender(int idx){
+		return prependers.get(idx);
+	}
+	
+	public void clearMerger(){
+		for (int i=0; i<mergers.size(); i++){
+			ColMerger m = mergers.get(i);
+			m.reinit();
+		}
+	}
+	
+	public ColMerger getMerger(int idx){
+		for (int i=0; i<mergers.size(); i++){
+			ColMerger m = mergers.get(i);
+			if (m.contains(idx)){
+				return m;
+			}
+		}
+		return null;
+	}
+
+	public boolean isSkipHeader() {
+		return skipHeader;
+	}
+
+	public void setSkipHeader(boolean skipHeader) {
+		this.skipHeader = skipHeader;
+	}
+
+	public String getRowValidation() {
+		return rowValidation;
+	}
+
+	public void setRowValidation(String rowValidation) {
+		this.rowValidation = rowValidation;
+	}
+
+	public boolean isInputEndWithComma() {
+		return inputEndWithComma;
+	}
+
+	public void setInputEndWithComma(boolean inputEndWithComma) {
+		this.inputEndWithComma = inputEndWithComma;
 	}
 }

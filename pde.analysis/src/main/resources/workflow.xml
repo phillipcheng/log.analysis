@@ -245,17 +245,79 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 			</configuration>
 		</map-reduce>
-		<ok to="loadCsv2Cmd"/>
+		<ok to="CsvTransform2"/>
 		<error to="fail"/>
 	</action>
-	<action name="loadCsv2Cmd">
+	<action name="CsvTransform2">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>etl.engine.InvokeMapper</value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.NullWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.task.timeout</name>
+					<value>0</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${concat("/pde/fixcsv/", wf:id())}</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${concat("/pde/fixcsv1/", wf:id())}</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.transform.CsvTransformCmd</value>
+				</property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>/pde/etlcfg/pde.fixcsv.csvtrans.properties</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="loadSesCsvCmd"/>
+		<error to="fail"/>
+	</action>
+	<action name="loadSesCsvCmd">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/pde.loadcsv2.properties</arg>
+			<arg>/pde/etlcfg/pde.loadsescsv.properties</arg>
 			<arg>unused</arg>
 			<arg>unused</arg>
 			<capture-output/>

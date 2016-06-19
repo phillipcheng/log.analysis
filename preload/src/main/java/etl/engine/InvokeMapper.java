@@ -3,12 +3,13 @@ package etl.engine;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-public class InvokeMapper extends Mapper<Object, Text, Text, NullWritable>{
+public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>{
 	public static final Logger logger = Logger.getLogger(InvokeMapper.class);
 	
 	public static final String cfgkey_cmdclassname = "cmdClassName";
@@ -46,10 +47,10 @@ public class InvokeMapper extends Mapper<Object, Text, Text, NullWritable>{
 	 */
 	
 	//for each line of the inputfile, this will be invoked once
-	public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		logger.info(String.format("in mapper, key:%s, values:%s", key, value));
 		try{
-			List<String> output = cmd.process(value.toString(), context);
+			List<String> output = cmd.process(key.get(), value.toString(), context);
 			if (output!=null){
 				for (String line:output){
 					context.write(new Text(line), NullWritable.get());

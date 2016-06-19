@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -50,13 +51,13 @@ public class SftpCmd extends ETLCmd{
 	}
 	
 	@Override
-	public List<String> process(String param, Mapper<Object, Text, Text, NullWritable>.Context context) {
+	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		try {
 			//override param
-			logger.info(String.format("param:", param));
-			Map<String, String> pm = Util.parseMapParams(param);
+			logger.info(String.format("param:", row));
+			Map<String, String> pm = Util.parseMapParams(row);
 			if (pm.containsKey(cfgkey_sftp_host)){
 				this.host = pm.get(cfgkey_sftp_host);
 			}

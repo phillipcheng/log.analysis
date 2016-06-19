@@ -35,7 +35,7 @@ public class TestKcvToCsvTransform {
 			fs.delete(new Path(remoteCsvOutputFolder), true);
 			//run job
 			KcvToCsvCmd cmd = new KcvToCsvCmd(null, remoteCfgFolder+csvtransProp, null, null, defaultFS);
-			List<String> retlist = cmd.process(kcvFile, null);
+			List<String> retlist = cmd.process(0, kcvFile, null);
 			logger.info(retlist);
 		} catch (Exception e) {
 			logger.error("", e);

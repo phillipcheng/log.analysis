@@ -1,8 +1,13 @@
 package etl.cmd.transform;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+
+import etl.util.ScriptEngineUtil;
+import etl.util.VarType;
 
 public class ColMerger {
 	public static final Logger logger = Logger.getLogger(ColMerger.class);
@@ -12,15 +17,15 @@ public class ColMerger {
 	int size;
 	int currentSize;
 	int[] orgidx; //the idx-es to wait
-	TreeMap<Integer, String> treeMap = new TreeMap<Integer, String>();
-	String joiner;
+	TreeMap<Integer, String> treeMap = new TreeMap<Integer, String>();//ordered column index to value map
+	String strMergeExp;
 	
 	public static final String INIT_NULL="NULL";
 	
-	public ColMerger(int[] idx, String joiner){
+	public ColMerger(int[] idx, String mergeExp){
 		size = idx.length;
 		orgidx = idx;
-		this.joiner = joiner;
+		this.strMergeExp = mergeExp;
 		reinit();
 	}
 	
@@ -57,17 +62,17 @@ public class ColMerger {
 	
 	public String getValue(){
 		String output="";
-		int i=0;
+		char varName='a';
+		Map<String, Object> varMap = new HashMap<String, Object>();
 		for (int key:treeMap.keySet()){
 			String val = treeMap.get(key);
-			output+=val;
-			if (i<currentSize-1){
-				output+=joiner;
-			}
-			i++;
+			varMap.put(String.valueOf(varName), val);
+			varName++;
 		}
 		if (currentSize<size){
 			logger.error(String.format("merger not completed yet expected size:%d, current size:%d", size, currentSize));
+		}else{
+			output = (String) ScriptEngineUtil.eval(strMergeExp, VarType.STRING, varMap);
 		}
 		return output;
 	}
