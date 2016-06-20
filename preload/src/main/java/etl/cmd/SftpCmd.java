@@ -121,7 +121,13 @@ public class SftpCmd extends ETLCmd{
 				    channel.connect();
 				    
 				    sftpChannel = (ChannelSftp) channel;
-				    sftpChannel.cd(fromDir);
+				    try {
+						sftpChannel.cd(fromDir);
+					} catch (Exception e2) {
+						// TODO Auto-generated catch block
+						logger.info("Directory does not exist.");
+						e2.printStackTrace();
+					}
 				    System.out.println("From Dir:"+fromDir);
 				    Vector<LsEntry> v = sftpChannel.ls("*");
 				    for (LsEntry entry:v){
@@ -150,10 +156,11 @@ public class SftpCmd extends ETLCmd{
 				    //deleting directory
 				    //sftpChannel.rmdir(fromDir);
 				
-			} catch (SftpException e) {
+			} catch (Exception e) {
 				logger.error("Exception during SFTP process.",e);
 	            if (retryCntTemp == sftpRetryCount) {
 	            	logger.info("Problem persists during sftp process:"+ e.getMessage()+" Retried for maximum times. exiting sftp download.");
+	            	break;
 	            }else{
 	            	retryCntTemp++;
 	            	logger.info("Problem persists during sftp process:"+ e.getMessage()+" Retrying..." + "Retrying count: "+ retryCntTemp);
