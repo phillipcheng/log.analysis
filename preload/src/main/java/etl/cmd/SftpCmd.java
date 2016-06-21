@@ -25,7 +25,7 @@ import etl.engine.ETLCmd;
 import etl.util.Util;
 
 public class SftpCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(SftpCmd.class);
+	public static final Logger logger = Logger.getLogger("org.apache.log4j.DailyRollingFileAppender");
 	
 	public static final String cfgkey_incoming_folder = "incoming.folder";
 	public static final String cfgkey_sftp_host = "sftp.host";
@@ -36,6 +36,7 @@ public class SftpCmd extends ETLCmd{
 	//added for sftp retry
 	public static final String cfgkey_sftp_retry = "sftp.getRetryTimes";
 	public static final String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
+	public static final String cfgkey_sftp_clean = "sftp.clean";
 	
 	private String incomingFolder;
 	private String host;
@@ -45,6 +46,7 @@ public class SftpCmd extends ETLCmd{
 	private String fromDir;
 	private int sftpRetryCount;
 	private int sftpConnectRetryCount;
+	private boolean sftpClean;
 	
 	public SftpCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
@@ -88,95 +90,103 @@ public class SftpCmd extends ETLCmd{
 			//conversionException is already handled here.
 			sftpRetryCount = pc.getInt(cfgkey_sftp_retry);
 			sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
+			sftpClean = pc.getBoolean(cfgkey_sftp_clean);
 			//connect
-			while (retryCntTemp <= sftpRetryCount) {
-			try {
-					JSch jsch = new JSch();
-				    Channel channel = null;
-				    session = jsch.getSession(user, host, port);
-				    if(session == null){
-				    	logger.error("Session is not created.");
-				    }
-				    session.setConfig("StrictHostKeyChecking", "no");
-				    session.setPassword(pass);
-				    
-				    //retry for connecting to session
-				    while(sftConnectRetryCntTemp <= sftpConnectRetryCount){
-				    	session.connect();
-				    	if(session.isConnected()){
-				        	channel = session.openChannel("sftp");
-				        	break;
-				        }else{
-				        	if(sftConnectRetryCntTemp == sftpConnectRetryCount){
-				        		logger.error("Reached maximum number of times to make the connection with session.");
-				        		break;
-				        	}
-				        	logger.error("Session is not connected.hence retrying...");
-				        	Thread.sleep(60000L);
-				        	sftConnectRetryCntTemp++;
-				        }
-				    }
-				    
-				    
-				    channel.connect();
-				    
-				    sftpChannel = (ChannelSftp) channel;
-				    try {
-						sftpChannel.cd(fromDir);
-					} catch (Exception e2) {
-						// TODO Auto-generated catch block
-						logger.info("Directory does not exist.");
-						e2.printStackTrace();
-					}
-				    System.out.println("From Dir:"+fromDir);
-				    Vector<LsEntry> v = sftpChannel.ls("*");
-				    for (LsEntry entry:v){
-				    	String srcFile = fromDir + entry.getFilename();
-				    	String destFile = incomingFolder + entry.getFilename();
-				    	logger.info(String.format("get file from %s to %s", srcFile, destFile));
-				    	//OutputStream fsos = new FileOutputStream(new File(destFile));
-				    	fsos = fs.create(new Path(destFile));
-				    	is = sftpChannel.get(srcFile);
-				    	IOUtils.copy(is, fsos);
-				    	try {
-							if(fsos != null){
-								fsos.close();
-							}
-							if(is != null){
-								is.close();
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							logger.error("Error while closing streams.", e);
-							e.printStackTrace();
+	
+			JSch jsch = new JSch();
+		    Channel channel = null;
+		    session = jsch.getSession(user, host, port);
+		    if(session == null){
+		    	logger.error("Session is not created.");
+		    }
+		    session.setConfig("StrictHostKeyChecking", "no");
+		    session.setPassword(pass);
+		    
+		    //retry for connecting to session
+		    while(sftConnectRetryCntTemp <= sftpConnectRetryCount){
+		    	session.connect();
+		    	if(session.isConnected()){
+		    		logger.info("Session connected.");
+		        	channel = session.openChannel("sftp");
+		        	break;
+		        }else{
+		        	if(sftConnectRetryCntTemp == sftpConnectRetryCount){
+		        		logger.error("Reached maximum number of times to make the connection with session.");
+		        		break;
+		        	}
+		        	Thread.sleep(60000L);
+		        	sftConnectRetryCntTemp++;
+		        	logger.error("Session is not connected.hence retrying..." +sftConnectRetryCntTemp);
+		        }
+		    }
+		    
+		    
+		    channel.connect();
+		    
+		    sftpChannel = (ChannelSftp) channel;
+		    try {
+				sftpChannel.cd(fromDir);
+			} catch (Exception e2) {
+				// TODO Auto-generated catch block
+				logger.info("Directory does not exist.");
+				e2.printStackTrace();
+			}
+		    System.out.println("From Dir:"+fromDir);
+		    Vector<LsEntry> v = sftpChannel.ls("*");
+		    for (LsEntry entry:v){
+		    	String srcFile = fromDir + entry.getFilename();
+		    	String destFile = incomingFolder + entry.getFilename();
+		    	logger.info(String.format("get file from %s to %s", srcFile, destFile));
+		    	//OutputStream fsos = new FileOutputStream(new File(destFile));
+		    	
+		    	//while loop iterates for each file.
+		    	while(retryCntTemp <= sftpRetryCount){
+		    	try {
+					fsos = fs.create(new Path(destFile));
+					is = sftpChannel.get(srcFile);
+					IOUtils.copy(is, fsos);
+					if(fs.exists(new Path(destFile))){
+						    logger.info("Transferring file:"+srcFile+" to the destination:"+destFile+ " is completed");
+							break;	  								
+						}else{
+							logger.error("Transferring file:"+srcFile+" to the destination:"+destFile+ "failed hence retrying..");
+							throw new Exception("File transfer failed");
 						}
-				    	//deleting file one by one
-				    	sftpChannel.rm(srcFile);
-				    }
-				    //deleting directory
-				    //sftpChannel.rmdir(fromDir);
-				
-			} catch (Exception e) {
-				logger.error("Exception during SFTP process.",e);
-	            if (retryCntTemp == sftpRetryCount) {
-	            	logger.info("Problem persists during sftp process:"+ e.getMessage()+" Retried for maximum times. exiting sftp download.");
-	            	break;
-	            }else{
-	            	retryCntTemp++;
-	            	logger.info("Problem persists during sftp process:"+ e.getMessage()+" Retrying..." + "Retrying count: "+ retryCntTemp);
-		            try {
-						Thread.sleep(60000L);
-					} catch (InterruptedException e1) {
-						logger.error("Interripted exception during wait.",e1);
-						e1.printStackTrace();
-						continue;
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					logger.error("Exception during transferring the file.",e);
+		            if (retryCntTemp == sftpRetryCount) {
+		            	logger.info("Problem persists while transferring file:"+srcFile+" to the destination:"+destFile+" Exception Message"+ e.getMessage()+" Retried for maximum times. exiting sftp download.");
+		            	break;
+		            }else{
+		            	retryCntTemp++;
+		            	logger.info("Problem persists while transferring file:"+srcFile+" to the destination:"+destFile+" Exception Message"+ e.getMessage()+ " Retrying..." + "Retrying count: "+ retryCntTemp);
+			            try {
+							Thread.sleep(60000L);
+						} catch (InterruptedException e1) {
+							logger.error("Interripted exception during wait.",e1);
+							e1.printStackTrace();
+							continue;
+						}
 					}
+				}				
+		    	}
+		    	
+				if(fsos != null){
+					fsos.close();
 				}
-	            continue;
+				if(is != null){
+					is.close();
+				}
 				
-			}
-			break;
-			}
+		    	//deleting file one by one if sftp.clean is enabled
+		    	if(sftpClean){
+		    		logger.info("Deleting file:"+srcFile);
+		    		sftpChannel.rm(srcFile);
+		    	}
+		    }
+			
 		}catch(Exception e){
 			logger.error("Exception while processing SFTP:", e);
 		}finally{
