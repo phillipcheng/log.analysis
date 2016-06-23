@@ -28,8 +28,7 @@ public class TestSftpCmdConnectionFailure extends TestETLCmd{
 			fs.copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder+cfg));
 			SftpCmd cmd = new SftpCmd(null, dfsFolder+cfg, null, null, defaultFS);
 			cmd.process(0, "sftp.host=192.85.247.104, sftp.folder=/data/mtccore/source/, sftp.port=25", null);
-			return null;   
-
+			return null;
 	  	}
 	    });
 	}

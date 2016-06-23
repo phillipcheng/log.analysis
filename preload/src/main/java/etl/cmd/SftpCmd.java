@@ -33,7 +33,7 @@ public class SftpCmd extends ETLCmd {
 	public static final String cfgkey_sftp_user = "sftp.user";
 	public static final String cfgkey_sftp_pass = "sftp.pass";
 	public static final String cfgkey_sftp_folder = "sftp.folder";
-	public static final String cfgkey_sftp_retry = "sftp.getRetryTimes";
+	public static final String cfgkey_sftp_get_retry = "sftp.getRetryTimes";
 	public static final String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
 	public static final String cfgkey_sftp_clean = "sftp.clean";
 
@@ -43,7 +43,7 @@ public class SftpCmd extends ETLCmd {
 	private String user;
 	private String pass;
 	private String fromDir;
-	private int sftpRetryCount;
+	private int sftpGetRetryCount;
 	private int sftpConnectRetryCount;
 	private boolean sftpClean;
 
@@ -55,7 +55,7 @@ public class SftpCmd extends ETLCmd {
 		this.user = pc.getString(cfgkey_sftp_user);
 		this.pass = pc.getString(cfgkey_sftp_pass);
 		this.fromDir = pc.getString(cfgkey_sftp_folder);
-		this.sftpRetryCount = pc.getInt(cfgkey_sftp_retry);
+		this.sftpGetRetryCount = pc.getInt(cfgkey_sftp_get_retry);
 		this.sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
 		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
 	}
@@ -64,7 +64,7 @@ public class SftpCmd extends ETLCmd {
 	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
-		int retryCntTemp = 1;
+		int getRetryCntTemp = 1;
 		int sftConnectRetryCntTemp = 1;
 		OutputStream fsos = null;
 		InputStream is = null;
@@ -87,8 +87,8 @@ public class SftpCmd extends ETLCmd {
 			if (pm.containsKey(cfgkey_sftp_folder)) {
 				this.fromDir = pm.get(cfgkey_sftp_folder);
 			}
-			if (pm.containsKey(cfgkey_sftp_retry)) {
-				this.sftpRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_retry));
+			if (pm.containsKey(cfgkey_sftp_get_retry)) {
+				this.sftpGetRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_get_retry));
 			}
 			if (pm.containsKey(cfgkey_sftp_connect_retry)) {
 				this.sftpConnectRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_connect_retry));
@@ -134,8 +134,8 @@ public class SftpCmd extends ETLCmd {
 				String destFile = incomingFolder + entry.getFilename();
 				logger.info(String.format("get file from %s to %s", srcFile, destFile));
 
-				retryCntTemp = 1;// reset the count to 1 for every file
-				while (retryCntTemp <= sftpRetryCount) {
+				getRetryCntTemp = 1;// reset the count to 1 for every file
+				while (getRetryCntTemp <= sftpGetRetryCount) {
 					try {
 						fsos = fs.create(new Path(destFile));
 						is = sftpChannel.get(srcFile);
@@ -143,12 +143,12 @@ public class SftpCmd extends ETLCmd {
 						break;
 					} catch (Exception e) {
 						logger.error("Exception during transferring the file.", e);
-						if (retryCntTemp == sftpRetryCount) {
+						if (getRetryCntTemp == sftpGetRetryCount) {
 							logger.info("Copying" + srcFile + "failed Retried for maximum times");
 							break;
 						}
-						retryCntTemp++;
-						logger.info("Copying" + srcFile + "failed,Retrying..." + retryCntTemp);
+						getRetryCntTemp++;
+						logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
 						Thread.sleep(60000L);
 					} finally {
 						if (fsos != null) {
