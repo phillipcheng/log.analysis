@@ -137,6 +137,7 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 				output+=",";
 			}
 		}
+		logger.info("output:" + output);
 		return Arrays.asList(new String[]{output});
 	}
 }
