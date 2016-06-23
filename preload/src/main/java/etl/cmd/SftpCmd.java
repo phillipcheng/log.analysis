@@ -51,12 +51,12 @@ public class SftpCmd extends ETLCmd{
 	}
 	
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		try {
 			//override param
-			logger.info(String.format("param:", row));
+			logger.info(String.format("param: %s", row));
 			Map<String, String> pm = Util.parseMapParams(row);
 			if (pm.containsKey(cfgkey_sftp_host)){
 				this.host = pm.get(cfgkey_sftp_host);

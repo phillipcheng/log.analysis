@@ -1,0 +1,6 @@
+2014-08-10,00:01:06,722.204,\DEN055.$QH1A2,SSERIES.SSCPC06.D40,005730,ECMN Call Processing Message Handler Reporting a Transmit Dialogue Error cnclLoc: Dialogue Negotiation. ACName-02 Ver-02 GT Addr 8613254333
+2014-08-10,00:01:09,296.845,\DEN055.$QH2A0,SSERIES.SSCPC06.D40,005706,AuC Call Processing Message Handler Reporting Message Timeout SndAuthInfo Sgmnt Rsp - TimeOut : 310410590427638 - GT Addr 919851399134
+2014-08-10,00:01:30,075.458,\DEN055.$QI0A2,SSERIES.SSCPC06.D40,005754,** GSM HLR Call Processing Message Handler Received an Invalid Message Unrecognized service code in PRCSUSSDREQ Invk from GT Addr 124044927110 APPL 5754 123 OFF 
+2014-08-10,00:01:29,025.932,\DEN055.$QH0A1,SSERIES.SSCPC06.D40,005735,ECMN HLR Call Processing Message Handler Reporting XUDTS/UDTS Message E.164 12404492055 XUDTS/UDTS Message ANSI Return Cause: 04
+2014-08-10,00:05:12,043.391,\DEN055.$QI0A2,SSERIES.SSCPC06.D40,005707,AuC Call Processing Message Handler Reporting a Return Error SndAuthInfo - Rcvd Service Msg: - GT Addr 132526300110
+2014-08-10,11:18:00,037.931,\DEN055.$QH2A0,SSERIES.SSCPC06.D40,005608,GPRS HLR Call Processing Message Handler Reporting Message Timeout CnclLoc Timed Out : IMSI - 310410699333970 E164 Addr - 919820705801

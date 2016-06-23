@@ -29,7 +29,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 	public KcvToCsvCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
 		kcvFolder = pc.getString(cfgkey_kcv_folder);
-		useWfid = pc.getBoolean(cfgkey_use_wfid);
+		useWfid = pc.getBoolean(cfgkey_use_wfid, false);
 		plc = new KcvToCsvConf(pc);
 	}
 
