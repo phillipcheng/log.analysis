@@ -6,22 +6,7 @@ C:\Java\oozie\shell-action-0.3.xsd
 uri:oozie:ssh-action:0.2
 C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 	<start to="SftpGetRawFiles"/>
-	<action name="GetRawFiles">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.UploadCmd</arg>
-			<arg>${wf:id()}</arg>
-			<arg>/mtccore/etlcfg/sgsiwf.upload.properties</arg>
-			<arg>unused</arg>
-			<arg>unused</arg>
-			<capture-output/>
-		</java>
-		<ok to="GenCsv"/>
-		<error to="fail"/>
-	</action>
-	<action name="SftpGetRawFiles">
+		<action name="SftpGetRawFiles">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
