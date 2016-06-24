@@ -27,36 +27,28 @@ import etl.util.Util;
 public class BackupCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(BackupCmd.class);
 
-	public static final String cfgkey_xml_folder="xml-folder";
-	public static final String cfgkey_csv_folder="csv-folder";
 	public static final String cfgkey_data_history_folder="data-history-folder";
 	public static final String cfgkey_destination_zip_folder="destination-zip-folder";
 	public static final String cfgkey_Folder_filter="folder.filter";
 	public static final String cfgkey_file_filter="file.filter";
-	public static final String defaultFolderFilter="defaultFolder.filter";
+	public static final String dynCfg_Key_XML_FILES="raw.xml.files";
+	public static final String dynCfg_Key_WFID_FILTER="WFID";
+	public static final String dynCfg_Key_ALL_FILTER="ALL";
 
-	private String xmlFolder;
-	private String csvFolder;
+
 	private String dataHistoryFolder;
 	private String destinationZipFolder;
 	private FileSystem fileSys;
-	private String inDynCfg;
 	private String[] folderFilter;
 	private String[] fileFilter;
-	private String userFilter;
 	private ZipOutputStream zos;
 
 	public BackupCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
-
 		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
 		this.folderFilter = pc.getStringArray(cfgkey_Folder_filter);
 		this.fileFilter = pc.getStringArray(cfgkey_file_filter);
 		this.destinationZipFolder=this.dataHistoryFolder+wfid+".zip";
-		this.xmlFolder = folderFilter[0];
-		this.csvFolder = folderFilter[1];
-		this.userFilter=fileFilter[0];
-		this.inDynCfg=inDynCfg;
 	}
 
 	@Override
@@ -65,12 +57,6 @@ public class BackupCmd extends ETLCmd{
 		logger.info("param: "+param);
 
 		Map<String, String> pm = Util.parseMapParams(param);
-		if (pm.containsKey(cfgkey_xml_folder)){
-			this.xmlFolder = pm.get(cfgkey_xml_folder);
-		}
-		if (pm.containsKey(cfgkey_csv_folder)){
-			this.csvFolder = pm.get(cfgkey_csv_folder);
-		}
 		if (pm.containsKey(cfgkey_data_history_folder)){
 			this.dataHistoryFolder = pm.get(cfgkey_data_history_folder);
 		}
@@ -82,7 +68,7 @@ public class BackupCmd extends ETLCmd{
 			this.folderFilter=pm.get(cfgkey_Folder_filter).split(" ");
 		}
 		if (pm.containsKey(cfgkey_file_filter)){
-			this.userFilter = pm.get(cfgkey_file_filter);
+			this.fileFilter = pm.get(cfgkey_file_filter).split(" ");
 		}
 
 		try {
@@ -95,10 +81,12 @@ public class BackupCmd extends ETLCmd{
 			Path destpath=new Path(destinationZipFolder);
 			FSDataOutputStream fos = fileSys.create(destpath);
 			zos = new ZipOutputStream(fos);	
+
 			for (int i = 0; i < folderFilter.length; i++) 
 			{
-				zipFolder(folderFilter[i]);	
+				zipFolder(folderFilter[i],fileFilter[i]);
 			}
+
 			logger.info("Finished Job :  "+wfid);
 		} 
 		catch (NullPointerException e) {
@@ -121,28 +109,12 @@ public class BackupCmd extends ETLCmd{
 			}
 		}
 
-		//	Copy and remove xml file code ( existing code )
-		if(inDynCfg!=null)
-		{
-			logger.error("Dynamic Cfg is not null ...! ");
-			List<String> xmlFiles = dynCfgMap.get(DynSchemaCmd.dynCfg_Key_XML_FILES);
-			try {
-				for (String xmlFile: xmlFiles){
-					FileUtil.copy(fs, new Path(xmlFolder+xmlFile), fs, new Path(dataHistoryFolder+xmlFile), true, this.getHadoopConf());
-					logger.info(String.format("copy and remove %s to %s", xmlFolder+xmlFile, dataHistoryFolder+xmlFile));
-
-				}
-			}
-
-			catch(Exception e){
-				logger.error("", e);
-			}	
-		}
-
 		return null;
 	}
 
-	public  void zipFolder(String dirpath)
+
+	//Zips files for the arbitary folders 
+	public  void zipFolder(String dirpath ,String fileFilter)
 	{
 		try {
 			Path inputPath = new Path(dirpath);
@@ -152,19 +124,18 @@ public class BackupCmd extends ETLCmd{
 				Path path =status[i].getPath();
 				if(status[i].isFile()){
 					String fileName=path.getName();
-					if(dirpath.equals(xmlFolder)&&(userFilter.equals(fileFilter[0])||userFilter.equals(fileFilter[2])))
+					if(fileFilter.equals(dynCfg_Key_XML_FILES))
 					{
 						zipFile(dirpath,fileName);
 					}
-					else if(dirpath.equals(csvFolder)&&(userFilter.equals(fileFilter[1])||userFilter.equals(fileFilter[2])))
+					if((fileFilter.equals(dynCfg_Key_WFID_FILTER)))
 					{
 						if(fileName.startsWith(wfid, 0))
 						{
 							zipFile(dirpath,fileName);
 						}
 					}
-
-					else if(userFilter.equals(fileFilter[2]))
+					else if(fileFilter.equals(dynCfg_Key_ALL_FILTER))
 					{
 						zipFile(dirpath,fileName);	
 					}
@@ -180,15 +151,14 @@ public class BackupCmd extends ETLCmd{
 			logger.error("Null Pointer exception ...!  ", e);
 		}
 		catch (IOException e) {
-			// TODO: handle exception
 			logger.error("File IO exception occured...! ", e);
 		}
 		catch (Exception e) {
-			// TODO: handle exception
 			logger.error(" ", e);
 		}
 	}
 
+	//Zips the files followed by copy and remove
 	public void zipFile(String dirpath,String fileName)
 	{
 
@@ -206,6 +176,7 @@ public class BackupCmd extends ETLCmd{
 			{
 				zos.write(buffer,0,count);    
 			}
+			fileSys.delete(srcpath,false);   //Delete the file from source
 			zos.closeEntry();
 			in.close();
 
