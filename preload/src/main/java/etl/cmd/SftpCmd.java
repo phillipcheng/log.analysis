@@ -34,7 +34,9 @@ public class SftpCmd extends ETLCmd {
 	public static final String cfgkey_sftp_pass = "sftp.pass";
 	public static final String cfgkey_sftp_folder = "sftp.folder";
 	public static final String cfgkey_sftp_get_retry = "sftp.getRetryTimes";
+	public static final String cfgkey_sftp_get_retry_wait = "sftp.getRetryWait";
 	public static final String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
+	public static final String cfgkey_sftp_connect_retry_wait = "sftp.connectRetryWait";
 	public static final String cfgkey_sftp_clean = "sftp.clean";
 
 	private String incomingFolder;
@@ -44,7 +46,9 @@ public class SftpCmd extends ETLCmd {
 	private String pass;
 	private String fromDir;
 	private int sftpGetRetryCount;
+	private int sftpGetRetryWait;
 	private int sftpConnectRetryCount;
+	private int sftpConnectRetryWait;
 	private boolean sftpClean;
 
 	public SftpCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
@@ -56,7 +60,9 @@ public class SftpCmd extends ETLCmd {
 		this.pass = pc.getString(cfgkey_sftp_pass);
 		this.fromDir = pc.getString(cfgkey_sftp_folder);
 		this.sftpGetRetryCount = pc.getInt(cfgkey_sftp_get_retry);
+		this.sftpGetRetryWait =  pc.getInt(cfgkey_sftp_get_retry_wait, 10000);//
 		this.sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
+		this.sftpConnectRetryWait =  pc.getInt(cfgkey_sftp_connect_retry_wait, 15000);//
 		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
 	}
 
@@ -118,9 +124,9 @@ public class SftpCmd extends ETLCmd {
 						logger.error("Reached maximum number of times for connecting session.");
 						throw new SftpException(0, "Session not connected");
 					}
-					Thread.sleep(60000L);
+					logger.error("Session is not connected. retrying..." + sftConnectRetryCntTemp);
+					Thread.sleep(this.sftpConnectRetryWait);
 					sftConnectRetryCntTemp++;
-					logger.error("Session is not connected.hence retrying..." + sftConnectRetryCntTemp);
 				}
 			}
 
@@ -149,7 +155,7 @@ public class SftpCmd extends ETLCmd {
 						}
 						getRetryCntTemp++;
 						logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
-						Thread.sleep(60000L);
+						Thread.sleep(this.sftpGetRetryWait);
 					} finally {
 						if (fsos != null) {
 							fsos.close();

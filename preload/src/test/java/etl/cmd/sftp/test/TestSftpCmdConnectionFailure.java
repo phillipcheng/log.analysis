@@ -1,4 +1,4 @@
-package etl.cmd.test;
+package etl.cmd.sftp.test;
 
 import java.security.PrivilegedExceptionAction;
 
@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.SftpCmd;
+import etl.cmd.test.TestETLCmd;
 
 public class TestSftpCmdConnectionFailure extends TestETLCmd{
 	public static final Logger logger = Logger.getLogger(TestSftpCmdConnectionFailure.class);

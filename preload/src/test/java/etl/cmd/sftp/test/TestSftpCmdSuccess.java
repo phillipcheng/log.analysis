@@ -1,4 +1,4 @@
-package etl.cmd.test;
+package etl.cmd.sftp.test;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.Vector;
@@ -18,6 +18,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
 import etl.cmd.SftpCmd;
+import etl.cmd.test.TestETLCmd;
 
 public class TestSftpCmdSuccess extends TestETLCmd{
 	@Test

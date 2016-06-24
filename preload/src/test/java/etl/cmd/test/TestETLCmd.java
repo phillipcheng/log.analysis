@@ -1,5 +1,8 @@
 package etl.cmd.test;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -15,8 +18,13 @@ public class TestETLCmd {
 	@Before
     public void setUp() {
 		try{
-			p.load(this.getClass().getResourceAsStream(cfgProperties));
-			localFolder = (p.getProperty(key_localFolder));
+			InputStream input = this.getClass().getClassLoader().getResourceAsStream(cfgProperties);
+			if (input!=null){
+				p.load(input);
+				localFolder = (p.getProperty(key_localFolder));
+			}else{
+				logger.error(String.format("%s not found in classpath.", cfgProperties));
+			}
 		}catch(Exception e){
 			logger.error("", e);
 		}
