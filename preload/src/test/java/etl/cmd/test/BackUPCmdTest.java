@@ -36,7 +36,7 @@ public class BackUPCmdTest {
 	}
 
 	@Test
-	// Testing with data-history-folder.
+	// Testing path of data-history-folder.
 	public void test1_DataHistory() throws Exception {
 
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());

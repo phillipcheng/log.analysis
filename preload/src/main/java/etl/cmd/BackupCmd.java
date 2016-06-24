@@ -113,7 +113,7 @@ public class BackupCmd extends ETLCmd{
 	}
 
 
-	//Zips files for the arbitary folders 
+	//Zips files based on filters for the arbitary folders 
 	public  void zipFolder(String dirpath ,String fileFilter)
 	{
 		try {
@@ -158,7 +158,7 @@ public class BackupCmd extends ETLCmd{
 		}
 	}
 
-	//Zips the files followed by copy and remove
+	//Zips the files followed by remove
 	public void zipFile(String dirpath,String fileName)
 	{
 
