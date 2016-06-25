@@ -4,6 +4,7 @@ package etl.cmd;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -81,10 +82,18 @@ public class BackupCmd extends ETLCmd{
 			Path destpath=new Path(destinationZipFolder);
 			FSDataOutputStream fos = fileSys.create(destpath);
 			zos = new ZipOutputStream(fos);	
-
-			for (int i = 0; i < folderFilter.length; i++) 
+            int folderFilterLen=folderFilter.length;
+            int fileFilterLen=fileFilter.length;
+			for (int i = 0; i < folderFilterLen ; i++) 
 			{
-				zipFolder(folderFilter[i],fileFilter[i]);
+				if(folderFilterLen>fileFilterLen)
+				{
+					zipFolder(folderFilter[i], fileFilter[fileFilterLen-1]);
+				}
+				else 
+				{
+					zipFolder(folderFilter[i],fileFilter[i]);
+				}
 			}
 
 			logger.info("Finished Job :  "+wfid);
@@ -116,7 +125,7 @@ public class BackupCmd extends ETLCmd{
 	//Zips files based on filters for the arbitary folders 
 	public  void zipFolder(String dirpath ,String fileFilter)
 	{
-		try {
+		try{
 			Path inputPath = new Path(dirpath);
 			fileSys = inputPath.getFileSystem(this.getHadoopConf());
 			FileStatus[] status = fileSys.listStatus(inputPath);

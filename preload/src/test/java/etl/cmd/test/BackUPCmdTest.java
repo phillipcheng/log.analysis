@@ -1,6 +1,8 @@
 package etl.cmd.test;
 
 import java.security.PrivilegedExceptionAction;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -151,7 +153,8 @@ public class BackUPCmdTest {
 					fs = FileSystem.get(conf);
 					fs.copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
 					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process("folder.filter=/test_folder/datafolder3,file.filter=ALL", null);
+					List<String> retlist=cmd.process("folder.filter=/test_folder/datafolder3,file.filter=ALL", null);
+					logger.error("retlist"+retlist);
 				} catch (Exception e) {
 					logger.error("", e);
 				}
@@ -183,7 +186,7 @@ public class BackUPCmdTest {
 	}
 	@Test
 	// Testing with New folder.filter and ALL file filter.
-	public void test8_additional_folder_ALL_fileFilter() throws Exception {
+	public void test8_new_folder_ALL_fileFilter() throws Exception {
 
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
@@ -201,5 +204,24 @@ public class BackUPCmdTest {
 		});
 	}
 
+	@Test
+	// Testing with additional folder.filter and default allfile filter.
+	public void test9_additional_folder_deafult_AllfileFilter() throws Exception {
+
+		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+		ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			public Void run() throws Exception {
+				try {
+					fs = FileSystem.get(conf);
+					fs.copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
+					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
+					cmd.process("folder.filter=/test_folder/dataHistory/datahistory/ /test_folder/csvdata/ /test_folder/datafolder3/ /test_folder/xmldata/ ,file.filter=raw.xml.files WFID ALL", null);
+				} catch (Exception e) {
+					logger.error("", e);
+				}
+				return null;
+			}
+		});
+	}
 
 }
