@@ -27,6 +27,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
@@ -105,83 +106,6 @@ public class Util {
 	
 	public static String normalizeFieldName(String fn){
 		return fn.replaceAll("[ .-]", "_");
-	}
-	
-	public static String genCreateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
-		StringBuffer tablesql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
-		}
-		//gen table sql
-		tablesql.append(String.format("create table if not exists %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
-			String type = fieldTypeList.get(i);
-			tablesql.append(String.format("%s %s", name, type));
-			if (i<fieldNameList.size()-1){
-				tablesql.append(",");
-			}
-		}
-		tablesql.append(");");
-		return tablesql.toString();
-	}
-	
-	public static List<String> genUpdateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
-		List<String> updateSqls = new ArrayList<String>();
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = normalizeFieldName(fieldNameList.get(i));
-			updateSqls.add(String.format("alter table %s.%s add column %s %s;\n", dbschema, tn, name, fieldTypeList.get(i)));
-		}
-		return updateSqls;
-	}
-	
-	public static String genDropTableSql(String tn, String dbschema){
-		StringBuffer tablesql = new StringBuffer();
-		tablesql.append(String.format("drop table %s.%s;\n", dbschema, tn));
-		return tablesql.toString();
-	}
-	
-	public static String genTruncTableSql(String tn, String dbschema){
-		StringBuffer tablesql = new StringBuffer();
-		tablesql.append(String.format("truncate table %s.%s;\n", dbschema, tn));
-		return tablesql.toString();
-	}
-	
-	public static String genCopyLocalSql(List<String> fieldNameList, String tn, String dbschema, String csvFileName){
-		StringBuffer copysql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
-		}
-		//gen table sql
-		copysql.append(String.format("copy %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
-			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fieldNameList.size()-1){
-				copysql.append(",");
-			}
-		}
-		copysql.append(String.format(") from local '%s' delimiter ',' direct;", csvFileName));
-		return copysql.toString();
-	}
-	
-	public static String genCopyHdfsSql(List<String> fieldNameList, String tn, String dbschema, 
-			String rootWebHdfs, String csvFileName, String username){
-		StringBuffer copysql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
-		}
-		//gen table sql
-		copysql.append(String.format("copy %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
-			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fieldNameList.size()-1){
-				copysql.append(",");
-			}
-		}
-		copysql.append(String.format(") SOURCE Hdfs(url='%s%s',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
-		return copysql.toString();
 	}
 	
 	public static String getCsv(List<String> csv){
@@ -297,6 +221,83 @@ public class Util {
 	}
 	
 	//db
+	public static String genCreateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
+		StringBuffer tablesql = new StringBuffer();
+		for (int i=0; i<fieldNameList.size(); i++){
+			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
+		}
+		//gen table sql
+		tablesql.append(String.format("create table if not exists %s.%s(", dbschema, tn));
+		for (int i=0; i<fieldNameList.size(); i++){
+			String name = fieldNameList.get(i);
+			String type = fieldTypeList.get(i);
+			tablesql.append(String.format("%s %s", name, type));
+			if (i<fieldNameList.size()-1){
+				tablesql.append(",");
+			}
+		}
+		tablesql.append(");");
+		return tablesql.toString();
+	}
+	
+	public static List<String> genUpdateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
+		List<String> updateSqls = new ArrayList<String>();
+		for (int i=0; i<fieldNameList.size(); i++){
+			String name = normalizeFieldName(fieldNameList.get(i));
+			updateSqls.add(String.format("alter table %s.%s add column %s %s;\n", dbschema, tn, name, fieldTypeList.get(i)));
+		}
+		return updateSqls;
+	}
+	
+	public static String genDropTableSql(String tn, String dbschema){
+		StringBuffer tablesql = new StringBuffer();
+		tablesql.append(String.format("drop table %s.%s;\n", dbschema, tn));
+		return tablesql.toString();
+	}
+	
+	public static String genTruncTableSql(String tn, String dbschema){
+		StringBuffer tablesql = new StringBuffer();
+		tablesql.append(String.format("truncate table %s.%s;\n", dbschema, tn));
+		return tablesql.toString();
+	}
+	
+	public static String genCopyLocalSql(List<String> fieldNameList, String tn, String dbschema, String csvFileName){
+		StringBuffer copysql = new StringBuffer();
+		for (int i=0; i<fieldNameList.size(); i++){
+			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
+		}
+		//gen table sql
+		copysql.append(String.format("copy %s.%s(", dbschema, tn));
+		for (int i=0; i<fieldNameList.size(); i++){
+			String name = fieldNameList.get(i);
+			copysql.append(String.format("%s enclosed by '\"'", name));
+			if (i<fieldNameList.size()-1){
+				copysql.append(",");
+			}
+		}
+		copysql.append(String.format(") from local '%s' delimiter ',' direct;", csvFileName));
+		return copysql.toString();
+	}
+	
+	public static String genCopyHdfsSql(List<String> fieldNameList, String tn, String dbschema, 
+			String rootWebHdfs, String csvFileName, String username){
+		StringBuffer copysql = new StringBuffer();
+		for (int i=0; i<fieldNameList.size(); i++){
+			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
+		}
+		//gen table sql
+		copysql.append(String.format("copy %s.%s(", dbschema, tn));
+		for (int i=0; i<fieldNameList.size(); i++){
+			String name = fieldNameList.get(i);
+			copysql.append(String.format("%s enclosed by '\"'", name));
+			if (i<fieldNameList.size()-1){
+				copysql.append(",");
+			}
+		}
+		copysql.append(String.format(") SOURCE Hdfs(url='%s%s',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
+		return copysql.toString();
+	}
+	
 	private static Connection getConnection(PropertiesConfiguration pc){
 		Connection conn = null;
 		try { 
@@ -415,5 +416,18 @@ public class Util {
 				}
 			}
 		}
+	}
+	
+	public static List<String> listDfsFile(FileSystem fs, String folder){
+		List<String> files = new ArrayList<String>();
+		try {
+			FileStatus[] fslist = fs.listStatus(new Path(folder));
+			for (FileStatus f:fslist){
+				files.add(f.getPath().getName());
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		return files;
 	}
 }
