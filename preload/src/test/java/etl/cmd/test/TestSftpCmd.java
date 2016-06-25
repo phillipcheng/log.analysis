@@ -1,6 +1,9 @@
 package etl.cmd.test;
 
+import static org.junit.Assert.*;
+
 import java.security.PrivilegedExceptionAction;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.hadoop.conf.Configuration;
@@ -18,24 +21,43 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import etl.cmd.SftpCmd;
+import etl.util.Util;
 
 public class TestSftpCmd extends TestETLCmd{
 	public static final Logger logger = Logger.getLogger(TestSftpCmd.class);
+	
 	@Test
-	public void test1() throws Exception {
+	public void test1() throws Exception{
+    	String dfsCfg = "/test/sftpcmd/cfg/";
+    	String cfg = "sftp.properties";
+    	//values in the static cfg
+    	String incomingFolder = "/test/sftp/incoming/";
+    	String ftpFolder = "/data/mtccore/sftptest/";
+    	String host = "192.85.247.104";
+    	int port = 22;
+    	String user = "dbadmin";
+    	String pass = "password";
+    	String fileName = "backup_test1_data";
+		//
+    	getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg+cfg));
+		Util.sftpFromLocal(host, port, user, pass, getLocalFolder()+fileName, ftpFolder+fileName);
+		//
+		SftpCmd cmd = new SftpCmd(null, dfsCfg+cfg, null, null, getDefaultFS());
+		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
+		//check incoming fodler
+		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
+		assertTrue(fl.contains(fileName));
+		//check remote dir
+		fl = Util.sftpList(host, port, user, pass, ftpFolder);
+		assertFalse(fl.contains(fileName));
+	}
+	
+	@Test
+	public void remoteTest1() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 	    ugi.doAs(new PrivilegedExceptionAction<Void>() {
 	      public Void run() throws Exception {
-	    	Configuration conf = new Configuration();
-	    	String defaultFS = "hdfs://192.85.247.104:19000";
-			conf.set("fs.defaultFS", defaultFS);
-			FileSystem fs = FileSystem.get(conf);
-			String localFolder = "C:\\mydoc\\myprojects\\log.analysis\\preload\\src\\test\\resources\\";
-	    	String dfsFolder = "/mtccore/etlcfg/";
-	    	String cfg = "sftp.properties";
-			fs.copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-			SftpCmd cmd = new SftpCmd(null, dfsFolder+cfg, null, null, defaultFS);
-			cmd.process(0, "sftp.host=192.85.247.104, sftp.folder=/data/log.analysis/bin/", null);
+	    	test1();
 			return null;
 	      }
 	    });

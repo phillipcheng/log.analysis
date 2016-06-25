@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -18,8 +19,10 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -36,6 +39,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 
 public class Util {
@@ -429,5 +438,70 @@ public class Util {
 			logger.error("", e);
 		}
 		return files;
+	}
+	
+	public static void sftpFromLocal(String host, int port, String user, String pass, String localFile, String remoteFile){
+		Session session = null;
+		ChannelSftp sftpChannel = null;
+		try {
+			// connect
+			JSch jsch = new JSch();
+			Channel channel = null;
+			session = jsch.getSession(user, host, port);
+			session.setConfig("StrictHostKeyChecking", "no");
+			session.setPassword(pass);
+			session.connect();
+			channel = session.openChannel("sftp");
+			channel.connect();
+			sftpChannel = (ChannelSftp) channel;
+			int slash = remoteFile.lastIndexOf("/");
+		    String remotePath = remoteFile.substring(0,slash);
+		    sftpChannel.mkdir(remotePath);
+			sftpChannel.put(localFile, remoteFile, ChannelSftp.OVERWRITE);
+		} catch (Exception e) {
+			logger.error("Exception while processing SFTP:", e);
+		} finally {
+
+			if (sftpChannel != null) {
+				sftpChannel.exit();
+			}
+			if (session != null) {
+				session.disconnect();
+			}
+		}
+	}
+	
+	public static List<String> sftpList(String host, int port, String user, String pass, String remoteDir){
+		Session session = null;
+		ChannelSftp sftpChannel = null;
+		List<String> fl = new ArrayList<String>();
+		try {
+			// connect
+			JSch jsch = new JSch();
+			Channel channel = null;
+			session = jsch.getSession(user, host, port);
+			session.setConfig("StrictHostKeyChecking", "no");
+			session.setPassword(pass);
+			session.connect();
+			channel = session.openChannel("sftp");
+			channel.connect();
+			sftpChannel = (ChannelSftp) channel;
+			sftpChannel.cd(remoteDir);
+			Vector<LsEntry> v = sftpChannel.ls("*");
+			for (LsEntry entry : v) {
+				fl.add(entry.getFilename());
+			}
+		} catch (Exception e) {
+			logger.error("Exception while processing SFTP:", e);
+		} finally {
+
+			if (sftpChannel != null) {
+				sftpChannel.exit();
+			}
+			if (session != null) {
+				session.disconnect();
+			}
+		}
+		return fl;
 	}
 }
