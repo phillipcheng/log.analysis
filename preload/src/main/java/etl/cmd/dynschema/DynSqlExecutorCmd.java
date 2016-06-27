@@ -1,4 +1,4 @@
-package etl.cmd;
+package etl.cmd.dynschema;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,13 +10,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-import etl.cmd.dynschema.DynSchemaCmd;
-import etl.cmd.dynschema.LogicSchema;
 import etl.engine.ETLCmd;
+import etl.util.DBUtil;
 import etl.util.Util;
 
-public class SqlExecutorCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(SqlExecutorCmd.class);
+public class DynSqlExecutorCmd extends ETLCmd{
+	public static final Logger logger = Logger.getLogger(DynSqlExecutorCmd.class);
 	
 	public static final String cfgkey_webhdfs="hdfs.webhdfs.root";
 	public static final String cfgkey_systemAttrs_name="systemAttrs.name";
@@ -29,20 +28,19 @@ public class SqlExecutorCmd extends ETLCmd{
 	private LogicSchema logicSchema;
 	public String[] systemFieldNames;
 	
-	public SqlExecutorCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
+	public DynSqlExecutorCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
-		pc.getString(DynSchemaCmd.cfgkey_schema_history_folder);
 		this.csvFolder = pc.getString(DynSchemaCmd.cfgkey_csv_folder);
 		this.prefix = pc.getString(DynSchemaCmd.cfgkey_prefix);
 		this.schemaFileName = pc.getString(DynSchemaCmd.cfgkey_schema_folder) + prefix +"." + DynSchemaCmd.schema_name;
 		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
-		this.userName = pc.getString(Util.key_db_user);
-		this.logicSchema = (LogicSchema) Util.fromDfsFile(fs, schemaFileName, LogicSchema.class);
+		this.userName = pc.getString(DBUtil.key_db_user);
+		this.logicSchema = (LogicSchema) Util.fromDfsJsonFile(fs, schemaFileName, LogicSchema.class);
 		this.systemFieldNames = pc.getStringArray(cfgkey_systemAttrs_name);
 	}
 	
-	private String getOutputDataFileNameWithoutFolder(String tableName, String timeStr){
-		return timeStr + "_" + tableName + ".csv";
+	private String getOutputDataFileNameWithoutFolder(String tableName, String wfid){
+		return wfid + "_" + tableName + ".csv";
 	}
 	
 	@Override
@@ -52,7 +50,7 @@ public class SqlExecutorCmd extends ETLCmd{
 			//execute the schemas
 			String createtablesql_name = dynCfgMap.get(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE).get(0);
 			List<String> sqls = Util.stringsFromDfsFile(fs, createtablesql_name);
-			Util.executeSqls(sqls, pc);
+			DBUtil.executeSqls(sqls, pc);
 		}
 		//2. load csv files
 		List<String> tablesUsed = dynCfgMap.get(DynSchemaCmd.dynCfg_Key_TABLES_USED);
@@ -65,10 +63,10 @@ public class SqlExecutorCmd extends ETLCmd{
 			fieldNameList.addAll(logicSchema.getAttrNames(tn));
 			csvFiles.add(getOutputDataFileNameWithoutFolder(tn, wfid));
 			String csvFileName = getOutputDataFileNameWithoutFolder(tn, wfid);
-			String copySql = Util.genCopyHdfsSql(fieldNameList, tn, prefix, webhdfsRoot, csvFolder + csvFileName, userName);
+			String copySql = DBUtil.genCopyHdfsSql(fieldNameList, tn, prefix, webhdfsRoot, csvFolder + csvFileName, userName);
 			copysqls.add(copySql);
 		}
-		Util.executeSqls(copysqls, pc);
+		DBUtil.executeSqls(copysqls, pc);
 		return null;
 	}
 }

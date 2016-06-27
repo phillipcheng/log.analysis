@@ -40,7 +40,7 @@ public abstract class ETLCmd {
 			logger.error("", e);
 		}
 		if (inDynCfg!=null){
-			dynCfgMap = (Map<String, List<String>>) Util.fromDfsFile(fs, inDynCfg, Map.class);
+			dynCfgMap = (Map<String, List<String>>) Util.fromDfsJsonFile(fs, inDynCfg, Map.class);
 		}
 		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
 		this.outDynCfg = outDynCfg;

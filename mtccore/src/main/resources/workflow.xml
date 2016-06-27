@@ -83,7 +83,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.SqlExecutorCmd</arg>
+			<arg>etl.cmd.dynschema.DynSqlExecutorCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.sqlexecutor.properties</arg>
 			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>

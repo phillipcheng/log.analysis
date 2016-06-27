@@ -7,20 +7,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLWarning;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -29,7 +21,6 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -43,18 +34,11 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 
 public class Util {
 	public static final Logger logger = Logger.getLogger(Util.class);
-	
-	public static final String key_db_driver="db.driver";
-	public static final String key_db_url="db.url";
-	public static final String key_db_user="db.user";
-	public static final String key_db_password="db.password";
-	public static final String key_db_loginTimeout="db.loginTimeout";
 	
 	
 	public static PropertiesConfiguration getPropertiesConfig(String conf){
@@ -113,10 +97,6 @@ public class Util {
 		return paramsMap;
 	}
 	
-	public static String normalizeFieldName(String fn){
-		return fn.replaceAll("[ .-]", "_");
-	}
-	
 	public static String getCsv(List<String> csv){
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<csv.size(); i++){
@@ -131,16 +111,6 @@ public class Util {
 		}
 		sb.append("\n");
 		return sb.toString();
-	}
-	
-	public static String guessType(String value){
-		int len = value.length();
-		try {
-			Float.parseFloat(value);
-			return String.format("numeric(%d,%d)", 15,5);
-		}catch(Exception e){
-			return String.format("varchar(%d)", Math.max(20, 2*len));
-		}
 	}
 	
 	//json serialization
@@ -170,7 +140,7 @@ public class Util {
 		}
 	}
 	
-	public static void toFile(String file, Object ls){
+	public static void toLocalJsonFile(String file, Object ls){
 		PrintWriter out = null;
 		try{
 			out = new PrintWriter(file, charset);
@@ -183,7 +153,7 @@ public class Util {
 		}
 	}
 	
-	public static void toDfsFile(FileSystem fs, String file, Object ls){
+	public static void toDfsJsonFile(FileSystem fs, String file, Object ls){
 		BufferedWriter out = null;
 		try{
 			out = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(file))));
@@ -201,7 +171,7 @@ public class Util {
 		}
 	}
 	
-	public static Object fromDfsFile(FileSystem fs, String file, Class clazz){
+	public static Object fromDfsJsonFile(FileSystem fs, String file, Class clazz){
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			IOUtils.copy(fs.open(new Path(file)), baos);
@@ -227,139 +197,6 @@ public class Util {
 			logger.error("", e);
 			return null;
 		}
-	}
-	
-	//db
-	public static String genCreateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
-		StringBuffer tablesql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
-		}
-		//gen table sql
-		tablesql.append(String.format("create table if not exists %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
-			String type = fieldTypeList.get(i);
-			tablesql.append(String.format("%s %s", name, type));
-			if (i<fieldNameList.size()-1){
-				tablesql.append(",");
-			}
-		}
-		tablesql.append(");");
-		return tablesql.toString();
-	}
-	
-	public static List<String> genUpdateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
-		List<String> updateSqls = new ArrayList<String>();
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = normalizeFieldName(fieldNameList.get(i));
-			updateSqls.add(String.format("alter table %s.%s add column %s %s;\n", dbschema, tn, name, fieldTypeList.get(i)));
-		}
-		return updateSqls;
-	}
-	
-	public static String genDropTableSql(String tn, String dbschema){
-		StringBuffer tablesql = new StringBuffer();
-		tablesql.append(String.format("drop table %s.%s;\n", dbschema, tn));
-		return tablesql.toString();
-	}
-	
-	public static String genTruncTableSql(String tn, String dbschema){
-		StringBuffer tablesql = new StringBuffer();
-		tablesql.append(String.format("truncate table %s.%s;\n", dbschema, tn));
-		return tablesql.toString();
-	}
-	
-	public static String genCopyLocalSql(List<String> fieldNameList, String tn, String dbschema, String csvFileName){
-		StringBuffer copysql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
-		}
-		//gen table sql
-		copysql.append(String.format("copy %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
-			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fieldNameList.size()-1){
-				copysql.append(",");
-			}
-		}
-		copysql.append(String.format(") from local '%s' delimiter ',' direct;", csvFileName));
-		return copysql.toString();
-	}
-	
-	public static String genCopyHdfsSql(List<String> fieldNameList, String tn, String dbschema, 
-			String rootWebHdfs, String csvFileName, String username){
-		StringBuffer copysql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeFieldName(fieldNameList.get(i)));
-		}
-		//gen table sql
-		copysql.append(String.format("copy %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
-			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fieldNameList.size()-1){
-				copysql.append(",");
-			}
-		}
-		copysql.append(String.format(") SOURCE Hdfs(url='%s%s',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
-		return copysql.toString();
-	}
-	
-	private static Connection getConnection(PropertiesConfiguration pc){
-		Connection conn = null;
-		try { 
-        	Class.forName(pc.getString(key_db_driver)); 
-        } catch (ClassNotFoundException e) {
-        	logger.error("", e);
-        }
-        Properties myProp = new Properties();
-        myProp.put("user", pc.getString(key_db_user));
-        myProp.put("password", pc.getString(key_db_password));
-        myProp.put("loginTimeout", pc.getString(key_db_loginTimeout));
-        try {
-            conn = DriverManager.getConnection(pc.getString(key_db_url), myProp);
-            logger.debug("connected!");
-        }catch(Exception e){
-            logger.error("", e);
-        }
-        return conn;
-	}
-	
-	public static void executeSqls(List<String> sqls, PropertiesConfiguration pc){
-        Connection conn = null;
-        try {
-            conn = getConnection(pc);
-            if (conn!=null){
-	            for (String sql:sqls){
-	            	Statement stmt = conn.createStatement();
-	            	try {
-	            		boolean result = stmt.execute(sql);
-	            		if (!result){
-	            			logger.info(String.format("%d rows accepted.", stmt.getUpdateCount()));
-	            		}
-	            		SQLWarning warning = stmt.getWarnings();
-	            		while (warning != null){
-	            		   logger.info(warning.getMessage());
-	            		   warning = warning.getNextWarning();
-	            		}
-	            	}catch(Exception e){
-	            		logger.error(e.getMessage());
-	            	}finally{
-	            		stmt.close();
-	            	}
-	            }
-            }
-        }catch(Exception e){
-            logger.error("", e);
-        }finally{
-        	try{
-        		conn.close();
-        	}catch(Exception e){
-        		logger.error("", e);
-        	}
-        }
 	}
 	
 	//files
@@ -503,5 +340,25 @@ public class Util {
 			}
 		}
 		return fl;
+	}
+	
+	public static List<String> getMROutput(FileSystem fs, String folder){
+		List<String> output = new ArrayList<String>();
+		try {
+			FileStatus[] fsts = fs.listStatus(new Path(folder));
+			if (fsts!=null){
+				for (FileStatus fst:fsts){
+					BufferedReader in = new BufferedReader(new InputStreamReader(fs.open(fst.getPath())));
+					String line = null;
+					while ((line=in.readLine())!=null){
+						output.add(line);
+					}
+					in.close();
+				}
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		return output;
 	}
 }

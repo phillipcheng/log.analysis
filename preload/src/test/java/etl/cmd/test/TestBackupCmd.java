@@ -59,7 +59,7 @@ public class TestBackupCmd extends TestETLCmd{
 			//generate local dyn conf file
 			Map<String, List<String>> dynCfgValues = new HashMap<String, List<String>>();
 			dynCfgValues.put(dynKey, Arrays.asList(dynCfgFileNames));
-			Util.toFile(getLocalFolder() + dynCfgName, dynCfgValues);
+			Util.toLocalJsonFile(getLocalFolder() + dynCfgName, dynCfgValues);
 			
 			//add the local conf file to dfs
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));

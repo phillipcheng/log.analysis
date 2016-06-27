@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -13,7 +15,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-import etl.engine.ETLCmd;
 import etl.engine.FileETLCmd;
 
 //key colon value format to csv
@@ -22,7 +23,20 @@ public class KcvToCsvCmd extends FileETLCmd{
 	public static final String cfgkey_kcv_folder="kcv.folder";
 	public static final String cfgkey_use_wfid="use.wfid";
 	
-	private KcvToCsvConf plc;
+	//record format overall specification
+	public static final String RECORD_START="record.start";
+		public static final String RECORD_SINGLELINE="^"; //single line
+
+	public static final String RECORD_KCV_VK_REGEXP="record.vkexp";
+		
+	public static final String RECORD_FIELDNUM="record.fieldnum";
+		public static final int RECORD_FIELDNUM_DEFAULT=-1; //extract all fields recognized
+
+	//record format definition
+	private String recordStart = RECORD_SINGLELINE;
+	private Pattern recordStartPattern = null;
+	private Pattern recordVKExp = null;
+	private int recordFieldNum = RECORD_FIELDNUM_DEFAULT;
 	private String kcvFolder;
 	private boolean useWfid;
 	
@@ -30,7 +44,21 @@ public class KcvToCsvCmd extends FileETLCmd{
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
 		kcvFolder = pc.getString(cfgkey_kcv_folder);
 		useWfid = pc.getBoolean(cfgkey_use_wfid, false);
-		plc = new KcvToCsvConf(pc);
+		String strVal = pc.getString(RECORD_START);
+		if (strVal!=null){
+			this.recordStart = strVal;
+			recordStartPattern = Pattern.compile(strVal);
+		}
+
+		strVal = pc.getString(RECORD_KCV_VK_REGEXP);
+		if (strVal!=null){
+			this.recordVKExp = Pattern.compile(strVal);
+		}
+		
+		strVal = pc.getString(RECORD_FIELDNUM);
+		if (strVal!=null){
+			this.recordFieldNum = Integer.parseInt(strVal);
+		}
 	}
 
 	//
@@ -46,8 +74,8 @@ public class KcvToCsvCmd extends FileETLCmd{
 			String vk = tn.nextToken(); //key, [value-key]+, value. ignore the 1st key, pass value-key pairs down
 			if (idx>0){//2nd till size-1 are all value-key pairs
 				if (idx<totalToken-1){
-					if (plc.getRecordFieldNum()==-1 || idx<plc.getRecordFieldNum()){
-						Matcher m = plc.getRecordVKExp().matcher(vk);
+					if (recordFieldNum==-1 || idx<recordFieldNum){
+						Matcher m = recordVKExp.matcher(vk);
 						if (m.matches()){
 							String val = m.group(1);
 							String key = m.group(2);
@@ -99,12 +127,12 @@ public class KcvToCsvCmd extends FileETLCmd{
 			String lastRecord="";
 			boolean found =false; //found a record
 			while ((line = br.readLine()) != null) {
-				if (KcvToCsvConf.RECORD_SINGLELINE.equals(plc.getRecordStart())){
+				if (RECORD_SINGLELINE.equals(recordStart)){
 					record=line;
 					lastRecord = record;
 					found=true;
 				}else{
-					Matcher m = plc.getRecordStartPattern().matcher(line);
+					Matcher m = recordStartPattern.matcher(line);
 					if (!m.matches()){
 						record += System.lineSeparator() + line;
 					}else{

@@ -1,0 +1,1 @@
+["etl.cmd.dynschema.LogicSchema",{"objParamMap":["java.util.HashMap",{"MyCore_":["java.util.ArrayList",["Machine","MyCore","UUID"]]}],"schemas":["java.util.HashMap",{"MyCore_":["java.util.ArrayList",["VS.avePerCoreCpuUsage","VS.peakPerCoreCpuUsage"]]}]}]

@@ -19,6 +19,7 @@ public class TestETLCmd {
 	private String localFolder = "";
 	private FileSystem fs;
 	private String defaultFS;
+	private Configuration conf;
 	
 	@Before
     public void setUp() {
@@ -27,7 +28,7 @@ public class TestETLCmd {
 			if (input!=null){
 				p.load(input);
 				localFolder = (p.getProperty(key_localFolder));
-				Configuration conf = new Configuration();
+				conf = new Configuration();
 				defaultFS = p.getProperty(key_defaultFs);
 				conf.set("fs.defaultFS", defaultFS);
 				fs = FileSystem.get(conf);
@@ -49,5 +50,9 @@ public class TestETLCmd {
 	
 	public String getDefaultFS() {
 		return defaultFS;
+	}
+	
+	public Configuration getConf(){
+		return conf;
 	}
 }

@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
-import etl.util.Util;
+import etl.util.DBUtil;
 
 public class LoadDataCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(LoadDataCmd.class);
@@ -30,7 +30,7 @@ public class LoadDataCmd extends ETLCmd{
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
 		this.csvFolder = pc.getString(cfgkey_csvfolder);
 		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
-		this.userName = pc.getString(Util.key_db_user);
+		this.userName = pc.getString(DBUtil.key_db_user);
 		this.csvFolder = pc.getString(cfgkey_csvfolder);
 		this.useWfid = pc.getBoolean(cfgkey_use_wfid);
 		this.loadSql = pc.getString(cfgkey_load_sql);
@@ -44,7 +44,7 @@ public class LoadDataCmd extends ETLCmd{
 			logger.info("sql:" + sql);
 			copysqls.add(sql);
 		}
-		Util.executeSqls(copysqls, pc);
+		DBUtil.executeSqls(copysqls, pc);
 		return null;
 	}
 }

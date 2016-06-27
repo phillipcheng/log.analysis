@@ -18,7 +18,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
-import etl.util.Util;
+import etl.util.DBUtil;
 
 public class BackupCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(BackupCmd.class);
