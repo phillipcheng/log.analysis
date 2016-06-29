@@ -1,6 +1,7 @@
 package etl.cmd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.io.LongWritable;
@@ -44,7 +45,8 @@ public class LoadDataCmd extends ETLCmd{
 			logger.info("sql:" + sql);
 			copysqls.add(sql);
 		}
-		DBUtil.executeSqls(copysqls, pc);
-		return null;
+		
+		int rowsAdded = DBUtil.executeSqls(copysqls, pc);
+		return Arrays.asList(new String[]{String.valueOf(rowsAdded)});
 	}
 }

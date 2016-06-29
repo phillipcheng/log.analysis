@@ -31,9 +31,9 @@ public class TestCsvTransformCmd extends TestETLCmd{
 			//setup testing env
 			String csvtransProp = "csvtrans.properties";
 			String[] csvFiles = new String[]{"PJ24002A_BBG2.csv", "PJ24002B_BBG2.csv"};
+			getFs().delete(new Path(remoteCsvFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			getFs().mkdirs(new Path(remoteCsvFolder));
-			getFs().delete(new Path(remoteCsvFolder), true);
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+csvtransProp), new Path(remoteCfgFolder+csvtransProp));
 			for (String csvFile:csvFiles){
 				getFs().copyFromLocalFile(new Path(getLocalFolder()+csvFile), new Path(remoteCsvFolder+csvFile));
