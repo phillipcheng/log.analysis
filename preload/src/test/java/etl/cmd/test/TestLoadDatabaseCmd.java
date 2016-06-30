@@ -23,10 +23,10 @@ import etl.util.DBUtil;
 import etl.util.Util;
 
 public class TestLoadDatabaseCmd extends TestETLCmd {
-	public static final Logger logger = Logger.getLogger(TestGenSeedInputCmd.class);
+	public static final Logger logger = Logger.getLogger(TestLoadDatabaseCmd.class);
 
 	@Test
-	public void testSuccess() throws Exception {
+	public void test1() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
@@ -39,13 +39,13 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 					FileSystem fs = FileSystem.get(conf);
 					String dfsFolder = "/pde/etlcfg/";
 					String staticCfgName = "pde.loadcsv1.properties";
-					String csvFileName = "part-r-00002";
-					String csvFolder = "/pde/csv1/0000054-160525114258816-oozie-dbad-W/";
-					String selectsql = "select * from lsl_csv where Meastime=9999 and Lat=99 and Valid=9";
+					String csvFileName = "part-loaddatabase";
+					String csvFolder = "/pde/loadcsv/";
+					PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), dfsFolder + staticCfgName);
 					String wfid = "";
 					int linesInFile = 0;
+					String line = null;
 					List<String> numberOfRowsupdated;
-					int numberOfRowsFromDB = 0;
 
 					getFs().delete(new Path(dfsFolder), true);
 					getFs().delete(new Path(csvFolder), true);
@@ -61,20 +61,21 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 					// run cmd
 					LoadDataCmd cmd = new LoadDataCmd(wfid, dfsFolder + staticCfgName, null, null, getDefaultFS());
 					numberOfRowsupdated = cmd.process(0, null, null);
-					logger.info(numberOfRowsupdated);
-
-					// check number of lines in file same as rowsupdated
+					// fetch db data
+					List<String> dbData = DBUtil.checkCsv("select * from lsl_sample", pc, 0, 0, ",");
+					logger.info(dbData);
+					// check number of lines in file same as rowsupdated, db
+					// data against each line
 					br = new BufferedReader(new InputStreamReader(getFs().open(new Path(csvFolder + csvFileName))));
-					while (br.readLine() != null) {
+					while ((line = br.readLine()) != null) {
 						linesInFile++;
+						logger.info(line);
+						assertTrue(dbData.contains(line.trim()));
 					}
-					logger.info(linesInFile);
 
 					assertTrue(Integer.parseInt(numberOfRowsupdated.get(0)) == linesInFile);
-					PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), dfsFolder + staticCfgName);
-					numberOfRowsFromDB = DBUtil.FetchNumberOfRows("select count(*) from lsl_csv", pc);
-					logger.info(numberOfRowsFromDB);
-					assertTrue(numberOfRowsFromDB > linesInFile);
+					assertTrue(dbData.size() > linesInFile);
+					logger.info(linesInFile);
 				} catch (Exception e) {
 					logger.error("Exception occured due to invalid data-history path", e);
 				} finally {
@@ -84,5 +85,17 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 				return null;
 			}
 		});
+	}
+	
+	@Test
+	public void remoteTest1() throws Exception{
+		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+		ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			public Void run() throws Exception {
+				test1();
+				return null;
+			}
+		});
+		
 	}
 }

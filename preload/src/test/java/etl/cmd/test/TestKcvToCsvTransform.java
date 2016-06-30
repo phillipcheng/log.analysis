@@ -6,8 +6,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -19,7 +22,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import etl.cmd.SftpCmd;
 import etl.cmd.transform.KcvToCsvCmd;
 import etl.engine.InvokeMapper;
 import etl.util.Util;
@@ -29,7 +31,7 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
 	@Test
-	public void testSuccess() throws Exception {
+	public void test1() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
@@ -39,27 +41,33 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 					String remoteCsvFolder = "/etltest/kcvtransform/";
 					String remoteCsvOutputFolder = "/etltest/kcvtransformout/";
 					// setup testing env
-					String csvtransProp = "kcv2csv.properties";
+					String kcvtransProp = "kcv2csv.properties";
+					String regexPattern = "[\\s]+([A-Za-z0-9\\,\\. ]+)[\\s]+([A-Z][A-Z ]+)";
 					String kcvFile = "PJ24002A_BBG2.fix";
 					String line = null;
 					getFs().mkdirs(new Path(remoteCfgFolder));
 					getFs().mkdirs(new Path(remoteCsvFolder));
-					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvtransProp),
-							new Path(remoteCfgFolder + csvtransProp));
+					getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvtransProp),
+							new Path(remoteCfgFolder + kcvtransProp));
 					getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvFile),
 							new Path(remoteCsvFolder + kcvFile));
 					getFs().delete(new Path(remoteCsvOutputFolder), true);
 					// run job
-					KcvToCsvCmd cmd = new KcvToCsvCmd(null, remoteCfgFolder + csvtransProp, null, null, getDefaultFS());
+					KcvToCsvCmd cmd = new KcvToCsvCmd(null, remoteCfgFolder + kcvtransProp, null, null, getDefaultFS());
 					List<String> retlist = cmd.process(0, kcvFile, null);
 					logger.info(retlist);
 					assertTrue(retlist != null);
-
+					assertTrue(retlist.size() > 0);
 					br = new BufferedReader(new InputStreamReader(getFs().open(new Path(remoteCsvFolder + kcvFile))));
 					if ((line = br.readLine()) != null) {
-						logger.info(line);
-						logger.info(retlist.get(0).trim());
+						Pattern pattern = Pattern.compile(regexPattern);
+						Matcher matcher = pattern.matcher(line);
+						if (matcher.find()) {
+							assertTrue(retlist.get(0).trim().startsWith(matcher.group(1)));
+
+						}
 					}
+
 				} catch (Exception e) {
 					logger.error("", e);
 				} finally {
@@ -71,39 +79,83 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 		});
 	}
 
-	/*
-	 * @Test public void testMapReduce(){ try{ String remoteCfgFolder =
-	 * "/etltest/cfg/"; String remoteCsvFolder = "/etltest/kcvtransform/";
-	 * String remoteCsvOutputFolder = "/etltest/kcvtransformout/"; //setup
-	 * testing env String csvtransProp = "kcv2csv.properties"; String[] csvFiles
-	 * = new String[]{"PJ24002A_BBG2.fix", "PJ24002B_BBG2.fix"};
-	 * getFs().delete(new Path(remoteCsvFolder), true); getFs().delete(new
-	 * Path(remoteCfgFolder), true); getFs().delete(new
-	 * Path(remoteCsvOutputFolder), true); getFs().mkdirs(new
-	 * Path(remoteCfgFolder)); getFs().mkdirs(new Path(remoteCsvFolder));
-	 * getFs().mkdirs(new Path(remoteCsvOutputFolder));
-	 * getFs().copyFromLocalFile(new Path(getLocalFolder()+csvtransProp), new
-	 * Path(remoteCfgFolder+csvtransProp)); for (String csvFile:csvFiles){
-	 * getFs().copyFromLocalFile(new Path(getLocalFolder()+csvFile), new
-	 * Path(remoteCsvFolder+csvFile)); } //run job
-	 * getConf().set(InvokeMapper.cfgkey_cmdclassname,
-	 * "etl.cmd.transform.KcvToCsvCmd"); getConf().set(InvokeMapper.cfgkey_wfid,
-	 * sdf.format(new Date()));
-	 * getConf().set(InvokeMapper.cfgkey_staticconfigfile,
-	 * remoteCfgFolder+csvtransProp); Job job = Job.getInstance(getConf(),
-	 * "testKcvToCsvCmd"); job.setMapperClass(etl.engine.InvokeMapper.class);
-	 * job.setNumReduceTasks(0);//no reducer job.setOutputKeyClass(Text.class);
-	 * job.setOutputValueClass(NullWritable.class);
-	 * FileInputFormat.setInputDirRecursive(job, true);
-	 * FileInputFormat.addInputPath(job, new Path(remoteCsvFolder));
-	 * FileOutputFormat.setOutputPath(job, new Path(remoteCsvOutputFolder));
-	 * //job.waitForCompletion(true);
-	 * 
-	 * //assertion List<String> output = Util.getMROutput(getFs(),
-	 * remoteCsvOutputFolder); assertTrue(output.size()>0); String sampleOutput
-	 * = output.get(0); String[] csvs = sampleOutput.split(",");
-	 * assertTrue("BBG2".equals(csvs[csvs.length-1])); //check filename appended
-	 * to last } catch (Exception e) { logger.error("", e); } }
-	 */
+	
+	@Test
+	public void remoteTest1() throws Exception{
+		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+		ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			public Void run() throws Exception {
+				test1();
+				return null;
+			}
+		});
+		
+	}
+	/*@Test
+	public void testMapReduceFunction() throws Exception {
+		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+		ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			public Void run() throws Exception {
+				BufferedReader br = null;
+				try {
+					String remoteCfgFolder = "/etltest/cfg/";
+					String remoteKcvFolder = "/etltest/kcvtransform/";
+					String remoteKcvOutputFolder = "/etltest/kcvtransformout/";
+					// setup testing env
+					String kcvtransProp = "kcv2csv.properties";
+					String[] kcvFiles = new String[] { "PJ24002A_BBG2.fix", "PJ24002B_BBG2.fix" };
+					String regexPattern = "[\\s]+([A-Za-z0-9\\,\\. ]+)[\\s]+([A-Z][A-Z ]+)";
+					String line = null;
+
+					getFs().delete(new Path(remoteKcvFolder), true);
+					getFs().delete(new Path(remoteKcvOutputFolder), true);
+					getFs().mkdirs(new Path(remoteCfgFolder));
+					getFs().mkdirs(new Path(remoteKcvFolder));
+					getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvtransProp),
+							new Path(remoteCfgFolder + kcvtransProp));
+					for (String kcvFile : kcvFiles) {
+						getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvFile),
+								new Path(remoteKcvFolder + kcvFile));
+					}
+					// run job
+					getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.testKcvToCsvTransform");
+					getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
+					getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + kcvtransProp);
+					Job job = Job.getInstance(getConf(), "testKcvToCsvTransform");
+					job.setMapperClass(etl.engine.InvokeMapper.class);
+					job.setNumReduceTasks(0);// no reducer
+					job.setOutputKeyClass(Text.class);
+					job.setOutputValueClass(NullWritable.class);
+					FileInputFormat.setInputDirRecursive(job, true);
+					FileInputFormat.addInputPath(job, new Path(remoteKcvFolder));
+					FileOutputFormat.setOutputPath(job, new Path(remoteKcvOutputFolder));
+					job.waitForCompletion(true);
+
+					// assertion
+					List<String> output = Util.getMROutput(getFs(), remoteKcvOutputFolder);
+					assertTrue(output.size() > 0);
+					logger.info("Output:" + output);
+					assertTrue(output != null);
+					assertTrue(output.size() > 0);
+				/*	br = new BufferedReader(
+							new InputStreamReader(getFs().open(new Path(remoteKcvFolder + kcvFiles[0]))));
+					if ((line = br.readLine()) != null) {
+						Pattern pattern = Pattern.compile(regexPattern);
+						Matcher matcher = pattern.matcher(line);
+						if (matcher.find()) {
+							assertTrue(output.get(0).trim().startsWith(matcher.group(1)));
+
+						}
+					}*/
+				/*} catch (Exception e) {
+					logger.error("", e);
+				} finally {
+					if (br != null)
+						br.close();
+				}
+				return null;
+			}
+		});
+	}*/
 
 }

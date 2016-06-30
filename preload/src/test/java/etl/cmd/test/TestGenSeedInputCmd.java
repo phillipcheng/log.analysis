@@ -22,7 +22,7 @@ public class TestGenSeedInputCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestGenSeedInputCmd.class);
 
 	@Test
-	public void testSuccess() throws Exception {
+	public void test1() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
@@ -88,5 +88,17 @@ public class TestGenSeedInputCmd extends TestETLCmd {
 				return null;
 			}
 		});
+	}
+	
+	@Test
+	public void remoteTest1() throws Exception{
+		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+		ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			public Void run() throws Exception {
+				test1();
+				return null;
+			}
+		});
+		
 	}
 }
