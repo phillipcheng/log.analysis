@@ -168,7 +168,7 @@ public class DBUtil {
 			}
 		}
 	}
-	public static int checkSqls(String sql, PropertiesConfiguration pc){
+	public static boolean checkTableExists(String sql, PropertiesConfiguration pc){
 		Connection conn = null;
 		try {
 			conn = getConnection(pc);
@@ -178,7 +178,7 @@ public class DBUtil {
 					ResultSet result = stmt.executeQuery(sql);
 					if (result.next()){
 						logger.info(String.format("Table exists "));
-						return 1;
+						return true;
 					}
 					SQLWarning warning = stmt.getWarnings();
 					while (warning != null){
@@ -200,64 +200,69 @@ public class DBUtil {
 				logger.error("", e);
 			}
 		}
-
-		return -1;
+		return false;
 	}
+	
+	public static ArrayList<String> checkCsv(String sql, PropertiesConfiguration pc, int startIndex, int endIndex,String columnSeparator){
+        Connection conn = null;
+        ArrayList<String> dbCsvData=new ArrayList<String>();
+        try {
+               conn = getConnection(pc);
+               if (conn!=null){
+                     Statement stmt = conn.createStatement();
+                     try {
+                            ResultSet result = stmt.executeQuery(sql);
+                            ResultSetMetaData rsmd = result.getMetaData();
+                            int endColIdx = rsmd.getColumnCount();
+                            int startColIdx=1;
+                           
+                            String colValue=null;
+                            if(startIndex!=0){
+                                   startColIdx=startIndex;
+                            }
+                            if(endIndex!=0){
+                                   endColIdx=endIndex;
+                            }
+                            while(result.next()){
+                                   colValue="";
+                                   for (int i =startColIdx; i <=endColIdx; i++)
+                                   {
+                                     if(i == endColIdx){
+                                            colValue=colValue+result.getString(i);
+                                            continue;
+                                     }
+                                       colValue=colValue+result.getString(i)+columnSeparator;
+                                   }
+                                   dbCsvData.add(colValue);
+                            } 
+                            if(!dbCsvData.isEmpty())
+                            {
+                                   return dbCsvData;
+                            }
+                            SQLWarning warning = stmt.getWarnings();
+                            while (warning != null){
+                                   logger.info(warning.getMessage());
+                                   warning = warning.getNextWarning();
+                            }
+                     }catch(Exception e){
+                            logger.error(e.getMessage());
+                     }finally{
+                            stmt.close();
+                     }
+               }
+        }catch(Exception e){
+               logger.error("", e);
+        }finally{
+               try{
+                     conn.close();
+               }catch(Exception e){
+                     logger.error("", e);
+               }
+        }
 
-	public static ArrayList<String> checkCsv(String sql, PropertiesConfiguration pc){
-		Connection conn = null;
-		try {
-			conn = getConnection(pc);
-			if (conn!=null){
-				Statement stmt = conn.createStatement();
-				try {
-					ResultSet result = stmt.executeQuery(sql);
-					ResultSetMetaData rsmd = result.getMetaData();
-					int columnsNumber = rsmd.getColumnCount();
-					ArrayList<String> cols=new ArrayList<String>() ;
-					String colValue,decmVal=null;
-					int lastcolumn=columnsNumber-3;
-					while(result.next()){
-						colValue="";
-						for (int i = 2; i <= lastcolumn; i++) {
-							if(i==6)
-							{ 
-								decmVal=result.getString(i).substring(0,1);
-								colValue=colValue+decmVal+" ";
-							}
-							else{
-								colValue=colValue+result.getString(i)+" ";
-							}
-						}
-						cols.add(colValue); 
-					}
-					if(!cols.isEmpty())
-					{
-						return cols;
-					}
-					SQLWarning warning = stmt.getWarnings();
-					while (warning != null){
-						logger.info(warning.getMessage());
-						warning = warning.getNextWarning();
-					}
-				}catch(Exception e){
-					logger.error(e.getMessage());
-				}finally{
-					stmt.close();
-				}
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}finally{
-			try{
-				conn.close();
-			}catch(Exception e){
-				logger.error("", e);
-			}
-		}
+        return dbCsvData;
+}
 
-		return null;
-	}
 
 
 }

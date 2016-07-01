@@ -85,7 +85,6 @@ public class TestShellCmd extends TestETLCmd {
 				}
 	}
 	
-	
 	@Test
 	public void remoteTest1() throws Exception{
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());

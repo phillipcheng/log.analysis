@@ -8,4 +8,3 @@ MKDIR %srcfolder%
 MKDIR %destfolder%
 @echo The test content goes here >%srcfolder%/testShell.txt
 xcopy /s %srcfolder% %destfolder%
-

@@ -20,10 +20,7 @@ public class TestDynSchemaCmd extends TestETLCmd{
 
 	@Test
 	public void test1() throws Exception{
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-		try {
+			try {
 			//
 			String inputFolder = "/test/dynschemacmd/input/";
 			String outputFolder = "/test/dynschemacmd/output/";
@@ -90,9 +87,6 @@ public class TestDynSchemaCmd extends TestETLCmd{
 		} catch (Exception e) {
 			logger.error("Exception occured ", e);
 		}
-		return null;
-			}
-		});
 	}
 	
 	@Test
