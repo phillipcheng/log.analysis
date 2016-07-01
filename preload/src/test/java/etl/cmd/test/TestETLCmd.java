@@ -17,6 +17,7 @@ public class TestETLCmd {
 	private static String cfgProperties="testETLCmd.properties";
 	private static String key_localFolder="localFolder";
 	private static String key_defaultFs="defaultFS";
+	private static String key_jobTracker="jobTracker";
 	
 	private Properties p = new Properties();
 	
@@ -24,6 +25,7 @@ public class TestETLCmd {
 	private FileSystem fs;
 	private String defaultFS;
 	private Configuration conf;
+	private String jobTracker;
 	
 	@Before
     public void setUp() {
@@ -33,6 +35,14 @@ public class TestETLCmd {
 				p.load(input);
 				localFolder = (p.getProperty(key_localFolder));
 				conf = new Configuration();
+				String jobTracker=p.getProperty(key_jobTracker);
+				if (jobTracker!=null){
+					String host = jobTracker.substring(0,jobTracker.indexOf(":"));
+					conf.set("mapreduce.jobtracker.address", jobTracker);
+					conf.set("yarn.resourcemanager.hostname", host);
+					conf.set("mapreduce.framework.name", "yarn");
+					conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
+				}
 				defaultFS = p.getProperty(key_defaultFs);
 				conf.set("fs.defaultFS", defaultFS);
 				if (defaultFS.contains("127.0.0.1")){
