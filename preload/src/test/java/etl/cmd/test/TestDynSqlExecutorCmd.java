@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,9 +29,6 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 
 	@Test
 	public void test1() throws Exception{
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
 				try {
 					//
 					String inputFolder = "/test/dynsqlexecutor/input/";
@@ -68,33 +66,40 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 					DynSqlExecutorCmd cmd = new DynSqlExecutorCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder+dynInCfgName, null, getDefaultFS());
 					cmd.process(0, null, null);
 
-
 					//checking create table already created
 					String sql ="SELECT table_name from tables where table_schema='"+prefix+"' and table_name='MyCore_';";
 					PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), dfsCfgFolder + staticCfgName);
-					int result=DBUtil.checkSqls(sql,pc);
-					assertTrue(result==1);
+					boolean result=DBUtil.checkTableExists(sql,pc);
+					assertTrue(result);
 
 					//get csvData to check
 					ArrayList<String> csvData=new ArrayList<String>();
 					String line,newline=null;
+					int startIndex=1,endIndex=5;
 					BufferedReader br=null;
 					br = new BufferedReader(new FileReader(getLocalFolder() + localCsvFileName));
 					while ((line = br.readLine()) != null) {
 						String[] colArray = line.split("\",\"");
 						newline="";
-						for(int j=1;j<colArray.length-2;j++)
+						for(int j=startIndex;j<endIndex;j++)
 						{
-							newline=newline+colArray[j]+" ";
+							if(j==endIndex-1){
+								newline=newline+colArray[j];
+							}
+							else
+							{
+								newline=newline+colArray[j]+" ";
+							}
 						}
 						csvData.add(newline);  
 					}
-
+					br.close();
 					// get table data
 					ArrayList<String> cols=new ArrayList<String>() ;
 					sql = "SELECT * from sgsiwf.MyCore_;";
-					cols=DBUtil.checkCsv(sql, pc);
-
+					cols=DBUtil.checkCsv(sql, pc, startIndex+1, endIndex, " ");
+					logger.info("The Comparation status :"+cols.containsAll(csvData));
+					
 					//check dbdata has csv data 
 					assertTrue(cols.containsAll(csvData));
 					logger.info("The results are verified successfully");
@@ -102,10 +107,6 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 				} catch (Exception e) {
 					logger.error("Exception occured due to invalid data-history path", e);
 				}
-				return null;
-			}
-		});
-
 	}
 
 

@@ -22,10 +22,6 @@ public class TestBackupCmd extends TestETLCmd{
 
 	@Test
 	public void test1() throws Exception{
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
 				try {
 					//
 					String dynFolder = "/test/BackupCmd/data/dynFolder1/";
@@ -92,10 +88,6 @@ public class TestBackupCmd extends TestETLCmd{
 				} catch (Exception e) {
 					logger.error("Exception occured ", e);
 				}
-
-				return null;
-			}
-		});
 	}
 
 	@Test
@@ -109,161 +101,4 @@ public class TestBackupCmd extends TestETLCmd{
 		});
 
 	}
-
-	/*
-	@Test
-	// Testing path of data-history-folder.
-	public void test1_DataHistory() throws Exception {
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, "data-history-folder=/test_folder/dataHistory/", null);
-				} catch (Exception e) {
-					logger.error("Exception occured due to invalid data-history path", e);
-				}
-				return null;
-			}
-		});
-	}
-
-	@Test
-	// Testing with destination-Zip-Folder.
-	public void test2_destinationZipFolder() throws Exception {
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, "destination-zip-folder=/test_folder/dataHistory/"+wfid+".zip", null);
-				} 
-				catch (Exception e) {
-					// TODO: handle exception
-					logger.error("Exception occured due to invalid destination Zip-folder path ", e);
-				}
-				return null;
-			}
-		});
-	}
-
-	@Test
-	// Testing with default folder.filter and default file filter.
-	public void test3_default_folderfilter_default_fileFilter() throws Exception {
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, null, null);
-				} catch (Exception e) {
-					logger.error("", e);
-				}
-				return null;
-			}
-		});
-	}
-
-	@Test
-	// Testing with "xml" folder.filter and raw.xml.files file filter.
-	public void test4_xmlFolder_raw_Xml_fileFilter() throws Exception {
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, "folder.filter=/test_folder/dataHistory/datahistory/ ,file.filter=raw.xml.files", null);
-				} catch (Exception e) {
-					logger.error("", e);
-				}
-				return null;
-			}
-		});
-	}
-
-	@Test
-	// Testing with folder.filter csv-folder and WFID file filter.
-	public void test5_csvfolder_WFID_fileFilter() throws Exception {
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, "folder.filter=/test_folder/csvdata/,file.filter=WFID", null);
-				} catch (Exception e) {
-					logger.error("", e);
-				}
-				return null;
-			}
-		});
-	}
-
-
-	@Test
-	// Testing with New folder as folder.filter  and ALL file filter.
-	public void test6_New_folder_ALL_fileFilter() throws Exception {
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, "folder.filter=/test_folder/datafolder3,file.filter=ALL", null);
-				} catch (Exception e) {
-					logger.error("", e);
-				}
-				return null;
-			}
-		});
-	}
-
-
-
-	@Test
-	// Testing with xml and csv folder.filter and raw.xml.files and WFID file filter.
-	public void test7_Xml_Csv_raw_WFID_fileFilter() throws Exception {
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, "folder.filter=/test_folder/dataHistory/datahistory/ /test_folder/csvdata/ ,file.filter=raw.xml.files WFID", null);
-				} catch (Exception e) {
-					logger.error("", e);
-				}
-				return null;
-			}
-		});
-	}
-	@Test
-	// Testing with New folder.filter and ALL file filter.
-	public void test8_additional_folder_ALL_fileFilter() throws Exception {
-
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				try {
-					getFs().copyFromLocalFile(new Path(localFolder + cfg), new Path(dfsFolder+cfg));
-					BackupCmd cmd = new BackupCmd(wfid, dfsFolder+cfg, dynconf, null, defaultFS);
-					cmd.process(0, "folder.filter=/test_folder/dataHistory/datahistory/ /test_folder/csvdata/ /test_folder/datafolder3/,file.filter=raw.xml.files WFID ALL", null);
-				} catch (Exception e) {
-					logger.error("", e);
-				}
-				return null;
-			}
-		});
-	}
-	 */
 }

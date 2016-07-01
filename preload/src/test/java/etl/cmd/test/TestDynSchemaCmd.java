@@ -23,7 +23,6 @@ public class TestDynSchemaCmd extends TestETLCmd{
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
-		
 		try {
 			//
 			String inputFolder = "/test/dynschemacmd/input/";
@@ -94,8 +93,6 @@ public class TestDynSchemaCmd extends TestETLCmd{
 		return null;
 			}
 		});
-		
-		
 	}
 	
 	@Test
