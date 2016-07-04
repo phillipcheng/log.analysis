@@ -40,15 +40,12 @@ import etl.util.Util;
  	
  	@Test
  	public void test1() throws IOException, InterruptedException{
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
  		try{
  			String remoteCfgFolder = "/etltest/cfg/";
  			String remoteCsvFolder = "/etltest/msgparse/";
  			String remoteCsvOutputFolder = "/etltest/msgparseout/";
  			String csvtransProp = "hlr.msgparse.singlecmd.properties";
- 			String localExpectedFile = "expected_file";
+ 			String localExpectedFile = "expected_parsed_file";
  			String[] csvFiles = new String[]{"input.hlr1.txt"};
  			getFs().mkdirs(new Path(remoteCfgFolder));
  			getFs().mkdirs(new Path(remoteCsvFolder));
@@ -91,10 +88,17 @@ import etl.util.Util;
 		} catch (Exception e) {
  			logger.error("", e);
  		}
+	}
  		
-		return null;
-			}
-		});
+		@Test
+		public void remoteTest1() throws Exception{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					test1();
+					return null;
+				}
+			});
 
- 	}
+		}
  }
