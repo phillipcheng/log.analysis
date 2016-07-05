@@ -22,7 +22,7 @@ public class TestSftpCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestSftpCmd.class);
 
 	@Test
-	public void testSuccess() throws Exception {
+	public void test1() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
@@ -165,5 +165,18 @@ public class TestSftpCmd extends TestETLCmd {
 			}
 		});
 	}
+	
+	@Test
+	public void remoteTest1() throws Exception {
+		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+		ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			public Void run() throws Exception {
+				test1();
+				return null;
+			}
+		});
+
+	}
+
 
 }

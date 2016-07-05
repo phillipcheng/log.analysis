@@ -79,9 +79,8 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 		});
 	}
 
-	
 	@Test
-	public void remoteTest1() throws Exception{
+	public void remoteTest1() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
@@ -89,10 +88,11 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 				return null;
 			}
 		});
-		
+
 	}
-	/*@Test
-	public void testMapReduceFunction() throws Exception {
+
+	@Test
+	public void test2() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
@@ -103,7 +103,7 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 					String remoteKcvOutputFolder = "/etltest/kcvtransformout/";
 					// setup testing env
 					String kcvtransProp = "kcv2csv.properties";
-					String[] kcvFiles = new String[] { "PJ24002A_BBG2.fix", "PJ24002B_BBG2.fix" };
+					String kcvFile = "PJ24002A_BBG2.fix";
 					String regexPattern = "[\\s]+([A-Za-z0-9\\,\\. ]+)[\\s]+([A-Z][A-Z ]+)";
 					String line = null;
 
@@ -113,14 +113,15 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 					getFs().mkdirs(new Path(remoteKcvFolder));
 					getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvtransProp),
 							new Path(remoteCfgFolder + kcvtransProp));
-					for (String kcvFile : kcvFiles) {
-						getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvFile),
-								new Path(remoteKcvFolder + kcvFile));
-					}
+
+					getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvFile),
+							new Path(remoteKcvFolder + kcvFile));
+
 					// run job
-					getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.testKcvToCsvTransform");
+					getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.KcvToCsvCmd");
 					getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
 					getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + kcvtransProp);
+					getConf().set("row", "remoteKcvFolder + kcvFile");
 					Job job = Job.getInstance(getConf(), "testKcvToCsvTransform");
 					job.setMapperClass(etl.engine.InvokeMapper.class);
 					job.setNumReduceTasks(0);// no reducer
@@ -137,17 +138,8 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 					logger.info("Output:" + output);
 					assertTrue(output != null);
 					assertTrue(output.size() > 0);
-				/*	br = new BufferedReader(
-							new InputStreamReader(getFs().open(new Path(remoteKcvFolder + kcvFiles[0]))));
-					if ((line = br.readLine()) != null) {
-						Pattern pattern = Pattern.compile(regexPattern);
-						Matcher matcher = pattern.matcher(line);
-						if (matcher.find()) {
-							assertTrue(output.get(0).trim().startsWith(matcher.group(1)));
 
-						}
-					}*/
-				/*} catch (Exception e) {
+				} catch (Exception e) {
 					logger.error("", e);
 				} finally {
 					if (br != null)
@@ -156,6 +148,6 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 				return null;
 			}
 		});
-	}*/
+	}
 
 }
