@@ -19,8 +19,8 @@ public class TestDynSchemaCmd extends TestETLCmd{
 	public static final Logger logger = Logger.getLogger(TestDynSchemaCmd.class);
 
 	@Test
-	public void test1(){
-		try {
+	public void test1() throws Exception{
+			try {
 			//
 			String inputFolder = "/test/dynschemacmd/input/";
 			String outputFolder = "/test/dynschemacmd/output/";
@@ -85,7 +85,7 @@ public class TestDynSchemaCmd extends TestETLCmd{
 			files = Util.listDfsFile(getFs(), dfsCfgFolder);
 			assertTrue(files.contains(dynCfgOutName));
 		} catch (Exception e) {
-			logger.error("Exception occured due to invalid data-history path", e);
+			logger.error("Exception occured ", e);
 		}
 	}
 	
