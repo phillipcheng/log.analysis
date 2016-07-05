@@ -41,8 +41,8 @@ public class TestSftpCmd extends TestETLCmd {
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 				Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 				//
-				getFs().delete(new Path(incomingFolder+fileName),false);
-				Util.deleteFiles(incomingFolder,fileNames);
+				getFs().delete(new Path(incomingFolder + fileName), false);
+				Util.deleteFiles(incomingFolder, fileNames);
 				SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, null, getDefaultFS());
 				cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
 				// check incoming fodler
@@ -56,7 +56,6 @@ public class TestSftpCmd extends TestETLCmd {
 			}
 		});
 	}
-
 
 	@Test
 	public void testCommonFailure() throws Exception {
@@ -77,9 +76,9 @@ public class TestSftpCmd extends TestETLCmd {
 				FileSystem fs = FileSystem.get(conf);
 				String dfsFolder = "/test/sftpcmd/cfg/";
 				String cfg = "sftp_test.properties";
-				fs.copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));				
-				getFs().delete(new Path(incomingFolder+fileName),false);
-				
+				fs.copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
+				getFs().delete(new Path(incomingFolder + fileName), false);
+
 				SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, defaultFS);
 				cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
 
@@ -97,7 +96,7 @@ public class TestSftpCmd extends TestETLCmd {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			public Void run() throws Exception {
-				logger.info("Testing sftpcmd connection failure with wrong sftp port number");
+				logger.info("Testing sftpcmd connection failure with wrong sftp port number:25");
 				Configuration conf = new Configuration();
 				String defaultFS = "hdfs://192.85.247.104:19000";
 				String ftpFolder = "/data/mtccore/source/";
@@ -113,7 +112,7 @@ public class TestSftpCmd extends TestETLCmd {
 				String cfg = "sftp_test.properties";
 				//
 				fs.copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
-				getFs().delete(new Path(incomingFolder+fileName),false);
+				getFs().delete(new Path(incomingFolder + fileName), false);
 				SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, defaultFS);
 				cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.port=%s", host, ftpFolder, port),
 						null);
@@ -148,7 +147,7 @@ public class TestSftpCmd extends TestETLCmd {
 				//
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 				Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-				getFs().delete(new Path(incomingFolder+fileName),false);
+				getFs().delete(new Path(incomingFolder + fileName), false);
 				//
 				SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, null, getDefaultFS());
 				cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=%s", host, ftpFolder, sftpClean),
@@ -165,7 +164,7 @@ public class TestSftpCmd extends TestETLCmd {
 			}
 		});
 	}
-	
+
 	@Test
 	public void remoteTest1() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
@@ -177,6 +176,5 @@ public class TestSftpCmd extends TestETLCmd {
 		});
 
 	}
-
 
 }

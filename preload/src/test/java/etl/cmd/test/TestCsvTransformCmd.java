@@ -98,7 +98,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 					String remoteCsvFolder = "/etltest/csvtransform/";
 					String remoteCsvOutputFolder = "/etltest/csvtransformout/";
 					// setup testing env
-					String csvtransProp = "csvtrans4.properties";
+					String csvtransProp = "csvtrans3.properties";
 					String csvFile = "csvtrans2.csv";
 					int splitColumn = 2;
 					getFs().delete(new Path(remoteCsvFolder), true);
@@ -149,7 +149,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 					String remoteCsvFolder = "/etltest/csvtransform/";
 					String remoteCsvOutputFolder = "/etltest/csvtransformout/";
 					// setup testing env
-					String csvtransProp = "csvtrans3.properties";
+					String csvtransProp = "csvtrans2.properties";
 					String csvFile = "csvtrans2.csv";
 					int updateColumn1 = 2;
 					int updateColumn2 = 3;
@@ -193,6 +193,18 @@ public class TestCsvTransformCmd extends TestETLCmd {
 				return null;
 			}
 		});
+	}
+	
+	@Test
+	public void remoteTest1() throws Exception{
+		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+		ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			public Void run() throws Exception {
+				testFileNameRowValidationSkipHeader();
+				return null;
+			}
+		});
+		
 	}
 
 }

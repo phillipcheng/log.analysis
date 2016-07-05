@@ -91,7 +91,7 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 
 	}
 
-	@Test
+	/*@Test
 	public void test2() throws Exception {
 		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 		ugi.doAs(new PrivilegedExceptionAction<Void>() {
@@ -121,7 +121,6 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 					getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.KcvToCsvCmd");
 					getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
 					getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + kcvtransProp);
-					getConf().set("row", "remoteKcvFolder + kcvFile");
 					Job job = Job.getInstance(getConf(), "testKcvToCsvTransform");
 					job.setMapperClass(etl.engine.InvokeMapper.class);
 					job.setNumReduceTasks(0);// no reducer
@@ -148,6 +147,6 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 				return null;
 			}
 		});
-	}
+	}*/
 
 }
