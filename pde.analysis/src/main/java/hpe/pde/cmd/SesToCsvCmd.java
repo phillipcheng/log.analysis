@@ -13,6 +13,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
 import etl.engine.FileETLCmd;
@@ -342,20 +343,23 @@ public class SesToCsvCmd extends FileETLCmd{
 					}
 					String lineOutput = null;
 					if ( ses_record == 1 && eph_reqres_event_num == 0 && alman_eph_reqres_event_num == 0 && alman_reqres_event_num == 0  ) {
-						lineOutput = String.format("%s,%s,%s,%s,%d,%d\n",SESSION_ID,START_TIME,END_TIME,DURATION,0,0);
+						lineOutput = String.format("%s,%s,%s,%s,%d,%d",SESSION_ID,START_TIME,END_TIME,DURATION,0,0);
 					}
 					else if ( ses_record == 1 && alman_eph_reqres_event_num == 1 ) {
-						lineOutput = String.format("%s,%s,%s,%s,%d,%d\n",SESSION_ID,START_TIME,END_TIME,DURATION,alman_eph_reqres,1);
+						lineOutput = String.format("%s,%s,%s,%s,%d,%d",SESSION_ID,START_TIME,END_TIME,DURATION,alman_eph_reqres,1);
 					}
 					else if ( ses_record == 1 && eph_reqres_event_num == 1 ) {
-						lineOutput = String.format("%s,%s,%s,%s,%d,%d\n",SESSION_ID,START_TIME,END_TIME,DURATION,0,eph_reqres);
+						lineOutput = String.format("%s,%s,%s,%s,%d,%d",SESSION_ID,START_TIME,END_TIME,DURATION,0,eph_reqres);
 					}
 					else if ( ses_record == 1 && alman_reqres_event_num == 1 ) {
-						lineOutput = String.format("%s,%s,%s,%s,%d,%d\n",SESSION_ID,START_TIME,END_TIME,DURATION,alman_reqres,0);
+						lineOutput = String.format("%s,%s,%s,%s,%d,%d",SESSION_ID,START_TIME,END_TIME,DURATION,alman_reqres,0);
 					}else{
 						logger.warn(String.format("no output for line:%s", line));
 					}
 					if (lineOutput!=null){
+						if (isAddFileName() && context!=null){
+							lineOutput+="," + getAbbreFileName(filename);
+						}
 						outputList.add(lineOutput);
 					}
 

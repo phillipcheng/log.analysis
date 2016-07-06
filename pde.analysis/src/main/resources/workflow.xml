@@ -13,7 +13,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.GenSeedInputCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/pde.bin.genseedinput.properties</arg>
+			<arg>/pde/etlcfg/bin.genseedinput.properties</arg>
 			<arg>unused</arg>
 			<arg>unused</arg>
 			<capture-output/>
@@ -87,6 +87,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 	<fork name="forking">
         <path start="CsvTransform"/>
         <path start="GenFixSeedInput"/>
+        <path start="GenSesSeedInput"/>
     </fork>
     
 	<action name="CsvTransform">
@@ -144,7 +145,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>staticConfigFile</name>
-					<value>/pde/etlcfg/pde.csv.csvtrans.properties</value>
+					<value>/pde/etlcfg/csv.csvtrans.properties</value>
 				</property>
 			</configuration>
 		</map-reduce>
@@ -158,7 +159,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/pde.loadcsv1.properties</arg>
+			<arg>/pde/etlcfg/load.csv1.properties</arg>
 			<arg>unused</arg>
 			<arg>unused</arg>
 			<capture-output/>
@@ -174,7 +175,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.GenSeedInputCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/pde.fix.genseedinput.properties</arg>
+			<arg>/pde/etlcfg/fix.genseedinput.properties</arg>
 			<arg>unused</arg>
 			<arg>unused</arg>
 			<capture-output/>
@@ -241,7 +242,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>staticConfigFile</name>
-					<value>/pde/etlcfg/pde.fix.kcv2csv.properties</value>
+					<value>/pde/etlcfg/fix.kcv2csv.properties</value>
 				</property>
 			</configuration>
 		</map-reduce>
@@ -303,21 +304,21 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>staticConfigFile</name>
-					<value>/pde/etlcfg/pde.fixcsv.csvtrans.properties</value>
+					<value>/pde/etlcfg/fixcsv.csvtrans.properties</value>
 				</property>
 			</configuration>
 		</map-reduce>
-		<ok to="loadSesCsvCmd"/>
+		<ok to="loadFixCsvCmd"/>
 		<error to="fail"/>
 	</action>
-	<action name="loadSesCsvCmd">
+	<action name="loadFixCsvCmd">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/pde.loadsescsv.properties</arg>
+			<arg>/pde/etlcfg/load.fixcsv.properties</arg>
 			<arg>unused</arg>
 			<arg>unused</arg>
 			<capture-output/>
@@ -325,6 +326,103 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 		<ok to="joining"/>
 		<error to="fail"/>
 	</action>
+	
+	<action name="GenSesSeedInput">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.GenSeedInputCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/ses.genseedinput.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <capture-output/>
+        </java>
+        <ok to="SesToCsv"/>
+        <error to="fail"/>
+    </action>
+    <action name="SesToCsv">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.lineinputformat.linespermap</name>
+                    <value>1</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.outputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.value.class</name>
+                    <value>org.apache.hadoop.io.NullWritable</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>${wf:actionData('GenSesSeedInput')['seed.input.filename']}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>${concat("/pde/sescsv/", wf:id())}</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>hpe.pde.cmd.SesToCsvCmd</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/pde/etlcfg/ses2csv.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="LoadSesCsvCmd"/>
+        <error to="fail"/>
+    </action>
+    <action name="LoadSesCsvCmd">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.LoadDataCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/load.sescsv.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <capture-output/>
+        </java>
+        <ok to="joining"/>
+        <error to="fail"/>
+    </action>
 	<join name="joining" to="end"/>
 	<end name="end"/>
 </workflow-app>
