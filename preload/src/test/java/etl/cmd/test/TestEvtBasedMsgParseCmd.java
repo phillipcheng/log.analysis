@@ -27,8 +27,7 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
  	public static final Logger logger = Logger.getLogger(TestEvtBasedMsgParseCmd.class);
  	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
  	
- 	@Test
- 	public void test1() throws IOException, InterruptedException{
+ 	private void test1Fun() throws IOException, InterruptedException{
  		try{
  			String remoteCfgFolder = "/etltest/cfg/";
  			String remoteCsvFolder = "/etltest/msgparse/";
@@ -80,13 +79,17 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
 	}
  		
 	@Test
-	public void remoteTest1() throws Exception{
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				test1();
-				return null;
-			}
-		});
+	public void test1() throws Exception{
+		if (getDefaultFS().contains("127.0.0.1")){
+			test1Fun();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					test1Fun();
+					return null;
+				}
+			});
+		}
 	}
 }

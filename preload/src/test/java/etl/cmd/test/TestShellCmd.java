@@ -26,8 +26,7 @@ public class TestShellCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(ShellCmd.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
-	@Test
-	public void testShellCmd() throws Exception {
+	private void test1Fun() throws Exception {
 		try{
 			String remoteCfgFolder = "/pde/cfg";
 			String remoteOutputFolder="/pde/output";
@@ -78,14 +77,18 @@ public class TestShellCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void remoteTest1() throws Exception{
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				testShellCmd();
-				return null;
-			}
-		});
+	public void test1() throws Exception{
+		if (getDefaultFS().contains("127.0.0.1")){
+			test1Fun();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					test1Fun();
+					return null;
+				}
+			});
+		}
 
 	}
 }

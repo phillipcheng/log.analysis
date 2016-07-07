@@ -22,8 +22,7 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 
 	public static final Logger logger = Logger.getLogger(TestDynSqlExecutorCmd.class);
 
-	@Test
-	public void test1() throws Exception{
+	private void test1Fun() throws Exception{
 		try {
 			//
 			String inputFolder = "/test/dynsqlexecutor/input/";
@@ -101,13 +100,17 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 	}
 
 	@Test
-	public void remoteTest1() throws Exception{
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-		ugi.doAs(new PrivilegedExceptionAction<Void>() {
-			public Void run() throws Exception {
-				test1();
-				return null;
-			}
-		});
+	public void test1() throws Exception{
+		if (getDefaultFS().contains("127.0.0.1")){
+			test1Fun();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					test1Fun();
+					return null;
+				}
+			});
+		}
 	}
 }

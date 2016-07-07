@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
@@ -66,8 +64,6 @@ public class TestSftpCmd extends TestETLCmd {
 
 	private void testCommonFailureFun() throws Exception {
 		logger.info("Testing sftpcmd common failure test case");
-		Configuration conf = new Configuration();
-		String defaultFS = "hdfs://192.85.247.104:19000";
 		String ftpFolder = "/data/mtccore/source1/";
 		String incomingFolder = "/data/mtccore/test/";
 		String host = "192.85.247.104";
@@ -75,14 +71,12 @@ public class TestSftpCmd extends TestETLCmd {
 		String user = "dbadmin";
 		String pass = "password";
 		String fileName = "backup_test1_data";
-		conf.set("fs.defaultFS", defaultFS);
-		FileSystem fs = FileSystem.get(conf);
 		String dfsFolder = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
-		fs.copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
 		getFs().delete(new Path(incomingFolder + fileName), false);
 
-		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, defaultFS);
+		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, getDefaultFS());
 		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
 
 		// check incoming fodler
@@ -107,8 +101,6 @@ public class TestSftpCmd extends TestETLCmd {
 
 	private void testConnectionFailureFun() throws Exception{
 		logger.info("Testing sftpcmd connection failure with wrong sftp port number:25");
-		Configuration conf = new Configuration();
-		String defaultFS = "hdfs://192.85.247.104:19000";
 		String ftpFolder = "/data/mtccore/source/";
 		String incomingFolder = "/data/mtccore/test/";
 		String host = "192.85.247.104";
@@ -116,14 +108,12 @@ public class TestSftpCmd extends TestETLCmd {
 		String user = "dbadmin";
 		String pass = "password";
 		String fileName = "backup_test1_data";
-		conf.set("fs.defaultFS", defaultFS);
-		FileSystem fs = FileSystem.get(conf);
 		String dfsFolder = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		//
-		fs.copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
 		getFs().delete(new Path(incomingFolder + fileName), false);
-		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, defaultFS);
+		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, getDefaultFS());
 		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.port=%s", host, ftpFolder, port),
 				null);
 
