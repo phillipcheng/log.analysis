@@ -1,8 +1,6 @@
 package etl.engine;
 
 import java.io.IOException;
-import java.util.List;
-
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -55,29 +53,9 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>
 	//for each line of the inputfile, this will be invoked once
 	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		logger.info(String.format("in mapper, key:%s, values:%s", key, value));
+		String input = value.toString();
 		try{
-			String input = value.toString();
-			for (int i=0; i<cmds.length; i++){
-				ETLCmd cmd = cmds[i];
-				List<String> outputs = cmd.process(key.get(), input, context);
-				if (i<cmds.length-1){//intermediate steps
-					if (outputs!=null && outputs.size()==1){
-						input = outputs.get(0);
-					}else{
-						String outputString = "null";
-						if (outputs!=null){
-							outputString = outputs.toString();
-						}
-						logger.error(String.format("output from chained cmd should be a string. %s", outputString));
-					}
-				}else{//last step
-					if (outputs!=null){
-						for (String line:outputs){
-							context.write(new Text(line), NullWritable.get());
-						}
-					}
-				}
-			}
+			EngineUtil.processCmds(cmds, key.get(), input, context);
 		}catch(Throwable e){
 			logger.error("", e);
 		}

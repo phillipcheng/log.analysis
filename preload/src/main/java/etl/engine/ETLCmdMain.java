@@ -1,7 +1,5 @@
 package etl.engine;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
 public class ETLCmdMain {
@@ -40,7 +38,7 @@ public class ETLCmdMain {
 					defaultFs = null;
 				}
 			}
-			String input = null;
+			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
 			for (int i=0; i<cmdClassNames.length; i++){
 				String cmdClassName = cmdClassNames[i];
 				String staticCfg = staticCfgs[i];
@@ -48,23 +46,16 @@ public class ETLCmdMain {
 					Class clazz = Class.forName(cmdClassName);
 					ETLCmd cmd = (ETLCmd) clazz.getConstructor(String.class, String.class, String.class, String.class, String.class).
 							newInstance(wfid, staticCfg, dynInCfg, dynOutCfg, defaultFs);
-					List<String> outputs = cmd.process(0, input, null);
-					if (i<cmdClassNames.length-1){
-						if (outputs!=null && outputs.size()==1){
-							input = outputs.get(0);
-						}else{
-							String outputString = "null";
-							if (outputs!=null){
-								outputString = outputs.toString();
-							}
-							logger.error(String.format("output from chained cmd should be a string. %s", outputString));
-						}
-					}else{
-						logger.info(String.format("final output:%s", outputs));
-					}
+					cmds[i] = cmd;
 				}catch(Exception e){
 					logger.error("", e);
 				}
+			}
+			String input = null;
+			try{
+				EngineUtil.processCmds(cmds, 0, input, null);
+			}catch(Throwable e){
+				logger.error("", e);
 			}
 		}
 	}
