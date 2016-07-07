@@ -98,36 +98,44 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 			public Void run() throws Exception {
 				BufferedReader br = null;
 				try {
-					String remoteCfgFolder = "/etltest/cfg/";
+					String remoteCfgFolder = "/etltest/kcvcfg/";
+					String remoteSeedFolder = "/etltest/kcvseed/";
 					String remoteKcvFolder = "/etltest/kcvtransform/";
 					String remoteKcvOutputFolder = "/etltest/kcvtransformout/";
 					// setup testing env
 					String kcvtransProp = "kcv2csv.properties";
 					String kcvFile = "PJ24002A_BBG2.fix";
+					String seedFile = "kcvtocsv.seed";
 					String regexPattern = "[\\s]+([A-Za-z0-9\\,\\. ]+)[\\s]+([A-Z][A-Z ]+)";
 					String line = null;
 
 					getFs().delete(new Path(remoteKcvFolder), true);
+					getFs().delete(new Path(remoteSeedFolder), true);
 					getFs().delete(new Path(remoteKcvOutputFolder), true);
+
 					getFs().mkdirs(new Path(remoteCfgFolder));
+					getFs().mkdirs(new Path(remoteSeedFolder));
 					getFs().mkdirs(new Path(remoteKcvFolder));
 					getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvtransProp),
 							new Path(remoteCfgFolder + kcvtransProp));
-
+					getFs().copyFromLocalFile(new Path(getLocalFolder() + seedFile),
+							new Path(remoteSeedFolder + seedFile));
 					getFs().copyFromLocalFile(new Path(getLocalFolder() + kcvFile),
 							new Path(remoteKcvFolder + kcvFile));
 
 					// run job
 					getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.KcvToCsvCmd");
-					//getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
+					// getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new
+					// Date()));
 					getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + kcvtransProp);
 					Job job = Job.getInstance(getConf(), "testKcvToCsvTransform");
 					job.setMapperClass(etl.engine.InvokeMapper.class);
 					job.setNumReduceTasks(0);// no reducer
+					job.setInputFormatClass(org.apache.hadoop.mapreduce.lib.input.NLineInputFormat.class);
 					job.setOutputKeyClass(Text.class);
 					job.setOutputValueClass(NullWritable.class);
 					FileInputFormat.setInputDirRecursive(job, true);
-					FileInputFormat.addInputPath(job, new Path(remoteKcvFolder+kcvFile));
+					FileInputFormat.addInputPath(job, new Path(remoteSeedFolder));
 					FileOutputFormat.setOutputPath(job, new Path(remoteKcvOutputFolder));
 					job.waitForCompletion(true);
 
@@ -137,7 +145,16 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 					logger.info("Output:" + output);
 					assertTrue(output != null);
 					assertTrue(output.size() > 0);
+					
+					br = new BufferedReader(new InputStreamReader(getFs().open(new Path(remoteKcvFolder + kcvFile))));
+					if ((line = br.readLine()) != null) {
+						Pattern pattern = Pattern.compile(regexPattern);
+						Matcher matcher = pattern.matcher(line);
+						if (matcher.find()) {
+							assertTrue(output.get(0).trim().startsWith(matcher.group(1)));
 
+						}
+					}
 				} catch (Exception e) {
 					logger.error("", e);
 				} finally {
