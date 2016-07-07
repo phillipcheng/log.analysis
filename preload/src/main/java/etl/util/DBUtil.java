@@ -134,17 +134,20 @@ public class DBUtil {
 		return conn;
 	}
 
-	public static void executeSqls(List<String> sqls, PropertiesConfiguration pc){
+	public static int executeSqls(List<String> sqls, PropertiesConfiguration pc){
 		Connection conn = null;
+		int rowsUpdated = 0;
 		try {
 			conn = getConnection(pc);
 			if (conn!=null){
 				for (String sql:sqls){
+					logger.info(sql);
 					Statement stmt = conn.createStatement();
 					try {
 						boolean result = stmt.execute(sql);
 						if (!result){
-							logger.info(String.format("%d rows accepted.", stmt.getUpdateCount()));
+							rowsUpdated = stmt.getUpdateCount();
+							logger.info(String.format("%d rows accepted.", rowsUpdated));
 						}
 						SQLWarning warning = stmt.getWarnings();
 						while (warning != null){
@@ -167,6 +170,8 @@ public class DBUtil {
 				logger.error("", e);
 			}
 		}
+		logger.info("Rows Updated:"+rowsUpdated);
+		return rowsUpdated;
 	}
 	public static boolean checkTableExists(String sql, PropertiesConfiguration pc){
 		Connection conn = null;
