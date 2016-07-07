@@ -141,6 +141,7 @@ public class DBUtil {
 			conn = getConnection(pc);
 			if (conn!=null){
 				for (String sql:sqls){
+					logger.info(sql);
 					Statement stmt = conn.createStatement();
 					try {
 						boolean result = stmt.execute(sql);
@@ -169,6 +170,7 @@ public class DBUtil {
 				logger.error("", e);
 			}
 		}
+		logger.info("Rows Updated:"+rowsUpdated);
 		return rowsUpdated;
 	}
 	public static int checkSqls(String sql, PropertiesConfiguration pc){
@@ -210,93 +212,71 @@ public class DBUtil {
 		return -1;
 	}
 
-	public static int FetchNumberOfRows(String sql, PropertiesConfiguration pc){
-		Connection conn = null;
-		int numberOfRows = 0;
-		try {
-			conn = getConnection(pc);
-			if (conn!=null){
-				Statement stmt = conn.createStatement();
-				try {
-					ResultSet result = stmt.executeQuery(sql);
-					while (result.next()) {
-						
-						numberOfRows = result.getInt("count");
-					}
-				}catch(Exception e){
-					logger.error(e.getMessage());
-				}finally{
-					stmt.close();
-				}
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}finally{
-			try{
-				conn.close();
-			}catch(Exception e){
-				logger.error("", e);
-			}
-		}
-
-		return numberOfRows;
-	}
+	
 
 
-	public static ArrayList<String> checkCsv(String sql, PropertiesConfiguration pc){
-		Connection conn = null;
-		try {
-			conn = getConnection(pc);
-			if (conn!=null){
-				Statement stmt = conn.createStatement();
-				try {
-					ResultSet result = stmt.executeQuery(sql);
-					ResultSetMetaData rsmd = result.getMetaData();
-					int columnsNumber = rsmd.getColumnCount();
-					ArrayList<String> cols=new ArrayList<String>() ;
-					String colValue,decmVal=null;
-					int lastcolumn=columnsNumber-3;
-					while(result.next()){
-						colValue="";
-						for (int i = 2; i <= lastcolumn; i++) {
-							if(i==6)
-							{ 
-								decmVal=result.getString(i).substring(0,1);
-								colValue=colValue+decmVal+" ";
-							}
-							else{
-								colValue=colValue+result.getString(i)+" ";
-							}
-						}
-						cols.add(colValue); 
-					}
-					if(!cols.isEmpty())
-					{
-						return cols;
-					}
-					SQLWarning warning = stmt.getWarnings();
-					while (warning != null){
-						logger.info(warning.getMessage());
-						warning = warning.getNextWarning();
-					}
-				}catch(Exception e){
-					logger.error(e.getMessage());
-				}finally{
-					stmt.close();
-				}
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}finally{
-			try{
-				conn.close();
-			}catch(Exception e){
-				logger.error("", e);
-			}
-		}
+	public static ArrayList<String> checkCsv(String sql, PropertiesConfiguration pc, int startIndex, int endIndex,String columnSeparator){
+        Connection conn = null;
+        ArrayList<String> dbCsvData=new ArrayList<String>();
+        try {
+               conn = getConnection(pc);
+               logger.info("conected");
+               if (conn!=null){
+                     Statement stmt = conn.createStatement();
+                     try {
+                    	    logger.info(sql);
+                            ResultSet result = stmt.executeQuery(sql);
+                            logger.info(result);
+                            ResultSetMetaData rsmd = result.getMetaData();
+                            int endColIdx = rsmd.getColumnCount();
+                            int startColIdx=1;
+                           
+                            String colValue=null;
+                            if(startIndex!=0){
+                                   startColIdx=startIndex;
+                            }
+                            if(endIndex!=0){
+                                   endColIdx=endIndex;
+                            }
+                            logger.info("start Index"+startColIdx+" End:"+endColIdx);
+                            while(result.next()){
+                                   colValue="";
+                                   for (int i =startColIdx; i <=endColIdx; i++)
+                                   {
+                                	   if(i == endColIdx){
+                                		   colValue=colValue+result.getString(i);
+                                		   continue;
+                                	   }
+                                       colValue=colValue+result.getString(i)+columnSeparator;
+                                   }
+                                   dbCsvData.add(colValue);
+                            } 
+                            if(!dbCsvData.isEmpty())
+                            {
+                                   return dbCsvData;
+                            }
+                            SQLWarning warning = stmt.getWarnings();
+                            while (warning != null){
+                                   logger.info(warning.getMessage());
+                                   warning = warning.getNextWarning();
+                            }
+                     }catch(Exception e){
+                            logger.error(e.getMessage());
+                     }finally{
+                            stmt.close();
+                     }
+               }
+        }catch(Exception e){
+               logger.error("", e);
+        }finally{
+               try{
+                     conn.close();
+               }catch(Exception e){
+                     logger.error("", e);
+               }
+        }
 
-		return null;
-	}
-
+        return dbCsvData;
+ }
 	
 }

@@ -47,6 +47,6 @@ public class LoadDataCmd extends ETLCmd{
 		}
 		
 		int rowsAdded = DBUtil.executeSqls(copysqls, pc);
-		return Arrays.asList(new String[]{String.valueOf(rowsAdded)});
+		return  Arrays.asList(new String[]{String.valueOf(rowsAdded)});
 	}
 }
