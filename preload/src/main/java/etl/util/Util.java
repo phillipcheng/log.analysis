@@ -34,6 +34,7 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 
@@ -293,7 +294,20 @@ public class Util {
 			sftpChannel = (ChannelSftp) channel;
 			int slash = remoteFile.lastIndexOf("/");
 		    String remotePath = remoteFile.substring(0,slash);
-		    sftpChannel.mkdir(remotePath);
+		    String[] folders = remotePath.split( "/" );
+		    for ( String folder : folders ) {
+		    	logger.info("FolderName:"+folder);
+		        if ( folder.length() > 0 ) {
+		            try {
+		            	sftpChannel.cd( folder );
+		            }
+		            catch ( SftpException e ) {
+		            	sftpChannel.mkdir( folder );
+		            	sftpChannel.cd( folder );
+		            }
+		        }
+		    }
+		   // sftpChannel.mkdir(remotePath);
 			sftpChannel.put(localFile, remoteFile, ChannelSftp.OVERWRITE);
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);

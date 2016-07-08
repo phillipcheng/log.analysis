@@ -31,14 +31,14 @@ public class TestSftpCmd extends TestETLCmd {
 		String pass = "password";
 		String fileName = "backup_test1_data";
 		List<String> fileNames = new ArrayList<String>(Arrays.asList(fileName));
-		//
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-		//
 		getFs().delete(new Path(incomingFolder + fileName), false);
 		Util.deleteFiles(incomingFolder, fileNames);
+		getFs().mkdirs(new Path(incomingFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
+		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
+		
 		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, null, getDefaultFS());
-		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
+		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true,incoming.folder=%s", host, ftpFolder,incomingFolder), null);
 		// check incoming fodler
 		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
 		assertTrue(fl.contains(fileName));
@@ -73,9 +73,12 @@ public class TestSftpCmd extends TestETLCmd {
 		String fileName = "backup_test1_data";
 		String dfsFolder = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
+		List<String> fileNames = new ArrayList<String>(Arrays.asList(fileName));
 		getFs().delete(new Path(incomingFolder + fileName), false);
-
+		Util.deleteFiles(incomingFolder, fileNames);
+		getFs().delete(new Path(ftpFolder),true);
+		getFs().mkdirs(new Path(incomingFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
 		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, getDefaultFS());
 		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
 
@@ -111,8 +114,12 @@ public class TestSftpCmd extends TestETLCmd {
 		String dfsFolder = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		//
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
+		List<String> fileNames = new ArrayList<String>(Arrays.asList(fileName));
 		getFs().delete(new Path(incomingFolder + fileName), false);
+		Util.deleteFiles(incomingFolder, fileNames);
+		getFs().mkdirs(new Path(incomingFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
+		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, getDefaultFS());
 		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.port=%s", host, ftpFolder, port),
 				null);
@@ -152,12 +159,15 @@ public class TestSftpCmd extends TestETLCmd {
 		String sftpClean = "false";
 		String fileName = "backup_test1_data";
 		//
+		List<String> fileNames = new ArrayList<String>(Arrays.asList(fileName));
+		getFs().delete(new Path(incomingFolder + fileName), false);
+		Util.deleteFiles(incomingFolder, fileNames);
+		getFs().mkdirs(new Path(incomingFolder));
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-		getFs().delete(new Path(incomingFolder + fileName), false);
 		//
 		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, null, getDefaultFS());
-		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=%s", host, ftpFolder, sftpClean),
+		cmd.process(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=%s,incoming.folder=%s", host, ftpFolder, sftpClean,incomingFolder),
 				null);
 		// check incoming fodler
 		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
