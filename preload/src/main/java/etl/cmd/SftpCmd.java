@@ -2,6 +2,8 @@ package etl.cmd;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -22,6 +24,7 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.util.Util;
 
 public class SftpCmd extends ETLCmd {
@@ -64,10 +67,15 @@ public class SftpCmd extends ETLCmd {
 		this.sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
 		this.sftpConnectRetryWait =  pc.getInt(cfgkey_sftp_connect_retry_wait, 15000);//
 		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
+		this.setPm(ProcessMode.MRProcess);
 	}
 
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+		List<String> logInfo = new ArrayList<String>();
+		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
+		
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
@@ -135,11 +143,12 @@ public class SftpCmd extends ETLCmd {
 			logger.info("From Dir:" + fromDir);
 			sftpChannel.cd(fromDir);
 			Vector<LsEntry> v = sftpChannel.ls("*");
+			int fileNumberTransfer=0;
 			for (LsEntry entry : v) {
 				String srcFile = fromDir + entry.getFilename();
 				String destFile = incomingFolder + entry.getFilename();
 				logger.info(String.format("get file from %s to %s", srcFile, destFile));
-
+				fileNumberTransfer++;
 				getRetryCntTemp = 1;// reset the count to 1 for every file
 				while (getRetryCntTemp <= sftpGetRetryCount) {
 					try {
@@ -171,19 +180,17 @@ public class SftpCmd extends ETLCmd {
 					sftpChannel.rm(srcFile);
 				}
 			}
-
+			logInfo.add(fileNumberTransfer + "");
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);
 		} finally {
-
 			if (sftpChannel != null) {
 				sftpChannel.exit();
 			}
 			if (session != null) {
 				session.disconnect();
 			}
-
 		}
-		return null;
+		return retMap;
 	}
 }

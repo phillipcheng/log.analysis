@@ -53,7 +53,7 @@ public class ETLCmdMain {
 			}
 			String input = null;
 			try{
-				EngineUtil.processCmds(cmds, 0, input, null);
+				EngineUtil.getInstance().processCmds(cmds, 0, input, null);
 			}catch(Throwable e){
 				logger.error("", e);
 			}

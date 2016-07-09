@@ -58,7 +58,7 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 
 			//run cmd
 			DynSqlExecutorCmd cmd = new DynSqlExecutorCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder+dynInCfgName, null, getDefaultFS());
-			cmd.process(0, null, null);
+			cmd.sgProcess();
 
 			//checking create table already created
 			String sql ="SELECT table_name from tables where table_schema='"+prefix+"' and table_name='MyCore_';";

@@ -55,7 +55,7 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>
 		logger.info(String.format("in mapper, key:%s, values:%s", key, value));
 		String input = value.toString();
 		try{
-			EngineUtil.processCmds(cmds, key.get(), input, context);
+			EngineUtil.getInstance().processCmds(cmds, key.get(), input, context);
 		}catch(Throwable e){
 			logger.error("", e);
 		}

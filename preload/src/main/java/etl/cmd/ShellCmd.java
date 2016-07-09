@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.util.StringUtil;
 
 public class ShellCmd extends ETLCmd{
@@ -23,10 +24,11 @@ public class ShellCmd extends ETLCmd{
 
 	public ShellCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+		this.setPm(ProcessMode.MRProcess);
 	}
 
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		try {
 			String command = pc.getString(PROP_CMD);
 			Map<String, Object> params = new HashMap<String, Object>();

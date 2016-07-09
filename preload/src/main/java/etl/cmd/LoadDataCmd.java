@@ -1,13 +1,8 @@
 package etl.cmd;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
@@ -38,7 +33,8 @@ public class LoadDataCmd extends ETLCmd{
 	}
 
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public List<String> sgProcess() {
+		List<String> logInfo = new ArrayList<String>();
 		List<String> copysqls = new ArrayList<String>();
 		if (useWfid){
 			String sql = String.format("%s SOURCE Hdfs(url='%s%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, wfid, userName);
@@ -47,6 +43,7 @@ public class LoadDataCmd extends ETLCmd{
 		}
 		
 		int rowsAdded = DBUtil.executeSqls(copysqls, pc);
-		return  Arrays.asList(new String[]{String.valueOf(rowsAdded)});
+		logInfo.add(rowsAdded+"");
+		return  logInfo;
 	}
 }

@@ -66,7 +66,7 @@ public class TestBackupCmd extends TestETLCmd{
 
 			//run cmd
 			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, null, getDefaultFS());
-			cmd.process(0, null, null);
+			cmd.sgProcess();
 
 			//check results
 			//dynFolder should only contains 1 file

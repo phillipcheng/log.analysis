@@ -17,6 +17,9 @@ import etl.util.Util;
 public abstract class ETLCmd {
 	public static final Logger logger = Logger.getLogger(ETLCmd.class);
 	
+	public static final String RESULT_KEY_LOG="log";
+	public static final String RESULT_KEY_OUTPUT="output";
+	
 	protected String wfid;
 	protected FileSystem fs;
 	protected Map<String, List<String>> dynCfgMap;
@@ -24,9 +27,8 @@ public abstract class ETLCmd {
 	protected String outDynCfg;
 	private Configuration conf;
 	
-	public Configuration getHadoopConf(){
-		return conf;
-	}
+	private ProcessMode pm = ProcessMode.SingleProcess;
+	private MRMode mrMode = MRMode.file;
 	
 	public ETLCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		this.wfid = wfid;
@@ -46,5 +48,47 @@ public abstract class ETLCmd {
 		this.outDynCfg = outDynCfg;
 	}
 	
-	public abstract List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context);
+	/**
+	 * @return map may contains following key:
+	 * RESULT_KEY_LOG: list of String user defined log info
+	 * RESULT_KEY_OUTPUT: list of String output
+	 */
+	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+		logger.error("empty impl, should not be invoked.");
+		return null;
+	}
+	
+	/**
+	 * @return list of String user defined log info
+	 */
+	public List<String> sgProcess(){
+		logger.error("empty impl, should not be invoked.");
+		return null;
+	}
+	
+	///
+
+	public Configuration getHadoopConf(){
+		return conf;
+	}
+	
+	public ProcessMode getPm() {
+		return pm;
+	}
+
+	public void setPm(ProcessMode pm) {
+		this.pm = pm;
+	}
+	
+	public MRMode getMrMode() {
+		return mrMode;
+	}
+
+	public void setMrMode(MRMode mrMode) {
+		this.mrMode = mrMode;
+	}
+	
+	public String getWfid(){
+		return wfid;
+	}
 }

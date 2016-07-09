@@ -57,7 +57,7 @@ public class TestDynSchemaCmd extends TestETLCmd{
 			
 			//run cmd
 			DynSchemaCmd cmd = new DynSchemaCmd(wfid, dfsCfgFolder + staticCfgName, null, dfsCfgFolder+dynCfgOutName, getDefaultFS());
-			cmd.process(0, null, null);
+			cmd.sgProcess();
 			
 			//check results
 			//outputFolder should have the csv file

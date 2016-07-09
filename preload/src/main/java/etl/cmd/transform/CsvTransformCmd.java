@@ -16,6 +16,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
 import etl.engine.FileETLCmd;
+import etl.engine.MRMode;
+import etl.engine.ProcessMode;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -26,10 +28,13 @@ public class CsvTransformCmd extends FileETLCmd{
 	public CsvTransformCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
 		tfCfg = new CsvTransformConf(this.pc);
+		this.setPm(ProcessMode.MRProcess);
+		this.setMrMode(MRMode.line);
 	}
 
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
 		if (tfCfg.isSkipHeader() && offset==0) {
 			logger.info("skip header:" + row);
 			return null;
@@ -98,6 +103,7 @@ public class CsvTransformCmd extends FileETLCmd{
 			output+=getAbbreFileName(((FileSplit) context.getInputSplit()).getPath().getName());
 		}
 		logger.info("output:" + output);
-		return Arrays.asList(new String[]{output});
+		retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{output}));
+		return retMap;
 	}
 }

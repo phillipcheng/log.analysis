@@ -4,21 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
-import etl.util.DBUtil;
 
 public class BackupCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(BackupCmd.class);
@@ -44,13 +38,15 @@ public class BackupCmd extends ETLCmd{
 	}
 
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+	public List<String> sgProcess(){
+		List<String> logInfo = new ArrayList<String>();
+		int totalFiles = 0;
 		try {
 			Path destpath=new Path(destZipFile);
 			FSDataOutputStream fos = fs.create(destpath);
 			zos = new ZipOutputStream(fos);	
 			for (int i = 0; i < fileFolders.length; i++) {
-				zipFolder(fileFolders[i],fileFilters[i]);
+				totalFiles +=zipFolder(fileFolders[i],fileFilters[i]);
 			}
 		}catch (Exception e) {
 			logger.error(" ", e);
@@ -61,12 +57,17 @@ public class BackupCmd extends ETLCmd{
 				logger.error("Exception closing IO streams ...! ", e);
 			}
 		}
-		return null;
+		logInfo.add(totalFiles+"");
+		return logInfo;
 	}
 
-
-	//Zips files based on filters for the arbitary folders 
-	public void zipFolder(String dirpath ,String fileFilter) {
+	/**
+	 * 
+	 * @param dirpath
+	 * @param fileFilter
+	 * @return number of files zipped
+	 */
+	public int zipFolder(String dirpath ,String fileFilter) {
 		try {
 			List<String> fileNames = new ArrayList<String>();
 			if (dynCfg_Key_WFID_FILTER.equals(fileFilter) || dynCfg_Key_ALL_FILTER.equals(fileFilter)){
@@ -89,9 +90,11 @@ public class BackupCmd extends ETLCmd{
 				fileNames = dynCfgMap.get(fileFilter);
 			}
 			zipFiles(dirpath, fileNames);
+			return fileNames.size();
 		} catch (Exception e) {
 			logger.error(" ", e);
 		}
+		return 0;
 	}
 
 	//Zips the files followed by remove

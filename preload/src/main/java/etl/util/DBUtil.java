@@ -146,7 +146,7 @@ public class DBUtil {
 					try {
 						boolean result = stmt.execute(sql);
 						if (!result){
-							rowsUpdated = stmt.getUpdateCount();
+							rowsUpdated += stmt.getUpdateCount();
 							logger.info(String.format("%d rows accepted.", rowsUpdated));
 						}
 						SQLWarning warning = stmt.getWarnings();

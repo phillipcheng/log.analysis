@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.transform.KcvToCsvCmd;
+import etl.engine.ETLCmd;
 import etl.engine.InvokeMapper;
 import etl.util.Util;
 
@@ -48,7 +50,8 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 			getFs().delete(new Path(remoteCsvOutputFolder), true);
 			// run job
 			KcvToCsvCmd cmd = new KcvToCsvCmd(null, remoteCfgFolder + kcvtransProp, null, null, getDefaultFS());
-			List<String> retlist = cmd.process(0, kcvFile, null);
+			Map<String, List<String>> retMap = cmd.mrProcess(0, kcvFile, null);
+			List<String> retlist = retMap.get(ETLCmd.RESULT_KEY_OUTPUT);
 			logger.info(retlist);
 			assertTrue(retlist != null);
 			assertTrue(retlist.size() > 0);
@@ -114,8 +117,7 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 
 			// run job
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.KcvToCsvCmd");
-			// getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new
-			// Date()));
+			// getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
 			getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + kcvtransProp);
 			Job job = Job.getInstance(getConf(), "testKcvToCsvTransform");
 			job.setMapperClass(etl.engine.InvokeMapper.class);

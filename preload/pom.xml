@@ -72,11 +72,16 @@
 	    <version>1.10</version>
 	</dependency>
 	<!-- http://mvnrepository.com/artifact/com.jcraft/jsch -->
-<dependency>
-    <groupId>com.jcraft</groupId>
-    <artifactId>jsch</artifactId>
-    <version>0.1.53</version>
-</dependency>
+	<dependency>
+	    <groupId>com.jcraft</groupId>
+	    <artifactId>jsch</artifactId>
+	    <version>0.1.53</version>
+	</dependency>
+	<dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>0.10.0.0</version>
+    </dependency>
   </dependencies>
   
   <build>

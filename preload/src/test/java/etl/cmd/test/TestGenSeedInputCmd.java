@@ -54,20 +54,20 @@ public class TestGenSeedInputCmd extends TestETLCmd {
 			// run cmd
 			GenSeedInputCmd cmd = new GenSeedInputCmd(wfid, dfsCfgFolder + staticCfgName, null, null,
 					getDefaultFS());
-			List<String> seedNames = cmd.process(0, null, null);
+			List<String> logInfo = cmd.sgProcess();
 			// check results
 			// outputFolder should have the seed file
-			assertTrue(seedNames != null);
-			assertTrue(seedNames.size() == 1);
+			assertTrue(logInfo != null);
+			assertTrue(logInfo.size() == 1);
 			List<String> flist = Util.listDfsFile(getFs(), outputFolder);
 			logger.info(flist);
-			logger.info("Output:" + seedNames);
+			logger.info("Output:" + logInfo);
 			assertTrue(flist.size() == 1);
-			assertTrue(seedNames.get(0).endsWith(flist.get(0)));
+			assertTrue("3".equals(logInfo.get(0)));
 			// reading file content and verifying
 			logger.info(inputFiles);
 			br = new BufferedReader(
-					new InputStreamReader(getFs().open(new Path(seedNames.get(0)))));
+					new InputStreamReader(getFs().open(new Path(outputFolder + flist.get(0)))));
 
 			String line;
 			while ((line = br.readLine()) != null) {

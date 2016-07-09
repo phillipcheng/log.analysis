@@ -44,7 +44,7 @@ public class DynSqlExecutorCmd extends ETLCmd{
 	}
 	
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public List<String> sgProcess() {
 		//1. execute sql to update db and load data to db
 		if (dynCfgMap.containsKey(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE)){
 			//execute the schemas
@@ -66,7 +66,9 @@ public class DynSqlExecutorCmd extends ETLCmd{
 			String copySql = DBUtil.genCopyHdfsSql(fieldNameList, tn, prefix, webhdfsRoot, csvFolder + csvFileName, userName);
 			copysqls.add(copySql);
 		}
-		DBUtil.executeSqls(copysqls, pc);
-		return null;
+		int rowsUpdated = DBUtil.executeSqls(copysqls, pc);
+		List<String> logInfo = new ArrayList<String>();
+		logInfo.add(rowsUpdated + "");
+		return logInfo;
 	}
 }

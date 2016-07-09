@@ -6,17 +6,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
 import etl.engine.FileETLCmd;
+import etl.engine.MRMode;
+import etl.engine.ProcessMode;
 
 //key colon value format to csv
 public class SesToCsvCmd extends FileETLCmd{
@@ -63,6 +66,8 @@ public class SesToCsvCmd extends FileETLCmd{
 		INCOMPLETE_RECORD = pc.getString("incomplete_record");
 		INCOMPLETE_RECORD_EVENT = pc.getString("incomplete_record_event");
 		DELTA_INCOMPLETE_RECORD_EVENT = pc.getString("delta_incomplete_record_event");
+		this.setPm(ProcessMode.MRProcess);
+		this.setMrMode(MRMode.file);
 	}
 	
 
@@ -77,7 +82,7 @@ public class SesToCsvCmd extends FileETLCmd{
 	}
 	
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
 		Path sesFile = null;
@@ -406,6 +411,11 @@ public class SesToCsvCmd extends FileETLCmd{
 				}
 			}
 		}
-		return outputList;
+		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+		retMap.put(RESULT_KEY_OUTPUT, outputList);
+		List<String> infoList = new ArrayList<String>();
+		infoList.add(outputList.size()+"");
+		retMap.put(RESULT_KEY_LOG, infoList);
+		return retMap;
 	}
 }

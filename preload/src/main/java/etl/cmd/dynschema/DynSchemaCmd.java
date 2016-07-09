@@ -207,7 +207,10 @@ public class DynSchemaCmd extends ETLCmd{
 		return n;
 	}
 	
-	private void genData(Node mi, Map<String, String> localDnMap, List<String> orgSchemaAttributes, List<String> mtcl, String tableName, 
+	/*
+	 * return number of lines generated
+	 */
+	private int genData(Node mi, Map<String, String> localDnMap, List<String> orgSchemaAttributes, List<String> mtcl, String tableName, 
 			Map<String, BufferedWriter> fvWriterMap, String startProcessTime) throws Exception {
 		List<String> tableLvlSystemAttValues = new ArrayList<String>();
 		for (XPathExpression exp:xpathExpTableSystemAttrs){
@@ -256,10 +259,16 @@ public class DynSchemaCmd extends ETLCmd{
 			String csv = Util.getCsv(fieldValues);
 			osw.write(csv);
 		}
+		return mvl.getLength();
 	}
 	
-	private boolean checkSchemaUpdateOrGenData(FileStatus[] inputFileNames, String strProcessStartTime){
-		boolean schemaUpdated=false;
+	/**
+	 * 
+	 * @return either number of csv >=0
+	 * or schemaUpdated is true return -1
+	 */
+	private int checkSchemaUpdateOrGenData(FileStatus[] inputFileNames, String strProcessStartTime){
+		int schemaUpdated=0;
 		try {
 			for (FileStatus inputFile: inputFileNames){
 				logger.debug(String.format("process %s", inputFile));
@@ -314,10 +323,10 @@ public class DynSchemaCmd extends ETLCmd{
 							}
 							schemaAttrNameUpdates.put(tableName, newAttrNames);
 							schemaAttrTypeUpdates.put(tableName, newAttrTypes);
-							schemaUpdated=true;
+							schemaUpdated=-1;
 						}else{
-							if (!schemaUpdated){//gen data
-								genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName, fvWriterMap, strProcessStartTime);
+							if (schemaUpdated>=0){//gen data
+								schemaUpdated +=genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName, fvWriterMap, strProcessStartTime);
 							}
 						}
 					}else{
@@ -338,7 +347,7 @@ public class DynSchemaCmd extends ETLCmd{
 						}
 						newTableObjNamesAdded.put(tableName, objNameList);
 						newTableObjTypesAdded.put(tableName, objTypeList);
-						schemaUpdated=true;
+						schemaUpdated=-1;
 					}
 				}
 			}
@@ -359,16 +368,17 @@ public class DynSchemaCmd extends ETLCmd{
 		  		used-tables: (used to generate csv file names)
 	*/
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public List<String> sgProcess() {
+		List<String> logInfo = new ArrayList<String>();
 		try {
 			Map<String, List<String>> dynCfgOutput = new HashMap<String, List<String>>();
 			String createsqlFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, wfid);
 			FileStatus[] inputFileNames = fs.listStatus(new Path(xmlFolder));
 			//1. check new/update schema, generate csv files
-			boolean schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames, wfid);
+			int schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames, wfid);
 			//generate schema files
 			List<String> createTableSqls = new ArrayList<String>();
-			if (schemaUpdated){
+			if (schemaUpdated==-1){//updated
 				List<String> dropTableSqls = new ArrayList<String>();
 				List<String> truncTableSqls = new ArrayList<String>();
 				List<String> copysqls = new ArrayList<String>();
@@ -421,7 +431,7 @@ public class DynSchemaCmd extends ETLCmd{
 				//gen data again using new schema
 				fvWriterMap.clear();
 				schemaAttrNameUpdates.clear();
-				checkSchemaUpdateOrGenData(inputFileNames, wfid);
+				schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames, wfid);
 				//only generate createtable sql entry when there is schema update
 				List<String> csfn = new ArrayList<String>();
 				csfn.add(createsqlFileName);
@@ -437,9 +447,12 @@ public class DynSchemaCmd extends ETLCmd{
 			dynCfgOutput.put(dynCfg_Key_TABLES_USED, utl);
 			dynCfgOutput.put(dynCfg_Key_XML_FILES, rawFiles);
 			Util.toDfsJsonFile(fs, this.outDynCfg, dynCfgOutput);
+			
+			logInfo.add(schemaUpdated+"");//number of csv lines
+			logInfo.add(inputFileNames.length + "");//number of input files
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		return null;
+		return logInfo;
 	}
 }

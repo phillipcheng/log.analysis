@@ -18,6 +18,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
+import etl.engine.MRMode;
+import etl.engine.ProcessMode;
 
 public class EvtBasedMsgParseCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(EvtBasedMsgParseCmd.class);
@@ -60,6 +62,8 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 		}
 		msgIdx = pc.getInt(MESSAGE_IDX, -1);
 		msgFields = pc.getStringArray(MESSAGE_FIELDS);
+		this.setPm(ProcessMode.MRProcess);
+		this.setMrMode(MRMode.line);
 	}
 	
 	public String getOutputValues(String evtType, String input){
@@ -99,8 +103,7 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	}
 
 	@Override
-	public List<String> process(long offset, String row,
-			Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String,List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String output="";
 		String evtType="";
 		
@@ -138,6 +141,8 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 			}
 		}
 		logger.info("output:" + output);
-		return Arrays.asList(new String[]{output});
+		Map<String,List<String>> retMap = new HashMap<String, List<String>>();
+		retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{output}));
+		return retMap;
 	}
 }

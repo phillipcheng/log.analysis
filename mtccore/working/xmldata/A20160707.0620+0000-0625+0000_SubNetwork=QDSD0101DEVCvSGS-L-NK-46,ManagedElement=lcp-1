@@ -1,0 +1,4680 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="MeasDataCollection.xsl"?>
+<measCollecFile
+	xmlns="http://www.3gpp.org/ftp/specs/latest/rel-5/32_series/32401-540.zip#measCollec">
+	<fileHeader fileFormatVersion="32.401 V5.0"
+		vendorName="Alcatel-Lucent"
+		dnPrefix="">
+		<fileSender
+			localDn="SubNetwork=QDSD0101DEVCvSGS-L-NK-46,ManagedElement=lcp-1"
+			elementType="GmscServer,Vlr" />
+		<measCollec beginTime="2016-07-07T06:20:00+00:00" />
+	</fileHeader>
+	<measData>
+		<managedElement
+			localDn="SubNetwork=QDSD0101DEVCvSGS-L-NK-46,ManagedElement=lcp-1"
+			userLabel=""
+			swVersion="R34.04.00" />
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.globalDiscExec</measType>
+			<measType p="2">VS.eventsAddedtoMIdb</measType>
+			<measType p="3">VS.newAlarms</measType>
+			<measType p="4">VS.chgAlarms</measType>
+			<measType p="5">VS.mgwTL1PMCollReqs</measType>
+			<measType p="6">VS.snmpCountsCollected</measType>
+			<measType p="7">VS.nbiGetBulkRequests</measType>
+			<measType p="8">VS.nbiGetNextRequests</measType>
+			<measType p="9">VS.nbiGetRequests</measType>
+			<measValue measObjLdn="PoolType=mi, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c">
+				<r p="1">0</r>
+				<r p="2">38</r>
+				<r p="3">9</r>
+				<r p="4">11</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.CDRRecCnt</measType>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301">
+				<r p="1">2</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveCpuProcess</measType>
+			<measType p="2">VS.peakCpuProcess</measType>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Process=cdrReceiver">
+				<r p="1">0.00</r>
+				<r p="2">0.01</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Process=cdrLogger">
+				<r p="1">0.00</r>
+				<r p="2">0.01</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Process=pcmdLogger">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Process=ccflReceiver">
+				<r p="1">0.10</r>
+				<r p="2">0.11</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Process=ccflLogger">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Process=cdrReceiver">
+				<r p="1">0.01</r>
+				<r p="2">0.01</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Process=cdrLogger">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Process=pcmdLogger">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Process=ccflReceiver">
+				<r p="1">0.11</r>
+				<r p="2">0.12</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cdr, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Process=ccflLogger">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.asrtNonESCCritical</measType>
+			<measType p="2">VS.asrtNonESCMajor</measType>
+			<measType p="3">VS.asrtNonESCMinor</measType>
+			<measType p="4">VS.asrtESC</measType>
+			<measType p="5">VS.audNewEvent</measType>
+			<measType p="6">VS.audErrCount</measType>
+			<measType p="7">VS.audManAct</measType>
+			<measType p="8">VS.alrmCritical</measType>
+			<measType p="9">VS.alrmMajor</measType>
+			<measType p="10">VS.alrmMinor</measType>
+			<measType p="11">VS.alrmWarning</measType>
+			<measType p="12">VS.restartTask</measType>
+			<measType p="13">VS.reInitServiceSelf</measType>
+			<measType p="14">VS.reInitServiceManual</measType>
+			<measType p="15">VS.memAllocFail</measType>
+			<measType p="16">VS.exceptionService</measType>
+			<measType p="17">VS.ADNSCacheHit</measType>
+			<measType p="18">VS.ADNSCacheMiss</measType>
+			<measType p="19">VS.ADNSDupeQuerySuppress</measType>
+			<measType p="20">VS.ADNSCacheTTLExtended</measType>
+			<measType p="21">VS.DNSQuerySent</measType>
+			<measType p="22">VS.DNSQueryResponse</measType>
+			<measType p="23">VS.CSCallSetupAtt</measType>
+			<measType p="24">VS.CSCallSetupAttSucc</measType>
+			<measType p="25">VS.CSHandoverAtt</measType>
+			<measType p="26">VS.CSHandoverAttSucc</measType>
+			<measType p="27">VS.attCFUinGMSC</measType>
+			<measType p="28">VS.succCFUinGMSC</measType>
+			<measType p="29">VS.attCFNRcinGMSC</measType>
+			<measType p="30">VS.succCFNRcinGMSC</measType>
+			<measType p="31">VS.attCFBNDUBinVMSC</measType>
+			<measType p="32">VS.succCFBNDUBinVMSC</measType>
+			<measType p="33">VS.attCFBUDUBinVMSC</measType>
+			<measType p="34">VS.succCFBUDUBinVMSC</measType>
+			<measType p="35">VS.callReleasedUDUB</measType>
+			<measType p="36">VS.attCFNRyinVMSC</measType>
+			<measType p="37">VS.succCFNRyinVMSC</measType>
+			<measType p="38">VS.attCFNRcinVMSC</measType>
+			<measType p="39">VS.succCFNRcinVMSC</measType>
+			<measType p="40">VS.totalRejectCFMaxHopExceeded</measType>
+			<measType p="41">VS.totalBAOCalls</measType>
+			<measType p="42">VS.totalBOICalls</measType>
+			<measType p="43">VS.totalBOICexHCalls</measType>
+			<measType p="44">VS.totalODBBAOCalls</measType>
+			<measType p="45">VS.totalODBBOICalls</measType>
+			<measType p="46">VS.totalODBBOICexHCalls</measType>
+			<measType p="47">VS.totalODBBOIZCalls</measType>
+			<measType p="48">VS.totalODBBOIZexHCalls</measType>
+			<measType p="49">VS.totalIODBBOIZexHCBOIZCalls</measType>
+			<measType p="50">VS.totalODBPREMICalls</measType>
+			<measType p="51">VS.totalODBPREMECalls</measType>
+			<measType p="52">VS.totalODBOST1Calls</measType>
+			<measType p="53">VS.totalODBOST2Calls</measType>
+			<measType p="54">VS.totalODBOST3Calls</measType>
+			<measType p="55">VS.totalODBOST4Calls</measType>
+			<measType p="56">VS.succCallWaitingInvocation</measType>
+			<measType p="57">VS.succCallWaitingAnswered</measType>
+			<measType p="58">VS.totalRejectedCWConcurrentExceeded</measType>
+			<measType p="59">VS.totalCLIPCalls</measType>
+			<measType p="60">VS.totalCLIRCalls</measType>
+			<measType p="61">VS.CSInvalidCarrierInHLR</measType>
+			<measType p="62">VS.CSTransitNetworkNotAllowed</measType>
+			<measType p="63">VS.NPQueryInitiated</measType>
+			<measType p="64">VS.NPQueryFailure</measType>
+			<measType p="65">VS.NPCallForPortedSub</measType>
+			<measType p="66">VS.NPISUPRelInconsist</measType>
+			<measType p="67">VS.NPDataInconsist</measType>
+			<measType p="68">VS.NPCallSubPortedInNet</measType>
+			<measType p="69">VS.attNumCCCReq</measType>
+			<measType p="70">VS.succNumCCCReq</measType>
+			<measType p="71">VS.attMPTYCalls</measType>
+			<measType p="72">VS.succMPTYCalls</measType>
+			<measType p="73">VS.attConfCircuitReq</measType>
+			<measType p="74">VS.succConfCircuitResp</measType>
+			<measType p="75">VS.timeoutConfReq</measType>
+			<measType p="76">VS.totalRejMPTYCallsMaxExceeded</measType>
+			<measType p="77">VS.numOfScanSample</measType>
+			<measType p="78">VS.WINVOKET</measType>
+			<measType p="79">VS.GINVOKED</measType>
+			<measType p="80">VS.NINCTERM</measType>
+			<measType p="81">VS.NTERM</measType>
+			<measType p="82">VS.NNOPRTY</measType>
+			<measType p="83">VS.WTATTMPT</measType>
+			<measType p="84">VS.NOUTGO</measType>
+			<measType p="85">VS.NNOCKT</measType>
+			<measType p="86">VS.NINC</measType>
+			<measType p="87">VS.NTATTMPT</measType>
+			<measType p="88">VS.NTQQUED</measType>
+			<measType p="89">VS.NTQOVFL</measType>
+			<measType p="90">VS.NTQTOUT</measType>
+			<measType p="91">VS.NTQABAND</measType>
+			<measType p="92">VS.CSDCallBlkdIWFAllOos</measType>
+			<measType p="93">VS.CSDCallBlkdIWFAllBusy</measType>
+			<measType p="94">VS.CSDCallBlkdNoIWF</measType>
+			<measType p="95">VS.CRBTCallSetupAtt</measType>
+			<measType p="96">VS.CRBTCallSetupSucc</measType>
+			<measType p="97">VS.CRBTCallSetupFailCong</measType>
+			<measType p="98">VS.CRBTCallSetupFailNoAns</measType>
+			<measType p="99">VS.attM2Mcalls</measType>
+			<measType p="100">VS.succM2Mcalls</measType>
+			<measType p="101">VS.attM2Lcalls</measType>
+			<measType p="102">VS.succM2Lcalls</measType>
+			<measType p="103">VS.attL2Mcalls</measType>
+			<measType p="104">VS.succL2Mcalls</measType>
+			<measType p="105">VS.attL2Lcalls</measType>
+			<measType p="106">VS.succL2Lcalls</measType>
+			<measType p="107">VS.attMobileOrigL5</measType>
+			<measType p="108">VS.attMobileTermL5</measType>
+			<measType p="109">VS.inCallAttL5</measType>
+			<measType p="110">VS.inCallAttL4</measType>
+			<measType p="111">VS.outCallAttL5</measType>
+			<measType p="112">VS.outCallAttL4</measType>
+			<measType p="113">VS.preSelCarrRtgAtt</measType>
+			<measType p="114">VS.dirDialCarrRtgAtt</measType>
+			<measType p="115">VS.dirDialCarrRtgAttFailed</measType>
+			<measType p="116">VS.SIPrerouteAttempts</measType>
+			<measType p="117">VS.SIPrerouteSuccesses</measType>
+			<measType p="118">VS.CUGOrigSuccAttCUG</measType>
+			<measType p="119">VS.CUGOrigSuccAttOrd</measType>
+			<measType p="120">VS.CUGOrigRej</measType>
+			<measType p="121">VS.CUGTermSuccAttCUG</measType>
+			<measType p="122">VS.CUGTermSuccAttCUGToOrd</measType>
+			<measType p="123">VS.CUGTermSuccAttOrd</measType>
+			<measType p="124">VS.GMSCTermCUGAttSucc</measType>
+			<measType p="125">VS.GMSCTermCUGAttRej</measType>
+			<measType p="126">VS.csINQueryAtt</measType>
+			<measType p="127">VS.csINQuerySucc</measType>
+			<measType p="128">VS.GMSCSigGtwyOverloadCtrl</measType>
+			<measType p="129">VS.CNAMNoCallingNum</measType>
+			<measType p="130">VS.CNAMRestrNum</measType>
+			<measType p="131">VS.CNAMQueryRespPresAllow</measType>
+			<measType p="132">VS.CNAMQueryRespPresRestr</measType>
+			<measType p="133">VS.CNAMInvalidCallingNum</measType>
+			<measType p="134">VS.interMscM2RMCallAtts</measType>
+			<measType p="135">VS.M2PSTNCallAtts</measType>
+			<measType p="136">VS.PSTN2MCallAtts</measType>
+			<measType p="137">VS.PSTN2RoamVMSCCallAtts</measType>
+			<measType p="138">VS.GMSC2MCallAtts</measType>
+			<measType p="139">VS.TandemCallAtts</measType>
+			<measType p="140">VS.IMS2NRMCallAtts</measType>
+			<measType p="141">VS.IMS2RMCallAtts</measType>
+			<measType p="142">VS.IMS2PSTNCallAtts</measType>
+			<measType p="143">VS.IMS2PSTNCallAtts_SRIackFTN</measType>
+			<measType p="144">VS.M2IMSCallAtts</measType>
+			<measType p="145">VS.IMS2IMSCallAtts</measType>
+			<measType p="146">VS.PSTN2IMSCallAtts</measType>
+			<measType p="147">VS.ENUMQueryAtt</measType>
+			<measType p="148">VS.ENUMQueryResponseSuccWithSIPFQDN</measType>
+			<measType p="149">VS.ENUMQueryResponseTimeout</measType>
+			<measType p="150">VS.ContCamelforMTRR</measType>
+			<measValue measObjLdn="PoolType=cs, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">0</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">0</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">0</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+				<r p="140">0</r>
+				<r p="141">0</r>
+				<r p="142">0</r>
+				<r p="143">0</r>
+				<r p="144">0</r>
+				<r p="145">0</r>
+				<r p="146">0</r>
+				<r p="147">0</r>
+				<r p="148">0</r>
+				<r p="149">0</r>
+				<r p="150">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cs, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">0</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">0</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">0</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+				<r p="140">0</r>
+				<r p="141">0</r>
+				<r p="142">0</r>
+				<r p="143">0</r>
+				<r p="144">0</r>
+				<r p="145">0</r>
+				<r p="146">0</r>
+				<r p="147">0</r>
+				<r p="148">0</r>
+				<r p="149">0</r>
+				<r p="150">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveCpuUsage</measType>
+			<measType p="2">VS.peakCpuUsage</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, serviceType=cs">
+				<r p="1">1.47</r>
+				<r p="2">2.93</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, serviceType=cs">
+				<r p="1">1.34</r>
+				<r p="2">2.30</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measType p="3">VS.CpuStolenTime</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, Core=0">
+				<r p="1">1.77</r>
+				<r p="2">3.43</r>
+				<r p="3">0.22</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, Core=1">
+				<r p="1">1.17</r>
+				<r p="2">2.43</r>
+				<r p="3">0.15</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, Core=0">
+				<r p="1">1.53</r>
+				<r p="2">2.44</r>
+				<r p="3">0.08</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, Core=1">
+				<r p="1">1.16</r>
+				<r p="2">2.16</r>
+				<r p="3">0.04</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveBaseCpuUsage</measType>
+			<measType p="2">VS.peakBaseCpuUsage</measType>
+			<measType p="3">VS.avePerSICpuUsage</measType>
+			<measType p="4">VS.peakPerSICpuUsage</measType>
+			<measValue measObjLdn="PoolType=cs, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26">
+				<r p="1">1.00</r>
+				<r p="2">1.71</r>
+				<r p="3">0.44</r>
+				<r p="4">0.61</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cs, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8">
+				<r p="1">0.96</r>
+				<r p="2">1.35</r>
+				<r p="3">0.35</r>
+				<r p="4">0.54</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.maxNEmemUsage</measType>
+			<measType p="2">VS.memUsage</measType>
+			<measType p="3">VS.allocableMemResrvd</measType>
+			<measType p="4">VS.MemUsedSize</measType>
+			<measType p="5">VS.MemAvailableSize</measType>
+			<measValue measObjLdn="PoolType=cs, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26">
+				<r p="1">0.20</r>
+				<r p="2">0.20</r>
+				<r p="3">99.00</r>
+				<r p="4">4.21</r>
+				<r p="5">2040.29</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=cs, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8">
+				<r p="1">0.20</r>
+				<r p="2">0.20</r>
+				<r p="3">99.00</r>
+				<r p="4">4.24</r>
+				<r p="5">2040.26</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveNetworkLatency</measType>
+			<measType p="2">VS.minNetworkLatency</measType>
+			<measType p="3">VS.maxNetworkLatency</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.64.1">
+				<r p="1">213</r>
+				<r p="2">189</r>
+				<r p="3">278</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.64.3">
+				<r p="1">215</r>
+				<r p="2">193</r>
+				<r p="3">255</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.64.4">
+				<r p="1">225</r>
+				<r p="2">174</r>
+				<r p="3">264</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.64.5">
+				<r p="1">245</r>
+				<r p="2">152</r>
+				<r p="3">432</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.64.6">
+				<r p="1">378</r>
+				<r p="2">319</r>
+				<r p="3">447</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.65.1">
+				<r p="1">277</r>
+				<r p="2">245</r>
+				<r p="3">352</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.65.2">
+				<r p="1">253</r>
+				<r p="2">232</r>
+				<r p="3">272</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.65.3">
+				<r p="1">256</r>
+				<r p="2">225</r>
+				<r p="3">274</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.65.4">
+				<r p="1">263</r>
+				<r p="2">237</r>
+				<r p="3">285</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.65.5">
+				<r p="1">581</r>
+				<r p="2">511</r>
+				<r p="3">660</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, IP=169.254.65.6">
+				<r p="1">297</r>
+				<r p="2">267</r>
+				<r p="3">341</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.64.1">
+				<r p="1">601</r>
+				<r p="2">507</r>
+				<r p="3">659</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.64.2">
+				<r p="1">254</r>
+				<r p="2">231</r>
+				<r p="3">288</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.64.3">
+				<r p="1">271</r>
+				<r p="2">222</r>
+				<r p="3">335</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.64.4">
+				<r p="1">624</r>
+				<r p="2">573</r>
+				<r p="3">713</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.64.5">
+				<r p="1">253</r>
+				<r p="2">213</r>
+				<r p="3">276</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.64.6">
+				<r p="1">554</r>
+				<r p="2">466</r>
+				<r p="3">594</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.65.1">
+				<r p="1">343</r>
+				<r p="2">306</r>
+				<r p="3">368</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.65.3">
+				<r p="1">201</r>
+				<r p="2">184</r>
+				<r p="3">228</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.65.4">
+				<r p="1">348</r>
+				<r p="2">325</r>
+				<r p="3">384</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.65.5">
+				<r p="1">362</r>
+				<r p="2">310</r>
+				<r p="3">403</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, IP=169.254.65.6">
+				<r p="1">348</r>
+				<r p="2">309</r>
+				<r p="3">414</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.EthernetKBytesInRate</measType>
+			<measType p="2">VS.EthernetKBytesOutRate</measType>
+			<measType p="3">VS.EthernetPacketsInRate</measType>
+			<measType p="4">VS.EthernetPacketsOutRate</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, Interface=eth0">
+				<r p="1">19.29</r>
+				<r p="2">3.10</r>
+				<r p="3">174.07</r>
+				<r p="4">26.63</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, Interface=eth1">
+				<r p="1">17.68</r>
+				<r p="2">1.76</r>
+				<r p="3">160.26</r>
+				<r p="4">16.04</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-00, UUID=68e2d07c-6937-4244-aa36-fb6a2a6c1e26, Interface=lo">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0.07</r>
+				<r p="4">0.07</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, Interface=eth0">
+				<r p="1">19.04</r>
+				<r p="2">2.86</r>
+				<r p="3">170.92</r>
+				<r p="4">24.57</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, Interface=eth1">
+				<r p="1">17.76</r>
+				<r p="2">1.68</r>
+				<r p="3">160.26</r>
+				<r p="4">16.04</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CS-01, UUID=2cf879e9-f662-4f96-9b49-c3c0feddebb8, Interface=lo">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0.07</r>
+				<r p="4">0.07</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.asrtNonESCCritical</measType>
+			<measType p="2">VS.asrtNonESCMajor</measType>
+			<measType p="3">VS.asrtNonESCMinor</measType>
+			<measType p="4">VS.asrtESC</measType>
+			<measType p="5">VS.audNewEvent</measType>
+			<measType p="6">VS.audErrCount</measType>
+			<measType p="7">VS.audManAct</measType>
+			<measType p="8">VS.alrmCritical</measType>
+			<measType p="9">VS.alrmMajor</measType>
+			<measType p="10">VS.alrmMinor</measType>
+			<measType p="11">VS.alrmWarning</measType>
+			<measType p="12">VS.restartTask</measType>
+			<measType p="13">VS.reInitServiceSelf</measType>
+			<measType p="14">VS.reInitServiceManual</measType>
+			<measType p="15">VS.memAllocFail</measType>
+			<measType p="16">VS.exceptionService</measType>
+			<measType p="17">attSSRelatedOperationsInHLR</measType>
+			<measType p="18">succSSRelatedOperationsInHLR</measType>
+			<measType p="19">VS.attLayer3TransportSSMessagesFromRNC</measType>
+			<measType p="20">VS.succLayer3TransportSSMessagesToRNC</measType>
+			<measType p="21">VS.succSubsequentMobileOriginatingCalls</measType>
+			<measType p="22">VS.totalODBSS</measType>
+			<measType p="23">VS.origLCSLocReqAtts</measType>
+			<measType p="24">VS.origLCSLocReqSucc</measType>
+			<measType p="25">VS.origLCS3rdPartyXferRequest</measType>
+			<measType p="26">VS.origLCSSucc3rdPartyXfer</measType>
+			<measType p="27">VS.EmLCSFailNoGMLC</measType>
+			<measType p="28">VS.EmOrigLCSLocReqAtts</measType>
+			<measType p="29">VS.throttleMobileOrigCalls</measType>
+			<measType p="30">VS.throttleLocationUpdate</measType>
+			<measType p="31">VS.throttleShortMessages</measType>
+			<measType p="32">VS.throttleSSActivateDeactivate</measType>
+			<measType p="33">VS.throttleIMEICheck</measType>
+			<measType p="34">VS.throttleAuthentication</measType>
+			<measType p="35">VS.throttleLocalCongestIncCalls</measType>
+			<measType p="36">VS.throttleRemoteDpcOutgCalls</measType>
+			<measType p="37">VS.throttleRemoteNetworkOutgCalls</measType>
+			<measType p="38">VS.BSSMAPLELMUConnReqMsgRec</measType>
+			<measType p="39">VS.BSSMAPLELMUConnAcptMsgSent</measType>
+			<measType p="40">VS.BSSMAPLELMUConnReqMsgSent</measType>
+			<measType p="41">VS.BSSMAPLELMUConnAcptMsgRec</measType>
+			<measType p="42">VS.DTAPLETrans</measType>
+			<measType p="43">VS.BSSMAPLEConnOrntInfoTrans</measType>
+			<measType p="44">VS.BSSMAPLEConnInfoTrans</measType>
+			<measType p="45">VS.MOLRReqForAstcData</measType>
+			<measType p="46">VS.MOLRReqForDecprKeys</measType>
+			<measType p="47">VS.WAttDirRetryGSM</measType>
+			<measType p="48">VS.WSuccDirRetryGSM</measType>
+			<measType p="49">VS.NAttDirRetryGSM</measType>
+			<measType p="50">VS.NSuccDirRetryGSM</measType>
+			<measType p="51">VS.SS7DSInCallAtt</measType>
+			<measType p="52">VS.SS7DSInCallSetupSucc</measType>
+			<measType p="53">VS.SS7DSOutCallAtt</measType>
+			<measType p="54">VS.SS7DSOutCallSetupSucc</measType>
+			<measType p="55">VS.PPLATCallAttstoPPP</measType>
+			<measType p="56">VS.PPLATCallALWatPPP</measType>
+			<measType p="57">VS.attMobOrig64KCSDCall</measType>
+			<measType p="58">VS.ansMobOrig64KCSDCall</measType>
+			<measType p="59">VS.accMobTerm64KCSDCall</measType>
+			<measType p="60">VS.ansMobTerm64KCSDCall</measType>
+			<measType p="61">VS.attMobOrig9KCSDCall</measType>
+			<measType p="62">VS.ansMobOrig9KCSDCall</measType>
+			<measType p="63">VS.attMobOrig14KCSDCall</measType>
+			<measType p="64">VS.ansMobOrig14KCSDCall</measType>
+			<measType p="65">VS.attMobTerm9KCSDCall</measType>
+			<measType p="66">VS.ansMobTerm9KCSDCall</measType>
+			<measType p="67">VS.attMobTerm14KCSDCall</measType>
+			<measType p="68">VS.ansMobTerm14KCSDCall</measType>
+			<measType p="69">VS.attMobOrigFAXCall</measType>
+			<measType p="70">VS.ansMobOrigFAXCall</measType>
+			<measType p="71">VS.attMobTermFAXCall</measType>
+			<measType p="72">VS.ansMobTermFAXCall</measType>
+			<measType p="73">VS.handoverRejCMM</measType>
+			<measType p="74">VS.SS7OutgoingAttemptFailed</measType>
+			<measType p="75">VS.NINCASSG</measType>
+			<measType p="76">VS.WASSIGND</measType>
+			<measType p="77">VS.numOfScanSample</measType>
+			<measType p="78">VS.Att_GSM_UMTS_HHO</measType>
+			<measType p="79">VS.Succ_GSM_UMTS_HHO</measType>
+			<measType p="80">VS.Att_UMTS_GSM_HHO</measType>
+			<measType p="81">VS.Succ_UMTS_GSM_HHO</measType>
+			<measType p="82">VS.SCTPConnAtt</measType>
+			<measType p="83">VS.SCTPTransAborts</measType>
+			<measType p="84">VS.M3UAMsuTransmit</measType>
+			<measType p="85">VS.M3UAMsuTransmitSucc</measType>
+			<measType p="86">VS.M3UAMsuReceive</measType>
+			<measType p="87">VS.M3UAMsuReceiveSucc</measType>
+			<measType p="88">VS.attSCCPGTT</measType>
+			<measType p="89">VS.succSCCPGTT</measType>
+			<measType p="90">VS.ss7INQueryAtt</measType>
+			<measType p="91">VS.ss7INQuerySucc</measType>
+			<measType p="92">VS.attTestMobileEmergencyCalls</measType>
+			<measType p="93">VS.succTestMobileEmergencyCalls</measType>
+			<measType p="94">VS.ansTestMobileEmergencyCalls</measType>
+			<measType p="95">VS.throttledHostIDQuery2NM</measType>
+			<measType p="96">VS.MOFailTMSIReallocTO</measType>
+			<measType p="97">VS.MTFailTMSIReallocTO</measType>
+			<measType p="98">VS.ISDRHOAtt</measType>
+			<measType p="99">VS.ISDRHOSucc</measType>
+			<measType p="100">VS.WSS7LoadBalAtts</measType>
+			<measType p="101">VS.FacMsgsSentCNAM</measType>
+			<measType p="102">VS.procUSSDRequest</measType>
+			<measType p="103">VS.USSDUETimeout</measType>
+			<measType p="104">VS.USSDAppTimeout</measType>
+			<measType p="105">VS.SctpOutSCTPPacks</measType>
+			<measType p="106">VS.SctpT3Retransmits</measType>
+			<measType p="107">VS.SctpFastRetransmits</measType>
+			<measType p="108">VS.MTRRLUConnHoldAttempt</measType>
+			<measType p="109">VS.MTRRLUConnHoldTimeout</measType>
+			<measType p="110">VS.MTRRLUConnHoldFollowOn</measType>
+			<measType p="111">VS.SctpCurrEstab</measType>
+			<measType p="112">VS.SctpActiveEstabs</measType>
+			<measType p="113">VS.SctpPassiveEstabs</measType>
+			<measType p="114">VS.SctpAborteds</measType>
+			<measType p="115">VS.SctpShutdowns</measType>
+			<measType p="116">VS.SctpOutOfBlues</measType>
+			<measType p="117">VS.SctpChecksumErrors</measType>
+			<measType p="118">VS.SctpOutCtrlChunks</measType>
+			<measType p="119">VS.SctpOutOrderChunks</measType>
+			<measType p="120">VS.SctpOutUnorderChunks</measType>
+			<measType p="121">VS.SctpInCtrlChunks</measType>
+			<measType p="122">VS.SctpInOrderChunks</measType>
+			<measType p="123">VS.SctpInUnorderChunks</measType>
+			<measType p="124">VS.SctpFragUsrMsgs</measType>
+			<measType p="125">VS.SctpReasmUsrMsgs</measType>
+			<measType p="126">VS.SctpInSCTPPacks</measType>
+			<measType p="127">VS.SctpT1InitExpireds</measType>
+			<measType p="128">VS.SctpT1CookieExpireds</measType>
+			<measType p="129">VS.SctpT2ShutdownExpireds</measType>
+			<measType p="130">VS.SctpT3RtxExpireds</measType>
+			<measType p="131">VS.SctpT4RtoExpireds</measType>
+			<measType p="132">VS.SctpT5ShutdownGuardExpireds</measType>
+			<measType p="133">VS.SctpDelaySackExpireds</measType>
+			<measType p="134">VS.SctpAutocloseExpireds</measType>
+			<measType p="135">VS.SctpPmtudRetransmits</measType>
+			<measType p="136">VS.SctpInPktSoftirq</measType>
+			<measType p="137">VS.SctpInPktBacklog</measType>
+			<measType p="138">VS.SctpInPktDiscards</measType>
+			<measType p="139">VS.SctpInDataChunkDiscards</measType>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">2</r>
+				<r p="9">3</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">3</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">11</r>
+				<r p="85">11</r>
+				<r p="86">13</r>
+				<r p="87">13</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">43</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">34</r>
+				<r p="115">0</r>
+				<r p="116">1</r>
+				<r p="117">0</r>
+				<r p="118">43</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">42</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">43</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">42</r>
+				<r p="137">0</r>
+				<r p="138">1</r>
+				<r p="139">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">1</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">3</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">0</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">0</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">3</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">1</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">2</r>
+				<r p="89">2</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">43</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">34</r>
+				<r p="115">0</r>
+				<r p="116">1</r>
+				<r p="117">0</r>
+				<r p="118">43</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">42</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">43</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">42</r>
+				<r p="137">0</r>
+				<r p="138">1</r>
+				<r p="139">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">3</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">0</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">0</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=wss7, PoolId=2, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">2</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">3</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">17</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">1</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">17</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">18</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">18</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">18</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=wss7, PoolId=3, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">3</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">17</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">1</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">17</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">18</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">18</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">18</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveCpuUsage</measType>
+			<measType p="2">VS.peakCpuUsage</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, serviceType=nss7_nss7">
+				<r p="1">2.88</r>
+				<r p="2">5.17</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, serviceType=nss7_nss7">
+				<r p="1">1.85</r>
+				<r p="2">2.87</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, serviceType=wss7_wss7">
+				<r p="1">2.60</r>
+				<r p="2">3.75</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measType p="3">VS.CpuStolenTime</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Core=0">
+				<r p="1">2.51</r>
+				<r p="2">3.72</r>
+				<r p="3">0.21</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Core=1">
+				<r p="1">3.25</r>
+				<r p="2">7.52</r>
+				<r p="3">0.19</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, Core=0">
+				<r p="1">1.96</r>
+				<r p="2">3.06</r>
+				<r p="3">0.11</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, Core=1">
+				<r p="1">1.74</r>
+				<r p="2">2.90</r>
+				<r p="3">0.06</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Core=0">
+				<r p="1">2.83</r>
+				<r p="2">4.88</r>
+				<r p="3">0.09</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Core=1">
+				<r p="1">2.38</r>
+				<r p="2">4.34</r>
+				<r p="3">0.06</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveBaseCpuUsage</measType>
+			<measType p="2">VS.peakBaseCpuUsage</measType>
+			<measType p="3">VS.avePerSICpuUsage</measType>
+			<measType p="4">VS.peakPerSICpuUsage</measType>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72">
+				<r p="1">3.14</r>
+				<r p="2">7.47</r>
+				<r p="3">2.33</r>
+				<r p="4">3.14</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0">
+				<r p="1">1.50</r>
+				<r p="2">2.58</r>
+				<r p="3">0.64</r>
+				<r p="4">0.82</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72">
+				<r p="1">2.30</r>
+				<r p="2">3.30</r>
+				<r p="3">0.87</r>
+				<r p="4">1.60</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0">
+				<r p="1">1.81</r>
+				<r p="2">2.43</r>
+				<r p="3">0.62</r>
+				<r p="4">0.79</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=wss7, PoolId=2, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8">
+				<r p="1">2.14</r>
+				<r p="2">3.92</r>
+				<r p="3">1.25</r>
+				<r p="4">3.01</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=wss7, PoolId=3, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8">
+				<r p="1">2.61</r>
+				<r p="2">4.44</r>
+				<r p="3">1.29</r>
+				<r p="4">3.00</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.maxNEmemUsage</measType>
+			<measType p="2">VS.memUsage</measType>
+			<measType p="3">VS.allocableMemResrvd</measType>
+			<measType p="4">VS.MemUsedSize</measType>
+			<measType p="5">VS.MemAvailableSize</measType>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72">
+				<r p="1">15.56</r>
+				<r p="2">15.56</r>
+				<r p="3">84.00</r>
+				<r p="4">335.43</r>
+				<r p="5">1820.18</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0">
+				<r p="1">15.55</r>
+				<r p="2">15.55</r>
+				<r p="3">84.00</r>
+				<r p="4">335.38</r>
+				<r p="5">1820.24</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72">
+				<r p="1">15.53</r>
+				<r p="2">15.53</r>
+				<r p="3">84.00</r>
+				<r p="4">334.78</r>
+				<r p="5">1820.83</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0">
+				<r p="1">15.52</r>
+				<r p="2">15.52</r>
+				<r p="3">84.00</r>
+				<r p="4">334.68</r>
+				<r p="5">1820.93</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=wss7, PoolId=2, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8">
+				<r p="1">15.53</r>
+				<r p="2">15.53</r>
+				<r p="3">84.00</r>
+				<r p="4">334.93</r>
+				<r p="5">1820.69</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=wss7, PoolId=3, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8">
+				<r p="1">15.53</r>
+				<r p="2">15.53</r>
+				<r p="3">84.00</r>
+				<r p="4">334.92</r>
+				<r p="5">1820.69</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.SS7Time-Level1Congestion</measType>
+			<measType p="2">VS.SS7Time-Level2Congestion</measType>
+			<measType p="3">VS.SS7Time-Level3Congestion</measType>
+			<measType p="4">VS.SS7Duration-LinkUnavailable</measType>
+			<measType p="5">VS.SS7Level1SigLinkCongestion</measType>
+			<measType p="6">VS.SS7Level2SigLinkCongestion</measType>
+			<measType p="7">VS.SS7Level3SigLinkCongestion</measType>
+			<measType p="8">VS.SIFandSIOoctetsTransmitted</measType>
+			<measType p="9">VS.SIFandSIOoctetsReceived</measType>
+			<measType p="10">VS.SS7MSUReceived</measType>
+			<measType p="11">VS.SS7MSUTransmitted</measType>
+			<measType p="12">VS.DurationLinkInService</measType>
+			<measType p="13">VS.SignalingLinkFailure</measType>
+			<measType p="14">VS.Pri0MsgsDiscardedDueSLCongestion</measType>
+			<measType p="15">VS.Pri1MsgsDiscardedDueSLCongestion</measType>
+			<measType p="16">VS.Pri2MsgsDiscardedDueSLCongestion</measType>
+			<measType p="17">VS.Pri3MsgsDiscardedDueSLCongestion</measType>
+			<measType p="18">VS.LocalAutoChangeover</measType>
+			<measType p="19">VS.LocalAutoChangeback</measType>
+			<measType p="20">VS.StartRemoteProcessorOutage</measType>
+			<measType p="21">VS.StopRemoteProcessorOutage</measType>
+			<measType p="22">VS.SS7MSUReTransmitted</measType>
+			<measType p="23">VS.SS7OctetsRetransmitted</measType>
+			<measType p="24">VS.PMCMSUsTransmitted</measType>
+			<measType p="25">VS.PMCMSUsReceived</measType>
+			<measType p="26">VS.PMCDiscardedMessages</measType>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Linkset=255, LSName=M3UA, Link=0">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">969</r>
+				<r p="9">1225</r>
+				<r p="10">13</r>
+				<r p="11">11</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.TotalMessagesHandled</measType>
+			<measType p="2">VS.TotalMessagesLocalSubsystems</measType>
+			<measType p="3">VS.TotalMessagesGlobalTranslation</measType>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, SCCP=0">
+				<r p="1">20</r>
+				<r p="2">13</r>
+				<r p="3">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, SCCP=0">
+				<r p="1">4</r>
+				<r p="2">0</r>
+				<r p="3">2</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.TotalMessagesOrigClassSourceSSN</measType>
+			<measType p="2">VS.TotalMessagesTermClassSinkSSN</measType>
+			<measType p="3">VS.TotalDT1MessagesSink</measType>
+			<measType p="4">VS.TotalDT1MessagesSource</measType>
+			<measType p="5">VS.TotalDT2MessagesSink</measType>
+			<measType p="6">VS.TotalDT2MessagesSource</measType>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, SCCP=0, SSN=7">
+				<r p="1">0</r>
+				<r p="2">13</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, SCCP=1, SSN=7">
+				<r p="1">7</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, SCCP=0, SSN=7">
+				<r p="1">2</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=nss7, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, SCCP=1, SSN=7">
+				<r p="1">2</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.MTP_Pause</measType>
+			<measType p="2">VS.MTP_Resume</measType>
+			<measValue measObjLdn="PoolType=nss7, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Stack=0">
+				<r p="1">2</r>
+				<r p="2">2</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">attMobileOriginatingCalls</measType>
+			<measType p="2">succMobileOriginatingCalls</measType>
+			<measType p="3">ansMobileOriginatingCalls</measType>
+			<measType p="4">attMobileTerminatingCalls</measType>
+			<measType p="5">succMobileTerminatingCalls</measType>
+			<measType p="6">ansMobileTerminatingCalls</measType>
+			<measType p="7">attMobileEmergencyCalls</measType>
+			<measType p="8">succMobileEmergencyCalls</measType>
+			<measType p="9">ansMobileEmergencyCalls</measType>
+			<measType p="10">attCipheringModeControlProcs</measType>
+			<measType p="11">succCipheringModeControlProcs</measType>
+			<measType p="12">attOpForMobileOriginatingPointToPointSMs</measType>
+			<measType p="13">succOpForMobileOriginatingPointToPointSMs</measType>
+			<measType p="14">attOpForMobileTerminatingPointToPointSMs</measType>
+			<measType p="15">succOpForMobileTerminatingPointToPointSMs</measType>
+			<measType p="16">transSubIdentifiedWithTMSI</measType>
+			<measType p="17">transSubIdentifiedWithIMSI</measType>
+			<measType p="18">attTMSIReallocations</measType>
+			<measType p="19">succTMSIReallocations</measType>
+			<measType p="20">externalHDOs</measType>
+			<measType p="21">VS.noAnsMobileTerminatingCalls</measType>
+			<measType p="22">VS.mobileOrigFailRLSetup</measType>
+			<measType p="23">VS.mobileTermFailRLSetup</measType>
+			<measType p="24">VS.mobileEmrgcyOrigFailRLSetup</measType>
+			<measType p="25">VS.mobileOrigDroppedRAN</measType>
+			<measType p="26">VS.mobileTermDroppedRAN</measType>
+			<measType p="27">VS.mobileOrigAttRejected</measType>
+			<measType p="28">VS.mobileTermAttRejected</measType>
+			<measType p="29">VS.succMOForwardSM</measType>
+			<measType p="30">VS.succMTForwardSM</measType>
+			<measType p="31">VS.MORejUnsuppServ</measType>
+			<measType p="32">VS.MTRejUnsuppServ</measType>
+			<measType p="33">VS.MORejUnsubsServ</measType>
+			<measType p="34">VS.MTRejUnsubsServ</measType>
+			<measType p="35">VS.SS7LocUpdateAtt</measType>
+			<measType p="36">VS.SS7LocUpdateAttSucc</measType>
+			<measType p="37">VS.MOFailRABRespTO</measType>
+			<measType p="38">VS.MTFailRABRespTO</measType>
+			<measType p="39">VS.emrgcyISHOPoss</measType>
+			<measType p="40">VS.emrgcyISHOAttGPSUE</measType>
+			<measType p="41">VS.emrgcyISHOSuccGPSUE</measType>
+			<measType p="42">VS.emrgcyISHOAttNonGPSUE</measType>
+			<measType p="43">VS.emrgcyISHOSuccNonGPSUE</measType>
+			<measType p="44">VS.succEmrgcyDirectedRetryHO</measType>
+			<measType p="45">VS.attCSFBMTFollowOn</measType>
+			<measType p="46">VS.succCSFBMTFollowOn</measType>
+			<measType p="47">VS.authCiphFailureT3260Expiry</measType>
+			<measType p="48">VS.SecondAuthCiphFailT3260Exp</measType>
+			<measType p="49">VS.authReqFailSync</measType>
+			<measType p="50">VS.T303TONoRespToSETUPMsg</measType>
+			<measType p="51">VS.T310TONoAlertConDisconAfterCCMsg</measType>
+			<measType p="52">VS.mobileOrigBlkdBearer</measType>
+			<measType p="53">VS.mobileTermBlkdBearer</measType>
+			<measType p="54">VS.mobileEmrgcyBlkdBearer</measType>
+			<measType p="55">VS.CSFBattMobileOrigCalls</measType>
+			<measType p="56">VS.CSFBsuccMobileOrigCalls</measType>
+			<measType p="57">VS.CSFBorigLCSLocReqAtts</measType>
+			<measType p="58">VS.CSFBorigLCSLocReqSucc</measType>
+			<measType p="59">VS.CSFBattMobileOrigSMS</measType>
+			<measType p="60">VS.CSFBsuccMobileOrigSMS</measType>
+			<measType p="61">VS.CSFBattMobileEmergencyCalls</measType>
+			<measType p="62">VS.CSFBsuccMobileEmergencyCalls</measType>
+			<measType p="63">VS.CSFBattMOCISS</measType>
+			<measType p="64">VS.CSFBsuccMOCISS</measType>
+			<measType p="65">VS.attCSFBMOFollowOn</measType>
+			<measType p="66">VS.succCSFBMOFollowOn</measType>
+			<measType p="67">VS.mobTermSMSBusyFail</measType>
+			<measType p="68">VS.attMTFollowOnMTRR</measType>
+			<measType p="69">VS.succMTFollowOnMTRR</measType>
+			<measType p="70">VS.MTRRLUFollowOnAtt</measType>
+			<measType p="71">VS.MTRRLUFollowOnSucc</measType>
+			<measType p="72">VS.CSFBattMobileOrigCallsInterMSC</measType>
+			<measType p="73">VS.CSFBsuccMobileOrigCallsInterMSC</measType>
+			<measType p="74">VS.attCSFBMOFollowOnInterMSC</measType>
+			<measType p="75">VS.succCSFBMOFollowOnInterMSC</measType>
+			<measType p="76">VS.attCSFBMOEmerInterMSC</measType>
+			<measType p="77">VS.succCSFBMOEmerInterMSC</measType>
+			<measType p="78">VS.CSFBorigLCSLocReqInterMSCAtts</measType>
+			<measType p="79">VS.CSFBorigLCSLocReqInterMSCSucc</measType>
+			<measType p="80">VS.CSFBattMOCISSInterMSC</measType>
+			<measType p="81">VS.CSFBsuccMOCISSInterMSC</measType>
+			<measType p="82">SmsWithCPError</measType>
+			<measType p="83">SmsWithCPAckTimeout</measType>
+			<measType p="84">SmsCPDataRetries</measType>
+			<measType p="85">VS.DetachMsgsProcs</measType>
+			<measValue measObjLdn="PoolType=wss7, PoolId=2, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, MME=0">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">1</r>
+				<r p="15">1</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">1</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">1</r>
+				<r p="36">1</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">0</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">1</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.BadSGsAPMsg</measType>
+			<measType p="2">VS.SctpPacketReceive</measType>
+			<measType p="3">VS.SctpPacketTransmit</measType>
+			<measType p="4">VS.CSFBLoadBalAtts</measType>
+			<measType p="5">VS.CSFBAborted</measType>
+			<measValue measObjLdn="PoolType=wss7, PoolId=2, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, MME=0">
+				<r p="1">0</r>
+				<r p="2">6</r>
+				<r p="3">7</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.SGsAPPageReqSent</measType>
+			<measValue measObjLdn="PoolType=wss7, PoolId=2, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, LAC=900, MME=0, BearerCallType=SMS">
+				<r p="1">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=wss7, PoolId=2, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, LAC=65535, MME=0, BearerCallType=SMS">
+				<r p="1">1</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveNetworkLatency</measType>
+			<measType p="2">VS.minNetworkLatency</measType>
+			<measType p="3">VS.maxNetworkLatency</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.64.1">
+				<r p="1">395</r>
+				<r p="2">374</r>
+				<r p="3">417</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.64.2">
+				<r p="1">215</r>
+				<r p="2">191</r>
+				<r p="3">249</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.64.3">
+				<r p="1">241</r>
+				<r p="2">198</r>
+				<r p="3">318</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.64.5">
+				<r p="1">207</r>
+				<r p="2">194</r>
+				<r p="3">224</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.64.6">
+				<r p="1">395</r>
+				<r p="2">326</r>
+				<r p="3">505</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.65.1">
+				<r p="1">603</r>
+				<r p="2">527</r>
+				<r p="3">644</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.65.2">
+				<r p="1">258</r>
+				<r p="2">228</r>
+				<r p="3">291</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.65.3">
+				<r p="1">258</r>
+				<r p="2">232</r>
+				<r p="3">298</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.65.4">
+				<r p="1">275</r>
+				<r p="2">251</r>
+				<r p="3">313</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.65.5">
+				<r p="1">548</r>
+				<r p="2">460</r>
+				<r p="3">599</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, IP=169.254.65.6">
+				<r p="1">267</r>
+				<r p="2">249</r>
+				<r p="3">294</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.64.1">
+				<r p="1">304</r>
+				<r p="2">240</r>
+				<r p="3">367</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.64.2">
+				<r p="1">250</r>
+				<r p="2">218</r>
+				<r p="3">316</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.64.3">
+				<r p="1">263</r>
+				<r p="2">228</r>
+				<r p="3">293</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.64.4">
+				<r p="1">266</r>
+				<r p="2">244</r>
+				<r p="3">304</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.64.5">
+				<r p="1">256</r>
+				<r p="2">237</r>
+				<r p="3">272</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.64.6">
+				<r p="1">547</r>
+				<r p="2">477</r>
+				<r p="3">694</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.65.1">
+				<r p="1">197</r>
+				<r p="2">179</r>
+				<r p="3">243</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.65.2">
+				<r p="1">193</r>
+				<r p="2">157</r>
+				<r p="3">248</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.65.3">
+				<r p="1">194</r>
+				<r p="2">155</r>
+				<r p="3">233</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.65.5">
+				<r p="1">182</r>
+				<r p="2">163</r>
+				<r p="3">212</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, IP=169.254.65.6">
+				<r p="1">188</r>
+				<r p="2">173</r>
+				<r p="3">211</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.64.1">
+				<r p="1">267</r>
+				<r p="2">244</r>
+				<r p="3">297</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.64.2">
+				<r p="1">243</r>
+				<r p="2">223</r>
+				<r p="3">273</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.64.3">
+				<r p="1">247</r>
+				<r p="2">212</r>
+				<r p="3">266</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.64.4">
+				<r p="1">269</r>
+				<r p="2">228</r>
+				<r p="3">307</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.64.5">
+				<r p="1">265</r>
+				<r p="2">241</r>
+				<r p="3">298</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.64.6">
+				<r p="1">588</r>
+				<r p="2">480</r>
+				<r p="3">631</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.65.1">
+				<r p="1">187</r>
+				<r p="2">175</r>
+				<r p="3">197</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.65.2">
+				<r p="1">191</r>
+				<r p="2">165</r>
+				<r p="3">228</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.65.3">
+				<r p="1">225</r>
+				<r p="2">158</r>
+				<r p="3">336</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.65.4">
+				<r p="1">188</r>
+				<r p="2">171</r>
+				<r p="3">233</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, IP=169.254.65.5">
+				<r p="1">168</r>
+				<r p="2">157</r>
+				<r p="3">178</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.EthernetKBytesInRate</measType>
+			<measType p="2">VS.EthernetKBytesOutRate</measType>
+			<measType p="3">VS.EthernetPacketsInRate</measType>
+			<measType p="4">VS.EthernetPacketsOutRate</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Interface=eth0">
+				<r p="1">19.03</r>
+				<r p="2">4.44</r>
+				<r p="3">178.49</r>
+				<r p="4">38.79</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Interface=eth1">
+				<r p="1">17.53</r>
+				<r p="2">1.92</r>
+				<r p="3">160.27</r>
+				<r p="4">16.05</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Interface=eth3">
+				<r p="1">0.04</r>
+				<r p="2">0.03</r>
+				<r p="3">0.69</r>
+				<r p="4">0.33</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-00, UUID=770250c6-c638-40b4-9352-a8909a411c72, Interface=lo">
+				<r p="1">0.35</r>
+				<r p="2">0.35</r>
+				<r p="3">3.42</r>
+				<r p="4">3.42</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, Interface=eth0">
+				<r p="1">19.45</r>
+				<r p="2">3.25</r>
+				<r p="3">179.76</r>
+				<r p="4">32.24</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, Interface=eth1">
+				<r p="1">17.68</r>
+				<r p="2">1.76</r>
+				<r p="3">160.27</r>
+				<r p="4">16.05</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, Interface=eth3">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0.00</r>
+				<r p="4">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-SS7-01, UUID=2323e0e7-4c6e-4bd3-83f5-e2efe783c1f0, Interface=lo">
+				<r p="1">0.04</r>
+				<r p="2">0.04</r>
+				<r p="3">0.85</r>
+				<r p="4">0.85</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Interface=eth0">
+				<r p="1">18.98</r>
+				<r p="2">3.55</r>
+				<r p="3">176.67</r>
+				<r p="4">37.30</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Interface=eth1">
+				<r p="1">17.56</r>
+				<r p="2">1.97</r>
+				<r p="3">160.20</r>
+				<r p="4">16.31</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Interface=eth7">
+				<r p="1">0.03</r>
+				<r p="2">0.01</r>
+				<r p="3">0.43</r>
+				<r p="4">0.17</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Interface=eth8">
+				<r p="1">0.02</r>
+				<r p="2">0.00</r>
+				<r p="3">0.36</r>
+				<r p="4">0.05</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Interface=eth9">
+				<r p="1">0.02</r>
+				<r p="2">0.00</r>
+				<r p="3">0.36</r>
+				<r p="4">0.05</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-WLS-01, UUID=0fe99bf4-eff8-445c-8f5f-91548e51a4f8, Interface=lo">
+				<r p="1">0.29</r>
+				<r p="2">0.29</r>
+				<r p="3">3.00</r>
+				<r p="4">3.00</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.noPageResponses</measType>
+			<measType p="2">VS.attFirstNoRspPageFlood</measType>
+			<measType p="3">VS.succFirstNoRspPageFlood</measType>
+			<measType p="4">VS.attSecondNoRspPageFlood</measType>
+			<measType p="5">VS.succSecondNoRspPageFlood</measType>
+			<measType p="6">VS.attFirstPageReqsFlood</measType>
+			<measType p="7">VS.succFirstPageReqsFlood</measType>
+			<measType p="8">VS.attSecondPageFlood</measType>
+			<measType p="9">VS.succSecondPageReqsFlood</measType>
+			<measType p="10">attPageReqs</measType>
+			<measType p="11">succPageReqs</measType>
+			<measType p="12">VS.attThirdPageReqsFlood</measType>
+			<measType p="13">VS.succThirdPageReqsFlood</measType>
+			<measType p="14">VS.attThirdNoRspPageFlood</measType>
+			<measType p="15">VS.succThirdNoRspPageFlood</measType>
+			<measType p="16">VS.SGsAPFloodPageRequest</measType>
+			<measType p="17">VS.SGsAPFloodPageSuccess</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, BearerCallType=SMS">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">1</r>
+				<r p="11">1</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">arrivalOfVisitorsFromOtherPLMNs</measType>
+			<measType p="2">VS.locationCancellationRqsts</measType>
+			<measType p="3">VS.manualVLRDeletes</measType>
+			<measType p="4">VS.MTRR_RCH_INVOKESent</measType>
+			<measType p="5">VS.MTRR_RCH_RRRcvd</measType>
+			<measType p="6">VS.MTRR_RCH_Error</measType>
+			<measType p="7">VS.MTRR_RCH_Timeout</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, TechnologyType=LTE">
+				<r p="1">0</r>
+				<r p="2">1</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, TechnologyType=LTE">
+				<r p="1">0</r>
+				<r p="2">1</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.TCmsgsSent</measType>
+			<measType p="2">VS.TCmsgsReceived</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, TCAP=0">
+				<r p="1">8</r>
+				<r p="2">10</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, TCAP=0">
+				<r p="1">3</r>
+				<r p="2">3</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.numSubsNoPageResp</measType>
+			<measType p="2">VS.attFirstNoRspPage</measType>
+			<measType p="3">VS.succFirstNoRspPage</measType>
+			<measType p="4">VS.attSecondNoRspPage</measType>
+			<measType p="5">VS.succSecondNoRspPage</measType>
+			<measType p="6">VS.attFirstPageReqs</measType>
+			<measType p="7">VS.succFirstPageReqs</measType>
+			<measType p="8">VS.attSecondPageReq</measType>
+			<measType p="9">VS.succSecondPageReqsReg</measType>
+			<measType p="10">VS.attThirdPageReq</measType>
+			<measType p="11">VS.succThirdPageReqsReg</measType>
+			<measType p="12">VS.attThirdNoRspPage</measType>
+			<measType p="13">VS.succThirdNoRspPage</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, TechnologyType=LTE, BearerCallType=SMS">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">1</r>
+				<r p="7">1</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">imsiDetachProcs</measType>
+			<measType p="2">imsiAttachProcs</measType>
+			<measType p="3">attIntraVLRLocationUpdates</measType>
+			<measType p="4">succIntraVLRLocationUpdates</measType>
+			<measType p="5">attInterVLRLocationUpdates</measType>
+			<measType p="6">succInterVLRLocationUpdates</measType>
+			<measType p="7">VS.attIntraVLRPerioLocationUpdates</measType>
+			<measType p="8">VS.succIntraVLRPerioLocationUpdates</measType>
+			<measType p="9">VS.CSFBVLRLocUpdateAtt</measType>
+			<measType p="10">VS.CSFBVLRLocUpdateSucc</measType>
+			<measType p="11">VS.CSFBInterVLRLocUpdateAtt</measType>
+			<measType p="12">VS.CSFBInterVLRLocUpdateSucc</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, MME=0">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, MME=0">
+				<r p="1">0</r>
+				<r p="2">1</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">1</r>
+				<r p="6">1</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.SendRoutInfoAtt</measType>
+			<measType p="2">VS.SendRoutInfoAttSucc</measType>
+			<measType p="3">VS.UMTSLocUpdAtt</measType>
+			<measType p="4">VS.UMTSLocUpdAttSucc</measType>
+			<measType p="5">VS.IS41LocReqAtt</measType>
+			<measType p="6">VS.IS41LocReqAttSucc</measType>
+			<measType p="7">VS.deferredMTLRAttempts</measType>
+			<measType p="8">VS.deferredMTLRDeniedNotAct</measType>
+			<measType p="9">VS.deferredMTLRDeniedExcdAllowLimit</measType>
+			<measType p="10">VS.deferredMTLRDeniedUnauthLCSClient</measType>
+			<measType p="11">VS.deferredMTLRFailAbsentSub</measType>
+			<measType p="12">VS.deferredMTLRFailPriViolation</measType>
+			<measType p="13">VS.deferredMTLRFailRestart</measType>
+			<measType p="14">VS.deferredMTLRFailSLENotSpt</measType>
+			<measType p="15">VS.deferredMTLRFailErrUndefined</measType>
+			<measType p="16">VS.deferredMTLRAccepted</measType>
+			<measType p="17">VS.cancelDeferredMTLRComplete</measType>
+			<measType p="18">VS.deferredMTLRSucc</measType>
+			<measType p="19">VS.deferredMTLRFailed</measType>
+			<measType p="20">attReqForAuthSetsSentToHLR</measType>
+			<measType p="21">succReceivedAuthSetsFromHLR</measType>
+			<measType p="22">attIdentificationReqToPVLRs</measType>
+			<measType p="23">succIdentificationReqToPVLRs</measType>
+			<measType p="24">VS.authenticationSyncFailure</measType>
+			<measType p="25">attInterrogationOfHLRsForRouting</measType>
+			<measType p="26">succInterrogationOfHLRsMSRNObtained</measType>
+			<measType p="27">succInterrogationOfHLRsCFObtained</measType>
+			<measType p="28">VS.succInterrogationOfHLRsCamelObtained</measType>
+			<measType p="29">attMSMemoryAvailableNotifications</measType>
+			<measType p="30">nbrOfTransCheckIMEIRequests</measType>
+			<measType p="31">nbrOfWhiteAnsInMSC</measType>
+			<measType p="32">nbrOfGreyAnsInMSC</measType>
+			<measType p="33">nbrOfBlackAnsInMSC</measType>
+			<measType p="34">nbrOfUnknownIMEIAnsInMSC</measType>
+			<measType p="35">VS.totalBAOCalls</measType>
+			<measType p="36">VS.totalBOICalls</measType>
+			<measType p="37">VS.totalBOICexHCalls</measType>
+			<measType p="38">VS.totalODBBAOCalls</measType>
+			<measType p="39">VS.totalODBBOICalls</measType>
+			<measType p="40">VS.totalODBBOICexHCalls</measType>
+			<measType p="41">VS.totalODBBOIZCalls</measType>
+			<measType p="42">VS.totalODBBOIZexHCalls</measType>
+			<measType p="43">VS.totalIODBBOIZexHCBOIZCalls</measType>
+			<measType p="44">VS.attPrePaidCall</measType>
+			<measType p="45">VS.LOCREQINVOKESent</measType>
+			<measType p="46">VS.LOCREQINVREJRcvd</measType>
+			<measType p="47">VS.LOCREQINVRETError</measType>
+			<measType p="48">VS.LOCREQMsgTO</measType>
+			<measType p="49">VS.LOCREQMsgRouteFail</measType>
+			<measType p="50">VS.XFERtoNumINVMsgSent</measType>
+			<measType p="51">VS.XFERtoNumREJMsgRcvd</measType>
+			<measType p="52">VS.XFERtoNumINVRetError</measType>
+			<measType p="53">VS.XFERtoNumReqMsgTO</measType>
+			<measType p="54">VS.XFERtoNumMsgRouteFail</measType>
+			<measType p="55">VS.mobTermSMSRelBlkdOLC</measType>
+			<measType p="56">VS.mobTermAttsBlkdOLC</measType>
+			<measType p="57">VS.msrcBlkdOLC</measType>
+			<measType p="58">VS.niUSSDBlkdOLC</measType>
+			<measType p="59">VS.locReqBlkdOLC</measType>
+			<measType p="60">VS.subInfoBlkdOLC</measType>
+			<measType p="61">VS.termLCSLocReqAtts</measType>
+			<measType p="62">VS.termLCSLocReqSucc</measType>
+			<measType p="63">VS.termLCSFailUnauthClient</measType>
+			<measType p="64">VS.termLCSFailAbsentSub</measType>
+			<measType p="65">VS.termLCSFailPosMethod</measType>
+			<measType p="66">VS.EmLCSLocReqSucc</measType>
+			<measType p="67">VS.SecHLRQuery</measType>
+			<measType p="68">VS.SecHLRQueryFailure</measType>
+			<measType p="69">VS.RCHReqRcvdInGMSC</measType>
+			<measType p="70">VS.AnalyzdINVOKESent</measType>
+			<measType p="71">VS.AnalyzdMsgTO</measType>
+			<measType p="72">VS.AnalyzdINVRETError</measType>
+			<measType p="73">VS.AnalyzdINVREJRcvd</measType>
+			<measType p="74">VS.AnalyzdMsgRouteFail</measType>
+			<measType p="75">VS.OAnswerINVOKESent</measType>
+			<measType p="76">VS.ODisconnectINVOKESent</measType>
+			<measType p="77">VS.ODisconnectMsgTO</measType>
+			<measType p="78">VS.ODisconnectINVRETError</measType>
+			<measType p="79">VS.ODisconnectINVREJRcvd</measType>
+			<measType p="80">VS.ODisconnectMsgRouteFail</measType>
+			<measType p="81">VS.TAnswerINVOKESent</measType>
+			<measType p="82">VS.TDisconnectINVOKESent</measType>
+			<measType p="83">VS.TDisconnectMsgTO</measType>
+			<measType p="84">VS.TDisconnectINVRETError</measType>
+			<measType p="85">VS.TDisconnectINVREJRcvd</measType>
+			<measType p="86">VS.TDisconnectMsgRouteFail</measType>
+			<measType p="87">VS.CCDirINVOKERcvd</measType>
+			<measType p="88">VS.CCDirRETError</measType>
+			<measType p="89">VS.throttlePaging</measType>
+			<measType p="90">VS.throttleAuthentication</measType>
+			<measType p="91">succMSMemoryAvailableNotifications</measType>
+			<measType p="92">VS.emptyResponsesForAuthFromHLRToVLR</measType>
+			<measType p="93">VS.RCHReqSentByVMSC</measType>
+			<measType p="94">VS.succORLCFinVMSC</measType>
+			<measType p="95">VS.RCHerrorRcvdInVMSC</measType>
+			<measType p="96">VS.succLCFinGMSC</measType>
+			<measType p="97">VS.WINPPBypassTALInvoc</measType>
+			<measType p="98">attReqForMSRN</measType>
+			<measType p="99">succReqForMSRN</measType>
+			<measType p="100">VS.succNoMSRNAlloc</measType>
+			<measType p="101">VS.MSRNTimeOut</measType>
+			<measType p="102">VS.attHONumAlloc</measType>
+			<measType p="103">VS.succHONumAlloc</measType>
+			<measType p="104">VS.HONumTimeOut</measType>
+			<measType p="105">attInsertSubDataService</measType>
+			<measType p="106">succInsertSubDataService</measType>
+			<measType p="107">VS.VLRCapExceededPurged</measType>
+			<measType p="108">VS.VLRSuperChargerSuspended</measType>
+			<measType p="109">VS.VLRUnsuspendedReused</measType>
+			<measType p="110">VS.VLRUnsuspendedUpdated</measType>
+			<measType p="111">VS.VLRSprChgrSuspndSubRecPrgd</measType>
+			<measType p="112">VS.VLRCreated</measType>
+			<measType p="113">VS.VLRImplicitlyDetached</measType>
+			<measType p="114">VS.VLRImpDtchdSubRecPrgd</measType>
+			<measType p="115">VS.NPQueryInitiated</measType>
+			<measType p="116">VS.NPCallForPortedSub</measType>
+			<measType p="117">VS.camelMMEventNotify</measType>
+			<measType p="118">VS.numVlrSubs</measType>
+			<measType p="119">VS.aveNumVlrSubs</measType>
+			<measType p="120">VS.peakNumVlrSubs</measType>
+			<measType p="121">VS.attReadyForSM</measType>
+			<measType p="122">VS.succReadyForSM</measType>
+			<measType p="123">VS.mtSMSRejMNRFnoPage</measType>
+			<measType p="124">VS.ReqForAuthSetsSentToHLRTripletsDisc</measType>
+			<measType p="125">VS.ReqForAuthSetsSentToHLRReSync</measType>
+			<measType p="126">VS.ReqForAuthSetsSentToHLRReplenish</measType>
+			<measType p="127">VS.succIdReqToPVLRsNoVectors</measType>
+			<measType p="128">VS.IDReqToPVLRsUnidentifiedSub</measType>
+			<measType p="129">VS.HLRRejectedLocationUpdates</measType>
+			<measType p="130">VS.aveHONumUsage</measType>
+			<measType p="131">VS.peakHONumUsage</measType>
+			<measType p="132">VS.aveMSRNUsage</measType>
+			<measType p="133">VS.peakMSRNUsage</measType>
+			<measType p="134">VS.throttledLocRegForSS7Cong</measType>
+			<measType p="135">VS.throttledRestoreDataForSS7Cong</measType>
+			<measType p="136">VS.sysMSRNoverflow</measType>
+			<measType p="137">VS.sysHONoverflow</measType>
+			<measType p="138">VS.numVlrSubsSCsuspended</measType>
+			<measType p="139">VS.aveNumVlrSubsSCsuspended</measType>
+			<measType p="140">VS.manualVLRPurge</measType>
+			<measType p="141">VS.restoreDataVLRtoHLR</measType>
+			<measType p="142">VS.resetHLRtoVLR</measType>
+			<measType p="143">VS.VLRRejLULACCluster</measType>
+			<measType p="144">VS.IS41LocReqSuccRcvd</measType>
+			<measType p="145">VS.VLRRejLUAccRestr</measType>
+			<measType p="146">VS.VLRRejLURegZone</measType>
+			<measType p="147">attAuthProcsInVLR</measType>
+			<measType p="148">succAuthProcsInVLR</measType>
+			<measType p="149">VS.attSecondAuthProcsInVLR</measType>
+			<measType p="150">VS.succSecondAuthProcsInVLR</measType>
+			<measType p="151">VS.RCHRejected</measType>
+			<measType p="152">VS.emrgcyTermLCSLocReqAtts</measType>
+			<measType p="153">VS.emrgcyTermLCSLocReqSucc</measType>
+			<measType p="154">VS.MMEVLRImpDtchdSubRecPrgd</measType>
+			<measType p="155">VS.MMEVLRImplicitlyDetached</measType>
+			<measType p="156">VS.AveNumVLRSubsAttchMME</measType>
+			<measType p="157">VS.AveNumVLRSubsImpDetachMME</measType>
+			<measType p="158">VS.firstPageAttsDiscontinued</measType>
+			<measType p="159">VS.secondPageAttsDiscontinued</measType>
+			<measType p="160">VS.thirdPageAttsDiscontinued</measType>
+			<measType p="161">VS.procUSSDRequestRR</measType>
+			<measType p="162">VS.mapPRUSSRTimeout</measType>
+			<measType p="163">VS.attSRIforLCS</measType>
+			<measType p="164">VS.succSRIforLCS</measType>
+			<measType p="165">VS.SRIforLCSFail</measType>
+			<measType p="166">VS.SRIforLCSTimeout</measType>
+			<measType p="167">VS.SendRouteInfo_MTRR_Att</measType>
+			<measType p="168">VS.SendRouteInfo_MTRR_RR_Rcvd</measType>
+			<measType p="169">VS.peakNumVlrSubsSCsuspended</measType>
+			<measType p="170">VS.attMTSMSVLRRestore</measType>
+			<measType p="171">VS.succMTSMSVLRRestore</measType>
+			<measType p="172">VS.maxAllowedVlrSubs</measType>
+			<measType p="173">VS.NumVLRCamelSubs</measType>
+			<measType p="174">failInterrogationOfHLRsSRITimeout</measType>
+			<measType p="175">MsgRoutefailInterrogationOfHLRsForRouting</measType>
+			<measType p="176">InterrogationOfHLRsRejRcvd</measType>
+			<measType p="177">InterrogationOfHLRsabsentSubscriberObtained</measType>
+			<measType p="178">InterrogationOfHLRsBusyIndicatorObtained</measType>
+			<measType p="179">InterrogationOfHLRsSRIError</measType>
+			<measType p="180">InterrogationOfHLRsnoSubscriberReplyObtained</measType>
+			<measType p="181">InterrogationOfHLRsnoRoutingInfoObtained</measType>
+			<measType p="182">InterrogationOfHLRsRetError</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">0</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">3</r>
+				<r p="106">1</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">1</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">1</r>
+				<r p="119">0</r>
+				<r p="120">1</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+				<r p="140">0</r>
+				<r p="141">1</r>
+				<r p="142">0</r>
+				<r p="143">0</r>
+				<r p="144">0</r>
+				<r p="145">0</r>
+				<r p="146">0</r>
+				<r p="147">0</r>
+				<r p="148">0</r>
+				<r p="149">0</r>
+				<r p="150">0</r>
+				<r p="151">0</r>
+				<r p="152">0</r>
+				<r p="153">0</r>
+				<r p="154">0</r>
+				<r p="155">0</r>
+				<r p="156">0</r>
+				<r p="157">0</r>
+				<r p="158">0</r>
+				<r p="159">0</r>
+				<r p="160">0</r>
+				<r p="161">0</r>
+				<r p="162">0</r>
+				<r p="163">0</r>
+				<r p="164">0</r>
+				<r p="165">0</r>
+				<r p="166">0</r>
+				<r p="167">0</r>
+				<r p="168">0</r>
+				<r p="169">0</r>
+				<r p="170">1</r>
+				<r p="171">1</r>
+				<r p="172">720000</r>
+				<r p="173">0</r>
+				<r p="174">0</r>
+				<r p="175">0</r>
+				<r p="176">0</r>
+				<r p="177">0</r>
+				<r p="178">0</r>
+				<r p="179">0</r>
+				<r p="180">0</r>
+				<r p="181">0</r>
+				<r p="182">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">0</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">0</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">1</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+				<r p="140">0</r>
+				<r p="141">0</r>
+				<r p="142">0</r>
+				<r p="143">0</r>
+				<r p="144">0</r>
+				<r p="145">0</r>
+				<r p="146">0</r>
+				<r p="147">0</r>
+				<r p="148">0</r>
+				<r p="149">0</r>
+				<r p="150">0</r>
+				<r p="151">0</r>
+				<r p="152">0</r>
+				<r p="153">0</r>
+				<r p="154">0</r>
+				<r p="155">0</r>
+				<r p="156">0</r>
+				<r p="157">0</r>
+				<r p="158">0</r>
+				<r p="159">0</r>
+				<r p="160">0</r>
+				<r p="161">0</r>
+				<r p="162">0</r>
+				<r p="163">0</r>
+				<r p="164">0</r>
+				<r p="165">0</r>
+				<r p="166">0</r>
+				<r p="167">0</r>
+				<r p="168">0</r>
+				<r p="169">0</r>
+				<r p="170">0</r>
+				<r p="171">0</r>
+				<r p="172">720000</r>
+				<r p="173">0</r>
+				<r p="174">0</r>
+				<r p="175">0</r>
+				<r p="176">0</r>
+				<r p="177">0</r>
+				<r p="178">0</r>
+				<r p="179">0</r>
+				<r p="180">0</r>
+				<r p="181">0</r>
+				<r p="182">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">1</r>
+				<r p="4">1</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">0</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">1</r>
+				<r p="106">1</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">1</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">0</r>
+				<r p="119">0</r>
+				<r p="120">1</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+				<r p="140">0</r>
+				<r p="141">0</r>
+				<r p="142">0</r>
+				<r p="143">0</r>
+				<r p="144">0</r>
+				<r p="145">0</r>
+				<r p="146">0</r>
+				<r p="147">0</r>
+				<r p="148">0</r>
+				<r p="149">0</r>
+				<r p="150">0</r>
+				<r p="151">0</r>
+				<r p="152">0</r>
+				<r p="153">0</r>
+				<r p="154">0</r>
+				<r p="155">0</r>
+				<r p="156">0</r>
+				<r p="157">0</r>
+				<r p="158">0</r>
+				<r p="159">0</r>
+				<r p="160">0</r>
+				<r p="161">0</r>
+				<r p="162">0</r>
+				<r p="163">0</r>
+				<r p="164">0</r>
+				<r p="165">0</r>
+				<r p="166">0</r>
+				<r p="167">0</r>
+				<r p="168">0</r>
+				<r p="169">0</r>
+				<r p="170">0</r>
+				<r p="171">0</r>
+				<r p="172">720000</r>
+				<r p="173">0</r>
+				<r p="174">0</r>
+				<r p="175">0</r>
+				<r p="176">0</r>
+				<r p="177">0</r>
+				<r p="178">0</r>
+				<r p="179">0</r>
+				<r p="180">0</r>
+				<r p="181">0</r>
+				<r p="182">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=1, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+				<r p="13">0</r>
+				<r p="14">0</r>
+				<r p="15">0</r>
+				<r p="16">0</r>
+				<r p="17">0</r>
+				<r p="18">0</r>
+				<r p="19">0</r>
+				<r p="20">0</r>
+				<r p="21">0</r>
+				<r p="22">0</r>
+				<r p="23">0</r>
+				<r p="24">0</r>
+				<r p="25">0</r>
+				<r p="26">0</r>
+				<r p="27">0</r>
+				<r p="28">0</r>
+				<r p="29">0</r>
+				<r p="30">0</r>
+				<r p="31">0</r>
+				<r p="32">0</r>
+				<r p="33">0</r>
+				<r p="34">0</r>
+				<r p="35">0</r>
+				<r p="36">0</r>
+				<r p="37">0</r>
+				<r p="38">0</r>
+				<r p="39">0</r>
+				<r p="40">0</r>
+				<r p="41">0</r>
+				<r p="42">0</r>
+				<r p="43">0</r>
+				<r p="44">0</r>
+				<r p="45">0</r>
+				<r p="46">0</r>
+				<r p="47">0</r>
+				<r p="48">0</r>
+				<r p="49">0</r>
+				<r p="50">0</r>
+				<r p="51">0</r>
+				<r p="52">0</r>
+				<r p="53">0</r>
+				<r p="54">0</r>
+				<r p="55">0</r>
+				<r p="56">0</r>
+				<r p="57">0</r>
+				<r p="58">0</r>
+				<r p="59">0</r>
+				<r p="60">0</r>
+				<r p="61">0</r>
+				<r p="62">0</r>
+				<r p="63">0</r>
+				<r p="64">0</r>
+				<r p="65">0</r>
+				<r p="66">0</r>
+				<r p="67">0</r>
+				<r p="68">0</r>
+				<r p="69">0</r>
+				<r p="70">0</r>
+				<r p="71">0</r>
+				<r p="72">0</r>
+				<r p="73">0</r>
+				<r p="74">0</r>
+				<r p="75">0</r>
+				<r p="76">0</r>
+				<r p="77">0</r>
+				<r p="78">0</r>
+				<r p="79">0</r>
+				<r p="80">0</r>
+				<r p="81">0</r>
+				<r p="82">0</r>
+				<r p="83">0</r>
+				<r p="84">0</r>
+				<r p="85">0</r>
+				<r p="86">0</r>
+				<r p="87">0</r>
+				<r p="88">0</r>
+				<r p="89">0</r>
+				<r p="90">0</r>
+				<r p="91">0</r>
+				<r p="92">0</r>
+				<r p="93">0</r>
+				<r p="94">0</r>
+				<r p="95">0</r>
+				<r p="96">0</r>
+				<r p="97">0</r>
+				<r p="98">0</r>
+				<r p="99">0</r>
+				<r p="100">0</r>
+				<r p="101">0</r>
+				<r p="102">0</r>
+				<r p="103">0</r>
+				<r p="104">0</r>
+				<r p="105">0</r>
+				<r p="106">0</r>
+				<r p="107">0</r>
+				<r p="108">0</r>
+				<r p="109">0</r>
+				<r p="110">0</r>
+				<r p="111">0</r>
+				<r p="112">0</r>
+				<r p="113">0</r>
+				<r p="114">0</r>
+				<r p="115">0</r>
+				<r p="116">0</r>
+				<r p="117">0</r>
+				<r p="118">0</r>
+				<r p="119">0</r>
+				<r p="120">0</r>
+				<r p="121">0</r>
+				<r p="122">0</r>
+				<r p="123">0</r>
+				<r p="124">0</r>
+				<r p="125">0</r>
+				<r p="126">0</r>
+				<r p="127">0</r>
+				<r p="128">0</r>
+				<r p="129">0</r>
+				<r p="130">0</r>
+				<r p="131">0</r>
+				<r p="132">0</r>
+				<r p="133">0</r>
+				<r p="134">0</r>
+				<r p="135">0</r>
+				<r p="136">0</r>
+				<r p="137">0</r>
+				<r p="138">0</r>
+				<r p="139">0</r>
+				<r p="140">0</r>
+				<r p="141">0</r>
+				<r p="142">0</r>
+				<r p="143">0</r>
+				<r p="144">0</r>
+				<r p="145">0</r>
+				<r p="146">0</r>
+				<r p="147">0</r>
+				<r p="148">0</r>
+				<r p="149">0</r>
+				<r p="150">0</r>
+				<r p="151">0</r>
+				<r p="152">0</r>
+				<r p="153">0</r>
+				<r p="154">0</r>
+				<r p="155">0</r>
+				<r p="156">0</r>
+				<r p="157">0</r>
+				<r p="158">0</r>
+				<r p="159">0</r>
+				<r p="160">0</r>
+				<r p="161">0</r>
+				<r p="162">0</r>
+				<r p="163">0</r>
+				<r p="164">0</r>
+				<r p="165">0</r>
+				<r p="166">0</r>
+				<r p="167">0</r>
+				<r p="168">0</r>
+				<r p="169">0</r>
+				<r p="170">0</r>
+				<r p="171">0</r>
+				<r p="172">720000</r>
+				<r p="173">0</r>
+				<r p="174">0</r>
+				<r p="175">0</r>
+				<r p="176">0</r>
+				<r p="177">0</r>
+				<r p="178">0</r>
+				<r p="179">0</r>
+				<r p="180">0</r>
+				<r p="181">0</r>
+				<r p="182">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveCpuProcess</measType>
+			<measType p="2">VS.peakCpuProcess</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, Process=mapsys">
+				<r p="1">0.30</r>
+				<r p="2">0.33</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, Process=mapsys">
+				<r p="1">0.09</r>
+				<r p="2">0.11</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=1, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, Process=mapsys">
+				<r p="1">0.29</r>
+				<r p="2">0.38</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=1, PoolMember=1, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, Process=mapsys">
+				<r p="1">0.10</r>
+				<r p="2">0.12</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.SGsAPPageRequest</measType>
+			<measType p="2">VS.SGsAPPageResponse</measType>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, LAC=900, MME=0, BearerCallType=SMS">
+				<r p="1">0</r>
+				<r p="2">0</r>
+			</measValue>
+			<measValue measObjLdn="PoolType=vlr, PoolId=0, PoolMember=0, Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, LAC=65535, MME=0, BearerCallType=SMS">
+				<r p="1">1</r>
+				<r p="2">1</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveCpuUsage</measType>
+			<measType p="2">VS.peakCpuUsage</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr">
+				<r p="1">1.61</r>
+				<r p="2">2.35</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr">
+				<r p="1">1.58</r>
+				<r p="2">2.08</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns">
+				<r p="1">9.19</r>
+				<r p="2">23.09</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns">
+				<r p="1">7.29</r>
+				<r p="2">11.72</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr">
+				<r p="1">4.09</r>
+				<r p="2">5.57</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr">
+				<r p="1">3.90</r>
+				<r p="2">5.30</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Core=0">
+				<r p="1">1.54</r>
+				<r p="2">2.43</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Core=1">
+				<r p="1">1.69</r>
+				<r p="2">2.35</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Core=0">
+				<r p="1">1.56</r>
+				<r p="2">1.95</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Core=1">
+				<r p="1">1.60</r>
+				<r p="2">2.21</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, Core=0">
+				<r p="1">10.10</r>
+				<r p="2">22.70</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, Core=1">
+				<r p="1">8.28</r>
+				<r p="2">24.22</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, Core=0">
+				<r p="1">7.47</r>
+				<r p="2">14.40</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, Core=1">
+				<r p="1">7.10</r>
+				<r p="2">13.12</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, Core=0">
+				<r p="1">4.36</r>
+				<r p="2">5.25</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, Core=1">
+				<r p="1">3.83</r>
+				<r p="2">5.89</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, Core=0">
+				<r p="1">3.72</r>
+				<r p="2">5.41</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, Core=1">
+				<r p="1">4.08</r>
+				<r p="2">5.20</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveBaseCpuUsage</measType>
+			<measType p="2">VS.peakBaseCpuUsage</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr">
+				<r p="1">1.61</r>
+				<r p="2">2.35</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr">
+				<r p="1">1.58</r>
+				<r p="2">2.08</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns">
+				<r p="1">8.99</r>
+				<r p="2">23.09</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns">
+				<r p="1">7.29</r>
+				<r p="2">11.72</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr">
+				<r p="1">4.09</r>
+				<r p="2">5.57</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr">
+				<r p="1">3.90</r>
+				<r p="2">5.30</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.maxNEmemUsage</measType>
+			<measType p="2">VS.memUsage</measType>
+			<measType p="3">VS.swapMemUsage</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr">
+				<r p="1">3.18</r>
+				<r p="2">3.17</r>
+				<r p="3">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr">
+				<r p="1">3.15</r>
+				<r p="2">3.14</r>
+				<r p="3">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns">
+				<r p="1">18.56</r>
+				<r p="2">18.46</r>
+				<r p="3">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns">
+				<r p="1">11.49</r>
+				<r p="2">11.47</r>
+				<r p="3">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr">
+				<r p="1">18.09</r>
+				<r p="2">18.08</r>
+				<r p="3">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr">
+				<r p="1">17.97</r>
+				<r p="2">17.96</r>
+				<r p="3">0.00</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.fileSysUsage</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, FileSystem= /">
+				<r p="1">37.23</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, FileSystem= /var">
+				<r p="1">6.60</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, FileSystem= /app1">
+				<r p="1">5.91</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, FileSystem= /tmp">
+				<r p="1">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, FileSystem= /storage">
+				<r p="1">6.09</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, FileSystem= /">
+				<r p="1">37.23</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, FileSystem= /var">
+				<r p="1">6.60</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, FileSystem= /app1">
+				<r p="1">5.91</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, FileSystem= /tmp">
+				<r p="1">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, FileSystem= /storage">
+				<r p="1">6.09</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, FileSystem= /">
+				<r p="1">55.98</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, FileSystem= /var">
+				<r p="1">7.80</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, FileSystem= /app1">
+				<r p="1">50.14</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, FileSystem= /tmp">
+				<r p="1">0.03</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, FileSystem= /storage">
+				<r p="1">49.87</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, FileSystem= /">
+				<r p="1">55.69</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, FileSystem= /var">
+				<r p="1">7.14</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, FileSystem= /app1">
+				<r p="1">50.17</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, FileSystem= /tmp">
+				<r p="1">0.01</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, FileSystem= /storage">
+				<r p="1">48.65</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, FileSystem= /">
+				<r p="1">41.52</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, FileSystem= /var">
+				<r p="1">6.60</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, FileSystem= /app1">
+				<r p="1">7.25</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, FileSystem= /tmp">
+				<r p="1">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, FileSystem= /storage">
+				<r p="1">6.10</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, FileSystem= /">
+				<r p="1">41.52</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, FileSystem= /var">
+				<r p="1">6.60</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, FileSystem= /app1">
+				<r p="1">7.23</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, FileSystem= /tmp">
+				<r p="1">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, FileSystem= /storage">
+				<r p="1">6.10</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.diskIOReadRate</measType>
+			<measType p="2">VS.diskIOWriteRate</measType>
+			<measType p="3">VS.diskIOReadKBytes</measType>
+			<measType p="4">VS.diskIOWriteKBytes</measType>
+			<measType p="5">VS.diskIOReadFrequency</measType>
+			<measType p="6">VS.diskIOWriteFrequency</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, disk=vda">
+				<r p="1">0.00</r>
+				<r p="2">5.03</r>
+				<r p="3">0</r>
+				<r p="4">1512</r>
+				<r p="5">0.00</r>
+				<r p="6">0.59</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, disk=vdb">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, disk=vdc">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr, disk=vdd">
+				<r p="1">0.00</r>
+				<r p="2">3.62</r>
+				<r p="3">0</r>
+				<r p="4">1088</r>
+				<r p="5">0.00</r>
+				<r p="6">0.56</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, disk=vda">
+				<r p="1">0.00</r>
+				<r p="2">5.59</r>
+				<r p="3">0</r>
+				<r p="4">1680</r>
+				<r p="5">0.00</r>
+				<r p="6">0.64</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, disk=vdb">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, disk=vdc">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr, disk=vdd">
+				<r p="1">0.00</r>
+				<r p="2">4.03</r>
+				<r p="3">0</r>
+				<r p="4">1212</r>
+				<r p="5">0.00</r>
+				<r p="6">0.68</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, disk=vda">
+				<r p="1">2.27</r>
+				<r p="2">569.01</r>
+				<r p="3">684</r>
+				<r p="4">170708</r>
+				<r p="5">0.08</r>
+				<r p="6">46.15</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, disk=vdb">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, disk=vdc">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns, disk=vdd">
+				<r p="1">0.01</r>
+				<r p="2">15.17</r>
+				<r p="3">4</r>
+				<r p="4">4556</r>
+				<r p="5">0.00</r>
+				<r p="6">1.77</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, disk=vda">
+				<r p="1">0.39</r>
+				<r p="2">503.08</r>
+				<r p="3">120</r>
+				<r p="4">150932</r>
+				<r p="5">0.09</r>
+				<r p="6">39.96</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, disk=vdb">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, disk=vdc">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns, disk=vdd">
+				<r p="1">0.00</r>
+				<r p="2">20.91</r>
+				<r p="3">0</r>
+				<r p="4">6276</r>
+				<r p="5">0.00</r>
+				<r p="6">1.64</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, disk=vda">
+				<r p="1">0.00</r>
+				<r p="2">179.07</r>
+				<r p="3">0</r>
+				<r p="4">53724</r>
+				<r p="5">0.00</r>
+				<r p="6">11.85</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, disk=vdb">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, disk=vdc">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr, disk=vdd">
+				<r p="1">0.00</r>
+				<r p="2">3.03</r>
+				<r p="3">0</r>
+				<r p="4">912</r>
+				<r p="5">0.00</r>
+				<r p="6">0.49</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, disk=vda">
+				<r p="1">0.00</r>
+				<r p="2">177.48</r>
+				<r p="3">0</r>
+				<r p="4">53248</r>
+				<r p="5">0.00</r>
+				<r p="6">11.38</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, disk=vdb">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, disk=vdc">
+				<r p="1">0.00</r>
+				<r p="2">0.00</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0.00</r>
+				<r p="6">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr, disk=vdd">
+				<r p="1">0.00</r>
+				<r p="2">3.06</r>
+				<r p="3">0</r>
+				<r p="4">920</r>
+				<r p="5">0.00</r>
+				<r p="6">0.50</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.Act2StbyVMStateChange</measType>
+			<measType p="2">VS.Stby2ActVMStateChange</measType>
+			<measType p="3">VS.Act2UnavailVMStateChange</measType>
+			<measType p="4">VS.Stby2UnavailVMStateChange</measType>
+			<measType p="5">VS.Other2UnavailVMStateChange</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, VM=CDR00VM1P">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, VM=CNFGVM1P">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, VM=MIVM1P">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, VM=VLR00VM1P">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, VM=VLR01VM1P">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.asrtNonESCCritical</measType>
+			<measType p="2">VS.asrtNonESCMajor</measType>
+			<measType p="3">VS.asrtNonESCMinor</measType>
+			<measType p="4">VS.asrtESC</measType>
+			<measType p="5">VS.audNewEvent</measType>
+			<measType p="6">VS.audErrCount</measType>
+			<measType p="7">VS.audManAct</measType>
+			<measType p="8">VS.alrmCritical</measType>
+			<measType p="9">VS.alrmMajor</measType>
+			<measType p="10">VS.alrmMinor</measType>
+			<measType p="11">VS.alrmWarning</measType>
+			<measType p="12">VS.exceptionService</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, serviceType=cdr">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, serviceType=cdr">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, serviceType=cnfg_mi_sns">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">1</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, serviceType=cnfg_mi_sns">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, serviceType=vlr_vlr">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, serviceType=vlr_vlr">
+				<r p="1">0</r>
+				<r p="2">0</r>
+				<r p="3">0</r>
+				<r p="4">0</r>
+				<r p="5">0</r>
+				<r p="6">0</r>
+				<r p="7">0</r>
+				<r p="8">0</r>
+				<r p="9">0</r>
+				<r p="10">0</r>
+				<r p="11">0</r>
+				<r p="12">0</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.aveNetworkLatency</measType>
+			<measType p="2">VS.minNetworkLatency</measType>
+			<measType p="3">VS.maxNetworkLatency</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.64.2">
+				<r p="1">396</r>
+				<r p="2">201</r>
+				<r p="3">738</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.64.3">
+				<r p="1">188</r>
+				<r p="2">159</r>
+				<r p="3">241</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.64.4">
+				<r p="1">224</r>
+				<r p="2">173</r>
+				<r p="3">325</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.64.5">
+				<r p="1">363</r>
+				<r p="2">277</r>
+				<r p="3">447</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.64.6">
+				<r p="1">433</r>
+				<r p="2">326</r>
+				<r p="3">629</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.65.1">
+				<r p="1">280</r>
+				<r p="2">248</r>
+				<r p="3">311</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.65.2">
+				<r p="1">284</r>
+				<r p="2">231</r>
+				<r p="3">365</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.65.3">
+				<r p="1">260</r>
+				<r p="2">235</r>
+				<r p="3">312</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.65.4">
+				<r p="1">614</r>
+				<r p="2">496</r>
+				<r p="3">706</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.65.5">
+				<r p="1">550</r>
+				<r p="2">462</r>
+				<r p="3">641</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, IP=169.254.65.6">
+				<r p="1">533</r>
+				<r p="2">467</r>
+				<r p="3">605</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.64.1">
+				<r p="1">315</r>
+				<r p="2">254</r>
+				<r p="3">341</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.64.2">
+				<r p="1">559</r>
+				<r p="2">521</r>
+				<r p="3">648</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.64.3">
+				<r p="1">278</r>
+				<r p="2">243</r>
+				<r p="3">331</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.64.4">
+				<r p="1">268</r>
+				<r p="2">234</r>
+				<r p="3">319</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.64.5">
+				<r p="1">611</r>
+				<r p="2">504</r>
+				<r p="3">715</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.64.6">
+				<r p="1">585</r>
+				<r p="2">527</r>
+				<r p="3">630</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.65.2">
+				<r p="1">226</r>
+				<r p="2">177</r>
+				<r p="3">290</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.65.3">
+				<r p="1">221</r>
+				<r p="2">178</r>
+				<r p="3">253</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.65.4">
+				<r p="1">381</r>
+				<r p="2">330</r>
+				<r p="3">443</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.65.5">
+				<r p="1">341</r>
+				<r p="2">290</r>
+				<r p="3">389</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, IP=169.254.65.6">
+				<r p="1">393</r>
+				<r p="2">345</r>
+				<r p="3">425</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.64.1">
+				<r p="1">218</r>
+				<r p="2">182</r>
+				<r p="3">286</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.64.2">
+				<r p="1">200</r>
+				<r p="2">163</r>
+				<r p="3">230</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.64.4">
+				<r p="1">245</r>
+				<r p="2">183</r>
+				<r p="3">339</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.64.5">
+				<r p="1">213</r>
+				<r p="2">178</r>
+				<r p="3">299</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.64.6">
+				<r p="1">213</r>
+				<r p="2">176</r>
+				<r p="3">278</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.65.1">
+				<r p="1">261</r>
+				<r p="2">231</r>
+				<r p="3">331</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.65.2">
+				<r p="1">274</r>
+				<r p="2">244</r>
+				<r p="3">339</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.65.3">
+				<r p="1">257</r>
+				<r p="2">237</r>
+				<r p="3">282</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.65.4">
+				<r p="1">231</r>
+				<r p="2">202</r>
+				<r p="3">269</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.65.5">
+				<r p="1">246</r>
+				<r p="2">215</r>
+				<r p="3">316</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, IP=169.254.65.6">
+				<r p="1">267</r>
+				<r p="2">220</r>
+				<r p="3">310</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.64.1">
+				<r p="1">274</r>
+				<r p="2">195</r>
+				<r p="3">337</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.64.2">
+				<r p="1">233</r>
+				<r p="2">197</r>
+				<r p="3">269</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.64.3">
+				<r p="1">257</r>
+				<r p="2">228</r>
+				<r p="3">292</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.64.4">
+				<r p="1">259</r>
+				<r p="2">227</r>
+				<r p="3">355</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.64.5">
+				<r p="1">255</r>
+				<r p="2">206</r>
+				<r p="3">306</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.64.6">
+				<r p="1">260</r>
+				<r p="2">232</r>
+				<r p="3">293</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.65.1">
+				<r p="1">202</r>
+				<r p="2">164</r>
+				<r p="3">274</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.65.2">
+				<r p="1">208</r>
+				<r p="2">190</r>
+				<r p="3">234</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.65.4">
+				<r p="1">183</r>
+				<r p="2">151</r>
+				<r p="3">208</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.65.5">
+				<r p="1">178</r>
+				<r p="2">142</r>
+				<r p="3">214</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, IP=169.254.65.6">
+				<r p="1">192</r>
+				<r p="2">167</r>
+				<r p="3">212</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.64.1">
+				<r p="1">196</r>
+				<r p="2">175</r>
+				<r p="3">227</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.64.2">
+				<r p="1">211</r>
+				<r p="2">189</r>
+				<r p="3">247</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.64.3">
+				<r p="1">495</r>
+				<r p="2">169</r>
+				<r p="3">1589</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.64.4">
+				<r p="1">221</r>
+				<r p="2">188</r>
+				<r p="3">249</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.64.6">
+				<r p="1">436</r>
+				<r p="2">337</r>
+				<r p="3">542</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.65.1">
+				<r p="1">281</r>
+				<r p="2">269</r>
+				<r p="3">297</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.65.2">
+				<r p="1">283</r>
+				<r p="2">251</r>
+				<r p="3">324</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.65.3">
+				<r p="1">288</r>
+				<r p="2">244</r>
+				<r p="3">359</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.65.4">
+				<r p="1">259</r>
+				<r p="2">239</r>
+				<r p="3">288</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.65.5">
+				<r p="1">264</r>
+				<r p="2">240</r>
+				<r p="3">273</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, IP=169.254.65.6">
+				<r p="1">247</r>
+				<r p="2">227</r>
+				<r p="3">265</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.64.1">
+				<r p="1">263</r>
+				<r p="2">244</r>
+				<r p="3">282</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.64.2">
+				<r p="1">254</r>
+				<r p="2">230</r>
+				<r p="3">293</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.64.3">
+				<r p="1">268</r>
+				<r p="2">211</r>
+				<r p="3">335</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.64.4">
+				<r p="1">247</r>
+				<r p="2">224</r>
+				<r p="3">301</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.64.5">
+				<r p="1">250</r>
+				<r p="2">210</r>
+				<r p="3">325</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.64.6">
+				<r p="1">569</r>
+				<r p="2">475</r>
+				<r p="3">615</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.65.1">
+				<r p="1">195</r>
+				<r p="2">165</r>
+				<r p="3">231</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.65.2">
+				<r p="1">182</r>
+				<r p="2">157</r>
+				<r p="3">235</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.65.3">
+				<r p="1">180</r>
+				<r p="2">164</r>
+				<r p="3">193</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.65.4">
+				<r p="1">349</r>
+				<r p="2">298</r>
+				<r p="3">435</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, IP=169.254.65.6">
+				<r p="1">323</r>
+				<r p="2">300</r>
+				<r p="3">346</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-07-07T06:25:00+00:00" />
+			<measType p="1">VS.EthernetKBytesInRate</measType>
+			<measType p="2">VS.EthernetKBytesOutRate</measType>
+			<measType p="3">VS.EthernetPacketsInRate</measType>
+			<measType p="4">VS.EthernetPacketsOutRate</measType>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Interface=eth0">
+				<r p="1">18.71</r>
+				<r p="2">2.48</r>
+				<r p="3">169.69</r>
+				<r p="4">21.79</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Interface=eth1">
+				<r p="1">17.84</r>
+				<r p="2">1.77</r>
+				<r p="3">161.11</r>
+				<r p="4">16.90</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Interface=eth2">
+				<r p="1">0.05</r>
+				<r p="2">0.00</r>
+				<r p="3">0.95</r>
+				<r p="4">0.06</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-00, UUID=198830a1-9087-4d93-8ca8-d37e499e0301, Interface=lo">
+				<r p="1">0.11</r>
+				<r p="2">0.11</r>
+				<r p="3">1.76</r>
+				<r p="4">1.76</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Interface=eth0">
+				<r p="1">18.82</r>
+				<r p="2">2.35</r>
+				<r p="3">169.47</r>
+				<r p="4">21.57</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Interface=eth1">
+				<r p="1">17.92</r>
+				<r p="2">1.69</r>
+				<r p="3">161.11</r>
+				<r p="4">16.90</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Interface=eth2">
+				<r p="1">0.05</r>
+				<r p="2">0.00</r>
+				<r p="3">0.96</r>
+				<r p="4">0.00</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-CDR-01, UUID=46187666-4a06-4117-b7ef-9cc0bfa2f062, Interface=lo">
+				<r p="1">0.10</r>
+				<r p="2">0.10</r>
+				<r p="3">1.60</r>
+				<r p="4">1.60</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, Interface=eth0">
+				<r p="1">26.60</r>
+				<r p="2">13.03</r>
+				<r p="3">234.72</r>
+				<r p="4">81.37</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, Interface=eth1">
+				<r p="1">17.70</r>
+				<r p="2">2.11</r>
+				<r p="3">161.37</r>
+				<r p="4">17.30</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, Interface=eth2">
+				<r p="1">3.65</r>
+				<r p="2">0.59</r>
+				<r p="3">6.01</r>
+				<r p="4">4.56</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-00, UUID=e832ccda-f592-4419-90bb-ef4513553e7c, Interface=lo">
+				<r p="1">73.18</r>
+				<r p="2">73.18</r>
+				<r p="3">214.51</r>
+				<r p="4">214.51</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, Interface=eth0">
+				<r p="1">25.85</r>
+				<r p="2">6.58</r>
+				<r p="3">198.92</r>
+				<r p="4">51.15</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, Interface=eth1">
+				<r p="1">17.76</r>
+				<r p="2">1.83</r>
+				<r p="3">161.17</r>
+				<r p="4">16.97</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, Interface=eth2">
+				<r p="1">0.05</r>
+				<r p="2">0.00</r>
+				<r p="3">0.96</r>
+				<r p="4">0.02</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-OAM-01, UUID=6a028d1f-5aaa-4f4d-b020-0468de7ed1b7, Interface=lo">
+				<r p="1">0.55</r>
+				<r p="2">0.55</r>
+				<r p="3">7.35</r>
+				<r p="4">7.35</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, Interface=eth0">
+				<r p="1">21.78</r>
+				<r p="2">6.32</r>
+				<r p="3">224.98</r>
+				<r p="4">70.80</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, Interface=eth1">
+				<r p="1">17.68</r>
+				<r p="2">1.93</r>
+				<r p="3">161.12</r>
+				<r p="4">16.89</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-00, UUID=50ebbcd0-df89-470c-8732-0f470ebee1ca, Interface=lo">
+				<r p="1">0.29</r>
+				<r p="2">0.29</r>
+				<r p="3">4.22</r>
+				<r p="4">4.22</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, Interface=eth0">
+				<r p="1">21.43</r>
+				<r p="2">4.51</r>
+				<r p="3">206.53</r>
+				<r p="4">57.30</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, Interface=eth1">
+				<r p="1">17.85</r>
+				<r p="2">1.77</r>
+				<r p="3">161.12</r>
+				<r p="4">16.91</r>
+			</measValue>
+			<measValue measObjLdn="Machine=QDSD0101DEVCvSGS-L-NK-46-VLR-01, UUID=f1b52391-4834-4d97-8e26-60dfa4eaa1ea, Interface=lo">
+				<r p="1">0.11</r>
+				<r p="2">0.11</r>
+				<r p="3">1.85</r>
+				<r p="4">1.85</r>
+			</measValue>
+		</measInfo>
+	</measData>
+	<fileFooter>
+		<measCollec endTime="2016-07-07T06:25:00+00:00" />
+	</fileFooter>
+</measCollecFile>

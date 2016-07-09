@@ -3,7 +3,9 @@ package etl.cmd.transform;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,6 +18,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.FileETLCmd;
+import etl.engine.MRMode;
+import etl.engine.ProcessMode;
 
 //key colon value format to csv
 public class KcvToCsvCmd extends FileETLCmd{
@@ -59,6 +63,8 @@ public class KcvToCsvCmd extends FileETLCmd{
 		if (strVal!=null){
 			this.recordFieldNum = Integer.parseInt(strVal);
 		}
+		this.setPm(ProcessMode.MRProcess);
+		this.setMrMode(MRMode.file);
 	}
 
 	//
@@ -110,7 +116,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 	
 	//fix file name
 	@Override
-	public List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String,List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
 		Path kcvFile = null;
@@ -165,6 +171,11 @@ public class KcvToCsvCmd extends FileETLCmd{
 				}
 			}
 		}
-		return outputList;
+		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+		retMap.put(RESULT_KEY_OUTPUT, outputList);
+		List<String> logInfo = new ArrayList<String>();
+		logInfo.add(outputList.size()+"");
+		retMap.put(RESULT_KEY_LOG, logInfo);
+		return retMap;
 	}
 }
