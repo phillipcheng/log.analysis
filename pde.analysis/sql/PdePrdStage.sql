@@ -71,7 +71,8 @@ CREATE TABLE pde.pde_stage(
 	IHgt float,
 	PrimaryID varchar(20) not null,
 	Week int,
-	dt TIMESTAMP not null,--YMD date,HMS time,
+	YMD date,
+	HMS time,
 	SmEast float,
 	SmNorth float,
 	SmUp float,
@@ -117,11 +118,11 @@ CREATE TABLE pde.pde_stage(
 	TruthAz float, 
 	MeasAz float, 
 	DeltaAz float,
-	sitename varchar(50)
+	mdn varchar(20),
+	sitename varchar(50),
+	CREATED_TIME TIMESTAMP DEFAULT SYSDATE NOT NULL
 );
---mdn varchar(20),
 --app varchar(15),
---CREATED_TIME TIMESTAMP DEFAULT SYSDATE NOT NULL
 
 CREATE TABLE pde.pde_session_stage(
 session_id varchar(50),
@@ -130,8 +131,9 @@ session_end_time timestamp,
 duration float,
 isAlmanac boolean,
 isEph boolean,
-sitename varchar(30));
---CREATED_TIME TIMESTAMP DEFAULT SYSDATE NOT NULL
+sitename varchar(30),
+CREATED_TIME TIMESTAMP DEFAULT SYSDATE NOT NULL);
+
 
 drop table pde.pde_fix_ses;
 create table if not exists pde.pde_fix_ses (

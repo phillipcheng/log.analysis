@@ -98,19 +98,23 @@ public class Util {
 		return paramsMap;
 	}
 	
-	public static String getCsv(List<String> csv){
+	public static String getCsv(List<String> csv, boolean newline, boolean escape){
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<csv.size(); i++){
 			String v = csv.get(i);
 			if (v!=null){
-				v = "\"" + v + "\"";//always enclosed by "\""
+				if (escape){
+					v = "\"" + v + "\"";
+				}
 				sb.append(v);
 			}
 			if (i<csv.size()-1){
 				sb.append(",");
 			}
 		}
-		sb.append("\n");
+		if (newline){
+			sb.append("\n");
+		}
 		return sb.toString();
 	}
 	

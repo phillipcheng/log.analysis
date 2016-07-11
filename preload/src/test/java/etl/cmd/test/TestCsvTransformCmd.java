@@ -31,20 +31,18 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String remoteCsvOutputFolder = "/etltest/csvtransformout/";
 			// setup testing env
 			String csvtransProp = "csvtrans.properties";
-			String[] csvFiles = new String[] { "PJ24002A_BBG2.csv", "PJ24002B_BBG2.csv" };
-			int mergedColumn = 68;
-			
+			String[] csvFiles = new String[] {"PJ24002A_BBG2.csv"};
+			int mergedColumn = 2;
 			
 			getFs().delete(new Path(remoteCsvFolder), true);
+			getFs().delete(new Path(remoteCsvOutputFolder), true);
+			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			getFs().mkdirs(new Path(remoteCsvFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvtransProp),
-					new Path(remoteCfgFolder + csvtransProp));
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvtransProp), new Path(remoteCfgFolder + csvtransProp));
 			for (String csvFile : csvFiles) {
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile),
-						new Path(remoteCsvFolder + csvFile));
+				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteCsvFolder + csvFile));
 			}
-			getFs().delete(new Path(remoteCsvOutputFolder), true);
 			// run job
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.CsvTransformCmd");
 			getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));

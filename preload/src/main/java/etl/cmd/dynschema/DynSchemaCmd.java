@@ -256,7 +256,7 @@ public class DynSchemaCmd extends ETLCmd{
 				osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(outputFileName))));
 				fvWriterMap.put(outputFileName, osw);
 			}
-			String csv = Util.getCsv(fieldValues);
+			String csv = Util.getCsv(fieldValues, true, true);
 			osw.write(csv);
 		}
 		return mvl.getLength();

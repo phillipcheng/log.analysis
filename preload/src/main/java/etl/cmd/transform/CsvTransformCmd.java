@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -15,19 +13,39 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
+import com.sun.jersey.server.impl.cdi.Utils;
+
 import etl.engine.FileETLCmd;
 import etl.engine.MRMode;
 import etl.engine.ProcessMode;
 import etl.util.ScriptEngineUtil;
+import etl.util.Util;
 import etl.util.VarType;
 
 public class CsvTransformCmd extends FileETLCmd{
 	public static final Logger logger = Logger.getLogger(CsvTransformCmd.class);
-	private CsvTransformConf tfCfg;
+	
+	public static final String cfgkey_skip_header="skip.header";
+	public static final String cfgkey_row_validation="row.validation";
+	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
+	public static final String cfgkey_col_op="col.op";
+	
+	private boolean skipHeader=false;
+	private String rowValidation;
+	private boolean inputEndWithComma=false;
+	List<ColOp> colOpList = new ArrayList<ColOp>();
 	
 	public CsvTransformCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
-		tfCfg = new CsvTransformConf(this.pc);
+		skipHeader =pc.getBoolean(cfgkey_skip_header, false);
+		rowValidation = pc.getString(cfgkey_row_validation);
+		inputEndWithComma = pc.getBoolean(cfgkey_input_endwithcomma, false);
+		
+		String[] colops = pc.getStringArray(cfgkey_col_op);
+		for (String colop:colops){
+			ColOp co = new ColOp(colop);
+			colOpList.add(co);
+		}
 		this.setPm(ProcessMode.MRProcess);
 		this.setMrMode(MRMode.line);
 	}
@@ -35,72 +53,51 @@ public class CsvTransformCmd extends FileETLCmd{
 	@Override
 	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
-		if (tfCfg.isSkipHeader() && offset==0) {
+		String output="";
+		
+		//process skip header
+		if (skipHeader && offset==0) {
 			logger.info("skip header:" + row);
 			return null;
 		}
-
-		String output="";
-		tfCfg.clearMerger();//clear all the state from last line
 		
-		//get the list of items from the record
+		//get all fiels
 		List<String> items = new ArrayList<String>();
 		StringTokenizer tn = new StringTokenizer(row, ",");
 		while (tn.hasMoreTokens()){
 			items.add(tn.nextToken());
 		}
 		
-		if (tfCfg.isInputEndWithComma()){//remove the last empty item since row ends with comma
+		//process input ends with comma
+		if (inputEndWithComma){//remove the last empty item since row ends with comma
 			items.remove(items.size()-1);
 		}
 		
-		if (tfCfg.getRowValidation()!=null){
+		//process row validation
+		if (rowValidation!=null){
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put(CsvTransformConf.VAR_NAME_fields, items.toArray());
-			boolean valid = (Boolean) ScriptEngineUtil.eval(tfCfg.getRowValidation(), VarType.BOOLEAN, map);
+			map.put(ColOp.VAR_NAME_fields, items.toArray());
+			boolean valid = (Boolean) ScriptEngineUtil.eval(rowValidation, VarType.BOOLEAN, map);
 			if (!valid) {
 				logger.info("invalid row:" + row);
 				return null;
 			}
 		}
 		
-		//process the list of items
-		int totalTokens = items.size();
-		for (int tIdx=0; tIdx<totalTokens; tIdx++){
-			String item = items.get(tIdx);
-			//process remover, no output of this, continue processing
-			ColUpdate updater = tfCfg.getUpdater(tIdx);
-			if (updater!=null){
-				item = updater.process(item);
-			}
-			
-			//process merge
-			ColMerger merger = tfCfg.getMerger(tIdx);
-			if (merger!=null){
-				if (merger.add(tIdx, item)){
-					output+=merger.getValue();
-					output+=",";
-				}
-				continue;
-			}
-			
-			//process split
-			ColSpliter spliter = tfCfg.getSpliter(tIdx);
-			if (spliter!=null){
-				String[] subitems = item.split(Pattern.quote(spliter.getSep()));
-				for(int i=0; i<subitems.length; i++){
-					output +=subitems[i];
-					output +=",";
-				}
-				continue;
-			}
-			
-			output+=item;
-			output+=",";
-			
+		//process operation
+		Map<String, Object> vars = new HashMap<String, Object>();
+		String[] strItems = new String[items.size()];
+		vars.put(ColOp.VAR_NAME_fields, items.toArray(strItems));
+		String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+		vars.put(var_name_filename, fileName);
+		for (ColOp co: colOpList){
+			items = co.process(vars);
+			strItems = new String[items.size()];
+			vars.put(ColOp.VAR_NAME_fields, items.toArray(strItems));
 		}
+		output = Util.getCsv(Arrays.asList(strItems), false, false);
 		if (isAddFileName()){
-			output+=getAbbreFileName(((FileSplit) context.getInputSplit()).getPath().getName());
+			output+="," + getAbbreFileName(fileName);
 		}
 		logger.info("output:" + output);
 		retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{output}));
