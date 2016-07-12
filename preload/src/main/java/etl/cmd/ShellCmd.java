@@ -24,7 +24,6 @@ public class ShellCmd extends ETLCmd{
 
 	public ShellCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
-		this.setPm(ProcessMode.MRProcess);
 	}
 
 	@Override

@@ -3,9 +3,13 @@ package etl.util;
 import java.util.Date;
 import java.util.Map;
 
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 
 import org.apache.log4j.Logger;
 
@@ -17,9 +21,76 @@ public class ScriptEngineUtil {
 	public static Object eval(String exp, VarType toType, Map<String,Object> variables){
 		return eval(exp, toType, variables, true);
 	}
+	
+	public static CompiledScript compileScript(String exp){
+		ScriptEngine jsEngine = manager.getEngineByName("nashorn");
+		Compilable compEngine = (Compilable)jsEngine;
+        CompiledScript cs = null;
+		try {
+			cs = compEngine.compile(exp);
+		} catch (ScriptException e) {
+			logger.error("", e);
+		}
+		return cs;
+	}
+	
+	public static Object eval(CompiledScript cs, VarType toType, Map<String, Object> variables){
+		Bindings bindings = new SimpleBindings();
+        if (variables!=null){
+			for (String key: variables.keySet()){
+				Object v = variables.get(key);
+				if (v instanceof Date){
+					bindings.put(key, ((Date)v).getTime());
+				}else{
+					bindings.put(key, v);
+				}
+			}
+		}
+		try {
+			Object ret = cs.eval(bindings);
+			logger.debug(String.format("eval get result %s", ret));
+			if (toType == VarType.OBJECT){
+				return ret;
+			}
+			if (ret!=null){
+				if (ret instanceof String){
+					if (toType == VarType.STRING){
+						;
+					}else if (toType == VarType.INT){
+						ret = Integer.parseInt((String)ret);
+					}else{
+						logger.error(String.format("unsupported to type for string result: %s", toType));
+					}
+				}else if (ret instanceof Double){
+					if (toType ==VarType.INT){
+						ret = ((Double)ret).intValue();
+					}else if (toType==VarType.FLOAT){
+						ret = ((Double)ret).floatValue();
+					}else{
+						logger.error(String.format("unsupported to type for double result: %s", toType));
+					}
+				}else if (ret instanceof Boolean){
+					if (toType==VarType.BOOLEAN){
+						return ret;
+					}else{
+						logger.error(String.format("expect a boolean result from exp:%s", cs));
+						return null;
+					}
+				}else{
+					logger.error(String.format("unsupported type of eval ret: %s", ret.getClass()));
+				}
+			}
+			return ret;
+		} catch (ScriptException e) {
+			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
+			return null;
+		}
+	}
+	
 	public static Object eval(String exp, VarType toType, Map<String,Object> variables, boolean logError){
-		ScriptEngine jsEngine = manager.getEngineByName("JavaScript");
-		if (variables!=null){
+		ScriptEngine jsEngine = manager.getEngineByName("nashorn");
+		
+        if (variables!=null){
 			for (String key: variables.keySet()){
 				Object v = variables.get(key);
 				if (v instanceof Date){

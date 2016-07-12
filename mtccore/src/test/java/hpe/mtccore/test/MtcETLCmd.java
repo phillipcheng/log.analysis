@@ -3,41 +3,20 @@ package hpe.mtccore.test;
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 
-import etl.engine.ETLCmdMain;
+import etl.cmd.test.TestETLCmd;
 
-public class MtcETLCmd {
+public class MtcETLCmd extends TestETLCmd{
 	
 	public static final Logger logger = Logger.getLogger(MtcETLCmd.class);
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-	@Test
-	public void testLab() throws Exception{
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-	    ugi.doAs(new PrivilegedExceptionAction<Void>() {
-	      public Void run() throws Exception {
-	    	String wfid = sdf.format(new Date());
-	  		String dynCfg = "/mtccore/schemahistory/sgsiwf.dyncfg_"+wfid;
-	  		String defaultFs = "hdfs://192.85.247.104:19000";
-	  		ETLCmdMain.main(new String[]{"etl.cmd.UploadCmd", wfid, 
-	  				"/mtccore/etlcfg/sgsiwf.upload.properties", "unused", "unused", defaultFs});
-	  		ETLCmdMain.main(new String[]{"etl.cmd.dynschema.DynSchemaCmd", wfid, 
-	  				"/mtccore/etlcfg/sgsiwf.dynschema.properties", "unused", dynCfg, defaultFs});
-	  		ETLCmdMain.main(new String[]{"etl.cmd.SqlExecutorCmd", wfid, 
-	  				"/mtccore/etlcfg/sgsiwf.sqlexecutor.properties", dynCfg, "unused", defaultFs});
-	  		ETLCmdMain.main(new String[]{"etl.cmd.BackupCmd", wfid, 
-	  				"/mtccore/etlcfg/sgsiwf.backup.properties", dynCfg, "unused", defaultFs});
-			return null;
-	      }
-	    });
-	}
 	
 	@Test
 	public void setupLabETLCfg() {

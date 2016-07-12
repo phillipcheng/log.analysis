@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.script.CompiledScript;
+
 import org.apache.log4j.Logger;
 
 import etl.util.ScriptEngineUtil;
@@ -23,6 +25,7 @@ public class ColOp {
 	private ColOpType type;
 	private int targetIdx;
 	private String exp;
+	private CompiledScript expCS;
 	
 	public int getTargetIdx() {
 		return targetIdx;
@@ -54,6 +57,9 @@ public class ColOp {
 			String[] ies = idxexp.split("\\:");
 			if (ies.length>=2){
 				exp = ies[1];
+				if (type == ColOpType.update){
+					expCS = ScriptEngineUtil.compileScript(exp);
+				}
 			}
 			if (ies.length>=1){
 				targetIdx = Integer.parseInt(ies[0]);
@@ -67,11 +73,19 @@ public class ColOp {
 		List<String> items = new ArrayList<String>();
 		items.addAll(Arrays.asList((String[]) vars.get(VAR_NAME_fields)));
 		if (type == ColOpType.update){
-			String val = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
-			for (int i=items.size(); i<=targetIdx; i++){
-				items.add("");//fill empty string
+			String val = (String) ScriptEngineUtil.eval(expCS, VarType.STRING, vars);
+			if (val!=null){
+				for (int i=items.size(); i<=targetIdx; i++){
+					items.add("");//fill empty string
+				}
+				if (val.contains(",")){//may return a list of string from update
+					String[] newItems = val.split(",", -1);
+					items.remove(targetIdx);
+					items.addAll(targetIdx, Arrays.asList(newItems));
+				}else{
+					items.set(targetIdx, val);
+				}
 			}
-			items.set(targetIdx, val);
 		}else if (type == ColOpType.remove){
 			items.remove(targetIdx);
 		}else if (type == ColOpType.split){

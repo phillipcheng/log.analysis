@@ -63,7 +63,6 @@ public class KcvToCsvCmd extends FileETLCmd{
 		if (strVal!=null){
 			this.recordFieldNum = Integer.parseInt(strVal);
 		}
-		this.setPm(ProcessMode.MRProcess);
 		this.setMrMode(MRMode.file);
 	}
 

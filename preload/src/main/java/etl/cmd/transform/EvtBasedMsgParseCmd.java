@@ -62,7 +62,6 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 		}
 		msgIdx = pc.getInt(MESSAGE_IDX, -1);
 		msgFields = pc.getStringArray(MESSAGE_FIELDS);
-		this.setPm(ProcessMode.MRProcess);
 		this.setMrMode(MRMode.line);
 	}
 	

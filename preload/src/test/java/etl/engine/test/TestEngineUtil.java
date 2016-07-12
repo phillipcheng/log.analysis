@@ -1,14 +1,19 @@
 package etl.engine.test;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
+import etl.util.ScriptEngineUtil;
+import etl.util.VarType;
 
 public class TestEngineUtil {
-	
+	public static final Logger logger = Logger.getLogger(TestEngineUtil.class);
 	private ETLLog getETLLog(){
 		ETLLog etllog = new ETLLog();
 		etllog.setActionName("test");
@@ -35,5 +40,12 @@ public class TestEngineUtil {
 		EngineUtil.setConfFile("etlengine_bad_kafka.properties");
 		EngineUtil.getInstance().sendLog(getETLLog());
 	}
-
+	
+	@Test
+	public void testJsEngine(){
+		Map<String, Object> vars = new HashMap<String, Object>();
+		String exp = "var telecomUtil = Java.type(\"etl.telecom.TelecomUtil\"); telecomUtil.processE164('1234');";
+		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
+		logger.info(output);
+	}
 }

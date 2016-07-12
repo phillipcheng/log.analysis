@@ -46,7 +46,6 @@ public class CsvTransformCmd extends FileETLCmd{
 			ColOp co = new ColOp(colop);
 			colOpList.add(co);
 		}
-		this.setPm(ProcessMode.MRProcess);
 		this.setMrMode(MRMode.line);
 	}
 
@@ -63,10 +62,7 @@ public class CsvTransformCmd extends FileETLCmd{
 		
 		//get all fiels
 		List<String> items = new ArrayList<String>();
-		StringTokenizer tn = new StringTokenizer(row, ",");
-		while (tn.hasMoreTokens()){
-			items.add(tn.nextToken());
-		}
+		items.addAll(Arrays.asList(row.split(",")));
 		
 		//process input ends with comma
 		if (inputEndWithComma){//remove the last empty item since row ends with comma
@@ -99,7 +95,7 @@ public class CsvTransformCmd extends FileETLCmd{
 		if (isAddFileName()){
 			output+="," + getAbbreFileName(fileName);
 		}
-		logger.info("output:" + output);
+		logger.debug("output:" + output);
 		retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{output}));
 		return retMap;
 	}

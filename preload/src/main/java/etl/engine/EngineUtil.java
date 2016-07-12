@@ -136,7 +136,7 @@ public class EngineUtil {
 									context.write(new Text(line), NullWritable.get());
 								}
 							}else{
-								logger.info(String.format("final output:%s", outputs));
+								logger.debug(String.format("final output:%s", outputs));
 							}
 						}
 					}

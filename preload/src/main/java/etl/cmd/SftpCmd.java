@@ -24,7 +24,6 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
-import etl.engine.ProcessMode;
 import etl.util.Util;
 
 public class SftpCmd extends ETLCmd {
@@ -67,53 +66,19 @@ public class SftpCmd extends ETLCmd {
 		this.sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
 		this.sftpConnectRetryWait =  pc.getInt(cfgkey_sftp_connect_retry_wait, 15000);//
 		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
-		this.setPm(ProcessMode.MRProcess);
 	}
 
 	@Override
-	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
-		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
-		List<String> logInfo = new ArrayList<String>();
-		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
-		
+	public List<String> sgProcess(){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
 		int sftConnectRetryCntTemp = 1;
 		OutputStream fsos = null;
 		InputStream is = null;
+		List<String> logInfo = new ArrayList<String>();
 		try {
-			//override param
-			logger.info(String.format("param: %s", row));
-			Map<String, String> pm = Util.parseMapParams(row);
-			if (pm.containsKey(cfgkey_sftp_host)){
-				this.host = pm.get(cfgkey_sftp_host);
-			}
-			if (pm.containsKey(cfgkey_sftp_port)) {
-				this.port = Integer.parseInt(pm.get(cfgkey_sftp_port));
-			}
-			if (pm.containsKey(cfgkey_sftp_user)) {
-				this.user = pm.get(cfgkey_sftp_user);
-			}
-			if (pm.containsKey(cfgkey_sftp_pass)) {
-				this.pass = pm.get(cfgkey_sftp_pass);
-			}
-			if (pm.containsKey(cfgkey_sftp_folder)) {
-				this.fromDir = pm.get(cfgkey_sftp_folder);
-			}
-			if (pm.containsKey(cfgkey_sftp_get_retry)) {
-				this.sftpGetRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_get_retry));
-			}
-			if (pm.containsKey(cfgkey_sftp_connect_retry)) {
-				this.sftpConnectRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_connect_retry));
-			}
-			if (pm.containsKey(cfgkey_sftp_clean)) {
-				sftpClean = new Boolean(pm.get(cfgkey_sftp_clean));
-			}
-			if (pm.containsKey(cfgkey_incoming_folder)) {
-				incomingFolder = pm.get(cfgkey_incoming_folder);
-			}
-
+			
 			// connect
 			JSch jsch = new JSch();
 			Channel channel = null;
@@ -191,6 +156,46 @@ public class SftpCmd extends ETLCmd {
 				session.disconnect();
 			}
 		}
+		return logInfo;
+	}
+	
+	@Override
+	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+		//override param
+		logger.info(String.format("param: %s", row));
+		Map<String, String> pm = Util.parseMapParams(row);
+		if (pm.containsKey(cfgkey_sftp_host)){
+			this.host = pm.get(cfgkey_sftp_host);
+		}
+		if (pm.containsKey(cfgkey_sftp_port)) {
+			this.port = Integer.parseInt(pm.get(cfgkey_sftp_port));
+		}
+		if (pm.containsKey(cfgkey_sftp_user)) {
+			this.user = pm.get(cfgkey_sftp_user);
+		}
+		if (pm.containsKey(cfgkey_sftp_pass)) {
+			this.pass = pm.get(cfgkey_sftp_pass);
+		}
+		if (pm.containsKey(cfgkey_sftp_folder)) {
+			this.fromDir = pm.get(cfgkey_sftp_folder);
+		}
+		if (pm.containsKey(cfgkey_sftp_get_retry)) {
+			this.sftpGetRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_get_retry));
+		}
+		if (pm.containsKey(cfgkey_sftp_connect_retry)) {
+			this.sftpConnectRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_connect_retry));
+		}
+		if (pm.containsKey(cfgkey_sftp_clean)) {
+			sftpClean = new Boolean(pm.get(cfgkey_sftp_clean));
+		}
+		if (pm.containsKey(cfgkey_incoming_folder)) {
+			incomingFolder = pm.get(cfgkey_incoming_folder);
+		}
+		
+		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+		List<String> logInfo = sgProcess();
+		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
+		
 		return retMap;
 	}
 }

@@ -32,6 +32,7 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>
 				for (int i=0; i<cmds.length; i++){
 					cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String.class).
 							newInstance(wfid, staticCfgFiles[i], null, null, context.getConfiguration().get("fs.defaultFS"));
+					cmds[i].setPm(ProcessMode.MRProcess);
 				}
 			}catch(Throwable e){
 				logger.error("", e);
@@ -52,7 +53,7 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>
 	
 	//for each line of the inputfile, this will be invoked once
 	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-		logger.info(String.format("in mapper, key:%s, values:%s", key, value));
+		logger.debug(String.format("in mapper, key:%s, values:%s", key, value));
 		String input = value.toString();
 		try{
 			EngineUtil.getInstance().processCmds(cmds, key.get(), input, context);

@@ -9,18 +9,23 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 public class CountryCode {
+	public static final Logger logger = Logger.getLogger(CountryCode.class);
+	public static final String cc_file = "iso_3166_2_countries.csv";
 	
 	private static Set<String> ccSet = new HashSet<String>();
-	public static final Logger logger = Logger.getLogger(CountryCode.class);
+	
+	public CountryCode(){
+		init(cc_file);
+	}
 	
 	public void init(String fileName){
 		BufferedReader br=null;
 		String line;
 		try {
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+			br = new BufferedReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(fileName)));
 			while ((line = br.readLine()) != null) {
 			    String[] vals = line.split(",");
-			    ccSet.add(vals[vals.length-1]);
+			    ccSet.add(vals[vals.length-5]);
 			}
 		}catch (Exception e){
 			logger.error("", e);

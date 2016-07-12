@@ -66,7 +66,6 @@ public class SesToCsvCmd extends FileETLCmd{
 		INCOMPLETE_RECORD = pc.getString("incomplete_record");
 		INCOMPLETE_RECORD_EVENT = pc.getString("incomplete_record_event");
 		DELTA_INCOMPLETE_RECORD_EVENT = pc.getString("delta_incomplete_record_event");
-		this.setPm(ProcessMode.MRProcess);
 		this.setMrMode(MRMode.file);
 	}
 	
