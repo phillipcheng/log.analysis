@@ -50,34 +50,44 @@ User can specify following column operations (Merge, Split, Update) on the field
 ###  Columns Merge
 User can merge a range of columns by specifying the merge expression.
 
-    Example 1:
-```
-merge.idx=68:69:(a.concat('-')).concat(b)
-```
-    concatenate column 68 with column 69, and joined by '-'
-    
-    Example 2:
-```
-merge.idx=0:1:(Number(a)*7*24*3600 + Number(b)).toString()
-```
-    column 0 is number of week since epoch, and column 1 is the time part
-    expression caculate the epoch time by merging these two columns
+Example 1:
+col.op=u|2:(fields[2].concat('-')).concat(fields[3])
+	      Concatenate column 2 with column 3 by joint -
+
+COLUMN2	        COLUMN3
+10/24/2014	54:09.1
+10/24/2014	54:08.8
+	
+MERGED_COLUMN
+10/24/2014-54:09.1
+10/24/2014-54:08.8
+
+ 
 ### Column Split
 User can split specific column by specify the separator.
+col.op=s|2:.
+Split the column 2 into multiple fields using separator '.'
 
-    Example 1:
-```
-split.idx=3:.
-```
-    Split the column 3 into multiple fields using separator '.'
+COLUMN2
+39.711708
+
+	
+
+SPLITTED_COLUMN2	SPLITTED_COLUMN3
+39		 	711708
+
 ### Single Column Update
-User can tranform the columns by specify the transformation expression.
+User can transform the columns by specify the transformation expression.
+u|2:fields[2].replace('\.'\,'') – Replace . in column 2 with empty string
+u|3:fields[3].replace('coarse'\,'') – Replace ‘coarse’ in column 3 with empty string
 
-    Example 1:
-```
-update.idx=2:a.replace('\.',''),3:a.replace('\\','');
-```
-    Remove the '.' in column 2 and remove the '\' in column 3
+COLUMN2		COLUMN3
+39.711708	coarse Primary
+	
+UPDATED_COLUMN2		UPDATED_COLUMN3
+3971170			Primary
+
+
 ### Add Transformed file name to row data
 User can add the file name (after some transformation) to each row of data.
 
