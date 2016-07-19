@@ -42,7 +42,7 @@ public class MtcETLCmd {
 	//step by step
 	@Test
 	public void setupLabWorkflow() {
-		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\main\\resources");
+		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\Users\\yaligar\\git\\log.analysis\\mtccore\\src\\main\\resources");
 	}
 	
 	public void realSetupWorkflow(String defaultFs, String localCfgDir) throws Exception{
@@ -58,7 +58,7 @@ public class MtcETLCmd {
 	//for whole flow
 	@Test
 	public void setupLabETLCfg() {
-		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\main\\resources");
+		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\Users\\yaligar\\git\\log.analysis\\mtccore\\src\\main\\resources");
 	}
 	
 	public void realSetupEtlCfg(String defaultFs, String localCfgDir) throws Exception{
@@ -90,8 +90,15 @@ public class MtcETLCmd {
 		String workflow = localCfgDir + File.separator + "workflow.xml";
 		String remoteWorkflow = "/user/dbadmin/mtccore/workflow.xml";
 		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
-		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\target\\";
-		String localLibFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\lib\\";
+		//for coordinator job.
+		String coordinator = localCfgDir + File.separator + "coordinator.xml";
+		String remoteCoordinatorXml  = "/user/dbadmin/mtccore/coordinator.xml";
+		fs.copyFromLocalFile(new Path(coordinator), new Path(remoteCoordinatorXml));
+		String coordinatorProperties = localCfgDir + File.separator + "coordinatorjob.properties";
+		String remoteCoordinatorProperties  = "/user/dbadmin/mtccore/coordinatorjob.properties";
+		fs.copyFromLocalFile(new Path(coordinatorProperties), new Path(remoteCoordinatorProperties));
+		String localTargetFolder = "C:\\Users\\yaligar\\git\\log.analysis\\mtccore\\target\\";
+		String localLibFolder = "C:\\Users\\yaligar\\git\\log.analysis\\mtccore\\lib\\";
 		String libName = "mtccore-0.1.0-jar-with-dependencies.jar";
 		String verticaLibName = "vertica-jdbc-7.0.1-0.jar";
 		String remoteLibFolder="/user/dbadmin/mtccore/lib/";
