@@ -90,7 +90,7 @@ public class MtcETLCmd {
 		String workflow = localCfgDir + File.separator + "workflow.xml";
 		String remoteWorkflow = "/user/dbadmin/mtccore/workflow.xml";
 		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
-		//for coordinator job.
+		//for coordinator job
 		String coordinator = localCfgDir + File.separator + "coordinator.xml";
 		String remoteCoordinatorXml  = "/user/dbadmin/mtccore/coordinator.xml";
 		fs.copyFromLocalFile(new Path(coordinator), new Path(remoteCoordinatorXml));
