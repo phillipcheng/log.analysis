@@ -103,42 +103,46 @@ public class EngineUtil {
 		sendLog(etllog);
 	}
 	
-	public void processCmds(ETLCmd[] cmds, long offset, String row, 
+	public void processMapperCmds(ETLCmd[] cmds, long offset, String row, 
 			Mapper<LongWritable, Text, Text, NullWritable>.Context context) throws Exception {
 		String input = row;
 		for (int i=0; i<cmds.length; i++){
 			ETLCmd cmd = cmds[i];
 			if (cmd.getPm()==ProcessMode.MRProcess){
 				Date startTime = new Date();
-				Map<String, List<String>> alloutputs = cmd.mrProcess(offset, input, context);
+				Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context);
 				Date endTime = new Date();
 				if (alloutputs!=null){
-					List<String> outputs = alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT);
 					if (cmd.getMrMode()==MRMode.file){
 						//generate log for file mode mr processing
-						List<String> logoutputs = alloutputs.get(ETLCmd.RESULT_KEY_LOG);
+						List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
 						sendLog(cmd, startTime, endTime, logoutputs);
 					}
-					if (i<cmds.length-1){//intermediate steps
-						if (outputs!=null && outputs.size()==1){
-							input = outputs.get(0);
-						}else{
-							String outputString = "null";
-							if (outputs!=null){
-								outputString = outputs.toString();
-							}
-							logger.error(String.format("output from chained cmd should be a string. %s", outputString));
-						}
-					}else{//last step
-						if (outputs!=null){
-							if (context!=null){
-								for (String line:outputs){
-									context.write(new Text(line), NullWritable.get());
-								}
+					if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT)){
+						List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT);
+						if (i<cmds.length-1){//intermediate steps
+							if (outputs!=null && outputs.size()==1){
+								input = outputs.get(0);
 							}else{
-								logger.debug(String.format("final output:%s", outputs));
+								String outputString = "null";
+								if (outputs!=null){
+									outputString = outputs.toString();
+								}
+								logger.error(String.format("output from chained cmd should be a string. %s", outputString));
+							}
+						}else{//last step
+							if (outputs!=null){
+								if (context!=null){
+									for (String line:outputs){
+										context.write(new Text(line), NullWritable.get());
+									}
+								}else{
+									logger.debug(String.format("final output:%s", outputs));
+								}
 							}
 						}
+					}else{
+						logger.error("wrong mapper used, for key,value output please use InvokeReducerMapper");
 					}
 				}
 			}else{
@@ -148,5 +152,35 @@ public class EngineUtil {
 				sendLog(cmd, startTime, endTime, logoutputs);
 			}
 		}
+	}
+	
+	public void processReducerMapperCmds(ETLCmd[] cmds, long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+		String input = row;
+		ETLCmd cmd = cmds[0];
+		Map<String, String> alloutputs = cmd.reduceMapProcess(offset, input, context);
+		if (alloutputs!=null && context!=null){
+			for (String key:alloutputs.keySet()){
+				context.write(new Text(key), new Text(alloutputs.get(key)));
+			}
+		}
+	}
+	
+	public static ETLCmd[] getCmds(String strCmdClassNames, String strStaticConfigFiles, String wfid, String defaultFs){
+		String[] cmdClassNames = strCmdClassNames.split(",");
+		String[] staticCfgFiles = strStaticConfigFiles.split(",");
+		
+		try{
+			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
+			for (int i=0; i<cmds.length; i++){
+				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String.class).
+						newInstance(wfid, staticCfgFiles[i], null, null, defaultFs);
+				cmds[i].setPm(ProcessMode.MRProcess);
+			}
+			return cmds;
+		}catch(Throwable e){
+			logger.error("", e);
+		}
+		return null;
 	}
 }

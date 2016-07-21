@@ -2,13 +2,12 @@ package etl.engine;
 
 import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>{
-	public static final Logger logger = Logger.getLogger(InvokeMapper.class);
+public class InvokeReducerMapper extends Mapper<LongWritable, Text, Text, Text>{
+	public static final Logger logger = Logger.getLogger(InvokeReducerMapper.class);
 	
 	public static final String cfgkey_cmdclassname = "cmdClassName";
 	public static final String cfgkey_wfid = "wfid";
@@ -34,19 +33,11 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>
     protected void cleanup(Context context) throws IOException, InterruptedException {
     }
     
-	/**
-	 * following parameters should be in the config
-	 * CmdClassName:
-	 * wfid:
-	 * staticConfigFile:
-	 */
-	
-	//for each line of the inputfile, this will be invoked once
 	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		logger.debug(String.format("in mapper, key:%s, values:%s", key, value));
 		String input = value.toString();
 		try{
-			EngineUtil.getInstance().processMapperCmds(cmds, key.get(), input, context);
+			EngineUtil.getInstance().processReducerMapperCmds(cmds, key.get(), input, context);
 		}catch(Throwable e){
 			logger.error("", e);
 		}

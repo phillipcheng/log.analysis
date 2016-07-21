@@ -36,11 +36,14 @@ public class LoadDataCmd extends ETLCmd{
 	public List<String> sgProcess() {
 		List<String> logInfo = new ArrayList<String>();
 		List<String> copysqls = new ArrayList<String>();
+		String sql = null;
 		if (useWfid){
-			String sql = String.format("%s SOURCE Hdfs(url='%s%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, wfid, userName);
-			logger.info("sql:" + sql);
-			copysqls.add(sql);
+			sql = String.format("%s SOURCE Hdfs(url='%s%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, wfid, userName);
+		}else{
+			sql = String.format("%s SOURCE Hdfs(url='%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, userName);
 		}
+		logger.info("sql:" + sql);
+		copysqls.add(sql);
 		
 		int rowsAdded = DBUtil.executeSqls(copysqls, pc);
 		logInfo.add(rowsAdded+"");

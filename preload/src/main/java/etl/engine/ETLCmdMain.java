@@ -54,7 +54,7 @@ public class ETLCmdMain {
 			}
 			String input = null;
 			try{
-				EngineUtil.getInstance().processCmds(cmds, 0, input, null);
+				EngineUtil.getInstance().processMapperCmds(cmds, 0, input, null);
 			}catch(Throwable e){
 				logger.error("", e);
 			}

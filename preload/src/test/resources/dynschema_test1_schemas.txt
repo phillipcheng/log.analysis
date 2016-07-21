@@ -1,1 +1,1 @@
-["etl.cmd.dynschema.LogicSchema",{"objParamMap":["java.util.HashMap",{"MyCore_":["java.util.ArrayList",["Machine","MyCore","UUID"]]}],"schemas":["java.util.HashMap",{"MyCore_":["java.util.ArrayList",["VS.avePerCoreCpuUsage","VS.peakPerCoreCpuUsage"]]}]}]
+["etl.cmd.dynschema.LogicSchema",{"attrNameMap":["java.util.HashMap",{"MyCore_":["java.util.ArrayList",["endTime","duration","SubNetwork","ManagedElement","Machine","MyCore","UUID","VS.avePerCoreCpuUsage","VS.peakPerCoreCpuUsage"]]}]}]

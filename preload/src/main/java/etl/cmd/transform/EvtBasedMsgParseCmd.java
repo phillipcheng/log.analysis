@@ -102,7 +102,7 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	}
 
 	@Override
-	public Map<String,List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String output="";
 		String evtType="";
 		
@@ -140,7 +140,7 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 			}
 		}
 		logger.info("output:" + output);
-		Map<String,List<String>> retMap = new HashMap<String, List<String>>();
+		Map<String, Object> retMap = new HashMap<String, Object>();
 		retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{output}));
 		return retMap;
 	}

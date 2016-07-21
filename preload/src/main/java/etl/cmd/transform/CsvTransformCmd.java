@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -13,16 +12,13 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
-import com.sun.jersey.server.impl.cdi.Utils;
-
-import etl.engine.FileETLCmd;
+import etl.engine.DynaSchemaFileETLCmd;
 import etl.engine.MRMode;
-import etl.engine.ProcessMode;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 
-public class CsvTransformCmd extends FileETLCmd{
+public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 	public static final Logger logger = Logger.getLogger(CsvTransformCmd.class);
 	
 	public static final String cfgkey_skip_header="skip.header";
@@ -50,8 +46,8 @@ public class CsvTransformCmd extends FileETLCmd{
 	}
 
 	@Override
-	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
-		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+		Map<String, Object> retMap = new HashMap<String, Object>();
 		String output="";
 		
 		//process skip header

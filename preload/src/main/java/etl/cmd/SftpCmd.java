@@ -160,7 +160,7 @@ public class SftpCmd extends ETLCmd {
 	}
 	
 	@Override
-	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
 		//override param
 		logger.info(String.format("param: %s", row));
 		Map<String, String> pm = Util.parseMapParams(row);
@@ -192,7 +192,7 @@ public class SftpCmd extends ETLCmd {
 			incomingFolder = pm.get(cfgkey_incoming_folder);
 		}
 		
-		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+		Map<String, Object> retMap = new HashMap<String, Object>();
 		List<String> logInfo = sgProcess();
 		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
 		

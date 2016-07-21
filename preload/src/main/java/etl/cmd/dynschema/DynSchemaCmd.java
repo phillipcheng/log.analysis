@@ -22,11 +22,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -74,7 +69,7 @@ public class DynSchemaCmd extends ETLCmd{
 	
 	public static final String dynCfg_Key_TABLES_USED="tables.used";
 	public static final String dynCfg_Key_CREATETABLE_SQL_FILE="create.table.sql.file";
-	public static final String dynCfg_Key_XML_FILES="raw.xml.files";
+	public static final String dynCfg_Key_XML_FILES="raw.xml.files";//used for backup cmd
 	
 	//used to generate table name
 	private List<String> keyWithValue = new ArrayList<String>();
@@ -210,17 +205,17 @@ public class DynSchemaCmd extends ETLCmd{
 	/*
 	 * return number of lines generated
 	 */
-	private int genData(Node mi, Map<String, String> localDnMap, List<String> orgSchemaAttributes, List<String> mtcl, String tableName, 
+	private int genData(Node mi, Map<String, String> localDnMap, List<String> orgAttrs, List<String> newAttrs, String tableName, 
 			Map<String, BufferedWriter> fvWriterMap, String startProcessTime) throws Exception {
 		List<String> tableLvlSystemAttValues = new ArrayList<String>();
 		for (XPathExpression exp:xpathExpTableSystemAttrs){
 			tableLvlSystemAttValues.add((String) exp.evaluate(mi, XPathConstants.STRING));
 		}
 		//gen value idx mapping
-		Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//current attribute maps to which schema attribute
-		for (int i=0; i<orgSchemaAttributes.size(); i++){
-			String attr = orgSchemaAttributes.get(i);
-			int idx = mtcl.indexOf(attr);
+		Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//new attr to old attr idx mapping
+		for (int i=0; i<orgAttrs.size(); i++){
+			String attr = orgAttrs.get(i);
+			int idx = newAttrs.indexOf(attr);
 			if (idx!=-1){
 				mapping.put(idx, i);
 			}
@@ -242,7 +237,7 @@ public class DynSchemaCmd extends ETLCmd{
 			for (String v:kvs.values()){
 				fieldValues.add(v);
 			}
-			String[] vs = new String[orgSchemaAttributes.size()];
+			String[] vs = new String[orgAttrs.size()];
 			NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
 			for (int i=0; i<rlist.getLength(); i++){
 				Node r = getNode(rlist, i);
@@ -284,9 +279,13 @@ public class DynSchemaCmd extends ETLCmd{
 					tablesUsed.add(tableName);
 					NodeList mv0vs = (NodeList) xpathExpTableRowValues.evaluate(mv0, XPathConstants.NODESET);
 					List<String> orgSchemaAttributes = null;
-					if (logicSchema.hasAttrNames(tableName)){
+					if (logicSchema.hasTable(tableName)){
 						orgSchemaAttributes = new ArrayList<String>();
-						orgSchemaAttributes.addAll(logicSchema.getAttrNames(tableName));
+						List<String> allAttributes = logicSchema.getAttrNames(tableName);
+						allAttributes.removeAll(fileLvlSystemFieldNames);
+						allAttributes.removeAll(tableLvlSystemFieldNames);
+						allAttributes.removeAll(moldParams.keySet());
+						orgSchemaAttributes.addAll(allAttributes);
 					}
 					{//merge the origin and newUpdates
 						List<String> newSchemaAttributes = schemaAttrNameUpdates.get(tableName);
@@ -382,19 +381,23 @@ public class DynSchemaCmd extends ETLCmd{
 				List<String> dropTableSqls = new ArrayList<String>();
 				List<String> truncTableSqls = new ArrayList<String>();
 				List<String> copysqls = new ArrayList<String>();
+				List<String> sysAttrNames = new ArrayList<String>();
+				//set sys attr names into logic schema
+				sysAttrNames.addAll(tableLvlSystemFieldNames);
+				sysAttrNames.addAll(fileLvlSystemFieldNames);
+				//
 				for(String tn:schemaAttrNameUpdates.keySet()){
 					List<String> fieldNameList = new ArrayList<String>(); 
 					List<String> fieldTypeList = new ArrayList<String>();
 					if (logicSchema.getAttrNames(tn)!=null){//update table
-						//gen update sql
 						fieldNameList.addAll(schemaAttrNameUpdates.get(tn));
 						fieldTypeList.addAll(schemaAttrTypeUpdates.get(tn));
+						//update schema
+						logicSchema.addAttributes(tn, schemaAttrNameUpdates.get(tn));
+						logicSchema.addAttrTypes(tn, schemaAttrTypeUpdates.get(tn));
+						//gen update sql
 						createTableSqls.addAll(DBUtil.genUpdateTableSql(fieldNameList, fieldTypeList, tn, prefix));
-						logicSchema.addAttributes(tn, schemaAttrNameUpdates.get(tn));
 					}else{//new table
-						//update to logic schema
-						logicSchema.addAttributes(tn, schemaAttrNameUpdates.get(tn));
-						logicSchema.addObjParams(tn, newTableObjNamesAdded.get(tn));
 						//gen create sql
 						fieldNameList.addAll(tableLvlSystemFieldNames);
 						fieldNameList.addAll(fileLvlSystemFieldNames);
@@ -404,17 +407,18 @@ public class DynSchemaCmd extends ETLCmd{
 						fieldTypeList.addAll(newTableObjTypesAdded.get(tn));
 						fieldNameList.addAll(schemaAttrNameUpdates.get(tn));
 						fieldTypeList.addAll(schemaAttrTypeUpdates.get(tn));
+						//update to logic schema
+						logicSchema.updateTableAttrs(tn, fieldNameList);
+						logicSchema.updateTableAttrTypes(tn, fieldTypeList);
+						//
 						createTableSqls.add(DBUtil.genCreateTableSql(fieldNameList, fieldTypeList, tn, prefix));
 						dropTableSqls.add(DBUtil.genDropTableSql(tn, prefix));
 						truncTableSqls.add(DBUtil.genTruncTableSql(tn, prefix));
 					}
 					//gen copys.sql for reference
-					fieldNameList.clear();
-					fieldNameList.addAll(tableLvlSystemFieldNames);
-					fieldNameList.addAll(fileLvlSystemFieldNames);
-					fieldNameList.addAll(logicSchema.getObjParams(tn));
-					fieldNameList.addAll(logicSchema.getAttrNames(tn));
-					String copySql = DBUtil.genCopyLocalSql(fieldNameList, tn, prefix, getOutputDataFileName(tn, wfid));
+					List<String> attrs = new ArrayList<String>();
+					attrs.addAll(logicSchema.getAttrNames(tn));
+					String copySql = DBUtil.genCopyLocalSql(attrs, tn, prefix, getOutputDataFileName(tn, wfid));
 					copysqls.add(copySql);
 				}
 				
@@ -438,6 +442,7 @@ public class DynSchemaCmd extends ETLCmd{
 				dynCfgOutput.put(dynCfg_Key_CREATETABLE_SQL_FILE, csfn);
 			}
 			
+			//output dyncfg
 			List<String> utl = new ArrayList<String>();
 			List<String> rawFiles = new ArrayList<String>();
 			utl.addAll(tablesUsed);
@@ -448,6 +453,7 @@ public class DynSchemaCmd extends ETLCmd{
 			dynCfgOutput.put(dynCfg_Key_XML_FILES, rawFiles);
 			Util.toDfsJsonFile(fs, this.outDynCfg, dynCfgOutput);
 			
+			//output loginfo
 			logInfo.add(schemaUpdated+"");//number of csv lines
 			logInfo.add(inputFileNames.length + "");//number of input files
 		}catch(Exception e){

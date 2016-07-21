@@ -81,7 +81,7 @@ public class SesToCsvCmd extends FileETLCmd{
 	}
 	
 	@Override
-	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
 		Path sesFile = null;
@@ -410,7 +410,7 @@ public class SesToCsvCmd extends FileETLCmd{
 				}
 			}
 		}
-		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+		Map<String, Object> retMap = new HashMap<String, Object>();
 		retMap.put(RESULT_KEY_OUTPUT, outputList);
 		List<String> infoList = new ArrayList<String>();
 		infoList.add(outputList.size()+"");

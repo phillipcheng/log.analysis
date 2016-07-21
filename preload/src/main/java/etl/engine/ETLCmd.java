@@ -18,7 +18,9 @@ public abstract class ETLCmd {
 	public static final Logger logger = Logger.getLogger(ETLCmd.class);
 	
 	public static final String RESULT_KEY_LOG="log";
-	public static final String RESULT_KEY_OUTPUT="output";
+	public static final String RESULT_KEY_OUTPUT="lineoutput";
+	public static final String RESULT_KEY_OUTPUT_MAP="mapoutput";
+	
 	
 	protected String wfid;
 	protected FileSystem fs;
@@ -51,10 +53,28 @@ public abstract class ETLCmd {
 	/**
 	 * @return map may contains following key:
 	 * RESULT_KEY_LOG: list of String user defined log info
-	 * RESULT_KEY_OUTPUT: list of String output
+	 * RESULT_KEY_LIST_OUTPUT: list of String output
+	 * in the value map, if it contains only 1 value, the key is RESULT_VALUE_KEY_SINGLE_VALUE
 	 */
-	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
-		logger.error("empty impl, should not be invoked.");
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+		logger.error("empty map impl, should not be invoked.");
+		return null;
+	}
+	
+	/**
+	 * @return map
+	 */
+	
+	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+		logger.error("empty reduce-map impl, should not be invoked.");
+		return null;
+	}
+	
+	/**
+	 * @return combined value
+	 */
+	public String reduceProcess(Text key, Iterable<Text> values){
+		logger.error("empty reduce impl, should not be invoked.");
 		return null;
 	}
 	
@@ -62,7 +82,7 @@ public abstract class ETLCmd {
 	 * @return list of String user defined log info
 	 */
 	public List<String> sgProcess(){
-		logger.error("empty impl, should not be invoked.");
+		logger.error("empty single impl, should not be invoked.");
 		return null;
 	}
 	

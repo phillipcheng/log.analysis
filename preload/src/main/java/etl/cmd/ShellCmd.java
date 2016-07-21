@@ -27,7 +27,7 @@ public class ShellCmd extends ETLCmd{
 	}
 
 	@Override
-	public Map<String, List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		try {
 			String command = pc.getString(PROP_CMD);
 			Map<String, Object> params = new HashMap<String, Object>();

@@ -23,8 +23,15 @@ public class DBUtil {
 	public static final String key_db_loginTimeout="db.loginTimeout";
 
 	//db
-	public static String normalizeDBFieldName(String fn){
+	private static String normalizeDBFieldName(String fn){
 		return fn.replaceAll("[ .-]", "_");
+	}
+	private static List<String> normalizeDBFieldNames(List<String> fieldNameList){
+		List<String> retlist = new ArrayList<String>();
+		for (String fn:fieldNameList){
+			retlist.add(normalizeDBFieldName(fn));
+		}
+		return retlist;
 	}
 
 	public static String guessDBType(String value){
@@ -38,17 +45,15 @@ public class DBUtil {
 	}
 
 	public static String genCreateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
+		List<String> fnl = normalizeDBFieldNames(fieldNameList);
 		StringBuffer tablesql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeDBFieldName(fieldNameList.get(i)));
-		}
 		//gen table sql
 		tablesql.append(String.format("create table if not exists %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
+		for (int i=0; i<fnl.size(); i++){
+			String name = fnl.get(i);
 			String type = fieldTypeList.get(i);
 			tablesql.append(String.format("%s %s", name, type));
-			if (i<fieldNameList.size()-1){
+			if (i<fnl.size()-1){
 				tablesql.append(",");
 			}
 		}
@@ -79,15 +84,13 @@ public class DBUtil {
 
 	public static String genCopyLocalSql(List<String> fieldNameList, String tn, String dbschema, String csvFileName){
 		StringBuffer copysql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeDBFieldName(fieldNameList.get(i)));
-		}
+		List<String> fnl = normalizeDBFieldNames(fieldNameList);
 		//gen table sql
 		copysql.append(String.format("copy %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
+		for (int i=0; i<fnl.size(); i++){
+			String name = fnl.get(i);
 			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fieldNameList.size()-1){
+			if (i<fnl.size()-1){
 				copysql.append(",");
 			}
 		}
@@ -98,15 +101,13 @@ public class DBUtil {
 	public static String genCopyHdfsSql(List<String> fieldNameList, String tn, String dbschema, 
 			String rootWebHdfs, String csvFileName, String username){
 		StringBuffer copysql = new StringBuffer();
-		for (int i=0; i<fieldNameList.size(); i++){
-			fieldNameList.set(i,normalizeDBFieldName(fieldNameList.get(i)));
-		}
+		List<String> fnl = normalizeDBFieldNames(fieldNameList);
 		//gen table sql
 		copysql.append(String.format("copy %s.%s(", dbschema, tn));
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = fieldNameList.get(i);
+		for (int i=0; i<fnl.size(); i++){
+			String name = fnl.get(i);
 			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fieldNameList.size()-1){
+			if (i<fnl.size()-1){
 				copysql.append(",");
 			}
 		}
@@ -124,7 +125,7 @@ public class DBUtil {
 		Properties myProp = new Properties();
 		myProp.put("user", pc.getString(key_db_user));
 		myProp.put("password", pc.getString(key_db_password));
-		myProp.put("loginTimeout", pc.getString(key_db_loginTimeout));
+		myProp.put("loginTimeout", pc.getString(key_db_loginTimeout, "35"));
 		try {
 			conn = DriverManager.getConnection(pc.getString(key_db_url), myProp);
 			logger.debug("connected!");

@@ -115,7 +115,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 	
 	//fix file name
 	@Override
-	public Map<String,List<String>> mrProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
 		Path kcvFile = null;
@@ -170,7 +170,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 				}
 			}
 		}
-		Map<String, List<String>> retMap = new HashMap<String, List<String>>();
+		Map<String, Object> retMap = new HashMap<String, Object>();
 		retMap.put(RESULT_KEY_OUTPUT, outputList);
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(outputList.size()+"");

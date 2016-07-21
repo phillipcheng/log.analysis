@@ -1,13 +1,8 @@
 package etl.cmd.dynschema;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
@@ -26,7 +21,6 @@ public class DynSqlExecutorCmd extends ETLCmd{
 	private String prefix;//used as dbschema name
 	private String schemaFileName;
 	private LogicSchema logicSchema;
-	public String[] systemFieldNames;
 	
 	public DynSqlExecutorCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
 		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
@@ -36,7 +30,6 @@ public class DynSqlExecutorCmd extends ETLCmd{
 		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
 		this.userName = pc.getString(DBUtil.key_db_user);
 		this.logicSchema = (LogicSchema) Util.fromDfsJsonFile(fs, schemaFileName, LogicSchema.class);
-		this.systemFieldNames = pc.getStringArray(cfgkey_systemAttrs_name);
 	}
 	
 	private String getOutputDataFileNameWithoutFolder(String tableName, String wfid){
@@ -58,8 +51,6 @@ public class DynSqlExecutorCmd extends ETLCmd{
 		List<String> copysqls = new ArrayList<String>();
 		for (String tn: tablesUsed){
 			List<String> fieldNameList = new ArrayList<String>();
-			fieldNameList.addAll(Arrays.asList(systemFieldNames));
-			fieldNameList.addAll(logicSchema.getObjParams(tn));
 			fieldNameList.addAll(logicSchema.getAttrNames(tn));
 			csvFiles.add(getOutputDataFileNameWithoutFolder(tn, wfid));
 			String csvFileName = getOutputDataFileNameWithoutFolder(tn, wfid);

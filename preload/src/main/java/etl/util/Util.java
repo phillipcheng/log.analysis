@@ -269,6 +269,31 @@ public class Util {
 		}
 	}
 	
+	public static void appendDfsFile(FileSystem fs, String fileName, List<String> contents){
+		BufferedWriter osw = null;
+		try {
+			if (fs.exists(new Path(fileName))){
+				osw = new BufferedWriter(new OutputStreamWriter(fs.append(new Path(fileName))));
+			}else{
+				osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(fileName))));
+			}
+			for (String line:contents){
+				osw.write(line);
+				osw.write("\n");
+			}
+		}catch(Exception e){
+			logger.error("",e);
+		}finally{
+			if (osw!=null){
+				try {
+					osw.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
+		}
+	}
+	
 	public static List<String> listDfsFile(FileSystem fs, String folder){
 		List<String> files = new ArrayList<String>();
 		try {

@@ -49,9 +49,12 @@ public class MtcETLCmd extends TestETLCmd{
 			String rcfg = remoteEtlcfg + "/" + cfg;
 			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
 		}
-		String workflow = localCfgDir + File.separator + "workflow.xml";
-		String remoteWorkflow = "/user/dbadmin/mtccore/workflow.xml";
-		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml"};
+		for (String wf: workflows){
+			String workflow = localCfgDir + File.separator + wf;
+			String remoteWorkflow = "/user/dbadmin/mtccore/" + wf;
+			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+		}
 		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\target\\";
 		String localLibFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\lib\\";
 		String libName = "mtccore-0.1.0-jar-with-dependencies.jar";

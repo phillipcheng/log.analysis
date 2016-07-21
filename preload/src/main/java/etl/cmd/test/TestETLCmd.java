@@ -82,8 +82,8 @@ public class TestETLCmd {
 		}
     }
 	
-	public List<String> mrTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles) throws Exception {
+	public List<String> mapTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName) throws Exception {
 		try {
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().delete(new Path(remoteInputFolder), true);
@@ -95,14 +95,50 @@ public class TestETLCmd {
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
 			}
 			// run job
-			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.CsvTransformCmd");
+			getConf().set(InvokeMapper.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
 			getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + staticProperties);
-			Job job = Job.getInstance(getConf(), "testCsvTransformCmd");
+			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(NullWritable.class);
+			FileInputFormat.setInputDirRecursive(job, true);
+			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
+			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
+			job.waitForCompletion(true);
+
+			// assertion
+			List<String> output = Util.getMROutput(getFs(), remoteOutputFolder);
+			return output;
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+		return null;
+	}
+	
+	public List<String> mrTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName) throws Exception {
+		try {
+			getFs().delete(new Path(remoteCfgFolder), true);
+			getFs().delete(new Path(remoteInputFolder), true);
+			getFs().delete(new Path(remoteOutputFolder), true);
+			getFs().mkdirs(new Path(remoteCfgFolder));
+			getFs().mkdirs(new Path(remoteInputFolder));
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticProperties), new Path(remoteCfgFolder + staticProperties));
+			for (String csvFile : inputDataFiles) {
+				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
+			}
+			// run job
+			getConf().set(InvokeMapper.cfgkey_cmdclassname, cmdClassName);
+			getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
+			getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + staticProperties);
+			getConf().set("mapreduce.output.textoutputformat.separator", ",");
+			Job job = Job.getInstance(getConf(), "testCmd");
+			job.setMapperClass(etl.engine.InvokeReducerMapper.class);
+			job.setReducerClass(etl.engine.InvokeReducer.class);
+			job.setOutputKeyClass(Text.class);
+			job.setOutputValueClass(Text.class);
 			FileInputFormat.setInputDirRecursive(job, true);
 			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
