@@ -42,7 +42,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(csvFolder + csvFileName));
 
 			// run cmd
-			LoadDataCmd cmd = new LoadDataCmd(wfid, dfsFolder + staticCfgName, null, null, getDefaultFS());
+			LoadDataCmd cmd = new LoadDataCmd(wfid, dfsFolder + staticCfgName, null, getDefaultFS());
 			numberOfRowsupdated = cmd.sgProcess();
 			// fetch db data
 			List<String> dbData = DBUtil.checkCsv("select * from lsl_sample", pc, 0, 0, ",");

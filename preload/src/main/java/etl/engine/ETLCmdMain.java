@@ -6,12 +6,12 @@ public class ETLCmdMain {
 	public static final Logger logger = Logger.getLogger(ETLCmdMain.class);
 	public static final String UNUSED = "unused";
 	public static String usage(){
-		return "ETLCmdMain: CmdClassName wfid staticConfigFile dynInConfigFile dynOutConfigFile [defaultFs]";
+		return "ETLCmdMain: CmdClassName wfid staticConfigFile dynConfigFile [defaultFs]";
 	}
 	
 	//this is the java action
 	public static void main(String[] args){
-		if (args.length<5){
+		if (args.length<4){
 			logger.error(usage());
 		}else{
 			String strCmdClassNames = args[0];
@@ -23,17 +23,13 @@ public class ETLCmdMain {
 				logger.error(String.format("multiple cmds with different cmdClass size and staticCfg size. %d, %d", cmdClassNames.length, staticCfgs.length));
 				return;
 			}
-			String dynInCfg = args[3];
-			if (UNUSED.equals(dynInCfg)){
-				dynInCfg = null;
-			}
-			String dynOutCfg = args[4];
-			if (UNUSED.equals(dynOutCfg)){
-				dynOutCfg = null;
+			String dynCfg = args[3];
+			if (UNUSED.equals(dynCfg)){
+				dynCfg = null;
 			}
 			String defaultFs = null;
-			if (args.length>5){
-				defaultFs = args[5];
+			if (args.length>4){
+				defaultFs = args[4];
 				if (UNUSED.equals(defaultFs)){
 					defaultFs = null;
 				}
@@ -44,8 +40,8 @@ public class ETLCmdMain {
 				String staticCfg = staticCfgs[i];
 				try {
 					Class clazz = Class.forName(cmdClassName);
-					ETLCmd cmd = (ETLCmd) clazz.getConstructor(String.class, String.class, String.class, String.class, String.class).
-							newInstance(wfid, staticCfg, dynInCfg, dynOutCfg, defaultFs);
+					ETLCmd cmd = (ETLCmd) clazz.getConstructor(String.class, String.class, String.class, String.class).
+							newInstance(wfid, staticCfg, dynCfg, defaultFs);
 					cmd.setPm(ProcessMode.SingleProcess);
 					cmds[i] = cmd;
 				}catch(Exception e){

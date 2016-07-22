@@ -153,7 +153,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
             </configuration>
         </map-reduce>
-        <ok to="UpdateTransformSchema"/>
+        <ok to="end"/>
         <error to="fail"/>
     </action>
     <action name="UpdateTransformSchema">
@@ -170,109 +170,5 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
         <ok to="TransformVlr"/>
         <error to="fail"/>
     </action>
-    <action name="TransformVlr">
-        <map-reduce>
-            <job-tracker>${jobTracker}</job-tracker>
-            <name-node>${nameNode}</name-node>
-            <prepare>
-                <delete path="${concat(concat('/mtccore/csvdata/', wf:id()),'/trans')}"/>
-            </prepare>
-            <configuration>
-                <property>
-                    <name>mapred.mapper.new-api</name>
-                    <value>true</value>
-                </property>
-                <property>
-                    <name>mapred.reducer.new-api</name>
-                    <value>true</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.map.class</name>
-                    <value>etl.engine.InvokeMapper</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.inputformat.class</name>
-                    <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.outputformat.class</name>
-                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.output.key.class</name>
-                    <value>org.apache.hadoop.io.Text</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.output.value.class</name>
-                    <value>org.apache.hadoop.io.NullWritable</value>
-                </property>
-                <property>
-                    <name>mapreduce.task.timeout</name>
-                    <value>0</value>
-                </property>
-                <property>
-                    <name>mapreduce.input.fileinputformat.inputdir</name>
-                    <value>${concat(concat("/mtccore/csvdata/", wf:id()),"/aggr")}</value>
-                </property>
-                <property>
-                    <name>mapreduce.output.fileoutputformat.outputdir</name>
-                    <value>${concat(concat("/mtccore/csvdata/", wf:id()),"/trans")}</value>
-                </property>
-                <property>
-                    <name>cmdClassName</name>
-                    <value>etl.cmd.transform.CsvTransformCmd</value>
-                </property>
-                <property>
-                    <name>wfid</name>
-                    <value>${wf:id()}</value>
-                </property>
-                <property>
-                    <name>staticConfigFile</name>
-                    <value>/mtccore/etlcfg/sgsiwf.transVlr.properties</value>
-                </property>
-            </configuration>
-        </map-reduce>
-        <ok to="copyVlrMerge"/>
-        <error to="fail"/>
-    </action>
-    <action name="copyVlrMerge">
-         <fs>
-            <move 
-                source='${nameNode}/mtccore/csvdata/${wf:id()}/trans/part-r-00000' 
-                target='/mtccore/csvdata/${wf:id()}_PoolType_vlr_aggr.csv'/>
-            <delete path='${nameNode}/mtccore/csvdata/${wf:id()}/trans'/>
-            <delete path='${nameNode}/mtccore/csvdata/${wf:id()}/aggr'/>
-         </fs>
-        <ok to="SqlExec"/>
-        <error to="fail"/>
-    </action>
-	<action name="SqlExec">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.dynschema.DynSqlExecutorCmd</arg>
-			<arg>${wf:id()}</arg>
-			<arg>/mtccore/etlcfg/sgsiwf.sqlexecutor.properties</arg>
-			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-			<capture-output/>
-		</java>
-		<ok to="BackupData"/>
-		<error to="fail"/>
-	</action>
-	<action name="BackupData">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.BackupCmd</arg>
-			<arg>${wf:id()}</arg>
-			<arg>/mtccore/etlcfg/sgsiwf.backup.properties</arg>
-			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-			<capture-output/>
-		</java>
-		<ok to="end"/>
-		<error to="fail"/>
-	</action>
 	<end name="end"/>
 </workflow-app>

@@ -154,6 +154,7 @@ public class EngineUtil {
 		}
 	}
 	
+	//
 	public void processReducerMapperCmds(ETLCmd[] cmds, long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
 		String input = row;
@@ -173,8 +174,8 @@ public class EngineUtil {
 		try{
 			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
 			for (int i=0; i<cmds.length; i++){
-				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String.class).
-						newInstance(wfid, staticCfgFiles[i], null, null, defaultFs);
+				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class).
+						newInstance(wfid, staticCfgFiles[i], null, defaultFs);
 				cmds[i].setPm(ProcessMode.MRProcess);
 			}
 			return cmds;

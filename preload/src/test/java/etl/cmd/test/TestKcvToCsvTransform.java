@@ -49,7 +49,7 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 					new Path(remoteCsvFolder + kcvFile));
 			getFs().delete(new Path(remoteCsvOutputFolder), true);
 			// run job
-			KcvToCsvCmd cmd = new KcvToCsvCmd(null, remoteCfgFolder + kcvtransProp, null, null, getDefaultFS());
+			KcvToCsvCmd cmd = new KcvToCsvCmd(null, remoteCfgFolder + kcvtransProp, null, getDefaultFS());
 			Map<String, Object> retMap = cmd.mapProcess(0, kcvFile, null);
 			List<String> retlist = (List<String>) retMap.get(ETLCmd.RESULT_KEY_OUTPUT);
 			logger.info(retlist);

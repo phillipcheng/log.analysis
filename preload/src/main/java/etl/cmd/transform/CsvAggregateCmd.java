@@ -28,9 +28,9 @@ public class CsvAggregateCmd extends FileETLCmd{
 	private AggrOpMap aoMap;
 	private List<IdxRange> groupKeys;
 	
-	public CsvAggregateCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
-		List<Object> strAggrOpList = pc.getList(cfgkey_aggr_op);
+	public CsvAggregateCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
+		String[] strAggrOpList = pc.getStringArray(cfgkey_aggr_op);
 		aoMap = new AggrOpMap(strAggrOpList);
 		groupKeys = IdxRange.parseString(pc.getString(cfgkey_aggr_groupkey));
 	}
@@ -57,7 +57,7 @@ public class CsvAggregateCmd extends FileETLCmd{
 			List<CSVRecord> csvl = parser.getRecords();
 			for (CSVRecord r: csvl){
 				List<String> keys = getCsvFields(r, groupKeys);
-				String newKey = Util.getCsv(keys, false, true);
+				String newKey = Util.getCsv(keys, false);
 				logger.debug(String.format("new key:%s", newKey));
 				context.write(new Text(newKey), new Text(row));
 			}
@@ -98,6 +98,6 @@ public class CsvAggregateCmd extends FileETLCmd{
 			}
 		}
 		
-		return Util.getCsv(aggrValues, false, true);
+		return Util.getCsv(aggrValues, false);
 	}
 }

@@ -16,7 +16,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="atterad">
             <arg>${wf:id()}</arg>
             <arg>/atterad/etlcfg/erad.sftp.properties</arg>
             <arg>unused</arg>
-            <arg>unused</arg>
             <capture-output/>
         </java>
 		<ok to="CsvTransform1"/>
@@ -184,7 +183,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="atterad">
             <arg>etl.cmd.LoadDataCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/atterad/etlcfg/erad.load.properties</arg>
-            <arg>unused</arg>
             <arg>unused</arg>
             <capture-output/>
         </java>

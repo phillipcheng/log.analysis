@@ -48,8 +48,8 @@ public class SesToCsvCmd extends FileETLCmd{
 	private static long WEEK_TO_MILLSEC = 7*24*3600*1000;
 	private static long gpsElaps = new GregorianCalendar(1980,Calendar.JANUARY,6,0,0,0).getTimeInMillis();
 	
-	public SesToCsvCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public SesToCsvCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 		useWfid = pc.getBoolean(cfgkey_use_wfid, false);
 		sesFolder = pc.getString(cfgkey_ses_folder);
 		

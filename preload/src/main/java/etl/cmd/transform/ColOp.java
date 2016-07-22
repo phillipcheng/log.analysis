@@ -73,7 +73,7 @@ public class ColOp {
 		List<String> items = new ArrayList<String>();
 		items.addAll(Arrays.asList((String[]) vars.get(VAR_NAME_fields)));
 		if (type == ColOpType.update){
-			String val = (String) ScriptEngineUtil.eval(expCS, VarType.STRING, vars);
+			String val = ScriptEngineUtil.eval(expCS, vars);
 			if (val!=null){
 				for (int i=items.size(); i<=targetIdx; i++){
 					items.add("");//fill empty string

@@ -22,8 +22,8 @@ public class DynSqlExecutorCmd extends ETLCmd{
 	private String schemaFileName;
 	private LogicSchema logicSchema;
 	
-	public DynSqlExecutorCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public DynSqlExecutorCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 		this.csvFolder = pc.getString(DynSchemaCmd.cfgkey_csv_folder);
 		this.prefix = pc.getString(DynSchemaCmd.cfgkey_prefix);
 		this.schemaFileName = pc.getString(DynSchemaCmd.cfgkey_schema_folder) + prefix +"." + DynSchemaCmd.schema_name;
@@ -41,12 +41,12 @@ public class DynSqlExecutorCmd extends ETLCmd{
 		//1. execute sql to update db and load data to db
 		if (dynCfgMap.containsKey(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE)){
 			//execute the schemas
-			String createtablesql_name = dynCfgMap.get(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE).get(0);
+			String createtablesql_name = (String) dynCfgMap.get(DynSchemaCmd.dynCfg_Key_CREATETABLE_SQL_FILE);
 			List<String> sqls = Util.stringsFromDfsFile(fs, createtablesql_name);
 			DBUtil.executeSqls(sqls, pc);
 		}
 		//2. load csv files
-		List<String> tablesUsed = dynCfgMap.get(DynSchemaCmd.dynCfg_Key_TABLES_USED);
+		List<String> tablesUsed = (List<String>) dynCfgMap.get(DynSchemaCmd.dynCfg_Key_TABLES_USED);
 		List<String> csvFiles = new ArrayList<String>();
 		List<String> copysqls = new ArrayList<String>();
 		for (String tn: tablesUsed){

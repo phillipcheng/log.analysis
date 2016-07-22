@@ -1,1 +1,1 @@
-["java.util.HashMap",{"raw.xml.files":["java.util.ArrayList",["dynschema_test1_data.xml"]],"create.table.sql.file":["java.util.ArrayList",["/test/dynschemacmd/schemahistory/sgsiwf.createtables.sql_wfid1"]],"tables.used":["java.util.ArrayList",["MyCore_"]]}]
+["java.util.HashMap",{"create.table.sql.file":"/test/dynschemacmd/schemahistory/createtables.sql_wfid1","raw.xml.files":["java.util.ArrayList",["dynschema_test1_data.xml"]],"tables.used":["java.util.ArrayList",["MyCore_"]]}]

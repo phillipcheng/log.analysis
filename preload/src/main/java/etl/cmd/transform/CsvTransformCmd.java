@@ -31,8 +31,8 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 	private boolean inputEndWithComma=false;
 	List<ColOp> colOpList = new ArrayList<ColOp>();
 	
-	public CsvTransformCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public CsvTransformCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 		skipHeader =pc.getBoolean(cfgkey_skip_header, false);
 		rowValidation = pc.getString(cfgkey_row_validation);
 		inputEndWithComma = pc.getBoolean(cfgkey_input_endwithcomma, false);
@@ -87,7 +87,7 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 			strItems = new String[items.size()];
 			vars.put(ColOp.VAR_NAME_fields, items.toArray(strItems));
 		}
-		output = Util.getCsv(Arrays.asList(strItems), false, false);
+		output = Util.getCsv(Arrays.asList(strItems), false);
 		if (isAddFileName()){
 			output+="," + getAbbreFileName(fileName);
 		}

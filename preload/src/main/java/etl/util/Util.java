@@ -21,6 +21,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -98,14 +99,11 @@ public class Util {
 		return paramsMap;
 	}
 	
-	public static String getCsv(List<String> csv, boolean newline, boolean escape){
+	public static String getCsv(List<String> csv, boolean newline){
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<csv.size(); i++){
 			String v = csv.get(i);
 			if (v!=null){
-				if (escape){
-					v = "\"" + v + "\"";
-				}
 				sb.append(v);
 			}
 			if (i<csv.size()-1){
@@ -177,14 +175,24 @@ public class Util {
 	}
 	
 	public static Object fromDfsJsonFile(FileSystem fs, String file, Class clazz){
+		FSDataInputStream fis=null;
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			IOUtils.copy(fs.open(new Path(file)), baos);
+			fis = fs.open(new Path(file));
+			IOUtils.copy(fis, baos);
 			String content = baos.toString(charset);
 			return fromJsonString(content, clazz);
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
+		}finally{
+			if (fis!=null){
+				try{
+					fis.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
 		}
 	}
 	
@@ -201,6 +209,14 @@ public class Util {
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
+		}finally{
+			if (in!=null){
+				try{
+					in.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
 		}
 	}
 	
@@ -269,18 +285,20 @@ public class Util {
 		}
 	}
 	
+	/*
+	 * if fileName exists, append the contents to org content into fileName+fileNameAppend return true
+	   if not exists, create file put content, return false
+	 */
 	public static void appendDfsFile(FileSystem fs, String fileName, List<String> contents){
 		BufferedWriter osw = null;
 		try {
+			List<String> allContents = new ArrayList<String>();
 			if (fs.exists(new Path(fileName))){
-				osw = new BufferedWriter(new OutputStreamWriter(fs.append(new Path(fileName))));
-			}else{
-				osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(fileName))));
+				List<String> orgContents = Util.stringsFromDfsFile(fs, fileName);
+				allContents.addAll(orgContents);
 			}
-			for (String line:contents){
-				osw.write(line);
-				osw.write("\n");
-			}
+			allContents.addAll(contents);
+			Util.writeDfsFile(fs, fileName, allContents);
 		}catch(Exception e){
 			logger.error("",e);
 		}finally{

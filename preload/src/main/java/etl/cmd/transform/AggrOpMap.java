@@ -15,9 +15,8 @@ public class AggrOpMap {
 	Map<Integer, AggrOperator> opMap = new HashMap<Integer, AggrOperator>();
 	private List<AggrOp> oplist = new ArrayList<AggrOp>();
 	
-	public AggrOpMap(List<Object> strAggrOpList){
-		for (Object aggrOp:strAggrOpList){
-			String strAggrOp = (String)aggrOp;
+	public AggrOpMap(String[] strAggrOpList){
+		for (String strAggrOp:strAggrOpList){
 			String[] arr = strAggrOp.split(AggrOp.AGGR_OPERATOR_SEP);
 			String op = arr[0];
 			String arg = arr[1];

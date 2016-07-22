@@ -1,11 +1,13 @@
 package etl.engine;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -24,16 +26,18 @@ public abstract class ETLCmd {
 	
 	protected String wfid;
 	protected FileSystem fs;
-	protected Map<String, List<String>> dynCfgMap;
+	protected String dynCfgFile;
+	protected Map<String, Object> dynCfgMap;
 	protected PropertiesConfiguration pc;
-	protected String outDynCfg;
+
 	private Configuration conf;
 	
 	private ProcessMode pm = ProcessMode.SingleProcess;
 	private MRMode mrMode = MRMode.file;
 	
-	public ETLCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
+	public ETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs){
 		this.wfid = wfid;
+		this.dynCfgFile = dynCfg;
 		try {
 			conf = new Configuration();
 			if (defaultFs!=null){
@@ -43,11 +47,22 @@ public abstract class ETLCmd {
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		if (inDynCfg!=null){
-			dynCfgMap = (Map<String, List<String>>) Util.fromDfsJsonFile(fs, inDynCfg, Map.class);
+		if (dynCfg!=null){
+			try {
+				if (fs.exists(new Path(dynCfg))){
+					dynCfgMap = (Map<String, Object>) Util.fromDfsJsonFile(fs, dynCfg, Map.class);
+				}else{
+					dynCfgMap = new HashMap<String, Object>();
+				}
+			}catch(Exception e){
+				logger.error("", e);
+			}
 		}
 		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
-		this.outDynCfg = outDynCfg;
+	}
+	
+	public void saveDynCfg(){
+		Util.toDfsJsonFile(fs, dynCfgFile, dynCfgMap);
 	}
 	
 	/**
@@ -110,5 +125,13 @@ public abstract class ETLCmd {
 	
 	public String getWfid(){
 		return wfid;
+	}
+	
+	public PropertiesConfiguration getPc() {
+		return pc;
+	}
+
+	public void setPc(PropertiesConfiguration pc) {
+		this.pc = pc;
 	}
 }

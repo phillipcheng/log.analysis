@@ -22,8 +22,8 @@ public class ShellCmd extends ETLCmd{
 	public static final String PARAM_KEY="key";
 	public static final String PROP_CMD="command";
 
-	public ShellCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public ShellCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 	}
 
 	@Override

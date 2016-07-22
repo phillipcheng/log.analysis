@@ -2,10 +2,14 @@ package etl.engine;
 
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class ETLLog {
 	
 	public static final SafeSimpleDateFormat ssdf = new SafeSimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");//2016-03-09T07:45:00
+	{
+		ssdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 	private static final int UserCountsNum=4;
 	
 	private Date start = null;

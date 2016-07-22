@@ -57,7 +57,7 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + localCsvFileName), new Path(inputFolder + remoteCsvFileName));
 
 			//run cmd
-			DynSqlExecutorCmd cmd = new DynSqlExecutorCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder+dynInCfgName, null, getDefaultFS());
+			DynSqlExecutorCmd cmd = new DynSqlExecutorCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder+dynInCfgName, getDefaultFS());
 			cmd.sgProcess();
 
 			//checking create table already created

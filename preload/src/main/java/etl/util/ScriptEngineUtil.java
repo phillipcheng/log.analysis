@@ -34,7 +34,7 @@ public class ScriptEngineUtil {
 		return cs;
 	}
 	
-	public static Object eval(CompiledScript cs, VarType toType, Map<String, Object> variables){
+	public static String eval(CompiledScript cs, Map<String, Object> variables){
 		Bindings bindings = new SimpleBindings();
         if (variables!=null){
 			for (String key: variables.keySet()){
@@ -49,38 +49,16 @@ public class ScriptEngineUtil {
 		try {
 			Object ret = cs.eval(bindings);
 			logger.debug(String.format("eval get result %s", ret));
-			if (toType == VarType.OBJECT){
-				return ret;
-			}
 			if (ret!=null){
 				if (ret instanceof String){
-					if (toType == VarType.STRING){
-						;
-					}else if (toType == VarType.INT){
-						ret = Integer.parseInt((String)ret);
-					}else{
-						logger.error(String.format("unsupported to type for string result: %s", toType));
-					}
+					return (String) ret;
 				}else if (ret instanceof Double){
-					if (toType ==VarType.INT){
-						ret = ((Double)ret).intValue();
-					}else if (toType==VarType.FLOAT){
-						ret = ((Double)ret).floatValue();
-					}else{
-						logger.error(String.format("unsupported to type for double result: %s", toType));
-					}
-				}else if (ret instanceof Boolean){
-					if (toType==VarType.BOOLEAN){
-						return ret;
-					}else{
-						logger.error(String.format("expect a boolean result from exp:%s", cs));
-						return null;
-					}
+					return ((Double)ret).toString();
 				}else{
 					logger.error(String.format("unsupported type of eval ret: %s", ret.getClass()));
 				}
 			}
-			return ret;
+			return null;
 		} catch (ScriptException e) {
 			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
 			return null;

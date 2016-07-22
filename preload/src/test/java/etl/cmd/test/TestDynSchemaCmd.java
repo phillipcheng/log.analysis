@@ -56,7 +56,7 @@ public class TestDynSchemaCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			
 			//run cmd
-			DynSchemaCmd cmd = new DynSchemaCmd(wfid, dfsCfgFolder + staticCfgName, null, dfsCfgFolder+dynCfgOutName, getDefaultFS());
+			DynSchemaCmd cmd = new DynSchemaCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder+dynCfgOutName, getDefaultFS());
 			cmd.sgProcess();
 			
 			//check results

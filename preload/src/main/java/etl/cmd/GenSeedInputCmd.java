@@ -31,8 +31,8 @@ public class GenSeedInputCmd extends ETLCmd{
 	private boolean useWfid = false;//for inputFolder
 	private String outputSeedFolder;
 	
-	public GenSeedInputCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public GenSeedInputCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 		inputFolder = pc.getString(cfgkey_inputfolder);
 		useWfid = pc.getBoolean(cfgkey_usewfid, false);
 		outputSeedFolder = pc.getString(cfgkey_outputseedfolder);

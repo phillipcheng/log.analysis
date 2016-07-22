@@ -22,8 +22,8 @@ public class LoadDataCmd extends ETLCmd{
 	private boolean useWfid;
 	private String loadSql;
 	
-	public LoadDataCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public LoadDataCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 		this.csvFolder = pc.getString(cfgkey_csvfolder);
 		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
 		this.userName = pc.getString(DBUtil.key_db_user);

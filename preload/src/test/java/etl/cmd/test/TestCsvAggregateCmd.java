@@ -28,7 +28,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue(output.size() > 0);
 			String sampleOutput = output.get(6);
 			String[] csvs = sampleOutput.split(",");
-			assertTrue("\"2.0\"".equals(csvs[6]));
+			assertTrue("2.0".equals(csvs[6]));
 		} catch (Exception e) {
 			logger.error("", e);
 		}

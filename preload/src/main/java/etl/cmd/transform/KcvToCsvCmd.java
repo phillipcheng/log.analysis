@@ -44,8 +44,8 @@ public class KcvToCsvCmd extends FileETLCmd{
 	private String kcvFolder;
 	private boolean useWfid;
 	
-	public KcvToCsvCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs) {
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public KcvToCsvCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 		kcvFolder = pc.getString(cfgkey_kcv_folder);
 		useWfid = pc.getBoolean(cfgkey_use_wfid, false);
 		String strVal = pc.getString(RECORD_START);

@@ -37,7 +37,7 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		
-		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, null, getDefaultFS());
+		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, getDefaultFS());
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true,incoming.folder=%s", host, ftpFolder,incomingFolder), null);
 		// check incoming fodler
 		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
@@ -79,7 +79,7 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().delete(new Path(ftpFolder),true);
 		getFs().mkdirs(new Path(incomingFolder));
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
-		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, getDefaultFS());
+		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, getDefaultFS());
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
 
 		// check incoming fodler
@@ -120,7 +120,7 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().mkdirs(new Path(incomingFolder));
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
 		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, null, getDefaultFS());
+		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, null, getDefaultFS());
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.port=%s", host, ftpFolder, port),
 				null);
 
@@ -166,7 +166,7 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		//
-		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, null, getDefaultFS());
+		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, null, getDefaultFS());
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=%s,incoming.folder=%s", host, ftpFolder, sftpClean,incomingFolder),
 				null);
 		// check incoming fodler

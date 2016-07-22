@@ -67,6 +67,7 @@ public class DynSchemaCmd extends ETLCmd{
 	public static final String trunctablesql_name="trunctables.sql";
 	public static final String copysql_name="copys.sql";
 	
+	//following are the keys for dynCfg
 	public static final String dynCfg_Key_TABLES_USED="tables.used";
 	public static final String dynCfg_Key_CREATETABLE_SQL_FILE="create.table.sql.file";
 	public static final String dynCfg_Key_XML_FILES="raw.xml.files";//used for backup cmd
@@ -103,8 +104,8 @@ public class DynSchemaCmd extends ETLCmd{
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
 	
-	public DynSchemaCmd(String wfid, String staticCfg, String inDynCfg, String outDynCfg, String defaultFs){
-		super(wfid, staticCfg, inDynCfg, outDynCfg, defaultFs);
+	public DynSchemaCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
+		super(wfid, staticCfg, dynCfg, defaultFs);
 		keyWithValue = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_useValues));
 		keySkip = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_skipKeys));
 		
@@ -251,7 +252,7 @@ public class DynSchemaCmd extends ETLCmd{
 				osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(outputFileName))));
 				fvWriterMap.put(outputFileName, osw);
 			}
-			String csv = Util.getCsv(fieldValues, true, true);
+			String csv = Util.getCsv(fieldValues, true);
 			osw.write(csv);
 		}
 		return mvl.getLength();
@@ -370,7 +371,6 @@ public class DynSchemaCmd extends ETLCmd{
 	public List<String> sgProcess() {
 		List<String> logInfo = new ArrayList<String>();
 		try {
-			Map<String, List<String>> dynCfgOutput = new HashMap<String, List<String>>();
 			String createsqlFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, wfid);
 			FileStatus[] inputFileNames = fs.listStatus(new Path(xmlFolder));
 			//1. check new/update schema, generate csv files
@@ -437,9 +437,7 @@ public class DynSchemaCmd extends ETLCmd{
 				schemaAttrNameUpdates.clear();
 				schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames, wfid);
 				//only generate createtable sql entry when there is schema update
-				List<String> csfn = new ArrayList<String>();
-				csfn.add(createsqlFileName);
-				dynCfgOutput.put(dynCfg_Key_CREATETABLE_SQL_FILE, csfn);
+				this.dynCfgMap.put(dynCfg_Key_CREATETABLE_SQL_FILE, createsqlFileName);
 			}
 			
 			//output dyncfg
@@ -449,9 +447,9 @@ public class DynSchemaCmd extends ETLCmd{
 			for (FileStatus inputFileName:inputFileNames){
 				rawFiles.add(inputFileName.getPath().getName());
 			}
-			dynCfgOutput.put(dynCfg_Key_TABLES_USED, utl);
-			dynCfgOutput.put(dynCfg_Key_XML_FILES, rawFiles);
-			Util.toDfsJsonFile(fs, this.outDynCfg, dynCfgOutput);
+			this.dynCfgMap.put(dynCfg_Key_TABLES_USED, utl);
+			this.dynCfgMap.put(dynCfg_Key_XML_FILES, rawFiles);
+			this.saveDynCfg();
 			
 			//output loginfo
 			logInfo.add(schemaUpdated+"");//number of csv lines
