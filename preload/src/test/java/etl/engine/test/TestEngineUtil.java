@@ -42,9 +42,20 @@ public class TestEngineUtil {
 	}
 	
 	@Test
-	public void testJsEngine(){
+	public void testJsEngineInvokeJava(){
 		Map<String, Object> vars = new HashMap<String, Object>();
 		String exp = "var telecomUtil = Java.type(\"etl.telecom.TelecomUtil\"); telecomUtil.processE164('1234');";
+		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
+		logger.info(output);
+	}
+	
+	@Test
+	public void testJsEnginePassingMap(){
+		Map<String, Object> vars = new HashMap<String, Object>();
+		Map<String, String> fields = new HashMap<String, String>();
+		fields.put("abc", "abcValue");
+		vars.put("fields", fields);
+		String exp = "fields['abc'];";
 		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
 		logger.info(output);
 	}

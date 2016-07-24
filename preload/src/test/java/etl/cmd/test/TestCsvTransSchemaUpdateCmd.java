@@ -40,7 +40,7 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransSchemaUpdateCmd cmd = new CsvTransSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS());
+			CsvTransSchemaUpdateCmd cmd = new CsvTransSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
 			cmd.sgProcess();
 			
 			//assertion
@@ -94,7 +94,7 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransSchemaUpdateCmd cmd = new CsvTransSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS());
+			CsvTransSchemaUpdateCmd cmd = new CsvTransSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
 			cmd.sgProcess();
 			
 		} catch (Exception e) {

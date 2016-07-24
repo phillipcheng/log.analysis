@@ -6,6 +6,9 @@ C:\Java\oozie\shell-action-0.3.xsd
 uri:oozie:ssh-action:0.2
 C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 	<start to="GenBinSeedInput"/>
+	<kill name="fail">
+        <message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
 	<action name="GenBinSeedInput">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
@@ -17,18 +20,9 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 			<arg>unused</arg>
 			<capture-output/>
 		</java>
-		<ok to="decision1"/>
+		<ok to="TraceFilter"/>
 		<error to="fail"/>
 	</action>
-	<decision name="decision1">
-		<switch>
-			<case to="TraceFilter">${(wf:actionData('GenBinSeedInput')['seed.input.filename'] != null)}</case>
-			<default to="fail"/>
-		</switch>
-	</decision>
-	<kill name="fail">
-		<message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
-	</kill>
 	<action name="TraceFilter">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
@@ -80,9 +74,25 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 			</configuration>
 		</map-reduce>
-		<ok to="forking"/>
+		<ok to="LogTraceFilter"/>
 		<error to="fail"/>
 	</action>
+	<action name="LogTraceFilter">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/sendlog.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <arg>TraceFilter-Info</arg>
+            <arg>${hadoop:counters("TraceFilter")["org.apache.hadoop.mapred.Task$Counter"]["MAP_INPUT_RECORDS"]}</arg>
+        </java>
+        <ok to="forking"/>
+        <error to="fail"/>
+    </action>
 	<fork name="forking">
         <path start="CsvTransform"/>
         <path start="GenFixSeedInput"/>
@@ -148,9 +158,26 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 			</configuration>
 		</map-reduce>
-		<ok to="loadCsvCmd"/>
+		<ok to="LogCsvTransform"/>
 		<error to="fail"/>
 	</action>
+	<action name="LogCsvTransform">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/sendlog.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <arg>CsvTranform-Info</arg>
+            <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
+        <ok to="loadCsvCmd"/>
+        <error to="fail"/>
+    </action>
 	<action name="loadCsvCmd">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>

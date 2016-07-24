@@ -65,7 +65,7 @@ public class TestBackupCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfgName), new Path(dfsCfgFolder + dynCfgName));
 
 			//run cmd
-			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, getDefaultFS());
+			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, getDefaultFS(), null);
 			cmd.sgProcess();
 
 			//check results

@@ -52,8 +52,7 @@ public class TestGenSeedInputCmd extends TestETLCmd {
 					new Path(dfsCfgFolder + staticCfgName));
 
 			// run cmd
-			GenSeedInputCmd cmd = new GenSeedInputCmd(wfid, dfsCfgFolder + staticCfgName, null,
-					getDefaultFS());
+			GenSeedInputCmd cmd = new GenSeedInputCmd(wfid, dfsCfgFolder + staticCfgName, null, getDefaultFS(), null);
 			List<String> logInfo = cmd.sgProcess();
 			// check results
 			// outputFolder should have the seed file

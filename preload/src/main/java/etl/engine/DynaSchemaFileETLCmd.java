@@ -21,8 +21,8 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 	protected LogicSchema logicSchema;
 	
 	
-	public DynaSchemaFileETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public DynaSchemaFileETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		this.schemaFile = pc.getString(cfgkey_schema_file, null);
 		this.oldTable = pc.getString(cfgkey_old_table, null);
 		this.newTable = pc.getString(cfgkey_new_table, null);

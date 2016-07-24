@@ -15,8 +15,8 @@ public class CsvTransSchemaUpdateCmd extends DynaSchemaFileETLCmd{
 	private List<String> addFieldsNames = new ArrayList<String>();
 	private List<String> addFieldsTypes = new ArrayList<String>();
 	
-	public CsvTransSchemaUpdateCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public CsvTransSchemaUpdateCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		String[] nvs = pc.getStringArray(cfgkey_add_fields);
 		for (String nv:nvs){
 			String[] nva = nv.split("\\:");

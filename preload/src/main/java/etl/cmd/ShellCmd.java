@@ -19,24 +19,28 @@ import etl.util.StringUtil;
 
 public class ShellCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(ShellCmd.class);
-	public static final String PARAM_KEY="key";
-	public static final String PROP_CMD="command";
+	
+	public static final String cfgkey_param_key="key"; //the special key name for mapreduce mode, each key is a line of input
+	public static final String cfgkey_command="command";
+	
+	
+	private String command;
+	private Map<String, Object> params;
 
-	public ShellCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public ShellCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+		command = pc.getString(cfgkey_command);
+		params = new HashMap<String, Object>();
+		Iterator<String> keys = pc.getKeys();
+		while (keys.hasNext()){
+			String key = keys.next();
+			params.put(key, pc.getProperty(key));
+		}
 	}
 
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public List<String> sgProcess() {
 		try {
-			String command = pc.getString(PROP_CMD);
-			Map<String, Object> params = new HashMap<String, Object>();
-			Iterator<String> keys = pc.getKeys();
-			while (keys.hasNext()){
-				String key = keys.next();
-				params.put(key, pc.getProperty(key));
-			}
-			params.put(PARAM_KEY, row);//value is file name
 			command = StringUtil.fillParams(command, params, "$", "");
 			//pass wfid as the last parameter to the shell script
 			command += " " + this.wfid;
@@ -44,10 +48,17 @@ public class ShellCmd extends ETLCmd{
 			CommandLine cmdLine = CommandLine.parse(command);
 			DefaultExecutor executor = new DefaultExecutor();
 			int exitValue = executor.execute(cmdLine);
-			logger.info(String.format("process for key:%s ended with exitValue %d.", row, exitValue));
+			logger.info(String.format("process for key:%s ended with exitValue %d.", params.get(cfgkey_param_key), exitValue));
 		}catch(Exception e){
 			logger.error("", e);
 		}
+		return null;
+	}
+	
+	@Override
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+		params.put(cfgkey_param_key, row);//param passed
+		sgProcess();
 		return null;
 	}
 }

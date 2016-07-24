@@ -22,8 +22,8 @@ public class DynSqlExecutorCmd extends ETLCmd{
 	private String schemaFileName;
 	private LogicSchema logicSchema;
 	
-	public DynSqlExecutorCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public DynSqlExecutorCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		this.csvFolder = pc.getString(DynSchemaCmd.cfgkey_csv_folder);
 		this.prefix = pc.getString(DynSchemaCmd.cfgkey_prefix);
 		this.schemaFileName = pc.getString(DynSchemaCmd.cfgkey_schema_folder) + prefix +"." + DynSchemaCmd.schema_name;

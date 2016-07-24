@@ -29,13 +29,15 @@ public abstract class ETLCmd {
 	protected String dynCfgFile;
 	protected Map<String, Object> dynCfgMap;
 	protected PropertiesConfiguration pc;
+	protected String[] otherArgs;
 
 	private Configuration conf;
 	
 	private ProcessMode pm = ProcessMode.SingleProcess;
 	private MRMode mrMode = MRMode.file;
+	private boolean sendLog = true;//command level send log flag
 	
-	public ETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs){
+	public ETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
 		this.wfid = wfid;
 		this.dynCfgFile = dynCfg;
 		try {
@@ -59,6 +61,7 @@ public abstract class ETLCmd {
 			}
 		}
 		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
+		this.otherArgs = otherArgs;
 	}
 	
 	public void saveDynCfg(){
@@ -133,5 +136,13 @@ public abstract class ETLCmd {
 
 	public void setPc(PropertiesConfiguration pc) {
 		this.pc = pc;
+	}
+
+	public boolean isSendLog() {
+		return sendLog;
+	}
+
+	public void setSendLog(boolean sendLog) {
+		this.sendLog = sendLog;
 	}
 }

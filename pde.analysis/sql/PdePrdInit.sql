@@ -1,2 +1,2 @@
-drop schema PDE cascade;
-CREATE SCHEMA IF NOT EXISTS PDE;
+drop schema pde cascade;
+CREATE SCHEMA IF NOT EXISTS pde;

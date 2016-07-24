@@ -53,8 +53,8 @@ public class SftpCmd extends ETLCmd {
 	private int sftpConnectRetryWait;
 	private boolean sftpClean;
 
-	public SftpCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public SftpCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		this.incomingFolder = pc.getString(cfgkey_incoming_folder);
 		this.host = pc.getString(cfgkey_sftp_host);
 		this.port = pc.getInt(cfgkey_sftp_port);

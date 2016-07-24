@@ -29,7 +29,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="atterad">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <prepare>
-                <delete path="/atterad/input2/all2"/>
+                <delete path="/atterad/input2/"/>
             </prepare>
             <configuration>
                 <property>
@@ -90,12 +90,28 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="atterad">
                 </property>
             </configuration>
         </map-reduce>
+        <ok to="LogCsvTransform1"/>
+        <error to="fail"/>
+    </action>
+    <action name="LogCsvTransform1">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/atterad/etlcfg/erad.sendlog.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <arg>CsvTransform1-Info</arg>
+            <arg>${hadoop:counters("CsvTransform1")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("CsvTransform1")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
         <ok to="FsCmd"/>
         <error to="fail"/>
     </action>
 	<action name="FsCmd">
 		<fs>
-		  <move source='${nameNode}/atterad/input/all.csv' target='/atterad/input2/all.csv'/>
 		  <move source='${nameNode}/atterad/input/phxall4.csv' target='/atterad/input2/phxall4.csv'/>
 		  <move source='${nameNode}/atterad/input/phxall5.csv' target='/atterad/input2/phxall5.csv'/>
 		</fs>
@@ -172,6 +188,23 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="atterad">
                 </property>
             </configuration>
         </map-reduce>
+        <ok to="LogCsvTransform2"/>
+        <error to="fail"/>
+    </action>
+    <action name="LogCsvTransform2">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/atterad/etlcfg/erad.sendlog.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <arg>CsvTransform2-Info</arg>
+            <arg>${hadoop:counters("CsvTransform2")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("CsvTransform2")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
         <ok to="loadCsvCmd"/>
         <error to="fail"/>
     </action>

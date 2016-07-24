@@ -30,8 +30,9 @@ public class EngineUtil {
 	
 	private Producer<String, String> producer = null;
 	private String logTopicName;
-	private boolean enableMessage=false;
-	
+	private String bootstrapServers;
+	private boolean sendLog=false; //engine level send log flag
+
 	public static void setConfFile(String file){
 		config_file = file;
 		singleton = new EngineUtil();
@@ -41,26 +42,30 @@ public class EngineUtil {
 		return producer;
 	}
 	
+	public static Producer<String, String> createProducer(String bootstrapServers){
+		Properties props = new Properties();
+		props.put("bootstrap.servers", bootstrapServers);
+		props.put("acks", "all");
+		props.put("retries", 0);
+		props.put("request.timeout.ms", 5000);
+		props.put("batch.size", 16384);
+		props.put("linger.ms", 1);
+		props.put("buffer.memory", 33554432);
+		props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		return new KafkaProducer<String, String>(props);
+	}
+	
 	private EngineUtil(){
 		InputStream input = this.getClass().getClassLoader().getResourceAsStream(config_file);
 		if (input!=null){
 			try {
 				engineProp.load(input);
 				logTopicName = engineProp.getString(key_kafka_log_topic);
-				enableMessage = engineProp.getBoolean(key_enable_kafka, false);
-				
-				if (enableMessage){
-					Properties props = new Properties();
-					props.put("bootstrap.servers", engineProp.getProperty(key_bootstrap_servers));
-					props.put("acks", "all");
-					props.put("retries", 0);
-					props.put("request.timeout.ms", 5000);
-					props.put("batch.size", 16384);
-					props.put("linger.ms", 1);
-					props.put("buffer.memory", 33554432);
-					props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-					props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-					producer = new KafkaProducer<String, String>(props);
+				sendLog = engineProp.getBoolean(key_enable_kafka, false);
+				bootstrapServers = engineProp.getString(key_bootstrap_servers);
+				if (sendLog){
+					producer = createProducer(bootstrapServers);
 				}
 			}catch(Exception e){
 				logger.error("failed to get kafka producer.", e);
@@ -76,31 +81,37 @@ public class EngineUtil {
 		return singleton;
 	}
 	
-	public void sendLog(ETLLog etllog){
+	public static void sendLog(Producer<String, String> producer, String topicName, ETLLog etllog){
 		if (producer!=null){
 			String value = etllog.toString();
 			logger.info(String.format("log: %s", value));
-			producer.send(new ProducerRecord<String,String>(this.logTopicName, value), new Callback(){
+			producer.send(new ProducerRecord<String,String>(topicName, value), new Callback(){
 				@Override
 				public void onCompletion(RecordMetadata metadata, Exception e) {
 					if (e!=null){
-						logger.error("", e);
+						logger.error("exception got while send log", e);
 					}
 				}
 			});
 		}
 	}
 	
+	public void sendLog(ETLLog etllog){
+		sendLog(this.producer, this.logTopicName, etllog);
+	}
+	
 	public void sendLog(ETLCmd cmd, Date startTime, Date endTime, List<String> loginfo){
-		ETLLog etllog = new ETLLog();
-		etllog.setStart(startTime);
-		etllog.setEnd(endTime);
-		if (cmd.getWfid()!=null) {
-			etllog.setWfid(cmd.getWfid());
+		if (cmd.isSendLog()){
+			ETLLog etllog = new ETLLog();
+			etllog.setStart(startTime);
+			etllog.setEnd(endTime);
+			if (cmd.getWfid()!=null) {
+				etllog.setWfid(cmd.getWfid());
+			}
+			etllog.setActionName(cmd.getClass().getName());
+			etllog.setCounts(loginfo);
+			sendLog(this.producer, this.logTopicName, etllog);
 		}
-		etllog.setActionName(cmd.getClass().getName());
-		etllog.setCounts(loginfo);
-		sendLog(etllog);
 	}
 	
 	public void processMapperCmds(ETLCmd[] cmds, long offset, String row, 
@@ -174,8 +185,8 @@ public class EngineUtil {
 		try{
 			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
 			for (int i=0; i<cmds.length; i++){
-				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class).
-						newInstance(wfid, staticCfgFiles[i], null, defaultFs);
+				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String[].class).
+						newInstance(wfid, staticCfgFiles[i], null, defaultFs, null);
 				cmds[i].setPm(ProcessMode.MRProcess);
 			}
 			return cmds;
@@ -183,5 +194,25 @@ public class EngineUtil {
 			logger.error("", e);
 		}
 		return null;
+	}
+	
+	//
+	public boolean isSendLog() {
+		return sendLog;
+	}
+	public void setSendLog(boolean sendLog) {
+		this.sendLog = sendLog;
+	}
+	public String getLogTopicName() {
+		return logTopicName;
+	}
+	public void setLogTopicName(String logTopicName) {
+		this.logTopicName = logTopicName;
+	}
+	public String getBootstrapServers() {
+		return bootstrapServers;
+	}
+	public void setBootstrapServers(String bootstrapServers) {
+		this.bootstrapServers = bootstrapServers;
 	}
 }

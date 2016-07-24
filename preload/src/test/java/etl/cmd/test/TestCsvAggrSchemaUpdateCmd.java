@@ -38,7 +38,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvAggrSchemaUpdateCmd cmd = new CsvAggrSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS());
+			CsvAggrSchemaUpdateCmd cmd = new CsvAggrSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
 			cmd.sgProcess();
 			
 			//assertion

@@ -1,17 +1,22 @@
 package etl.engine;
 
+import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 
 public class ETLCmdMain {
+	
 	public static final Logger logger = Logger.getLogger(ETLCmdMain.class);
 	public static final String UNUSED = "unused";
+	public static final int mandatoryArgNum=4;
+	
 	public static String usage(){
-		return "ETLCmdMain: CmdClassName wfid staticConfigFile dynConfigFile [defaultFs]";
+		return "ETLCmdMain: CmdClassName wfid staticConfigFile dynConfigFile [defaultFs] ...(other arguments)";
 	}
 	
 	//this is the java action
 	public static void main(String[] args){
-		if (args.length<4){
+		if (args.length<mandatoryArgNum){
 			logger.error(usage());
 		}else{
 			String strCmdClassNames = args[0];
@@ -28,11 +33,15 @@ public class ETLCmdMain {
 				dynCfg = null;
 			}
 			String defaultFs = null;
-			if (args.length>4){
-				defaultFs = args[4];
+			if (args.length>mandatoryArgNum){//optional defaultFs
+				defaultFs = args[mandatoryArgNum];
 				if (UNUSED.equals(defaultFs)){
 					defaultFs = null;
 				}
+			}
+			String[] otherArgs = null;
+			if (args.length>mandatoryArgNum+1){//otherArgs
+				otherArgs = Arrays.copyOfRange(args, mandatoryArgNum+1, args.length);
 			}
 			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
 			for (int i=0; i<cmdClassNames.length; i++){
@@ -40,8 +49,8 @@ public class ETLCmdMain {
 				String staticCfg = staticCfgs[i];
 				try {
 					Class clazz = Class.forName(cmdClassName);
-					ETLCmd cmd = (ETLCmd) clazz.getConstructor(String.class, String.class, String.class, String.class).
-							newInstance(wfid, staticCfg, dynCfg, defaultFs);
+					ETLCmd cmd = (ETLCmd) clazz.getConstructor(String.class, String.class, String.class, String.class, String[].class).
+							newInstance(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 					cmd.setPm(ProcessMode.SingleProcess);
 					cmds[i] = cmd;
 				}catch(Exception e){

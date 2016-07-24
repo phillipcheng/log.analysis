@@ -183,6 +183,15 @@ public class TestETLCmd {
 			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
 		}
 	}
+	
+	public void copyWorkflow(String remoteLibFolder, String[] workflows) throws Exception{
+    	for (String wf: workflows){
+    		//copy workflow to remote
+    		String workflow = getLocalFolder() + File.separator + wf;
+    		String remoteWorkflow = remoteLibFolder + File.separator + wf;
+    		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+    	}
+	}
 
 	public String getLocalFolder() {
 		return localFolder;

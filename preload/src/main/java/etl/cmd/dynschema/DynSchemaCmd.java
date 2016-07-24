@@ -104,8 +104,8 @@ public class DynSchemaCmd extends ETLCmd{
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
 	
-	public DynSchemaCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public DynSchemaCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		keyWithValue = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_useValues));
 		keySkip = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_skipKeys));
 		

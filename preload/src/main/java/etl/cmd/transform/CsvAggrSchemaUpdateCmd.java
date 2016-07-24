@@ -22,8 +22,8 @@ public class CsvAggrSchemaUpdateCmd extends DynaSchemaFileETLCmd{
 	private AggrOpMap aoMap;
 	private List<IdxRange> groupKeys;
 	
-	public CsvAggrSchemaUpdateCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public CsvAggrSchemaUpdateCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		String[] strAggrOpList = pc.getStringArray(cfgkey_aggr_op);
 		aoMap = new AggrOpMap(strAggrOpList);
 		groupKeys = IdxRange.parseString(pc.getString(cfgkey_aggr_groupkey));

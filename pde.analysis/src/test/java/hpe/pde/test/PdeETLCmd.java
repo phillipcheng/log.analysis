@@ -78,4 +78,40 @@ public class PdeETLCmd {
 			logger.error("", e);
 		}
 	}
+	
+	@Test
+	public void testCopyXml() {
+		copyXml("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\src\\main\\resources");
+	}
+	
+	public void realCopyXml(String defaultFs, String localCfgDir) throws Exception{
+		Configuration conf = new Configuration();
+    	conf.set("fs.defaultFS", defaultFs);
+    	FileSystem fs = FileSystem.get(conf);
+		
+    	String[] workflows = new String[]{"workflow.xml"};
+		for (String wf: workflows){
+			String workflow = localCfgDir + File.separator + wf;
+			String remoteWorkflow = "/user/dbadmin/pde/" + wf;
+			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+		}
+	}
+	
+	public void copyXml(final String defaultFs, final String localCfgDir) {
+		try {
+			if (defaultFs.contains("127.0.0.1")){
+				realCopyXml(defaultFs, localCfgDir);
+			}else{
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			    ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			      public Void run() throws Exception {
+			    	  realCopyXml(defaultFs, localCfgDir);
+					return null;
+			      }
+			    });
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+	}
 }

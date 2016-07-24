@@ -16,8 +16,8 @@ public abstract class FileETLCmd extends ETLCmd{
 	private boolean addFileName = false;
 	private String expFileName = null;
 	
-	public FileETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public FileETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		addFileName = pc.getBoolean(cfgkey_add_filename, false);
 		expFileName = pc.getString(cfgkey_exp_filename);
 	}

@@ -47,8 +47,8 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	private Map<String, String[]> msgAttrMap = new HashMap<String, String[]>();//attr map
 	private Set<String> missedEvtType = new HashSet<String>();
 	
-	public EvtBasedMsgParseCmd(String wfid, String staticCfg, String dynCfg, String defaultFs) {
-		super(wfid, staticCfg, dynCfg, defaultFs);
+	public EvtBasedMsgParseCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		eventIdx = pc.getInt(EVT_IDX, -1);
 		String[] evtTypes = pc.getStringArray(EVT_TYPE_KEY);
 		for (String et:evtTypes){

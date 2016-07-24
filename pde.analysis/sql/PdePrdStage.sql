@@ -1,5 +1,6 @@
-DROP TABLE IF EXISTS PDE.pde_stage;
-DROP TABLE IF EXISTS PDE.pde_session_stage;
+DROP TABLE IF EXISTS pde.pde_stage;
+DROP TABLE IF EXISTS pde.pde_session_stage;
+DROP TABLE IF EXISTS pde.pde_fix_ses;
 
 
 CREATE TABLE pde.pde_stage(
@@ -135,7 +136,6 @@ sitename varchar(30),
 CREATED_TIME TIMESTAMP DEFAULT SYSDATE NOT NULL);
 
 
-drop table pde.pde_fix_ses;
 create table if not exists pde.pde_fix_ses (
     dt timestamp,
     uncertainty numeric(10,3),

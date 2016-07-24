@@ -72,7 +72,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.dynschema.properties</arg>
 			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-			<capture-output/>
 		</java>
 		<ok to="UpdateAggrSchema"/>
 		<error to="fail"/>
@@ -86,7 +85,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.aggrVlrUpdateSchema.properties</arg>
             <arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-            <capture-output/>
         </java>
         <ok to="AggregateVlr"/>
         <error to="fail"/>
@@ -153,6 +151,23 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
             </configuration>
         </map-reduce>
+        <ok to="LogAggrVlrInfo"/>
+        <error to="fail"/>
+    </action>
+    <action name="LogAggrVlrInfo">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <arg>AggregateVlr-Info</arg>
+            <arg>${hadoop:counters("AggregateVlr")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("AggregateVlr")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
         <ok to="UpdateTransformSchema"/>
         <error to="fail"/>
     </action>
@@ -165,7 +180,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.transVlrUpdateSchema.properties</arg>
             <arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-            <capture-output/>
         </java>
         <ok to="TransformVlr"/>
         <error to="fail"/>
@@ -232,6 +246,23 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
             </configuration>
         </map-reduce>
+        <ok to="LogTransformVlrInfo"/>
+        <error to="fail"/>
+    </action>
+    <action name="LogTransformVlrInfo">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
+            <arg>unused</arg>
+            <arg>unused</arg>
+            <arg>TransformVlr-Info</arg>
+            <arg>${hadoop:counters("TransformVlr")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("TransformVlr")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
         <ok to="copyVlrMerge"/>
         <error to="fail"/>
     </action>
@@ -255,7 +286,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.sqlexecutor.properties</arg>
 			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-			<capture-output/>
 		</java>
 		<ok to="BackupData"/>
 		<error to="fail"/>
@@ -269,7 +299,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.backup.properties</arg>
 			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-			<capture-output/>
 		</java>
 		<ok to="end"/>
 		<error to="fail"/>
