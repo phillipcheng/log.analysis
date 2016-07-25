@@ -35,11 +35,9 @@ import etl.util.Util;
 public class DynSchemaCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(DynSchemaCmd.class);
 	
-	public static final String schema_name="schemas.txt";
-	
 	public static final String cfgkey_xml_folder="xml-folder";
 	public static final String cfgkey_csv_folder="csv-folder";
-	public static final String cfgkey_schema_folder="schema-folder";
+	public static final String cfgkey_schema_file="schema.file";
 	public static final String cfgkey_schema_history_folder="schema-history-folder";
 	public static final String cfgkey_prefix="prefix";
 	
@@ -142,7 +140,7 @@ public class DynSchemaCmd extends ETLCmd{
 			this.csvFolder = pc.getString(cfgkey_csv_folder);
 			this.schemaHistoryFolder = pc.getString(cfgkey_schema_history_folder);
 			this.prefix = pc.getString(cfgkey_prefix);
-			this.schemaFileName = pc.getString(cfgkey_schema_folder) + prefix +"." + schema_name;
+			this.schemaFileName = pc.getString(cfgkey_schema_file);
 			this.logicSchema = new LogicSchema();
 			Path schemaFile = new Path(schemaFileName);
 			if (fs.exists(schemaFile)){

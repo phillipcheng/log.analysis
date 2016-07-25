@@ -11,7 +11,7 @@ public abstract class FileETLCmd extends ETLCmd{
 	public static final String cfgkey_add_filename="add.filename";
 	public static final String cfgkey_exp_filename="exp.filename";//filename extraction expression
 	
-	public static final String var_name_filename="filename";
+	public static final String VAR_NAME_FILE_NAME="filename";
 	
 	private boolean addFileName = false;
 	private String expFileName = null;
@@ -24,7 +24,7 @@ public abstract class FileETLCmd extends ETLCmd{
 	
 	public String getAbbreFileName(String filename){
 		Map<String,Object> variables = new HashMap<String, Object>();
-		variables.put(var_name_filename, filename);
+		variables.put(VAR_NAME_FILE_NAME, filename);
 		String abbr = (String) ScriptEngineUtil.eval(expFileName, VarType.STRING, variables);
 		return abbr;
 	}

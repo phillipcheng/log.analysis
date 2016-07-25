@@ -68,7 +68,7 @@ public class TestDynSchemaCmd extends TestETLCmd{
 			
 			//schemaFolder should have the schema file
 			files = Util.listDfsFile(getFs(), schemaFolder);
-			String schemaFileName = String.format("%s.schemas.txt", prefix);
+			String schemaFileName = "schemas.txt";
 			assertTrue(files.size()==1);
 			assertTrue(files.contains(schemaFileName));
 			

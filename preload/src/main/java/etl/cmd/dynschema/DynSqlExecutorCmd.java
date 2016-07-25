@@ -26,7 +26,7 @@ public class DynSqlExecutorCmd extends ETLCmd{
 		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		this.csvFolder = pc.getString(DynSchemaCmd.cfgkey_csv_folder);
 		this.prefix = pc.getString(DynSchemaCmd.cfgkey_prefix);
-		this.schemaFileName = pc.getString(DynSchemaCmd.cfgkey_schema_folder) + prefix +"." + DynSchemaCmd.schema_name;
+		this.schemaFileName = pc.getString(DynSchemaCmd.cfgkey_schema_file);
 		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
 		this.userName = pc.getString(DBUtil.key_db_user);
 		this.logicSchema = (LogicSchema) Util.fromDfsJsonFile(fs, schemaFileName, LogicSchema.class);

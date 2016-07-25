@@ -11,7 +11,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
-import etl.cmd.dynschema.DynSchemaCmd;
 import etl.cmd.dynschema.DynSqlExecutorCmd;
 import etl.util.DBUtil;
 import etl.util.Util;
@@ -27,7 +26,6 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 			//
 			String inputFolder = "/test/dynsqlexecutor/input/";
 			String dfsCfgFolder = "/test/dynsqlexecutor/cfg/";
-			String schemaFolder="/test/dynsqlexecutor/schema/";
 
 			String staticCfgName = "dynsqlexecutor1.properties";
 			String wfid="wfid1";
@@ -37,6 +35,9 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 			String localCsvFileName = "dynschema_test1_wfid1_MyCore_.csv";
 
 			String remoteCsvFileName = wfid + "_" + "MyCore_" + ".csv";
+
+			String schemaFolder="/test/dynsqlexecutor/schema/";
+			String schemaFileName = "schemas.txt";
 
 			//generate all the data files
 			getFs().delete(new Path(inputFolder), true);
@@ -52,7 +53,7 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 			//copy dynamic cfg
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynInCfgName), new Path(dfsCfgFolder + dynInCfgName));
 			//copy schema file
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + prefix +"." + DynSchemaCmd.schema_name));
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + schemaFileName));
 			//copy csv file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + localCsvFileName), new Path(inputFolder + remoteCsvFileName));
 

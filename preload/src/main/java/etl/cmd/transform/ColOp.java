@@ -20,7 +20,8 @@ public class ColOp {
 	public static final String REMOVE_OP="r";
 	public static final String SPLIT_OP="s";
 
-	public static final String VAR_NAME_fields="fields";
+	public static final String VAR_NAME_FIELDS="fields"; //array of field values
+	public static final String VAR_NAME_FIELD_MAP="fieldMap"; //field name to string value map
 	
 	private ColOpType type;
 	private int targetIdx;
@@ -40,7 +41,7 @@ public class ColOp {
 		this.exp = exp;
 	}
 	
-	public ColOp(String str){
+	public ColOp(String str, Map<String, Integer> attrMap){
 		String[] strs = str.split("\\|");
 		if (strs.length==2){
 			String op = strs[0];
@@ -62,7 +63,16 @@ public class ColOp {
 				}
 			}
 			if (ies.length>=1){
-				targetIdx = Integer.parseInt(ies[0]);
+				if (attrMap==null){
+					targetIdx = Integer.parseInt(ies[0]);
+				}else{
+					String targetAttr = ies[0];
+					if (attrMap.containsKey(targetAttr)){
+						targetIdx = attrMap.get(targetAttr);
+					}else{
+						logger.error(String.format("attrMap %s does not contains target %s", attrMap, targetAttr));
+					}
+				}
 			}
 		}else{
 			logger.error(String.format("expected format: op|idx:exp, %s", str));
@@ -71,7 +81,7 @@ public class ColOp {
 	
 	public List<String> process(Map<String, Object> vars){
 		List<String> items = new ArrayList<String>();
-		items.addAll(Arrays.asList((String[]) vars.get(VAR_NAME_fields)));
+		items.addAll(Arrays.asList((String[]) vars.get(VAR_NAME_FIELDS)));
 		if (type == ColOpType.update){
 			String val = ScriptEngineUtil.eval(expCS, vars);
 			if (val!=null){

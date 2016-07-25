@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -159,6 +160,46 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
 					testJsCallJavaFun();
+					return null;
+				}
+			});
+		}
+	}
+	
+	private void testDynTransFun() throws Exception {
+		try {
+			String remoteCfgFolder = "/etltest/csvdyntrans/cfg/";
+			String remoteCsvFolder = "/etltest/csvdyntrans/input/";
+			String remoteCsvOutputFolder = "/etltest/csvdyntrans/output/";
+			String csvtransProp = "csvtransdyn1.properties";
+			String csvFile = "csvtransdyn1_data.csv";
+			
+			//prepare schema
+			String schemaFolder = "/etltest/csvdyntrans/schema/";
+			String schemaFile = "dynschema_test1_schemas.txt";
+			getFs().delete(new Path(schemaFolder), true);
+			getFs().mkdirs(new Path(schemaFolder));
+			getFs().copyFromLocalFile(new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
+			
+			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, testCmdClass);
+			logger.info("Output is:"+output);
+			String row1 = output.get(0);
+			String[] row1fields = row1.split(",",-1);
+			assertTrue(row1fields.length==9);
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+	}
+	
+	@Test
+	public void testDynTrans() throws Exception {
+		if (getDefaultFS().contains("127.0.0.1")){
+			testDynTransFun();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					testDynTransFun();
 					return null;
 				}
 			});

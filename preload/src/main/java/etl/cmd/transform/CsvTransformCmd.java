@@ -12,13 +12,13 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
-import etl.engine.FileETLCmd;
+import etl.engine.DynaSchemaFileETLCmd;
 import etl.engine.MRMode;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 
-public class CsvTransformCmd extends FileETLCmd{
+public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 	public static final Logger logger = Logger.getLogger(CsvTransformCmd.class);
 	
 	public static final String cfgkey_skip_header="skip.header";
@@ -29,17 +29,32 @@ public class CsvTransformCmd extends FileETLCmd{
 	private boolean skipHeader=false;
 	private String rowValidation;
 	private boolean inputEndWithComma=false;
-	List<ColOp> colOpList = new ArrayList<ColOp>();
+	private List<ColOp> colOpList = new ArrayList<ColOp>();
+	
+	//
+	private List<String> tableAttrs = null;
+	private Map<String, Integer> nameIdxMap = null;
 	
 	public CsvTransformCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		skipHeader =pc.getBoolean(cfgkey_skip_header, false);
 		rowValidation = pc.getString(cfgkey_row_validation);
 		inputEndWithComma = pc.getBoolean(cfgkey_input_endwithcomma, false);
-		
+		//for dynamic trans
+		if (this.logicSchema!=null){
+			nameIdxMap = new HashMap<String, Integer>();
+			tableAttrs = logicSchema.getAttrNames(this.oldTable);
+			if (tableAttrs==null){
+				logger.error(String.format("table %s not exist or specified.", this.oldTable));
+			}else {
+				for (int i=0; i<tableAttrs.size(); i++){
+					nameIdxMap.put(tableAttrs.get(i), i);
+				}
+			}
+		}
 		String[] colops = pc.getStringArray(cfgkey_col_op);
 		for (String colop:colops){
-			ColOp co = new ColOp(colop);
+			ColOp co = new ColOp(colop, nameIdxMap);
 			colOpList.add(co);
 		}
 		this.setMrMode(MRMode.line);
@@ -60,6 +75,19 @@ public class CsvTransformCmd extends FileETLCmd{
 		List<String> items = new ArrayList<String>();
 		items.addAll(Arrays.asList(row.split(",")));
 		
+		//set the fieldsMap
+		Map<String, String> fieldMap = null;
+		if (nameIdxMap!=null){
+			fieldMap = new HashMap<String, String>();
+			for (int i=0; i<tableAttrs.size(); i++){
+				if (i<items.size()){
+					fieldMap.put(tableAttrs.get(i), items.get(i));
+				}else{
+					fieldMap.put(tableAttrs.get(i), "");
+				}
+			}
+		}
+		
 		//process input ends with comma
 		if (inputEndWithComma){//remove the last empty item since row ends with comma
 			items.remove(items.size()-1);
@@ -68,7 +96,7 @@ public class CsvTransformCmd extends FileETLCmd{
 		//process row validation
 		if (rowValidation!=null){
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put(ColOp.VAR_NAME_fields, items.toArray());
+			map.put(ColOp.VAR_NAME_FIELDS, items.toArray());
 			boolean valid = (Boolean) ScriptEngineUtil.eval(rowValidation, VarType.BOOLEAN, map);
 			if (!valid) {
 				logger.info("invalid row:" + row);
@@ -79,13 +107,14 @@ public class CsvTransformCmd extends FileETLCmd{
 		//process operation
 		Map<String, Object> vars = new HashMap<String, Object>();
 		String[] strItems = new String[items.size()];
-		vars.put(ColOp.VAR_NAME_fields, items.toArray(strItems));
+		vars.put(ColOp.VAR_NAME_FIELDS, items.toArray(strItems));
+		vars.put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
 		String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-		vars.put(var_name_filename, fileName);
+		vars.put(VAR_NAME_FILE_NAME, fileName);
 		for (ColOp co: colOpList){
 			items = co.process(vars);
 			strItems = new String[items.size()];
-			vars.put(ColOp.VAR_NAME_fields, items.toArray(strItems));
+			vars.put(ColOp.VAR_NAME_FIELDS, items.toArray(strItems));
 		}
 		output = Util.getCsv(Arrays.asList(strItems), false);
 		if (isAddFileName()){
