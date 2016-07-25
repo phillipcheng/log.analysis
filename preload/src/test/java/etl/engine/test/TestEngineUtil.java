@@ -50,7 +50,7 @@ public class TestEngineUtil {
 		Map<String, Object> vars = new HashMap<String, Object>();
 		String exp = "'/pde/loadcsv'";
 		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
-		assertTrue(exp.equals(output));
+		assertTrue("/pde/loadcsv".equals(output));
 		logger.info(output);
 	}
 	

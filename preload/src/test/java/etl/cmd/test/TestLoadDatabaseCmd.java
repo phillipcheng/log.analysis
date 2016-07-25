@@ -20,7 +20,7 @@ import etl.util.Util;
 
 public class TestLoadDatabaseCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestLoadDatabaseCmd.class);
-
+	
 	@Before
     public void setUp() {
 		setCfgProperties("testETLCmd_192.85.247.104.properties");
@@ -35,10 +35,6 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			String staticCfgName = "loadcsv1.properties";
 			String csvFolder = "/test/loaddata/csv/";
 			String csvFileName = "part-loaddatabase";
-			PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), dfsFolder + staticCfgName);
-			int linesInFile = 0;
-			String line = null;
-			List<String> numberOfRowsupdated;
 
 			getFs().delete(new Path(dfsFolder), true);
 			getFs().delete(new Path(csvFolder), true);
@@ -49,6 +45,12 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 
 			// run cmd
 			LoadDataCmd cmd = new LoadDataCmd("wfid1", dfsFolder + staticCfgName, null, getDefaultFS(),null);
+			
+			//assertion
+			PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), dfsFolder + staticCfgName);
+			int linesInFile = 0;
+			String line = null;
+			List<String> numberOfRowsupdated;
 			numberOfRowsupdated = cmd.sgProcess();
 			// fetch db data
 			List<String> dbData = DBUtil.checkCsv("select * from lsl_sample", pc, 0, 0, ",");
