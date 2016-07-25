@@ -1,5 +1,7 @@
 package etl.engine.test;
 
+import static org.junit.Assert.*;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +11,7 @@ import org.junit.Test;
 
 import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
+import etl.util.DateUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -41,6 +44,16 @@ public class TestEngineUtil {
 		EngineUtil.getInstance().sendLog(getETLLog());
 	}
 	
+	
+	@Test
+	public void testJsEngineConstant(){
+		Map<String, Object> vars = new HashMap<String, Object>();
+		String exp = "'/pde/loadcsv'";
+		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
+		assertTrue(exp.equals(output));
+		logger.info(output);
+	}
+	
 	@Test
 	public void testJsEngineInvokeJava(){
 		Map<String, Object> vars = new HashMap<String, Object>();
@@ -52,17 +65,6 @@ public class TestEngineUtil {
 	@Test
 	public void testJsEnginePassingMap(){
 		Map<String, Object> vars = new HashMap<String, Object>();
-		Map<String, String> fields = new HashMap<String, String>();
-		fields.put("abc", "abcValue");
-		vars.put("fields", fields);
-		String exp = "fields['abc'];";
-		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
-		logger.info(output);
-	}
-	
-	@Test
-	public void testJsEnginePassingMap2(){
-		Map<String, Object> vars = new HashMap<String, Object>();
 		Map<String, Object> dynCfgMap = new HashMap<String, Object>();
 		dynCfgMap.put("abcString", "abcValue");
 		String[] abcArray = new String[]{"abcArray1", "abcArray2"};
@@ -70,10 +72,16 @@ public class TestEngineUtil {
 		vars.put("dynCfgMap", dynCfgMap);
 		String exp = "dynCfgMap['abcString'];";
 		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
-		
+		assertTrue("abcValue".equals(output));
 		exp = "dynCfgMap['abcArray'][0];";
 		output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
-		
+		assertTrue("abcArray1".equals(output));
 		logger.info(output);
+	}
+	
+	@Test
+	public void testDayOfWeekYesterday(){
+		String str = DateUtil.getWeekOfDayForYesterday();
+		logger.info(str);
 	}
 }

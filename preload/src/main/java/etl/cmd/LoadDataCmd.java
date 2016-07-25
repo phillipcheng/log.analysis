@@ -7,28 +7,32 @@ import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.util.DBUtil;
+import etl.util.ScriptEngineUtil;
+import etl.util.VarType;
 
 public class LoadDataCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(LoadDataCmd.class);
 	
 	public static final String cfgkey_webhdfs="hdfs.webhdfs.root";
 	public static final String cfgkey_csvfolder = "csv.folder";
+	public static final String cfgkey_csvfile = "csv.file";
 	public static final String cfgkey_use_wfid = "use.wfid";
 	public static final String cfgkey_load_sql = "load.sql";
 	
 	private String webhdfsRoot;
 	private String userName;
 	private String csvFolder;
+	private String csvFile;
 	private boolean useWfid;
 	private String loadSql;
 	
 	public LoadDataCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
-		this.csvFolder = pc.getString(cfgkey_csvfolder);
+		this.csvFolder = pc.getString(cfgkey_csvfolder, null);
+		this.csvFile = pc.getString(cfgkey_csvfile, null);
 		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
 		this.userName = pc.getString(DBUtil.key_db_user);
-		this.csvFolder = pc.getString(cfgkey_csvfolder);
-		this.useWfid = pc.getBoolean(cfgkey_use_wfid);
+		this.useWfid = pc.getBoolean(cfgkey_use_wfid, false);
 		this.loadSql = pc.getString(cfgkey_load_sql);
 	}
 
@@ -37,10 +41,16 @@ public class LoadDataCmd extends ETLCmd{
 		List<String> logInfo = new ArrayList<String>();
 		List<String> copysqls = new ArrayList<String>();
 		String sql = null;
-		if (useWfid){
-			sql = String.format("%s SOURCE Hdfs(url='%s%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, wfid, userName);
+		if (csvFolder!=null){
+			if (useWfid){
+				sql = String.format("%s SOURCE Hdfs(url='%s%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, wfid, userName);
+			}else{
+				sql = String.format("%s SOURCE Hdfs(url='%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, userName);
+			}
 		}else{
-			sql = String.format("%s SOURCE Hdfs(url='%s%s/part-*',username='%s') delimiter ','", loadSql, webhdfsRoot, csvFolder, userName);
+			//use csvFile
+			String fileName = (String) ScriptEngineUtil.eval(csvFile, VarType.STRING, null);
+			sql = String.format("%s SOURCE Hdfs(url='%s%s',username='%s') delimiter ','", loadSql, webhdfsRoot, fileName, userName);
 		}
 		logger.info("sql:" + sql);
 		copysqls.add(sql);
