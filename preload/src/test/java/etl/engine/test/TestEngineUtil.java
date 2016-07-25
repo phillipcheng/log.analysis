@@ -59,4 +59,21 @@ public class TestEngineUtil {
 		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
 		logger.info(output);
 	}
+	
+	@Test
+	public void testJsEnginePassingMap2(){
+		Map<String, Object> vars = new HashMap<String, Object>();
+		Map<String, Object> dynCfgMap = new HashMap<String, Object>();
+		dynCfgMap.put("abcString", "abcValue");
+		String[] abcArray = new String[]{"abcArray1", "abcArray2"};
+		dynCfgMap.put("abcArray", abcArray);
+		vars.put("dynCfgMap", dynCfgMap);
+		String exp = "dynCfgMap['abcString'];";
+		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
+		
+		exp = "dynCfgMap['abcArray'][0];";
+		output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
+		
+		logger.info(output);
+	}
 }
