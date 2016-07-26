@@ -16,6 +16,8 @@ import org.apache.log4j.Logger;
 public class ScriptEngineUtil {
 	public static final Logger logger = Logger.getLogger(ScriptEngineUtil.class);
 	
+	public static String ListSeparator=",";
+	
 	private static ScriptEngineManager manager = new ScriptEngineManager();
 	
 	public static Object eval(String exp, VarType toType, Map<String,Object> variables){
@@ -54,6 +56,9 @@ public class ScriptEngineUtil {
 					return (String) ret;
 				}else if (ret instanceof Double){
 					return ((Double)ret).toString();
+				}else if (ret instanceof String[]){
+					String[] sa = (String[]) ret;
+					return String.join(ListSeparator, sa);
 				}else{
 					logger.error(String.format("unsupported type of eval ret: %s", ret.getClass()));
 				}
@@ -108,7 +113,11 @@ public class ScriptEngineUtil {
 						logger.error(String.format("expect a boolean result from exp:%s", exp));
 						return null;
 					}
-				}else{
+				}else if (ret instanceof String[]){
+					String[] sa = (String[]) ret;
+					return String.join(ListSeparator, sa);
+				}
+				else{
 					logger.error(String.format("unsupported type of eval ret: %s", ret.getClass()));
 				}
 			}

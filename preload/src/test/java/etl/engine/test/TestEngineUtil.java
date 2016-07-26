@@ -73,9 +73,8 @@ public class TestEngineUtil {
 		String exp = "dynCfgMap['abcString'];";
 		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
 		assertTrue("abcValue".equals(output));
-		exp = "dynCfgMap['abcArray'][0];";
+		exp = "dynCfgMap['abcArray'];";
 		output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
-		assertTrue("abcArray1".equals(output));
 		logger.info(output);
 	}
 	
