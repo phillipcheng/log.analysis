@@ -37,6 +37,12 @@ public abstract class ETLCmd {
 	private MRMode mrMode = MRMode.file;
 	private boolean sendLog = true;//command level send log flag
 	
+	//system variable map
+	public static final String VAR_DYNCFGMAP="dynCfgMap";
+	public static final String VAR_WFID="WFID";
+	private Map<String, Object> systemVariables = new HashMap<String, Object>();
+	
+	
 	public ETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
 		this.wfid = wfid;
 		this.dynCfgFile = dynCfg;
@@ -62,10 +68,16 @@ public abstract class ETLCmd {
 		}
 		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
 		this.otherArgs = otherArgs;
+		systemVariables.put(VAR_WFID, wfid);
+		systemVariables.put(VAR_DYNCFGMAP, dynCfgMap);
 	}
 	
 	public void saveDynCfg(){
 		Util.toDfsJsonFile(fs, dynCfgFile, dynCfgMap);
+	}
+	
+	public Map<String, Object> getSystemVariables(){
+		return systemVariables;
 	}
 	
 	/**
