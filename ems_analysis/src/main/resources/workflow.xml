@@ -112,7 +112,8 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="atterad">
     </action>
 	<action name="FsCmd">
 		<fs>
-		  <move source='${nameNode}/atterad/input/phxall4.csv' target='/atterad/input2/phxall4.csv'/>
+		  <move source='${nameNode}/atterad/input/all.csv' target='/atterad/input2/all.csv'/>
+          <move source='${nameNode}/atterad/input/phxall4.csv' target='/atterad/input2/phxall4.csv'/>
 		  <move source='${nameNode}/atterad/input/phxall5.csv' target='/atterad/input2/phxall5.csv'/>
 		</fs>
 		<ok to="CsvTransform2"/>

@@ -12,11 +12,14 @@ public class TelecomUtil {
 	public static String processE164(String value){
 		//append country code
 		String output ="";
-		String cc = ccMap.getCode(value);
-		if (cc!=null){
-			output+=cc;
-		}else{
-			logger.error(String.format("country code not found for %s", value));
+		String cc = null;
+		if (value!=null && !"".equals(value.trim())){
+			cc = ccMap.getCode(value);
+			if (cc!=null){
+				output+=cc;
+			}else{
+				logger.error(String.format("country code not found for %s", value));
+			}
 		}
 		output+=",";
 		//append nanpa code
@@ -39,13 +42,14 @@ public class TelecomUtil {
 	}
 	
 	public static String processGTAddress(String value){
-		//append country code
 		String output ="";
-		String cc = ccMap.getCode(value);
-		if (cc!=null){
-			output+=cc;
-		}else{
-			logger.error(String.format("country code not found for %s", value));
+		if (value!=null && !"".equals(value.trim())){
+			String cc = ccMap.getCode(value);
+			if (cc!=null){
+				output+=cc;
+			}else{
+				logger.error(String.format("country code not found for %s", value));
+			}
 		}
 		return output;
 	}
