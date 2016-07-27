@@ -77,7 +77,6 @@ public class BackupCmd extends ETLCmd{
 	 */
 	public int zipFolder(String dirpath ,String fileFilter) {
 		try {	
-			
 			String exp=fileFilter;
 			Object output =ScriptEngineUtil.eval(exp, VarType.OBJECT, vars);
 			if(output instanceof ArrayList) 

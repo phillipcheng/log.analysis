@@ -32,10 +32,8 @@ public class TestBackupCmd extends TestETLCmd{
 
 	public static final Logger logger = Logger.getLogger(TestBackupCmd.class);
 	private ZipFile zipFile;
-
 	private void test1Fun() throws Exception{
 		try {
-			//
 			String dynFolder = "/test/BackupCmd/data/dynFolder1/";
 			String allFolder = "/test/BackupCmd/data/allFolder1/";
 			String wfidFolder = "/test/BackupCmd/data/wfidFolder1/";
