@@ -75,7 +75,8 @@ public class TestBackupCmd extends TestETLCmd{
 			//add the local conf file to dfs
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfgName), new Path(dfsCfgFolder + dynCfgName));
-  
+			
+		
 			//run cmd
 			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, getDefaultFS(), null);
 			cmd.sgProcess();
@@ -98,10 +99,8 @@ public class TestBackupCmd extends TestETLCmd{
 			flist = Util.listDfsFile(getFs(), historyFolder);
 			assertTrue(flist.contains(ZipFileName));
 			//Check the number of files in Zip matches 7 
-		    getFs().copyToLocalFile(new Path(historyFolder+ZipFileName), new Path(getLocalFolder()));
-		    zipFile = new ZipFile(getLocalFolder()+ZipFileName);
-		    assertTrue(zipFile.size()==7);
-		    new File(getLocalFolder()+ZipFileName).delete();		    
+			int filecount=Util.getZipFileCount(getFs(),historyFolder+ZipFileName);
+			assertTrue(filecount==7);
 			} catch (Exception e) {
 			logger.error("Exception occured ", e);
 		}
