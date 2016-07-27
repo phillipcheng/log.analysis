@@ -428,17 +428,17 @@ public class Util {
 	}
 	
 	public static int getZipFileCount(FileSystem fs,final String zipFile)
-	        throws IOException {
-		        int filecount=0;
-		        Path inputPath=new Path(zipFile);
-				FSDataInputStream inos=fs.open(inputPath);
-				ZipInputStream	zin=new ZipInputStream(inos);
-				ZipEntry entry;
-		        while ((entry = zin.getNextEntry()) != null) {
-				filecount=filecount+1;
-				}
-		        zin.closeEntry();
-		        zin.close();
-		        return filecount;
+			throws IOException {
+		int filecount=0;
+		Path inputPath=new Path(zipFile);
+		FSDataInputStream inos=fs.open(inputPath);
+		ZipInputStream	zin=new ZipInputStream(inos);
+		ZipEntry entry;
+		while ((entry = zin.getNextEntry()) != null) {
+			filecount=filecount+1;
+		}
+		zin.closeEntry();
+		zin.close();
+		return filecount;
 	}
 }

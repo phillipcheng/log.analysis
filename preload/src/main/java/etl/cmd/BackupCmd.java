@@ -79,13 +79,22 @@ public class BackupCmd extends ETLCmd{
 		try {	
 			String exp=fileFilter;
 			Object output =ScriptEngineUtil.eval(exp, VarType.OBJECT, vars);
-			if(output instanceof ArrayList) 
-			{
+			if(output instanceof ArrayList)
+			{  
 				ArrayList<String> out=(ArrayList<String>)output;
 				for (String regexp:out) {
 					fileNames=filterFiles(regexp, dirpath);
 					zipFiles(dirpath, fileNames);
 				} 
+			}
+			// Generic for type String[] 
+			if(output instanceof String[]) 
+			{
+				String[] regexp=(String[])output;
+				for (int i = 0; i < regexp.length; i++) {
+					fileNames=filterFiles(regexp[i], dirpath);
+					zipFiles(dirpath, fileNames);
+				}	
 			}
 			if(output instanceof String)
 			{

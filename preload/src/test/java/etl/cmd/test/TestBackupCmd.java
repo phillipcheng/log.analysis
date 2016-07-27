@@ -80,7 +80,7 @@ public class TestBackupCmd extends TestETLCmd{
 			//run cmd
 			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, getDefaultFS(), null);
 			cmd.sgProcess();
-
+ 
 			//check results
 			//dynFolder should only contains 1 file
 			List<String> flist;
