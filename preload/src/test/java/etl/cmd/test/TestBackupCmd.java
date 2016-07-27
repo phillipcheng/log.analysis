@@ -97,7 +97,7 @@ public class TestBackupCmd extends TestETLCmd{
 			String ZipFileName=wfid+".zip";
 			flist = Util.listDfsFile(getFs(), historyFolder);
 			assertTrue(flist.contains(ZipFileName));
-			//Check the number of files in Zip matches 7
+			//Check the number of files in Zip matches 7 
 		    getFs().copyToLocalFile(new Path(historyFolder+ZipFileName), new Path(getLocalFolder()));
 		    zipFile = new ZipFile(getLocalFolder()+ZipFileName);
 		    assertTrue(zipFile.size()==7);
