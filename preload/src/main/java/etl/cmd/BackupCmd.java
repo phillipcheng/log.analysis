@@ -136,7 +136,7 @@ public class BackupCmd extends ETLCmd{
 					zipFiles(dirLocation,directoryFiles);
 					fs.delete(pathDir,false);
 					continue;
-				}
+				} 
 				// add the file to zip
 				logger.info("Adding file "+fileName); 
 				ZipEntry ze= new ZipEntry(fileName);
