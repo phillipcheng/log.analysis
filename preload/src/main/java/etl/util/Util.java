@@ -16,15 +16,19 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -421,5 +425,20 @@ public class Util {
 			logger.error("", e);
 		}
 		return output;
+	}
+	
+	public static int getZipFileCount(FileSystem fs,final String zipFile)
+			throws IOException {
+		int filecount=0;
+		Path inputPath=new Path(zipFile);
+		FSDataInputStream inos=fs.open(inputPath);
+		ZipInputStream	zin=new ZipInputStream(inos);
+		ZipEntry entry;
+		while ((entry = zin.getNextEntry()) != null) {
+			filecount=filecount+1;
+		}
+		zin.closeEntry();
+		zin.close();
+		return filecount;
 	}
 }

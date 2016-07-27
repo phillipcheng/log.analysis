@@ -2,13 +2,25 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipFile;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 import etl.cmd.BackupCmd;
@@ -19,10 +31,9 @@ import org.apache.log4j.Logger;
 public class TestBackupCmd extends TestETLCmd{
 
 	public static final Logger logger = Logger.getLogger(TestBackupCmd.class);
-
+	private ZipFile zipFile;
 	private void test1Fun() throws Exception{
 		try {
-			//
 			String dynFolder = "/test/BackupCmd/data/dynFolder1/";
 			String allFolder = "/test/BackupCmd/data/allFolder1/";
 			String wfidFolder = "/test/BackupCmd/data/wfidFolder1/";
@@ -35,7 +46,7 @@ public class TestBackupCmd extends TestETLCmd{
 
 			String[] dynFiles = new String[]{"dynCfgFile1", "dynCfgFile2", "dynCfgFile3"};
 			String[] allFiles = new String[]{"all1", "all2"};
-			String[] wfidFiles = new String[]{wfid+"a", wfid+"b", "a"};
+			String[] wfidFiles = new String[]{wfid+"/a", wfid+"/b", "a",wfid+"abcd"};
 
 			String localFile = "backup_test1_data";
 			//values should be in the configuration file
@@ -45,6 +56,7 @@ public class TestBackupCmd extends TestETLCmd{
 			getFs().delete(new Path(dynFolder), true);
 			getFs().delete(new Path(allFolder), true);
 			getFs().delete(new Path(wfidFolder), true);
+			
 			for (String dynFile: dynFiles){
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(dynFolder + dynFile));
 			}
@@ -63,11 +75,12 @@ public class TestBackupCmd extends TestETLCmd{
 			//add the local conf file to dfs
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfgName), new Path(dfsCfgFolder + dynCfgName));
-
+			
+		
 			//run cmd
 			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, getDefaultFS(), null);
 			cmd.sgProcess();
-
+ 
 			//check results
 			//dynFolder should only contains 1 file
 			List<String> flist;
@@ -82,9 +95,13 @@ public class TestBackupCmd extends TestETLCmd{
 			assertTrue(flist.size()==1);
 			assertTrue(flist.contains("a"));
 			//check the zip file
+			String ZipFileName=wfid+".zip";
 			flist = Util.listDfsFile(getFs(), historyFolder);
-			assertTrue(flist.contains(wfid+".zip"));
-		} catch (Exception e) {
+			assertTrue(flist.contains(ZipFileName));
+			//Check the number of files in Zip matches 7 
+			int filecount=Util.getZipFileCount(getFs(),historyFolder+ZipFileName);
+			assertTrue(filecount==7);
+			} catch (Exception e) {
 			logger.error("Exception occured ", e);
 		}
 	}
