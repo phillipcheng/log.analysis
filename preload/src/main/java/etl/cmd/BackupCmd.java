@@ -1,9 +1,14 @@
 package etl.cmd;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -11,26 +16,29 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
+import org.apache.hadoop.fs.PathFilter;
 
 import etl.engine.ETLCmd;
+import etl.util.ScriptEngineUtil;
+import etl.util.VarType;
 
 public class BackupCmd extends ETLCmd{
 	public static final Logger logger = Logger.getLogger(BackupCmd.class);
 
 	public static final String cfgkey_data_history_folder="data-history-folder";
-	public static final String cfgkey_Folder_filter="folder.filter";
+	public static final String cfgkey_Folder_filter="file.folder";
 	public static final String cfgkey_file_filter="file.filter";
-	public static final String dynCfg_Key_WFID_FILTER="WFID";
-	public static final String dynCfg_Key_ALL_FILTER="ALL";
 
 	private String dataHistoryFolder;
 	private String[] fileFolders;
 	private String[] fileFilters;
 	private String destZipFile;
 	private ZipOutputStream zos;
-
+	private Map<String, Object> vars = new HashMap<String, Object>();
+	private List<String> fileNames = new ArrayList<String>();
 	public BackupCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+		vars=super.getSystemVariables();
 		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
 		this.fileFolders = pc.getStringArray(cfgkey_Folder_filter);
 		this.fileFilters = pc.getStringArray(cfgkey_file_filter);
@@ -68,28 +76,24 @@ public class BackupCmd extends ETLCmd{
 	 * @return number of files zipped
 	 */
 	public int zipFolder(String dirpath ,String fileFilter) {
-		try {
-			List<String> fileNames = new ArrayList<String>();
-			if (dynCfg_Key_WFID_FILTER.equals(fileFilter) || dynCfg_Key_ALL_FILTER.equals(fileFilter)){
-				Path inputPath = new Path(dirpath);
-				FileStatus[] status = fs.listStatus(inputPath);
-				for (int i=0;i<status.length;i++){
-					Path path =status[i].getPath();
-					if(status[i].isFile()){
-						String fileName=path.getName();
-						if((fileFilter.equals(dynCfg_Key_WFID_FILTER))){
-							if(fileName.startsWith(wfid)){
-								fileNames.add(fileName);
-							}
-						}else{
-							fileNames.add(fileName);
-						}
-					}
-				}
-			}else{
-				fileNames = (List<String>) dynCfgMap.get(fileFilter);
+		try {	
+			
+			String exp=fileFilter;
+			Object output =ScriptEngineUtil.eval(exp, VarType.OBJECT, vars);
+			if(output instanceof ArrayList) 
+			{
+				ArrayList<String> out=(ArrayList<String>)output;
+				for (String regexp:out) {
+					fileNames=filterFiles(regexp, dirpath);
+					zipFiles(dirpath, fileNames);
+				} 
 			}
-			zipFiles(dirpath, fileNames);
+			if(output instanceof String)
+			{
+				String regexp=(String)output;
+				fileNames=filterFiles(regexp, dirpath);
+				zipFiles(dirpath, fileNames);
+			}
 			return fileNames.size();
 		} catch (Exception e) {
 			logger.error(" ", e);
@@ -97,10 +101,44 @@ public class BackupCmd extends ETLCmd{
 		return 0;
 	}
 
+    //filters and gets file list
+	public List<String> filterFiles(final String exp,String dirpath) throws FileNotFoundException, IOException
+	{   
+		List<String> fileNameList = new ArrayList<String>();
+		PathFilter PATH_FILTER = new PathFilter() { 
+			public boolean accept(Path path) { 
+				Pattern pattern = Pattern.compile(exp);
+				Matcher m = pattern.matcher(path.getName());
+				return m.matches();
+			}      
+		}; 
+		Path inputPath = new Path(dirpath);
+		FileStatus[] status = fs.listStatus(inputPath, PATH_FILTER);
+		for (int i = 0; i < status.length; i++) {
+			fileNameList.add(status[i].getPath().getName());
+		}
+		return fileNameList;
+	}
+	
 	//Zips the files followed by remove
 	public void zipFiles(String dirpath, List<String> fileNames){
 		try {
+			List<String> directoryFiles=new ArrayList<String>();
 			for (String fileName:fileNames){
+				// check for subfiles
+				String dirLocation=dirpath+ File.separator + fileName;
+				Path pathDir = new Path(dirLocation);
+				FileStatus fstatus = fs.getFileStatus(pathDir);
+				if(fstatus.isDirectory()){
+					FileStatus[] listStatus = fs.listStatus(pathDir);
+					for (FileStatus stat: listStatus) {
+						directoryFiles.add(stat.getPath().getName());
+					}
+					zipFiles(dirLocation,directoryFiles);
+					fs.delete(pathDir,false);
+					continue;
+				}
+				// add the file to zip
 				logger.info("Adding file "+fileName); 
 				ZipEntry ze= new ZipEntry(fileName);
 				zos.putNextEntry(ze);
