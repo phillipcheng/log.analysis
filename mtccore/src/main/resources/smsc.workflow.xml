@@ -5,6 +5,50 @@ uri:oozie:shell-action:0.3
 C:\Java\oozie\shell-action-0.3.xsd
 uri:oozie:ssh-action:0.2
 C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
-	<start to="end"/>
+	<start to="SftpGetRawFiles"/>
+	<kill name="fail">
+        <message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+	<action name="SftpGetRawFiles">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>etl.engine.ETLCmdMain</main-class>
+			<arg>etl.cmd.SftpCmd</arg>
+			<arg>${wf:id()}</arg>
+			<arg>/mtccore/etlcfg/smsc_sftp.properties</arg>
+			<arg>unused</arg>
+			<capture-output/>
+		</java>
+		<ok to="loadDataCmd"/>
+		<error to="fail"/>
+	</action>
+	<action name="loadDataCmd">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>etl.engine.ETLCmdMain</main-class>
+			<arg>etl.cmd.LoadDataCmd</arg>
+			<arg>${wf:id()}</arg>
+			<arg>/mtccore/etlcfg/smsc_loaddata.properties</arg>
+			<arg>unused</arg>
+			<capture-output/>
+		</java>
+		<ok to="BackupData"/>
+		<error to="fail"/>
+	</action>
+	<action name="BackupData">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>etl.engine.ETLCmdMain</main-class>
+			<arg>etl.cmd.BackupCmd</arg>
+			<arg>${wf:id()}</arg>
+			<arg>/mtccore/etlcfg/smsc_backup.properties</arg>
+			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
+		</java>
+		<ok to="end"/>
+		<error to="fail"/>
+	</action>
 	<end name="end"/>
 </workflow-app>
