@@ -50,7 +50,7 @@ public class LoadDataCmd extends ETLCmd{
 				}
 			}else{
 				//use csvFile
-				String fileName = (String) ScriptEngineUtil.eval(csvFile[i], VarType.STRING, null);
+				String fileName = (String) ScriptEngineUtil.eval(csvFile[i], VarType.STRING, super.getSystemVariables());
 				sql = String.format("%s SOURCE Hdfs(url='%s%s',username='%s') delimiter ','", loadSql[i], webhdfsRoot, fileName, userName);
 			}
 			logger.info("sql:" + sql);

@@ -24,7 +24,9 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
+import etl.util.ScriptEngineUtil;
 import etl.util.Util;
+import etl.util.VarType;
 
 public class SftpCmd extends ETLCmd {
 	public static final Logger logger = Logger.getLogger(SftpCmd.class);
@@ -35,6 +37,7 @@ public class SftpCmd extends ETLCmd {
 	public static final String cfgkey_sftp_user = "sftp.user";
 	public static final String cfgkey_sftp_pass = "sftp.pass";
 	public static final String cfgkey_sftp_folder = "sftp.folder";
+	public static final String cfgkey_file_filter="file.filter";
 	public static final String cfgkey_sftp_get_retry = "sftp.getRetryTimes";
 	public static final String cfgkey_sftp_get_retry_wait = "sftp.getRetryWait";
 	public static final String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
@@ -47,6 +50,7 @@ public class SftpCmd extends ETLCmd {
 	private String user;
 	private String pass;
 	private String fromDir;
+	private String fileFilter = "*";
 	private int sftpGetRetryCount;
 	private int sftpGetRetryWait;
 	private int sftpConnectRetryCount;
@@ -55,12 +59,19 @@ public class SftpCmd extends ETLCmd {
 
 	public SftpCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
-		this.incomingFolder = pc.getString(cfgkey_incoming_folder);
+		String incomingFolderExp = pc.getString(cfgkey_incoming_folder, null);
+		if (incomingFolderExp!=null){
+			this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
+		}
 		this.host = pc.getString(cfgkey_sftp_host);
 		this.port = pc.getInt(cfgkey_sftp_port);
 		this.user = pc.getString(cfgkey_sftp_user);
 		this.pass = pc.getString(cfgkey_sftp_pass);
 		this.fromDir = pc.getString(cfgkey_sftp_folder);
+		String fileFilterExp = pc.getString(cfgkey_file_filter, null);
+		if (fileFilterExp!=null){
+			this.fileFilter = (String) ScriptEngineUtil.eval(fileFilterExp, VarType.STRING, super.getSystemVariables());
+		}
 		this.sftpGetRetryCount = pc.getInt(cfgkey_sftp_get_retry);
 		this.sftpGetRetryWait =  pc.getInt(cfgkey_sftp_get_retry_wait, 10000);//
 		this.sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
@@ -104,15 +115,15 @@ public class SftpCmd extends ETLCmd {
 			}
 
 			channel.connect();
+			logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
 			sftpChannel = (ChannelSftp) channel;
-			logger.info("From Dir:" + fromDir);
 			sftpChannel.cd(fromDir);
-			Vector<LsEntry> v = sftpChannel.ls("*");
+			Vector<LsEntry> v = sftpChannel.ls(fileFilter);
 			int fileNumberTransfer=0;
 			for (LsEntry entry : v) {
 				String srcFile = fromDir + entry.getFilename();
 				String destFile = incomingFolder + entry.getFilename();
-				logger.info(String.format("get file from %s to %s", srcFile, destFile));
+				logger.info(String.format("put file to %s from %s", destFile, srcFile));
 				fileNumberTransfer++;
 				getRetryCntTemp = 1;// reset the count to 1 for every file
 				while (getRetryCntTemp <= sftpGetRetryCount) {
@@ -179,6 +190,12 @@ public class SftpCmd extends ETLCmd {
 		if (pm.containsKey(cfgkey_sftp_folder)) {
 			this.fromDir = pm.get(cfgkey_sftp_folder);
 		}
+		if (pm.containsKey(cfgkey_file_filter)) {
+			String fileFilterExp = pm.get(cfgkey_file_filter);
+			if (fileFilterExp!=null){
+				this.fileFilter = (String) ScriptEngineUtil.eval(fileFilterExp, VarType.STRING, super.getSystemVariables());
+			}
+		}
 		if (pm.containsKey(cfgkey_sftp_get_retry)) {
 			this.sftpGetRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_get_retry));
 		}
@@ -189,7 +206,10 @@ public class SftpCmd extends ETLCmd {
 			sftpClean = new Boolean(pm.get(cfgkey_sftp_clean));
 		}
 		if (pm.containsKey(cfgkey_incoming_folder)) {
-			incomingFolder = pm.get(cfgkey_incoming_folder);
+			String incomingFolderExp = pm.get(cfgkey_incoming_folder);
+			if (incomingFolderExp!=null){
+				this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
+			}
 		}
 		
 		Map<String, Object> retMap = new HashMap<String, Object>();

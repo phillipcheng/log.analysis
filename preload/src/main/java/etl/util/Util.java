@@ -240,12 +240,6 @@ public class Util {
     	}
 	}
 	
-	public static void deleteFiles(String folder, List<String> fileNames) throws IOException {
-		for (String fileName : fileNames){
-			File file = new File(folder + fileName);
-			file.delete();
-		}
-	}
 	
 	public static void writeFile(String fileName, List<String> contents){
 		BufferedWriter osw = null;
