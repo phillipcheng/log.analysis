@@ -32,8 +32,8 @@ public class DynSqlExecutorCmd extends ETLCmd{
 		this.logicSchema = (LogicSchema) Util.fromDfsJsonFile(fs, schemaFileName, LogicSchema.class);
 	}
 	
-	private String getOutputDataFileNameWithoutFolder(String tableName, String wfid){
-		return wfid + "_" + tableName + ".csv";
+	public String getOutputDataFileName(String tableName){
+		return csvFolder + wfid + "/" + tableName;
 	}
 	
 	@Override
@@ -47,14 +47,11 @@ public class DynSqlExecutorCmd extends ETLCmd{
 		}
 		//2. load csv files
 		List<String> tablesUsed = (List<String>) dynCfgMap.get(DynSchemaCmd.dynCfg_Key_TABLES_USED);
-		List<String> csvFiles = new ArrayList<String>();
 		List<String> copysqls = new ArrayList<String>();
 		for (String tn: tablesUsed){
 			List<String> fieldNameList = new ArrayList<String>();
 			fieldNameList.addAll(logicSchema.getAttrNames(tn));
-			csvFiles.add(getOutputDataFileNameWithoutFolder(tn, wfid));
-			String csvFileName = getOutputDataFileNameWithoutFolder(tn, wfid);
-			String copySql = DBUtil.genCopyHdfsSql(fieldNameList, tn, prefix, webhdfsRoot, csvFolder + csvFileName, userName);
+			String copySql = DBUtil.genCopyHdfsSql(fieldNameList, tn, prefix, webhdfsRoot, getOutputDataFileName(tn), userName);
 			copysqls.add(copySql);
 		}
 		int rowsUpdated = DBUtil.executeSqls(copysqls, pc);

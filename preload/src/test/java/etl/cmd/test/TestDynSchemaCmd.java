@@ -18,8 +18,12 @@ public class TestDynSchemaCmd extends TestETLCmd{
 
 	public static final Logger logger = Logger.getLogger(TestDynSchemaCmd.class);
 
+	public String getResourceSubFolder(){
+		return "dynschema/";
+	}
+	
 	private void test1Fun() throws Exception{
-			try {
+		try {
 			//
 			String inputFolder = "/test/dynschemacmd/input/";
 			String outputFolder = "/test/dynschemacmd/output/";

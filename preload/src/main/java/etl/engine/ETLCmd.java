@@ -22,7 +22,8 @@ public abstract class ETLCmd {
 	public static final String RESULT_KEY_LOG="log";
 	public static final String RESULT_KEY_OUTPUT="lineoutput";
 	public static final String RESULT_KEY_OUTPUT_MAP="mapoutput";
-	
+
+	public static final String SINGLE_TABLE="single.table";
 	
 	protected String wfid;
 	protected FileSystem fs;
@@ -101,9 +102,9 @@ public abstract class ETLCmd {
 	}
 	
 	/**
-	 * @return combined value
+	 * @return newKey, newValue, baseOutputPath
 	 */
-	public String reduceProcess(Text key, Iterable<Text> values){
+	public String[] reduceProcess(Text key, Iterable<Text> values){
 		logger.error("empty reduce impl, should not be invoked.");
 		return null;
 	}

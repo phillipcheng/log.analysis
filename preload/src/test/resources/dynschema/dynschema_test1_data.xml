@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="MeasDataCollection.xsl"?>
+<measCollecFile xmlns="http://www.3gpp.org/ftp/specs/latest/rel-5/32_series/32401-540.zip#measCollec">
+	<fileHeader fileFormatVersion="32.401 V5.0" vendorName="Alcatel-Lucent" dnPrefix="">
+		<fileSender localDn="SubNetwork=vQDSD0101SGS-L-AL-20,ManagedElement=lcp-1" elementType="GmscServer,Vlr"/>
+		<measCollec beginTime="2016-03-09T07:45:00+00:00"/>
+	</fileHeader>
+	<measData>
+		<managedElement localDn="SubNetwork=vQDSD0101SGS-L-AL-20,ManagedElement=lcp-1" userLabel="" swVersion="R33.11.00"/>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-03-09T07:50:00+00:00"/>
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CDR-01, UUID=a040d711-7ec2-4a5c-be90-6c7f82a3fe21, MyCore=0">
+				<r p="1">2.59</r>
+				<r p="2">9.13</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CDR-01, UUID=a040d711-7ec2-4a5c-be90-6c7f82a3fe21, MyCore=1">
+				<r p="1">2.26</r>
+				<r p="2">8.83</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-OAM-01, UUID=99731b69-5f6c-44ba-a473-56aa895018b7, MyCore=0">
+				<r p="1">28.17</r>
+				<r p="2">67.08</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-OAM-01, UUID=99731b69-5f6c-44ba-a473-56aa895018b7, MyCore=1">
+				<r p="1">27.84</r>
+				<r p="2">65.87</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-VLR-01, UUID=bf32b23c-dc6a-4179-be61-e9cc5126c357, MyCore=0">
+				<r p="1">4.76</r>
+				<r p="2">6.38</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-VLR-01, UUID=bf32b23c-dc6a-4179-be61-e9cc5126c357, MyCore=1">
+				<r p="1">5.83</r>
+				<r p="2">8.23</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-VLR-03, UUID=1a029bf9-09ae-4438-b230-5b8955f06e8b, MyCore=0">
+				<r p="1">4.71</r>
+				<r p="2">6.42</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-VLR-03, UUID=1a029bf9-09ae-4438-b230-5b8955f06e8b, MyCore=1">
+				<r p="1">5.33</r>
+				<r p="2">8.27</r>
+			</measValue>
+		</measInfo>
+	</measData>
+	<fileFooter>
+		<measCollec endTime="2016-03-09T07:50:00+00:00"/>
+	</fileFooter>
+</measCollecFile>

@@ -11,14 +11,17 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.dynschema.LogicSchema;
-import etl.cmd.transform.CsvAggrSchemaUpdateCmd;
-import etl.cmd.transform.CsvTransSchemaUpdateCmd;
+import etl.cmd.transform.CsvTransformCmd;
 import etl.util.Util;
 
 public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestCsvTransSchemaUpdateCmd.class);
 	public static final String testCmdClass = "etl.cmd.transform.CsvTransSchemaUpdateCmd";
 
+	public String getResourceSubFolder(){
+		return "csvtrans/";
+	}
+	
 	private void test1Fun() throws Exception {
 		try {
 			//
@@ -40,12 +43,12 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransSchemaUpdateCmd cmd = new CsvTransSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
+			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
 			cmd.sgProcess();
 			
 			//assertion
 			LogicSchema ls = (LogicSchema) Util.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
-			String tableName = cmd.getPc().getString(CsvAggrSchemaUpdateCmd.cfgkey_old_table);
+			String tableName = "MyCore_";
 			assertTrue(ls.hasTable(tableName));
 			List<String> attrs = ls.getAttrNames(tableName);
 			assertTrue(attrs.contains("aveActiveSubsNum"));
@@ -94,7 +97,7 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransSchemaUpdateCmd cmd = new CsvTransSchemaUpdateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
+			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
 			cmd.sgProcess();
 			
 		} catch (Exception e) {

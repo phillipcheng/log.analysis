@@ -12,6 +12,7 @@ public abstract class FileETLCmd extends ETLCmd{
 	public static final String cfgkey_exp_filename="exp.filename";//filename extraction expression
 	
 	public static final String VAR_NAME_FILE_NAME="filename";
+	public static final String KEY_SEP = ",";
 	
 	private boolean addFileName = false;
 	private String expFileName = null;

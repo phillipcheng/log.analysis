@@ -2,25 +2,12 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipFile;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 import etl.cmd.BackupCmd;
@@ -31,7 +18,11 @@ import org.apache.log4j.Logger;
 public class TestBackupCmd extends TestETLCmd{
 
 	public static final Logger logger = Logger.getLogger(TestBackupCmd.class);
-	private ZipFile zipFile;
+	
+	public String getResourceSubFolder(){
+		return "backup/";
+	}
+	
 	private void test1Fun() throws Exception{
 		try {
 			String dynFolder = "/test/BackupCmd/data/dynFolder1/";
@@ -46,7 +37,7 @@ public class TestBackupCmd extends TestETLCmd{
 
 			String[] dynFiles = new String[]{"dynCfgFile1", "dynCfgFile2", "dynCfgFile3"};
 			String[] allFiles = new String[]{"all1", "all2"};
-			String[] wfidFiles = new String[]{wfid+"/a", wfid+"/b", "a",wfid+"abcd"};
+			String[] wfidFiles = new String[]{wfid+"/a", wfid+"/b", "a", wfid+"abcd"};
 
 			String localFile = "backup_test1_data";
 			//values should be in the configuration file
@@ -79,8 +70,10 @@ public class TestBackupCmd extends TestETLCmd{
 		
 			//run cmd
 			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, getDefaultFS(), null);
-			cmd.sgProcess();
- 
+			List<String> info = cmd.sgProcess();
+			int numFiles = Integer.parseInt(info.get(0));
+			logger.info(String.format("%d files backedup", numFiles));
+			assertTrue(numFiles==5);
 			//check results
 			//dynFolder should only contains 1 file
 			List<String> flist;
@@ -90,17 +83,13 @@ public class TestBackupCmd extends TestETLCmd{
 			//allFolder should be empty
 			flist = Util.listDfsFile(getFs(), allFolder);
 			assertTrue(flist.size()==0);
-			//wfidFolder should have only 1 file
-			flist = Util.listDfsFile(getFs(), wfidFolder);
-			assertTrue(flist.size()==1);
-			assertTrue(flist.contains("a"));
 			//check the zip file
 			String ZipFileName=wfid+".zip";
 			flist = Util.listDfsFile(getFs(), historyFolder);
 			assertTrue(flist.contains(ZipFileName));
-			//Check the number of files in Zip matches 7 
+			//Check the number of files in Zip matches 5
 			int filecount=Util.getZipFileCount(getFs(),historyFolder+ZipFileName);
-			assertTrue(filecount==7);
+			assertTrue(filecount==5);
 			} catch (Exception e) {
 			logger.error("Exception occured ", e);
 		}

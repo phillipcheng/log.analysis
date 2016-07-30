@@ -193,8 +193,13 @@ public class TestETLCmd {
     	}
 	}
 
+	//override by sub test cases
+	public String getResourceSubFolder(){
+		return "";
+	}
+	
 	public String getLocalFolder() {
-		return localFolder;
+		return localFolder + getResourceSubFolder();
 	}
 
 	public FileSystem getFs() {

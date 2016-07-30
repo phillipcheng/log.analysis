@@ -1,0 +1,1570 @@
+==================================================================================================================================================================================
+[LocationUpdateIdx - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', MME_PoolType_vlr_.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_vlr_.Machine AS none_machine_nk,
+  MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_vlr_.succInterVLRLocationUpdates) AS temp_calculation_3690608170156703__1553590775__0_,
+  SUM(MME_PoolType_vlr_.attInterVLRLocationUpdates) AS temp_calculation_3690608170156703__3261860710__0_,
+  SUM((MME_PoolType_vlr_.attInterVLRLocationUpdates + MME_PoolType_vlr_.attIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__2922826460__0_,
+  SUM((MME_PoolType_vlr_.succInterVLRLocationUpdates + MME_PoolType_vlr_.succIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__4151261507__0_,
+  SUM(MME_PoolType_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__2157046801__0_,
+  SUM(MME_PoolType_vlr_.succIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__3064694352__0_
+FROM sgsiwf.MME_PoolType_vlr_ MME_PoolType_vlr_
+WHERE ((MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[LocationUpdateIdx - Year]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(MME_PoolType_vlr_.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_vlr_.Machine AS none_machine_nk,
+  MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_vlr_.succInterVLRLocationUpdates) AS temp_calculation_3690608170156703__1553590775__0_,
+  SUM(MME_PoolType_vlr_.attInterVLRLocationUpdates) AS temp_calculation_3690608170156703__3261860710__0_,
+  SUM((MME_PoolType_vlr_.attInterVLRLocationUpdates + MME_PoolType_vlr_.attIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__2922826460__0_,
+  SUM((MME_PoolType_vlr_.succInterVLRLocationUpdates + MME_PoolType_vlr_.succIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__4151261507__0_,
+  SUM(MME_PoolType_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__2157046801__0_,
+  SUM(MME_PoolType_vlr_.succIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__3064694352__0_
+FROM sgsiwf.MME_PoolType_vlr_ MME_PoolType_vlr_
+WHERE ((MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[LocationUpdateIdx - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', MME_PoolType_vlr_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_vlr_.Machine AS none_machine_nk,
+  MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_vlr_.succInterVLRLocationUpdates) AS temp_calculation_3690608170156703__1553590775__0_,
+  SUM(MME_PoolType_vlr_.attInterVLRLocationUpdates) AS temp_calculation_3690608170156703__3261860710__0_,
+  SUM((MME_PoolType_vlr_.attInterVLRLocationUpdates + MME_PoolType_vlr_.attIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__2922826460__0_,
+  SUM((MME_PoolType_vlr_.succInterVLRLocationUpdates + MME_PoolType_vlr_.succIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__4151261507__0_,
+  SUM(MME_PoolType_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__2157046801__0_,
+  SUM(MME_PoolType_vlr_.succIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__3064694352__0_
+FROM sgsiwf.MME_PoolType_vlr_ MME_PoolType_vlr_
+WHERE ((MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[LocationUpdateIdx - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_vlr_.Machine AS none_machine_nk,
+  MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_vlr_.succInterVLRLocationUpdates) AS temp_calculation_3690608170156703__1553590775__0_,
+  SUM(MME_PoolType_vlr_.attInterVLRLocationUpdates) AS temp_calculation_3690608170156703__3261860710__0_,
+  SUM((MME_PoolType_vlr_.attInterVLRLocationUpdates + MME_PoolType_vlr_.attIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__2922826460__0_,
+  SUM((MME_PoolType_vlr_.succInterVLRLocationUpdates + MME_PoolType_vlr_.succIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__4151261507__0_,
+  SUM(MME_PoolType_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__2157046801__0_,
+  SUM(MME_PoolType_vlr_.succIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__3064694352__0_
+FROM sgsiwf.MME_PoolType_vlr_ MME_PoolType_vlr_
+WHERE ((MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[LocationUpdateIdx - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_vlr_.Machine AS none_machine_nk,
+  MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_vlr_.succInterVLRLocationUpdates) AS temp_calculation_3690608170156703__1553590775__0_,
+  SUM(MME_PoolType_vlr_.attInterVLRLocationUpdates) AS temp_calculation_3690608170156703__3261860710__0_,
+  SUM((MME_PoolType_vlr_.attInterVLRLocationUpdates + MME_PoolType_vlr_.attIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__2922826460__0_,
+  SUM((MME_PoolType_vlr_.succInterVLRLocationUpdates + MME_PoolType_vlr_.succIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__4151261507__0_,
+  SUM(MME_PoolType_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__2157046801__0_,
+  SUM(MME_PoolType_vlr_.succIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__3064694352__0_
+FROM sgsiwf.MME_PoolType_vlr_ MME_PoolType_vlr_
+WHERE ((MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[LocationUpdateIdx - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', MME_PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_vlr_.Machine AS none_machine_nk,
+  MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_vlr_.succInterVLRLocationUpdates) AS temp_calculation_3690608170156703__1553590775__0_,
+  SUM(MME_PoolType_vlr_.attInterVLRLocationUpdates) AS temp_calculation_3690608170156703__3261860710__0_,
+  SUM((MME_PoolType_vlr_.attInterVLRLocationUpdates + MME_PoolType_vlr_.attIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__2922826460__0_,
+  SUM((MME_PoolType_vlr_.succInterVLRLocationUpdates + MME_PoolType_vlr_.succIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__4151261507__0_,
+  SUM(MME_PoolType_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__2157046801__0_,
+  SUM(MME_PoolType_vlr_.succIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__3064694352__0_
+FROM sgsiwf.MME_PoolType_vlr_ MME_PoolType_vlr_
+WHERE ((MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[LocationUpdateIdx - Second]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', MME_PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', MME_PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_vlr_.Machine AS none_machine_nk,
+  MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_vlr_.succInterVLRLocationUpdates) AS temp_calculation_3690608170156703__1553590775__0_,
+  SUM(MME_PoolType_vlr_.attInterVLRLocationUpdates) AS temp_calculation_3690608170156703__3261860710__0_,
+  SUM((MME_PoolType_vlr_.attInterVLRLocationUpdates + MME_PoolType_vlr_.attIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__2922826460__0_,
+  SUM((MME_PoolType_vlr_.succInterVLRLocationUpdates + MME_PoolType_vlr_.succIntraVLRLocationUpdates)) AS temp_calculation_5350608170229357__4151261507__0_,
+  SUM(MME_PoolType_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__2157046801__0_,
+  SUM(MME_PoolType_vlr_.succIntraVLRLocationUpdates) AS temp_calculation_6520608170052948__3064694352__0_
+FROM sgsiwf.MME_PoolType_vlr_ MME_PoolType_vlr_
+WHERE ((MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[APPagingIdx - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.Machine AS none_machine_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageRequest) AS temp_calculation_7520608195228869__3290994913__0_,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageResponse) AS temp_calculation_7520608195228869__487159930__0_,
+  MAX(BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.BearerCallType_LAC_MME_PoolType_vlr_ BearerCallType_LAC_MME_PoolType_vlr_
+WHERE (((BearerCallType_LAC_MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (BearerCallType_LAC_MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[APPagingIdx - Month]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(BearerCallType_LAC_MME_PoolType_vlr_.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.Machine AS none_machine_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageRequest) AS temp_calculation_7520608195228869__3290994913__0_,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageResponse) AS temp_calculation_7520608195228869__487159930__0_,
+  MAX(BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.BearerCallType_LAC_MME_PoolType_vlr_ BearerCallType_LAC_MME_PoolType_vlr_
+WHERE (((BearerCallType_LAC_MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (BearerCallType_LAC_MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[APPagingIdx - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.Machine AS none_machine_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageRequest) AS temp_calculation_7520608195228869__3290994913__0_,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageResponse) AS temp_calculation_7520608195228869__487159930__0_,
+  MAX(BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.BearerCallType_LAC_MME_PoolType_vlr_ BearerCallType_LAC_MME_PoolType_vlr_
+WHERE (((BearerCallType_LAC_MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (BearerCallType_LAC_MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[APPagingIdx - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.Machine AS none_machine_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageRequest) AS temp_calculation_7520608195228869__3290994913__0_,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageResponse) AS temp_calculation_7520608195228869__487159930__0_,
+  MAX(BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.BearerCallType_LAC_MME_PoolType_vlr_ BearerCallType_LAC_MME_PoolType_vlr_
+WHERE (((BearerCallType_LAC_MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (BearerCallType_LAC_MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[APPagingIdx - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.Machine AS none_machine_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageRequest) AS temp_calculation_7520608195228869__3290994913__0_,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageResponse) AS temp_calculation_7520608195228869__487159930__0_,
+  MAX(BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.BearerCallType_LAC_MME_PoolType_vlr_ BearerCallType_LAC_MME_PoolType_vlr_
+WHERE (((BearerCallType_LAC_MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (BearerCallType_LAC_MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[APPagingIdx - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.Machine AS none_machine_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageRequest) AS temp_calculation_7520608195228869__3290994913__0_,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageResponse) AS temp_calculation_7520608195228869__487159930__0_,
+  MAX(BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.BearerCallType_LAC_MME_PoolType_vlr_ BearerCallType_LAC_MME_PoolType_vlr_
+WHERE (((BearerCallType_LAC_MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (BearerCallType_LAC_MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[APPagingIdx - Second]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.Machine AS none_machine_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  BearerCallType_LAC_MME_PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageRequest) AS temp_calculation_7520608195228869__3290994913__0_,
+  SUM(BearerCallType_LAC_MME_PoolType_vlr_.VS_SGsAPPageResponse) AS temp_calculation_7520608195228869__487159930__0_,
+  MAX(BearerCallType_LAC_MME_PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.BearerCallType_LAC_MME_PoolType_vlr_ BearerCallType_LAC_MME_PoolType_vlr_
+WHERE (((BearerCallType_LAC_MME_PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (BearerCallType_LAC_MME_PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (BearerCallType_LAC_MME_PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMSIdx - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', MME_PoolType_wss7_.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_wss7_.Machine AS none_machine_nk,
+  MME_PoolType_wss7_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_wss7_.succOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2540608195900506__1970719807__0_,
+  SUM((MME_PoolType_wss7_.attOpForMobileTerminatingPointToPointSMs - MME_PoolType_wss7_.VS_mobTermSMSBusyFail)) AS temp_calculation_2540608195900506__246625058__0_,
+  SUM(MME_PoolType_wss7_.succOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__141022590__0_,
+  SUM(MME_PoolType_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__2781736361__0_,
+  MAX(MME_PoolType_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ MME_PoolType_wss7_
+WHERE (((MME_PoolType_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (MME_PoolType_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+  
+==================================================================================================================================================================================
+[SMSIdx - Month]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(MME_PoolType_wss7_.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', MME_PoolType_wss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_wss7_.Machine AS none_machine_nk,
+  MME_PoolType_wss7_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_wss7_.succOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2540608195900506__1970719807__0_,
+  SUM((MME_PoolType_wss7_.attOpForMobileTerminatingPointToPointSMs - MME_PoolType_wss7_.VS_mobTermSMSBusyFail)) AS temp_calculation_2540608195900506__246625058__0_,
+  SUM(MME_PoolType_wss7_.succOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__141022590__0_,
+  SUM(MME_PoolType_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__2781736361__0_,
+  MAX(MME_PoolType_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ MME_PoolType_wss7_
+WHERE (((MME_PoolType_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (MME_PoolType_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMSIdx - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', MME_PoolType_wss7_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', MME_PoolType_wss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_wss7_.Machine AS none_machine_nk,
+  MME_PoolType_wss7_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_wss7_.succOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2540608195900506__1970719807__0_,
+  SUM((MME_PoolType_wss7_.attOpForMobileTerminatingPointToPointSMs - MME_PoolType_wss7_.VS_mobTermSMSBusyFail)) AS temp_calculation_2540608195900506__246625058__0_,
+  SUM(MME_PoolType_wss7_.succOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__141022590__0_,
+  SUM(MME_PoolType_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__2781736361__0_,
+  MAX(MME_PoolType_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ MME_PoolType_wss7_
+WHERE (((MME_PoolType_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (MME_PoolType_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMSIdx - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', MME_PoolType_wss7_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_wss7_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_wss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_wss7_.Machine AS none_machine_nk,
+  MME_PoolType_wss7_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_wss7_.succOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2540608195900506__1970719807__0_,
+  SUM((MME_PoolType_wss7_.attOpForMobileTerminatingPointToPointSMs - MME_PoolType_wss7_.VS_mobTermSMSBusyFail)) AS temp_calculation_2540608195900506__246625058__0_,
+  SUM(MME_PoolType_wss7_.succOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__141022590__0_,
+  SUM(MME_PoolType_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__2781736361__0_,
+  MAX(MME_PoolType_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ MME_PoolType_wss7_
+WHERE (((MME_PoolType_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (MME_PoolType_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMSIdx - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', MME_PoolType_wss7_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_wss7_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_wss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', MME_PoolType_wss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_wss7_.Machine AS none_machine_nk,
+  MME_PoolType_wss7_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_wss7_.succOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2540608195900506__1970719807__0_,
+  SUM((MME_PoolType_wss7_.attOpForMobileTerminatingPointToPointSMs - MME_PoolType_wss7_.VS_mobTermSMSBusyFail)) AS temp_calculation_2540608195900506__246625058__0_,
+  SUM(MME_PoolType_wss7_.succOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__141022590__0_,
+  SUM(MME_PoolType_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__2781736361__0_,
+  MAX(MME_PoolType_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ MME_PoolType_wss7_
+WHERE (((MME_PoolType_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (MME_PoolType_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMSIdx - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', MME_PoolType_wss7_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_wss7_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_wss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', MME_PoolType_wss7_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', MME_PoolType_wss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_wss7_.Machine AS none_machine_nk,
+  MME_PoolType_wss7_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_wss7_.succOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2540608195900506__1970719807__0_,
+  SUM((MME_PoolType_wss7_.attOpForMobileTerminatingPointToPointSMs - MME_PoolType_wss7_.VS_mobTermSMSBusyFail)) AS temp_calculation_2540608195900506__246625058__0_,
+  SUM(MME_PoolType_wss7_.succOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__141022590__0_,
+  SUM(MME_PoolType_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__2781736361__0_,
+  MAX(MME_PoolType_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ MME_PoolType_wss7_
+WHERE (((MME_PoolType_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (MME_PoolType_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMSIdx - Second]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', MME_PoolType_wss7_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', MME_PoolType_wss7_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', MME_PoolType_wss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', MME_PoolType_wss7_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', MME_PoolType_wss7_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', MME_PoolType_wss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  MME_PoolType_wss7_.Machine AS none_machine_nk,
+  MME_PoolType_wss7_.ManagedElement AS none_managedelement_nk,
+  MME_PoolType_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(MME_PoolType_wss7_.succOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2540608195900506__1970719807__0_,
+  SUM((MME_PoolType_wss7_.attOpForMobileTerminatingPointToPointSMs - MME_PoolType_wss7_.VS_mobTermSMSBusyFail)) AS temp_calculation_2540608195900506__246625058__0_,
+  SUM(MME_PoolType_wss7_.succOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__141022590__0_,
+  SUM(MME_PoolType_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_4050608200407567__2781736361__0_,
+  MAX(MME_PoolType_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ MME_PoolType_wss7_
+WHERE (((MME_PoolType_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (MME_PoolType_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (MME_PoolType_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[MSUIdx - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmitSucc) AS temp_calculation_0320707115302170__1918165674__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmit) AS temp_calculation_0320707115302170__3849954706__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceive) AS temp_calculation_6760707115424190__3267450792__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceiveSucc) AS temp_calculation_6760707115424190__345886530__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[MSUIdx - Month]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_nss7_.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmitSucc) AS temp_calculation_0320707115302170__1918165674__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmit) AS temp_calculation_0320707115302170__3849954706__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceive) AS temp_calculation_6760707115424190__3267450792__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceiveSucc) AS temp_calculation_6760707115424190__345886530__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[MSUIdx - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmitSucc) AS temp_calculation_0320707115302170__1918165674__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmit) AS temp_calculation_0320707115302170__3849954706__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceive) AS temp_calculation_6760707115424190__3267450792__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceiveSucc) AS temp_calculation_6760707115424190__345886530__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[MSUIdx - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmitSucc) AS temp_calculation_0320707115302170__1918165674__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmit) AS temp_calculation_0320707115302170__3849954706__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceive) AS temp_calculation_6760707115424190__3267450792__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceiveSucc) AS temp_calculation_6760707115424190__345886530__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[MSUIdx - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmitSucc) AS temp_calculation_0320707115302170__1918165674__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmit) AS temp_calculation_0320707115302170__3849954706__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceive) AS temp_calculation_6760707115424190__3267450792__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceiveSucc) AS temp_calculation_6760707115424190__345886530__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[MSUIdx - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmitSucc) AS temp_calculation_0320707115302170__1918165674__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmit) AS temp_calculation_0320707115302170__3849954706__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceive) AS temp_calculation_6760707115424190__3267450792__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceiveSucc) AS temp_calculation_6760707115424190__345886530__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[MSUIdx - Second]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmitSucc) AS temp_calculation_0320707115302170__1918165674__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuTransmit) AS temp_calculation_0320707115302170__3849954706__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceive) AS temp_calculation_6760707115424190__3267450792__0_,
+  SUM(pooltype_nss7_.VS_M3UAMsuReceiveSucc) AS temp_calculation_6760707115424190__345886530__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMS-RestoreIdx - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', PoolType_vlr_.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  PoolType_vlr_.Machine AS none_machine_nk,
+  PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(PoolType_vlr_.VS_attMTSMSVLRRestore) AS temp_calculation_2980608201839068__1392691338__0_,
+  SUM(PoolType_vlr_.VS_succMTSMSVLRRestore) AS temp_calculation_2980608201839068__337030866__0_,
+  MAX(PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_ PoolType_vlr_
+WHERE (((PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMS-RestoreIdx - Month]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(PoolType_vlr_.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  PoolType_vlr_.Machine AS none_machine_nk,
+  PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(PoolType_vlr_.VS_attMTSMSVLRRestore) AS temp_calculation_2980608201839068__1392691338__0_,
+  SUM(PoolType_vlr_.VS_succMTSMSVLRRestore) AS temp_calculation_2980608201839068__337030866__0_,
+  MAX(PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_ PoolType_vlr_
+WHERE (((PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMS-RestoreIdx - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', PoolType_vlr_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  PoolType_vlr_.Machine AS none_machine_nk,
+  PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(PoolType_vlr_.VS_attMTSMSVLRRestore) AS temp_calculation_2980608201839068__1392691338__0_,
+  SUM(PoolType_vlr_.VS_succMTSMSVLRRestore) AS temp_calculation_2980608201839068__337030866__0_,
+  MAX(PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_ PoolType_vlr_
+WHERE (((PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMS-RestoreIdx - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  PoolType_vlr_.Machine AS none_machine_nk,
+  PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(PoolType_vlr_.VS_attMTSMSVLRRestore) AS temp_calculation_2980608201839068__1392691338__0_,
+  SUM(PoolType_vlr_.VS_succMTSMSVLRRestore) AS temp_calculation_2980608201839068__337030866__0_,
+  MAX(PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_ PoolType_vlr_
+WHERE (((PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMS-RestoreIdx - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  PoolType_vlr_.Machine AS none_machine_nk,
+  PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(PoolType_vlr_.VS_attMTSMSVLRRestore) AS temp_calculation_2980608201839068__1392691338__0_,
+  SUM(PoolType_vlr_.VS_succMTSMSVLRRestore) AS temp_calculation_2980608201839068__337030866__0_,
+  MAX(PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_ PoolType_vlr_
+WHERE (((PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMS-RestoreIdx - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  PoolType_vlr_.Machine AS none_machine_nk,
+  PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(PoolType_vlr_.VS_attMTSMSVLRRestore) AS temp_calculation_2980608201839068__1392691338__0_,
+  SUM(PoolType_vlr_.VS_succMTSMSVLRRestore) AS temp_calculation_2980608201839068__337030866__0_,
+  MAX(PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_ PoolType_vlr_
+WHERE (((PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMS-RestoreIdx - Second]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', PoolType_vlr_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', PoolType_vlr_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', PoolType_vlr_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', PoolType_vlr_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', PoolType_vlr_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  PoolType_vlr_.Machine AS none_machine_nk,
+  PoolType_vlr_.ManagedElement AS none_managedelement_nk,
+  PoolType_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(PoolType_vlr_.VS_attMTSMSVLRRestore) AS temp_calculation_2980608201839068__1392691338__0_,
+  SUM(PoolType_vlr_.VS_succMTSMSVLRRestore) AS temp_calculation_2980608201839068__337030866__0_,
+  MAX(PoolType_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_ PoolType_vlr_
+WHERE (((PoolType_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (PoolType_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (PoolType_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SCTPIdx - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS temp_tc___1334978151__0_,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS temp_tc___1761515984__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SCTPIdx - Month]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_nss7_.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS temp_tc___1334978151__0_,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS temp_tc___1761515984__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SCTPIdx - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS temp_tc___1334978151__0_,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS temp_tc___1761515984__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SCTPIdx - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS temp_tc___1334978151__0_,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS temp_tc___1761515984__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SCTPIdx - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS temp_tc___1334978151__0_,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS temp_tc___1761515984__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SCTPIdx - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS temp_tc___1334978151__0_,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS temp_tc___1761515984__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SCTPIdx - Second]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.Machine AS none_machine_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS temp_tc___1334978151__0_,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS temp_tc___1761515984__0_,
+  MAX(pooltype_nss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((pooltype_nss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_nss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000')))
+GROUP BY 1,
+  2,
+  3,
+  4
+
+==================================================================================================================================================================================
+[SMSPerUser - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2180627161918145__484989360__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  SUM(mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_6960627161646160__2781736361__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[SMSPerUser - Month]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_vlr_aggr.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2180627161918145__484989360__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  SUM(mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_6960627161646160__2781736361__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[SMSPerUser - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2180627161918145__484989360__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  SUM(mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_6960627161646160__2781736361__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[SMSPerUser - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2180627161918145__484989360__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  SUM(mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_6960627161646160__2781736361__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[SMSPerUser - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2180627161918145__484989360__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  SUM(mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_6960627161646160__2781736361__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[SMSPerUser - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2180627161918145__484989360__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  SUM(mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_6960627161646160__2781736361__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[SMSPerUser - Second]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) AS temp_calculation_2180627161918145__484989360__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  SUM(mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs) AS temp_calculation_6960627161646160__2781736361__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[VLRPerSub - Year]
+==================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS temp_calculation_8520627164730809__3368923670__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__681445874__0_,
+  MAX(pooltype_vlr_technologytype_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (pooltype_vlr_technologytype_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[VLRPerSub - Month]
+==================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_vlr_aggr.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS temp_calculation_8520627164730809__3368923670__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__681445874__0_,
+  MAX(pooltype_vlr_technologytype_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (pooltype_vlr_technologytype_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[VLRPerSub - Quarter]
+==================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS temp_calculation_8520627164730809__3368923670__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__681445874__0_,
+  MAX(pooltype_vlr_technologytype_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (pooltype_vlr_technologytype_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[VLRPerSub - Day]
+==================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS temp_calculation_8520627164730809__3368923670__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__681445874__0_,
+  MAX(pooltype_vlr_technologytype_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (pooltype_vlr_technologytype_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[VLRPerSub - Hour]
+==================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS temp_calculation_8520627164730809__3368923670__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__681445874__0_,
+  MAX(pooltype_vlr_technologytype_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (pooltype_vlr_technologytype_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+==================================================================================================================================================================================
+[VLRPerSub - Minute]
+==================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS temp_calculation_8520627164730809__3368923670__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__681445874__0_,
+  MAX(pooltype_vlr_technologytype_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (pooltype_vlr_technologytype_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[VLRPerSub - Second]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS temp_calculation_8520627164730809__3368923670__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_8710627164620346__681445874__0_,
+  MAX(pooltype_vlr_technologytype_.endTime) AS max_endtime_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (pooltype_vlr_technologytype_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[LocationSubRate - Year]
+=================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_1200627171357538__2157046801__0_,
+  SUM(mme_pooltype_vlr_.attInterVLRLocationUpdates) AS temp_calculation_1880627171312477__3261860710__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[LocationSubRate - Month]
+=================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_vlr_aggr.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_1200627171357538__2157046801__0_,
+  SUM(mme_pooltype_vlr_.attInterVLRLocationUpdates) AS temp_calculation_1880627171312477__3261860710__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[LocationSubRate - Quarter]
+=================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_1200627171357538__2157046801__0_,
+  SUM(mme_pooltype_vlr_.attInterVLRLocationUpdates) AS temp_calculation_1880627171312477__3261860710__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[LocationSubRate - Day]
+=================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_1200627171357538__2157046801__0_,
+  SUM(mme_pooltype_vlr_.attInterVLRLocationUpdates) AS temp_calculation_1880627171312477__3261860710__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[LocationSubRate - Hour]
+=================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_1200627171357538__2157046801__0_,
+  SUM(mme_pooltype_vlr_.attInterVLRLocationUpdates) AS temp_calculation_1880627171312477__3261860710__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[LocationSubRate - Minute]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_1200627171357538__2157046801__0_,
+  SUM(mme_pooltype_vlr_.attInterVLRLocationUpdates) AS temp_calculation_1880627171312477__3261860710__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[LocationSubRate - Second]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  SUM(mme_pooltype_vlr_.attIntraVLRLocationUpdates) AS temp_calculation_1200627171357538__2157046801__0_,
+  SUM(mme_pooltype_vlr_.attInterVLRLocationUpdates) AS temp_calculation_1880627171312477__3261860710__0_,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[SGsPerSub - Year]
+=================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_,
+  SUM(mme_pooltype_vlr_.imsiDetachProcs) AS temp_calculation_8300627172531602__2256761049__0_,
+  SUM(mme_pooltype_vlr_.VS_SGsAPAlertRequests) AS temp_calculation_8920627172452215__2239370200__0_,
+  MAX(mme_pooltype_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[SGsPerSub - Month]
+=================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_vlr_aggr.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_,
+  SUM(mme_pooltype_vlr_.imsiDetachProcs) AS temp_calculation_8300627172531602__2256761049__0_,
+  SUM(mme_pooltype_vlr_.VS_SGsAPAlertRequests) AS temp_calculation_8920627172452215__2239370200__0_,
+  MAX(mme_pooltype_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[SGsPerSub - Quarter]
+=================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_,
+  SUM(mme_pooltype_vlr_.imsiDetachProcs) AS temp_calculation_8300627172531602__2256761049__0_,
+  SUM(mme_pooltype_vlr_.VS_SGsAPAlertRequests) AS temp_calculation_8920627172452215__2239370200__0_,
+  MAX(mme_pooltype_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[SGsPerSub - Day]
+=================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_,
+  SUM(mme_pooltype_vlr_.imsiDetachProcs) AS temp_calculation_8300627172531602__2256761049__0_,
+  SUM(mme_pooltype_vlr_.VS_SGsAPAlertRequests) AS temp_calculation_8920627172452215__2239370200__0_,
+  MAX(mme_pooltype_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[SGsPerSub - Hour]
+=================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_,
+  SUM(mme_pooltype_vlr_.imsiDetachProcs) AS temp_calculation_8300627172531602__2256761049__0_,
+  SUM(mme_pooltype_vlr_.VS_SGsAPAlertRequests) AS temp_calculation_8920627172452215__2239370200__0_,
+  MAX(mme_pooltype_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[SGsPerSub - Minute]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_,
+  SUM(mme_pooltype_vlr_.imsiDetachProcs) AS temp_calculation_8300627172531602__2256761049__0_,
+  SUM(mme_pooltype_vlr_.VS_SGsAPAlertRequests) AS temp_calculation_8920627172452215__2239370200__0_,
+  MAX(mme_pooltype_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[SGsPerSub - Second]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_vlr_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_vlr_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_7620627171239522__681445874__0_,
+  SUM(mme_pooltype_vlr_.imsiDetachProcs) AS temp_calculation_8300627172531602__2256761049__0_,
+  SUM(mme_pooltype_vlr_.VS_SGsAPAlertRequests) AS temp_calculation_8920627172452215__2239370200__0_,
+  MAX(mme_pooltype_vlr_.endTime) AS max_endtime_ok
+FROM sgsiwf.MME_PoolType_vlr_ mme_pooltype_vlr_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_vlr_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_vlr_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_vlr_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_vlr_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[CapacityKPI - Year]
+=================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok,
+  SUM(((mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) * 12)) AS sum_calculation_1690706081740472_ok,
+  SUM((mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs)) AS sum_calculation_3400706081620925_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[CapacityKPI - Month]
+=================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_vlr_aggr.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok,
+  SUM(((mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) * 12)) AS sum_calculation_1690706081740472_ok,
+  SUM((mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs)) AS sum_calculation_3400706081620925_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[CapacityKPI - Quarter]
+=================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok,
+  SUM(((mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) * 12)) AS sum_calculation_1690706081740472_ok,
+  SUM((mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs)) AS sum_calculation_3400706081620925_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[CapacityKPI - Day]
+=================================================================================================================================================================================
+Command
+SELECT ((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok,
+  SUM(((mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) * 12)) AS sum_calculation_1690706081740472_ok,
+  SUM((mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs)) AS sum_calculation_3400706081620925_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[CapacityKPI - Hour]
+=================================================================================================================================================================================
+Command
+SELECT ((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok,
+  SUM(((mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) * 12)) AS sum_calculation_1690706081740472_ok,
+  SUM((mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs)) AS sum_calculation_3400706081620925_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[CapacityKPI - Minute]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok,
+  SUM(((mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) * 12)) AS sum_calculation_1690706081740472_ok,
+  SUM((mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs)) AS sum_calculation_3400706081620925_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[CapacityKPI - Second]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', pooltype_vlr_aggr.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_aggr.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_aggr.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', pooltype_vlr_aggr.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  mme_pooltype_wss7_.ManagedElement AS none_managedelement_nk,
+  mme_pooltype_wss7_.SubNetwork AS none_subnetwork_nk,
+  COUNT(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__2243410589__0_,
+  SUM(pooltype_vlr_aggr.aveActiveSubsNum) AS temp_calculation_5240627161754248__681445874__0_,
+  MAX(mme_pooltype_wss7_.endTime) AS max_endtime_ok,
+  SUM(((mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs) * 12)) AS sum_calculation_1690706081740472_ok,
+  SUM((mme_pooltype_wss7_.attOpForMobileTerminatingPointToPointSMs + mme_pooltype_wss7_.attOpForMobileOriginatingPointToPointSMs)) AS sum_calculation_3400706081620925_ok
+FROM sgsiwf.MME_PoolType_wss7_ mme_pooltype_wss7_
+  INNER JOIN sgsiwf.PoolType_vlr_aggr pooltype_vlr_aggr ON (mme_pooltype_wss7_.ManagedElement = pooltype_vlr_aggr.ManagedElement)
+WHERE (((mme_pooltype_wss7_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (mme_pooltype_wss7_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (mme_pooltype_wss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[TrendingKPI - Year]
+=================================================================================================================================================================================
+Command
+SELECT CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS sum_calculation_2210714101034467_ok,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS sum_calculation_2920714100857349_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE ((CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) = '2016') AND (pooltype_nss7_.ManagedElement = 'lcp-1'))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[TrendingKPI - Month]
+=================================================================================================================================================================================
+Command
+SELECT ((CAST(TO_CHAR(pooltype_vlr_technologytype_.endTime, 'FMMonth') AS VARCHAR) || ' ') || CAST(DATE_PART('YEAR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS sum_calculation_4650714100702860_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1') AND ((pooltype_vlr_technologytype_.SubNetwork >= 'QDSD0101DEVCvSGS-L-NK-46') AND (pooltype_vlr_technologytype_.SubNetwork <= 'vQDSD0101SGS-L-AL-20')))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[TrendingKPI - Quarter]
+=================================================================================================================================================================================
+Command
+SELECT (((CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_nss7_.ManagedElement AS none_managedelement_nk,
+  pooltype_nss7_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_nss7_.VS_SctpOutSCTPPacks) AS sum_calculation_2210714101034467_ok,
+  SUM(pooltype_nss7_.VS_SctpInSCTPPacks) AS sum_calculation_2920714100857349_ok
+FROM sgsiwf.PoolType_nss7_ pooltype_nss7_
+WHERE (((((CAST(DATE_PART('YEAR', pooltype_nss7_.endTime) AS VARCHAR) || ' ') || 'Q') || CAST(DATE_PART('QUARTER', (TIMESTAMP '2016-07-25 00:00:00.000')) AS VARCHAR)) = '2016 Q3') AND ((pooltype_nss7_.ManagedElement = 'lcp-1') AND (pooltype_nss7_.SubNetwork = 'QDSD0101DEVCvSGS-L-NK-46')))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[TrendingKPI - Day]
+=================================================================================================================================================================================
+Command
+"SELECT ((((CAST(DATE_PART('MONTH', ""pooltype_vlr_technologytype_"".""endTime"") AS VARCHAR) || '/') || CAST(DATE_PART('DAY', ""pooltype_vlr_technologytype_"".""endTime"") AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', ""pooltype_vlr_technologytype_"".""endTime"") AS VARCHAR)) AS ""none_calculation_0150705094845502_nk"",
+  ""pooltype_vlr_technologytype_"".""ManagedElement"" AS ""none_managedelement_nk"",
+  ""pooltype_vlr_technologytype_"".""SubNetwork"" AS ""none_subnetwork_nk"",
+  SUM(""pooltype_vlr_technologytype_"".""VS_locationCancellationRqsts"") AS ""sum_calculation_4650714100702860_ok""
+FROM ""sgsiwf"".""PoolType_vlr_TechnologyType_"" ""pooltype_vlr_technologytype_""
+WHERE (((""pooltype_vlr_technologytype_"".""endTime"" >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (""pooltype_vlr_technologytype_"".""endTime"" <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (""pooltype_vlr_technologytype_"".""ManagedElement"" = 'lcp-1') AND ((""pooltype_vlr_technologytype_"".""SubNetwork"" >= 'QDSD0101DEVCvSGS-L-NK-46') AND (""pooltype_vlr_technologytype_"".""SubNetwork"" <= 'vQDSD0101SGS-L-AL-20')))
+GROUP BY 1,
+  2,
+  3"
+
+=================================================================================================================================================================================
+[TrendingKPI - Hour]
+=================================================================================================================================================================================
+Command
+"SELECT ((((((CAST(DATE_PART('MONTH', ""pooltype_vlr_technologytype_"".""endTime"") AS VARCHAR) || '/') || CAST(DATE_PART('DAY', ""pooltype_vlr_technologytype_"".""endTime"") AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', ""pooltype_vlr_technologytype_"".""endTime"") AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', ""pooltype_vlr_technologytype_"".""endTime"") AS VARCHAR)) AS ""none_calculation_0150705094845502_nk"",
+  ""pooltype_vlr_technologytype_"".""ManagedElement"" AS ""none_managedelement_nk"",
+  ""pooltype_vlr_technologytype_"".""SubNetwork"" AS ""none_subnetwork_nk"",
+  SUM(""pooltype_vlr_technologytype_"".""VS_locationCancellationRqsts"") AS ""sum_calculation_4650714100702860_ok""
+FROM ""sgsiwf"".""PoolType_vlr_TechnologyType_"" ""pooltype_vlr_technologytype_""
+WHERE (((""pooltype_vlr_technologytype_"".""endTime"" >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (""pooltype_vlr_technologytype_"".""endTime"" <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (""pooltype_vlr_technologytype_"".""ManagedElement"" = 'lcp-1') AND ((""pooltype_vlr_technologytype_"".""SubNetwork"" >= 'QDSD0101DEVCvSGS-L-NK-46') AND (""pooltype_vlr_technologytype_"".""SubNetwork"" <= 'vQDSD0101SGS-L-AL-20')))
+GROUP BY 1,
+  2,
+  3"
+
+=================================================================================================================================================================================
+[TrendingKPI - Minute]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', pooltype_vlr_technologytype_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS sum_calculation_4650714100702860_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1') AND ((pooltype_vlr_technologytype_.SubNetwork >= 'QDSD0101DEVCvSGS-L-NK-46') AND (pooltype_vlr_technologytype_.SubNetwork <= 'vQDSD0101SGS-L-AL-20')))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[TrendingKPI - Second]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((((CAST(DATE_PART('MONTH', pooltype_vlr_technologytype_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk,
+  SUM(pooltype_vlr_technologytype_.VS_locationCancellationRqsts) AS sum_calculation_4650714100702860_ok
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1') AND ((pooltype_vlr_technologytype_.SubNetwork >= 'QDSD0101DEVCvSGS-L-NK-46') AND (pooltype_vlr_technologytype_.SubNetwork <= 'vQDSD0101SGS-L-AL-20')))
+GROUP BY 1,
+  2,
+  3
+
+=================================================================================================================================================================================
+[TrendingKPIPerSec - Year]
+=================================================================================================================================================================================
+Command
+SELECT ((((((((CAST(DATE_PART('MONTH', pooltype_vlr_technologytype_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) AS none_calculation_0150705094845502_nk,
+  ((((((((((CAST(DATE_PART('MONTH', pooltype_vlr_technologytype_.endTime) AS VARCHAR) || '/') || CAST(DATE_PART('DAY', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || '/') || CAST(DATE_PART('YEAR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ' ') || CAST(DATE_PART('HOUR', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('MINUTE', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) || ':') || CAST(DATE_PART('SECOND', pooltype_vlr_technologytype_.endTime) AS VARCHAR)) AS none_calculation_0740705104122020_nk,
+  pooltype_vlr_technologytype_.ManagedElement AS none_managedelement_nk,
+  pooltype_vlr_technologytype_.SubNetwork AS none_subnetwork_nk
+FROM sgsiwf.PoolType_vlr_TechnologyType_ pooltype_vlr_technologytype_
+WHERE (((pooltype_vlr_technologytype_.endTime >= (TIMESTAMP '2016-03-09 00:00:00.000')) AND (pooltype_vlr_technologytype_.endTime <= (TIMESTAMP '2016-07-25 00:00:00.000'))) AND (pooltype_vlr_technologytype_.ManagedElement = 'lcp-1') AND ((pooltype_vlr_technologytype_.SubNetwork >= 'QDSD0101DEVCvSGS-L-NK-46') AND (pooltype_vlr_technologytype_.SubNetwork <= 'vQDSD0101SGS-L-AL-20')))
+GROUP BY 1,
+  2,
+  3,
+  4

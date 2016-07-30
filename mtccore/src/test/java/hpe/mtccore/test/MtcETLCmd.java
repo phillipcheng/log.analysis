@@ -91,8 +91,29 @@ public class MtcETLCmd extends TestETLCmd{
 		Configuration conf = new Configuration();
     	conf.set("fs.defaultFS", defaultFs);
     	FileSystem fs = FileSystem.get(conf);
+		String remoteEtlcfg = "/mtccore/etlcfg";
+		String xmldir = "/mtccore/xmldata";
+		String csvdir = "/mtccore/csvdata";
+		String schemadir = "/mtccore/schema";
+		String schemaHistoryDir = "/mtccore/schemahistory";
+		fs.delete(new Path(remoteEtlcfg), true);
+		fs.delete(new Path(csvdir), true);
+		fs.delete(new Path(xmldir), true);
+		fs.delete(new Path(schemadir), true);
+		fs.delete(new Path(schemaHistoryDir), true);
 		
-    	String[] workflows = new String[]{"sgs.workflow.xml"};
+		fs.mkdirs(new Path(csvdir));
+		fs.mkdirs(new Path(xmldir));
+		fs.mkdirs(new Path(schemadir));
+		fs.mkdirs(new Path(schemaHistoryDir));
+		File localDir = new File(localCfgDir);
+		String[] cfgs = localDir.list();
+		for (String cfg:cfgs){
+			String lcfg = localCfgDir + File.separator + cfg;
+			String rcfg = remoteEtlcfg + "/" + cfg;
+			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
+		}
+		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml"};
 		for (String wf: workflows){
 			String workflow = localCfgDir + File.separator + wf;
 			String remoteWorkflow = "/user/dbadmin/mtccore/" + wf;

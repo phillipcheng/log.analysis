@@ -151,6 +151,10 @@ public class DynSchemaCmd extends ETLCmd{
 		}
 	}
 	
+	public String getOutputDataFileName(String tableName){
+		return csvFolder + wfid + "/" + tableName;
+	}
+	
 	public Document getDocument(FileStatus inputXml){
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -191,9 +195,6 @@ public class DynSchemaCmd extends ETLCmd{
 			}
 		}
 	}
-	private String getOutputDataFileName(String tableName, String timeStr){
-		return csvFolder + timeStr + "_" + tableName + ".csv";
-	}
 
 	private Node getNode(NodeList nl, int idx){
 		Node n = nl.item(idx);
@@ -205,7 +206,7 @@ public class DynSchemaCmd extends ETLCmd{
 	 * return number of lines generated
 	 */
 	private int genData(Node mi, Map<String, String> localDnMap, List<String> orgAttrs, List<String> newAttrs, String tableName, 
-			Map<String, BufferedWriter> fvWriterMap, String startProcessTime) throws Exception {
+			Map<String, BufferedWriter> fvWriterMap) throws Exception {
 		List<String> tableLvlSystemAttValues = new ArrayList<String>();
 		for (XPathExpression exp:xpathExpTableSystemAttrs){
 			tableLvlSystemAttValues.add((String) exp.evaluate(mi, XPathConstants.STRING));
@@ -244,7 +245,7 @@ public class DynSchemaCmd extends ETLCmd{
 				vs[mapping.get(i)]=v;
 			}
 			fieldValues.addAll(Arrays.asList(vs));
-			String outputFileName = getOutputDataFileName(tableName, startProcessTime);
+			String outputFileName = getOutputDataFileName(tableName);
 			BufferedWriter osw = fvWriterMap.get(outputFileName);
 			if (osw ==null) {
 				osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(outputFileName))));
@@ -261,7 +262,7 @@ public class DynSchemaCmd extends ETLCmd{
 	 * @return either number of csv >=0
 	 * or schemaUpdated is true return -1
 	 */
-	private int checkSchemaUpdateOrGenData(FileStatus[] inputFileNames, String strProcessStartTime){
+	private int checkSchemaUpdateOrGenData(FileStatus[] inputFileNames){
 		int schemaUpdated=0;
 		try {
 			for (FileStatus inputFile: inputFileNames){
@@ -324,7 +325,7 @@ public class DynSchemaCmd extends ETLCmd{
 							schemaUpdated=-1;
 						}else{
 							if (schemaUpdated>=0){//gen data
-								schemaUpdated +=genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName, fvWriterMap, strProcessStartTime);
+								schemaUpdated +=genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName, fvWriterMap);
 							}
 						}
 					}else{
@@ -372,7 +373,7 @@ public class DynSchemaCmd extends ETLCmd{
 			String createsqlFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, wfid);
 			FileStatus[] inputFileNames = fs.listStatus(new Path(xmlFolder));
 			//1. check new/update schema, generate csv files
-			int schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames, wfid);
+			int schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames);
 			//generate schema files
 			List<String> createTableSqls = new ArrayList<String>();
 			if (schemaUpdated==-1){//updated
@@ -416,7 +417,7 @@ public class DynSchemaCmd extends ETLCmd{
 					//gen copys.sql for reference
 					List<String> attrs = new ArrayList<String>();
 					attrs.addAll(logicSchema.getAttrNames(tn));
-					String copySql = DBUtil.genCopyLocalSql(attrs, tn, prefix, getOutputDataFileName(tn, wfid));
+					String copySql = DBUtil.genCopyLocalSql(attrs, tn, prefix, getOutputDataFileName(tn));
 					copysqls.add(copySql);
 				}
 				
@@ -433,7 +434,7 @@ public class DynSchemaCmd extends ETLCmd{
 				//gen data again using new schema
 				fvWriterMap.clear();
 				schemaAttrNameUpdates.clear();
-				schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames, wfid);
+				schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames);
 				//only generate createtable sql entry when there is schema update
 				this.dynCfgMap.put(dynCfg_Key_CREATETABLE_SQL_FILE, createsqlFileName);
 			}

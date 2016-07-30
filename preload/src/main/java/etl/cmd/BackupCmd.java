@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +36,16 @@ public class BackupCmd extends ETLCmd{
 	private String destZipFile;
 	private ZipOutputStream zos;
 	private Map<String, Object> vars = new HashMap<String, Object>();
-	private List<String> fileNames = new ArrayList<String>();
 	public BackupCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
 		vars=super.getSystemVariables();
 		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
-		this.fileFolders = pc.getStringArray(cfgkey_Folder_filter);
+		String[] ffExps = pc.getStringArray(cfgkey_Folder_filter);
+		fileFolders = new String[ffExps.length];
+		for (int i=0; i<ffExps.length; i++){
+			String ffExp = ffExps[i];
+			fileFolders[i] = (String) ScriptEngineUtil.eval(ffExp, VarType.STRING, super.getSystemVariables());
+		}
 		this.fileFilters = pc.getStringArray(cfgkey_file_filter);
 		this.destZipFile=this.dataHistoryFolder+wfid+".zip";
 	}
@@ -54,7 +59,9 @@ public class BackupCmd extends ETLCmd{
 			FSDataOutputStream fos = fs.create(destpath);
 			zos = new ZipOutputStream(fos);	
 			for (int i = 0; i < fileFolders.length; i++) {
-				totalFiles +=zipFolder(fileFolders[i],fileFilters[i]);
+				int n = zipFolder(fileFolders[i],fileFilters[i]);
+				logger.info(String.format("%d files found for fold %s", n, fileFolders[i]));
+				totalFiles +=n;
 			}
 		}catch (Exception e) {
 			logger.error(" ", e);
@@ -77,30 +84,23 @@ public class BackupCmd extends ETLCmd{
 	 */
 	public int zipFolder(String dirpath ,String fileFilter) {
 		try {	
+			List<String> fileNames = new ArrayList<String>();
 			String exp=fileFilter;
 			Object output =ScriptEngineUtil.eval(exp, VarType.OBJECT, vars);
-			if(output instanceof ArrayList)
-			{  
+			if(output instanceof ArrayList){  
 				ArrayList<String> out=(ArrayList<String>)output;
-				for (String regexp:out) {
-					fileNames=filterFiles(regexp, dirpath);
-					zipFiles(dirpath, fileNames);
-				} 
-			}
-			// Generic for type String[] 
-			if(output instanceof String[]) 
-			{
-				String[] regexp=(String[])output;
-				for (int i = 0; i < regexp.length; i++) {
-					fileNames=filterFiles(regexp[i], dirpath);
-					zipFiles(dirpath, fileNames);
-				}	
-			}
-			if(output instanceof String)
-			{
+				fileNames.addAll(out); 
+				zipFiles(dirpath, fileNames);
+			}else if (output instanceof String[]) {
+				String[] out=(String[])output;
+				fileNames.addAll(Arrays.asList(out));
+				zipFiles(dirpath, fileNames);
+			}else if(output instanceof String){
 				String regexp=(String)output;
 				fileNames=filterFiles(regexp, dirpath);
 				zipFiles(dirpath, fileNames);
+			}else{
+				logger.error(String.format("type %s not supported for %s", output, exp));
 			}
 			return fileNames.size();
 		} catch (Exception e) {
@@ -110,8 +110,7 @@ public class BackupCmd extends ETLCmd{
 	}
 	
     //filters and gets file list
-	public List<String> filterFiles(final String exp,String dirpath) throws FileNotFoundException, IOException
-	{   
+	public List<String> filterFiles(final String exp,String dirpath) throws FileNotFoundException, IOException {   
 		List<String> fileNameList = new ArrayList<String>();
 		PathFilter PATH_FILTER = new PathFilter() { 
 			public boolean accept(Path path) { 
@@ -123,7 +122,9 @@ public class BackupCmd extends ETLCmd{
 		Path inputPath = new Path(dirpath);
 		FileStatus[] status = fs.listStatus(inputPath, PATH_FILTER);
 		for (int i = 0; i < status.length; i++) {
-			fileNameList.add(status[i].getPath().getName());
+			if (!status[i].isDirectory()){
+				fileNameList.add(status[i].getPath().getName());
+			}
 		}
 		return fileNameList;
 	}

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Before;
 import org.junit.Test;
 
 import etl.cmd.dynschema.DynSqlExecutorCmd;
@@ -21,12 +22,20 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 
 	public static final Logger logger = Logger.getLogger(TestDynSqlExecutorCmd.class);
 
+	public String getResourceSubFolder(){
+		return "dynschema/";
+	}
+	
+	@Before
+    public void setUp() {
+		setCfgProperties("testETLCmd_192.85.247.104.properties");
+		super.setUp();
+	}
+	
 	private void test1Fun() throws Exception{
 		try {
 			//
-			String inputFolder = "/test/dynsqlexecutor/input/";
-			String dfsCfgFolder = "/test/dynsqlexecutor/cfg/";
-
+			
 			String staticCfgName = "dynsqlexecutor1.properties";
 			String wfid="wfid1";
 			String prefix = "sgsiwf";
@@ -34,20 +43,26 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 			String localSchemaFileName = "dynschema_test1_schemas.txt";
 			String localCsvFileName = "dynschema_test1_wfid1_MyCore_.csv";
 
-			String remoteCsvFileName = wfid + "_" + "MyCore_" + ".csv";
+			String inputFolder = "/test/dynsqlexecutor/input/" + wfid + "/";
+			String dfsCfgFolder = "/test/dynsqlexecutor/cfg/";
+			String remoteCsvFileName = "MyCore_";
 
 			String schemaFolder="/test/dynsqlexecutor/schema/";
 			String schemaFileName = "schemas.txt";
 
+			String remoteSqlFolder = "/test/dynschemacmd/schemahistory/";
+			String sqlFile = "createtables.sql_wfid1";
+			
 			//generate all the data files
 			getFs().delete(new Path(inputFolder), true);
 			getFs().delete(new Path(dfsCfgFolder), true);
 			getFs().delete(new Path(schemaFolder), true);
+			getFs().delete(new Path(remoteSqlFolder), true);
 			//
 			getFs().mkdirs(new Path(inputFolder));
 			getFs().mkdirs(new Path(dfsCfgFolder));
 			getFs().mkdirs(new Path(schemaFolder));
-
+			getFs().mkdirs(new Path(remoteSqlFolder));
 			//copy static cfg
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			//copy dynamic cfg
@@ -55,7 +70,9 @@ public class TestDynSqlExecutorCmd extends TestETLCmd{
 			//copy schema file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + schemaFileName));
 			//copy csv file
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + localCsvFileName), new Path(inputFolder + remoteCsvFileName));
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + localCsvFileName), new Path(inputFolder + remoteCsvFileName));//csv file must be csvfolder/wfid/tableName
+			//copy sql
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + sqlFile), new Path(remoteSqlFolder + sqlFile));
 
 			//run cmd
 			DynSqlExecutorCmd cmd = new DynSqlExecutorCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder+dynInCfgName, getDefaultFS(), null);

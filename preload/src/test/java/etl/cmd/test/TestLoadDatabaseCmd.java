@@ -21,6 +21,10 @@ import etl.util.Util;
 public class TestLoadDatabaseCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestLoadDatabaseCmd.class);
 	
+	public String getResourceSubFolder(){
+		return "loadcsv/";
+	}
+	
 	@Before
     public void setUp() {
 		setCfgProperties("testETLCmd_192.85.247.104.properties");

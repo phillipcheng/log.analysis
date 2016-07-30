@@ -3,6 +3,7 @@ package etl.engine;
 import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.log4j.Logger;
 
 
@@ -14,6 +15,8 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 	public static final String cfgkey_staticconfigfile = "staticConfigFile";
 	
 	private ETLCmd[] cmds = null;
+	
+	private MultipleOutputs<Text, Text> mos;
 	
 	@Override
 	public void setup(Context context) throws IOException, InterruptedException {
@@ -27,10 +30,12 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 					strStaticConfigFiles, defaultFs));
 			cmds = EngineUtil.getCmds(strCmdClassNames, strStaticConfigFiles, wfid, defaultFs);
 		}
+		mos = new MultipleOutputs<Text,Text>(context);
 	}
 	
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+    	mos.close();
     }
     
 	/**
@@ -41,7 +46,11 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 	 */
 	public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 		ETLCmd cmd = cmds[0];
-		String ret = cmd.reduceProcess(key, values);
-		context.write(key, new Text(ret));
+		String[] ret = cmd.reduceProcess(key, values);
+		if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
+			context.write(new Text(ret[0]), new Text(ret[1]));
+		}else{
+			mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
+		}
 	}
 }

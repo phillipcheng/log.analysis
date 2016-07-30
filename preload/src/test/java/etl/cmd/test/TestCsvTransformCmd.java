@@ -14,6 +14,10 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestCsvTransformCmd.class);
 	public static final String testCmdClass="etl.cmd.transform.CsvTransformCmd";
 
+	public String getResourceSubFolder(){
+		return "csvtrans/";
+	}
+	
 	private void testFileNameRowValidationSkipHeaderFun() throws Exception {
 		try {
 			String remoteCfgFolder = "/etltest/cfg/";
@@ -175,8 +179,9 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String csvFile = "csvtransdyn1_data.csv";
 			
 			//prepare schema
-			String schemaFolder = "/etltest/csvdyntrans/schema/";
+			String schemaFolder = "/etltest/csvdyntrans/schema/"; //hardcoded in the properties
 			String schemaFile = "dynschema_test1_schemas.txt";
+
 			getFs().delete(new Path(schemaFolder), true);
 			getFs().mkdirs(new Path(schemaFolder));
 			getFs().copyFromLocalFile(new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
