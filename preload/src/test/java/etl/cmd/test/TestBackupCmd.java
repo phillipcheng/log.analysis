@@ -3,10 +3,7 @@ package etl.cmd.test;
 import static org.junit.Assert.*;
 
 import java.security.PrivilegedExceptionAction;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
@@ -25,17 +22,13 @@ public class TestBackupCmd extends TestETLCmd{
 	
 	private void test1Fun() throws Exception{
 		try {
-			String dynFolder = "/test/BackupCmd/data/dynFolder1/";
 			String allFolder = "/test/BackupCmd/data/allFolder1/";
 			String wfidFolder = "/test/BackupCmd/data/wfidFolder1/";
 
-			String[] dynCfgFileNames = new String[]{"dynCfgFile1", "dynCfgFile2"};
 			String dfsCfgFolder = "/test/BackupCmd/cfg/";
-			String dynCfgName = "dynCfg1";
 			String staticCfgName = "backup_test1_staticCfg.properties";
 			String wfid="wfid1";
 
-			String[] dynFiles = new String[]{"dynCfgFile1", "dynCfgFile2", "dynCfgFile3"};
 			String[] allFiles = new String[]{"all1", "all2"};
 			String[] wfidFiles = new String[]{wfid+"/a", wfid+"/b", "a", wfid+"abcd"};
 
@@ -44,42 +37,26 @@ public class TestBackupCmd extends TestETLCmd{
 			String dynKey = "dynFiles";
 			String historyFolder = "/test/datahistory/";
 			//generate all the data files
-			getFs().delete(new Path(dynFolder), true);
 			getFs().delete(new Path(allFolder), true);
 			getFs().delete(new Path(wfidFolder), true);
 			
-			for (String dynFile: dynFiles){
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(dynFolder + dynFile));
-			}
 			for (String allFile: allFiles){
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(allFolder + allFile));
 			}
 			for (String wfidFile: wfidFiles){
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(wfidFolder + wfidFile));
 			}
-
-			//generate local dyn conf file
-			Map<String, List<String>> dynCfgValues = new HashMap<String, List<String>>();
-			dynCfgValues.put(dynKey, Arrays.asList(dynCfgFileNames));
-			Util.toLocalJsonFile(getLocalFolder() + dynCfgName, dynCfgValues);
-
 			//add the local conf file to dfs
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfgName), new Path(dfsCfgFolder + dynCfgName));
-			
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));			
 		
 			//run cmd
-			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder + dynCfgName, getDefaultFS(), null);
+			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
 			List<String> info = cmd.sgProcess();
 			int numFiles = Integer.parseInt(info.get(0));
 			logger.info(String.format("%d files backedup", numFiles));
-			assertTrue(numFiles==5);
+			assertTrue(numFiles==3);
 			//check results
-			//dynFolder should only contains 1 file
 			List<String> flist;
-			flist = Util.listDfsFile(getFs(), dynFolder);
-			assertTrue(flist.size()==1);
-			assertTrue(flist.contains("dynCfgFile3"));
 			//allFolder should be empty
 			flist = Util.listDfsFile(getFs(), allFolder);
 			assertTrue(flist.size()==0);
@@ -87,9 +64,9 @@ public class TestBackupCmd extends TestETLCmd{
 			String ZipFileName=wfid+".zip";
 			flist = Util.listDfsFile(getFs(), historyFolder);
 			assertTrue(flist.contains(ZipFileName));
-			//Check the number of files in Zip matches 5
+			//Check the number of files in Zip
 			int filecount=Util.getZipFileCount(getFs(),historyFolder+ZipFileName);
-			assertTrue(filecount==5);
+			assertTrue(filecount==3);
 			} catch (Exception e) {
 			logger.error("Exception occured ", e);
 		}

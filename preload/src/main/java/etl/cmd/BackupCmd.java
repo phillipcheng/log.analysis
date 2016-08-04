@@ -36,8 +36,8 @@ public class BackupCmd extends ETLCmd{
 	private String destZipFile;
 	private ZipOutputStream zos;
 	private Map<String, Object> vars = new HashMap<String, Object>();
-	public BackupCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+	public BackupCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		vars=super.getSystemVariables();
 		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
 		String[] ffExps = pc.getStringArray(cfgkey_Folder_filter);

@@ -42,8 +42,8 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 	private Map<String, Integer> nameIdxMap = null;
 	
 	
-	public CsvTransformCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+	public CsvTransformCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		skipHeader =pc.getBoolean(cfgkey_skip_header, false);
 		rowValidation = pc.getString(cfgkey_row_validation);
 		inputEndWithComma = pc.getBoolean(cfgkey_input_endwithcomma, false);
@@ -79,8 +79,6 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 	@Override
 	public List<String> sgProcess(){
 		List<String> attrs = logicSchema.getAttrNames(this.oldTable);
-		
-		boolean schemaUpdated = false;
 		List<String> createTableSqls = new ArrayList<String>();
 		List<String> addFns = new ArrayList<String>();
 		List<String> addFts = new ArrayList<String>();
@@ -96,10 +94,11 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 		if (addFns.size()>0){
 			logicSchema.addAttributes(oldTable, addFns);
 			logicSchema.addAttrTypes(oldTable, addFts);
-			schemaUpdated = true;
 			createTableSqls.addAll(DBUtil.genUpdateTableSql(addFns, addFts, oldTable, dbPrefix));
+			return super.updateDynSchema(createTableSqls);
+		}else{
+			return null;
 		}
-		return super.updateDynSchema(createTableSqls, schemaUpdated, null);
 	}
 
 	@Override

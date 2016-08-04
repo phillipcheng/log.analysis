@@ -7,18 +7,17 @@ PDE_ANALYSIS=/data/pde
 
 local_work_folder=$1
 hdfs_work_folder=$2
-rawfile_folder=$3
-rawinput_filename=$4
-hdfs_csv_folder=$5
-hdfs_fix_folder=$6
-hdfs_ses_folder=$7
-wfid=$8
+rawfile_file=$3
+hdfs_csv_folder=$4
+hdfs_fix_folder=$5
+hdfs_ses_folder=$6
+wfid=$7
 
-base_file=${rawinput_filename:0:${#rawinput_filename}-4}
+base_file=${rawfile_file:${#rawfile_file}-17:13}
 echo $base_file
 
 #copy the input file from rawfile_folder on hdfs to local work.folder
-$HADOOP_HOME/bin/hdfs dfs -copyToLocal $hdfs_work_folder/$rawfile_folder/$rawinput_filename $local_work_folder
+$HADOOP_HOME/bin/hdfs dfs -copyToLocal $rawfile_file $local_work_folder
 
 #run tracefilter2 to decode bin files
 $PDE_ANALYSIS/bin/TraceFilter2 /f $local_work_folder//$base_file.bin /ab /n /y /nm /ses /fix /h /hst

@@ -5,24 +5,10 @@ uri:oozie:shell-action:0.3
 C:\Java\oozie\shell-action-0.3.xsd
 uri:oozie:ssh-action:0.2
 C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
-	<start to="GenBinSeedInput"/>
+	<start to="TraceFilter"/>
 	<kill name="fail">
         <message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
     </kill>
-	<action name="GenBinSeedInput">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.GenSeedInputCmd</arg>
-			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/bin.genseedinput.properties</arg>
-			<arg>unused</arg>
-			<capture-output/>
-		</java>
-		<ok to="TraceFilter"/>
-		<error to="fail"/>
-	</action>
 	<action name="TraceFilter">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
@@ -41,13 +27,9 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 					<value>etl.engine.InvokeMapper</value>
 				</property>
 				<property>
-					<name>mapreduce.job.inputformat.class</name>
-					<value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
-				</property>
-				<property>
-					<name>mapreduce.input.lineinputformat.linespermap</name>
-					<value>1</value>
-				</property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>etl.util.FilenameInputFormat</value>
+                </property>
 				<property>
 					<name>mapreduce.job.outputformat.class</name>
 					<value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat</value>
@@ -58,7 +40,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>mapreduce.input.fileinputformat.inputdir</name>
-					<value>${wf:actionData('GenBinSeedInput')['seed.input.filename']}</value>
+					<value>/pde/rawinput/</value>
 				</property>
 				<property>
 					<name>cmdClassName</name>
@@ -86,7 +68,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
             <arg>unused</arg>
-            <arg>unused</arg>
             <arg>TraceFilter-Info</arg>
             <arg>${hadoop:counters("TraceFilter")["org.apache.hadoop.mapred.Task$Counter"]["MAP_INPUT_RECORDS"]}</arg>
         </java>
@@ -95,8 +76,8 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
     </action>
 	<fork name="forking">
         <path start="CsvTransform"/>
-        <path start="GenFixSeedInput"/>
-        <path start="GenSesSeedInput"/>
+        <path start="KcvToCsv"/>
+        <path start="SesToCsv"/>
     </fork>
     
 	<action name="CsvTransform">
@@ -170,7 +151,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
             <arg>unused</arg>
-            <arg>unused</arg>
             <arg>CsvTranform-Info</arg>
             <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -186,27 +166,12 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/pde/etlcfg/load.csv1.properties</arg>
-			<arg>unused</arg>
 			<capture-output/>
 		</java>
 		<ok to="joining"/>
 		<error to="fail"/>
 	</action>
 	
-	<action name="GenFixSeedInput">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.GenSeedInputCmd</arg>
-			<arg>${wf:id()}</arg>
-			<arg>/pde/etlcfg/fix.genseedinput.properties</arg>
-			<arg>unused</arg>
-			<capture-output/>
-		</java>
-		<ok to="KcvToCsv"/>
-		<error to="fail"/>
-	</action>
 	<action name="KcvToCsv">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
@@ -225,13 +190,9 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 					<value>etl.engine.InvokeMapper</value>
 				</property>
 				<property>
-					<name>mapreduce.job.inputformat.class</name>
-					<value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
-				</property>
-				<property>
-					<name>mapreduce.input.lineinputformat.linespermap</name>
-					<value>1</value>
-				</property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>etl.util.FilenameInputFormat</value>
+                </property>
 				<property>
 					<name>mapreduce.job.outputformat.class</name>
 					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
@@ -250,7 +211,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>mapreduce.input.fileinputformat.inputdir</name>
-					<value>${wf:actionData('GenFixSeedInput')['seed.input.filename']}</value>
+					<value>/pde/fix/${wf:id()}</value>
 				</property>
 				<property>
 					<name>mapreduce.output.fileoutputformat.outputdir</name>
@@ -312,11 +273,11 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>mapreduce.input.fileinputformat.inputdir</name>
-					<value>${concat("/pde/fixcsv/", wf:id())}</value>
+					<value>/pde/fixcsv/${wf:id()}</value>
 				</property>
 				<property>
 					<name>mapreduce.output.fileoutputformat.outputdir</name>
-					<value>${concat("/pde/fixcsv1/", wf:id())}</value>
+					<value>/pde/fixcsv1/${wf:id()}</value>
 				</property>
 				<property>
 					<name>cmdClassName</name>
@@ -343,27 +304,12 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/pde/etlcfg/load.fixcsv.properties</arg>
-			<arg>unused</arg>
 			<capture-output/>
 		</java>
 		<ok to="joining"/>
 		<error to="fail"/>
 	</action>
 	
-	<action name="GenSesSeedInput">
-        <java>
-            <job-tracker>${jobTracker}</job-tracker>
-            <name-node>${nameNode}</name-node>
-            <main-class>etl.engine.ETLCmdMain</main-class>
-            <arg>etl.cmd.GenSeedInputCmd</arg>
-            <arg>${wf:id()}</arg>
-            <arg>/pde/etlcfg/ses.genseedinput.properties</arg>
-            <arg>unused</arg>
-            <capture-output/>
-        </java>
-        <ok to="SesToCsv"/>
-        <error to="fail"/>
-    </action>
     <action name="SesToCsv">
         <map-reduce>
             <job-tracker>${jobTracker}</job-tracker>
@@ -383,11 +329,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                 </property>
                 <property>
                     <name>mapreduce.job.inputformat.class</name>
-                    <value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
-                </property>
-                <property>
-                    <name>mapreduce.input.lineinputformat.linespermap</name>
-                    <value>1</value>
+                    <value>etl.util.FilenameInputFormat</value>
                 </property>
                 <property>
                     <name>mapreduce.job.outputformat.class</name>
@@ -407,11 +349,11 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                 </property>
                 <property>
                     <name>mapreduce.input.fileinputformat.inputdir</name>
-                    <value>${wf:actionData('GenSesSeedInput')['seed.input.filename']}</value>
+                    <value>/pde/ses/${wf:id()}</value>
                 </property>
                 <property>
                     <name>mapreduce.output.fileoutputformat.outputdir</name>
-                    <value>${concat("/pde/sescsv/", wf:id())}</value>
+                    <value>/pde/sescsv/${wf:id()}</value>
                 </property>
                 <property>
                     <name>cmdClassName</name>
@@ -438,7 +380,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>etl.cmd.LoadDataCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/load.sescsv.properties</arg>
-            <arg>unused</arg>
             <capture-output/>
         </java>
         <ok to="joining"/>

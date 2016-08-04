@@ -27,8 +27,8 @@ public class ShellCmd extends ETLCmd{
 	private String command;
 	private Map<String, Object> params;
 
-	public ShellCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+	public ShellCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		command = pc.getString(cfgkey_command);
 		params = new HashMap<String, Object>();
 		Iterator<String> keys = pc.getKeys();

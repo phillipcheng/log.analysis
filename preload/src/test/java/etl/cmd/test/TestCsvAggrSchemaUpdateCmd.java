@@ -4,14 +4,11 @@ import static org.junit.Assert.*;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import etl.cmd.dynschema.DynSchemaCmd;
 import etl.cmd.dynschema.LogicSchema;
 import etl.cmd.transform.CsvAggregateCmd;
 import etl.util.Util;
@@ -30,23 +27,22 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		try {
 			String remoteCfgFolder = "/etltest/aggrschemaupdate/cfg/";
 			String staticCfg = "csvAggrSchemaUpdate1.properties";
-			String dynCfg = "dynschema_test1_dyncfgout_wfid1";
 			String schemaFile = "dynschema_test1_schemas.txt";
 			//
-			String remoteSqlFolder="/test/dynschemacmd/schemahistory/"; //since this is hard coded in the dynCfg
+			String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //since this is hard coded in the dynCfg
 			String createsqlFile = "createtables.sql_wfid1";
 			
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() +staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfg), new Path(remoteCfgFolder + dynCfg));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
+			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			cmd.setExeSql(false);
 			cmd.sgProcess();
 			
 			//check the schema updated
@@ -87,24 +83,23 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		try {
 			String remoteCfgFolder = "/etltest/aggr/cfg/";//this is hard coded in the static properties for schema
 			String staticCfg = "csvAggrMultipleFiles.properties";
-			String dynCfg = "multipTable_dyncfgout";
 			String schemaFile = "multipleTableSchemas.txt";
 			//
 			String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //since this is hard coded in the dynCfg
-			String createsqlFile = "createtables.sql_wfid1";
+			String createsqlFile = "createtables.sql_wfid1";//since this is hard coded in the dynCfg
 			
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfg), new Path(remoteCfgFolder + dynCfg));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
+			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			cmd.setExeSql(false);
 			cmd.sgProcess();
 			
 			//check the schema updated
@@ -131,12 +126,6 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			logger.info(sqls);
 			assertTrue(sqls.contains(expectedSql1));
 			assertTrue(sqls.contains(expectedSql2));
-			//check the dynCfg updated
-			Map<String, Object> dynCfgMap = (Map<String, Object>) Util.fromDfsJsonFile(getFs(), remoteCfgFolder + dynCfg, Map.class);
-			List<String> tablesUsed = (List<String>) dynCfgMap.get(DynSchemaCmd.dynCfg_Key_TABLES_USED);
-			logger.info(tablesUsed);
-			assertTrue(tablesUsed.contains(newTableName));
-			assertTrue(tablesUsed.contains(newTableName1));
 		} catch (Exception e) {
 			logger.error("", e);
 		}

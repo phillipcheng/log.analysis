@@ -24,11 +24,6 @@ import etl.engine.ProcessMode;
 //key colon value format to csv
 public class SesToCsvCmd extends FileETLCmd{
 	public static final Logger logger = Logger.getLogger(SesToCsvCmd.class);
-	public static final String cfgkey_ses_folder="ses.folder";
-	public static final String cfgkey_use_wfid="use.wfid";
-	
-	private String sesFolder;
-	private boolean useWfid;
 	
 	private String SESSION = "";
 	private String ALMAN_EPH_EVENT = "";
@@ -48,10 +43,8 @@ public class SesToCsvCmd extends FileETLCmd{
 	private static long WEEK_TO_MILLSEC = 7*24*3600*1000;
 	private static long gpsElaps = new GregorianCalendar(1980,Calendar.JANUARY,6,0,0,0).getTimeInMillis();
 	
-	public SesToCsvCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
-		useWfid = pc.getBoolean(cfgkey_use_wfid, false);
-		sesFolder = pc.getString(cfgkey_ses_folder);
+	public SesToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		
 		SESSION = pc.getString("session");
 		ALMAN_EPH_EVENT = pc.getString("alman_eph_event");
@@ -84,12 +77,7 @@ public class SesToCsvCmd extends FileETLCmd{
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
-		Path sesFile = null;
-		if (useWfid){
-			sesFile = new Path(sesFolder + "/" + wfid + "/" + filename);
-		}else{
-			sesFile = new Path(sesFolder + "/" + filename);
-		}
+		Path sesFile = new Path(filename);
 		BufferedReader br = null;
 		try {
 			int GPSWEEK = 0;

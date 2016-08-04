@@ -57,8 +57,8 @@ public class SftpCmd extends ETLCmd {
 	private int sftpConnectRetryWait;
 	private boolean sftpClean;
 
-	public SftpCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+	public SftpCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		String incomingFolderExp = pc.getString(cfgkey_incoming_folder, null);
 		if (incomingFolderExp!=null){
 			this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());

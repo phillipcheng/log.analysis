@@ -111,7 +111,7 @@ public class DBUtil {
 				copysql.append(",");
 			}
 		}
-		copysql.append(String.format(") SOURCE Hdfs(url='%s%s',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
+		copysql.append(String.format(") SOURCE Hdfs(url='%s%s*',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
 		return copysql.toString();
 	}
 

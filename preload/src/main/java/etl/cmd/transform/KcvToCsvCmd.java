@@ -19,13 +19,11 @@ import org.apache.log4j.Logger;
 
 import etl.engine.FileETLCmd;
 import etl.engine.MRMode;
-import etl.engine.ProcessMode;
 
 //key colon value format to csv
 public class KcvToCsvCmd extends FileETLCmd{
 	public static final Logger logger = Logger.getLogger(KcvToCsvCmd.class);
 	public static final String cfgkey_kcv_folder="kcv.folder";
-	public static final String cfgkey_use_wfid="use.wfid";
 	
 	//record format overall specification
 	public static final String RECORD_START="record.start";
@@ -41,13 +39,9 @@ public class KcvToCsvCmd extends FileETLCmd{
 	private Pattern recordStartPattern = null;
 	private Pattern recordVKExp = null;
 	private int recordFieldNum = RECORD_FIELDNUM_DEFAULT;
-	private String kcvFolder;
-	private boolean useWfid;
 	
-	public KcvToCsvCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
-		kcvFolder = pc.getString(cfgkey_kcv_folder);
-		useWfid = pc.getBoolean(cfgkey_use_wfid, false);
+	public KcvToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		String strVal = pc.getString(RECORD_START);
 		if (strVal!=null){
 			this.recordStart = strVal;
@@ -118,12 +112,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
-		Path kcvFile = null;
-		if (useWfid){
-			kcvFile = new Path(kcvFolder + "/" + wfid + "/" + row);
-		}else{
-			kcvFile = new Path(kcvFolder + "/" + row);
-		}
+		Path kcvFile = new Path(row);
 		BufferedReader br = null;
 		try {
 			String line;

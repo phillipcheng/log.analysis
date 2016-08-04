@@ -22,7 +22,7 @@ public class TestSendLogCmd extends TestETLCmd {
 		
 		// run cmd
 		String[] infoArray = new String[]{"cmd1", "1000"};
-		SendLogCmd cmd = new SendLogCmd(wfid, dfsFolder + staticCfgName, null, getDefaultFS(), infoArray);
+		SendLogCmd cmd = new SendLogCmd(wfid, dfsFolder + staticCfgName, getDefaultFS(), infoArray);
 		cmd.sgProcess();
 	}
 	

@@ -7,16 +7,17 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Before;
 import org.junit.Test;
 
-import etl.cmd.dynschema.DynSchemaCmd;
+import etl.cmd.dynschema.SchemaFromXmlCmd;
 import etl.util.Util;
 
 import org.apache.log4j.Logger;
 
-public class TestDynSchemaCmd extends TestETLCmd{
+public class TestSchemaFromXmlCmd extends TestETLCmd{
 
-	public static final Logger logger = Logger.getLogger(TestDynSchemaCmd.class);
+	public static final Logger logger = Logger.getLogger(TestSchemaFromXmlCmd.class);
 
 	public String getResourceSubFolder(){
 		return "dynschema/";
@@ -26,14 +27,13 @@ public class TestDynSchemaCmd extends TestETLCmd{
 		try {
 			//
 			String inputFolder = "/test/dynschemacmd/input/";
-			String outputFolder = "/test/dynschemacmd/output/";
 			String dfsCfgFolder = "/test/dynschemacmd/cfg/";
 			String schemaFolder="/test/dynschemacmd/schema/";
 			String schemaHistoryFolder="/test/dynschemacmd/schemahistory/";
+			String sqlFileName = "createtables.sql_wfid1";
 			
 			String staticCfgName = "dynschema_test1.properties";
 			String wfid="wfid1";
-			String dynCfgOutName ="dynschema_test1_dyncfgout_" + wfid;
 			String prefix = "sgsiwf";
 			
 			String[] inputFiles = new String[]{"dynschema_test1_data.xml"};
@@ -42,13 +42,11 @@ public class TestDynSchemaCmd extends TestETLCmd{
 			
 			//generate all the data files
 			getFs().delete(new Path(inputFolder), true);
-			getFs().delete(new Path(outputFolder), true);
 			getFs().delete(new Path(dfsCfgFolder), true);
 			getFs().delete(new Path(schemaFolder), true);
 			getFs().delete(new Path(schemaHistoryFolder), true);
 			//
 			getFs().mkdirs(new Path(inputFolder));
-			getFs().mkdirs(new Path(outputFolder));
 			getFs().mkdirs(new Path(dfsCfgFolder));
 			getFs().mkdirs(new Path(schemaFolder));
 			getFs().mkdirs(new Path(schemaHistoryFolder));
@@ -60,16 +58,13 @@ public class TestDynSchemaCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			
 			//run cmd
-			DynSchemaCmd cmd = new DynSchemaCmd(wfid, dfsCfgFolder + staticCfgName, dfsCfgFolder+dynCfgOutName, getDefaultFS(), null);
-			cmd.sgProcess();
+			SchemaFromXmlCmd cmd = new SchemaFromXmlCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			cmd.setExeSql(false);
+			List<String> info = cmd.sgProcess();
+			int numFiles = Integer.parseInt(info.get(0));
+			logger.info(info);
 			
-			//check results
-			//outputFolder should have the csv file
-			List<String> files = Util.listDfsFile(getFs(), outputFolder);
-			String csvFileName = String.format("%s_%s.csv", wfid, "MyCore_");
-			assertTrue(files.size()==1);
-			assertTrue(files.contains(csvFileName));
-			
+			List<String> files = null;
 			//schemaFolder should have the schema file
 			files = Util.listDfsFile(getFs(), schemaFolder);
 			String schemaFileName = "schemas.txt";
@@ -77,16 +72,8 @@ public class TestDynSchemaCmd extends TestETLCmd{
 			assertTrue(files.contains(schemaFileName));
 			
 			//schemaHistoryFolder should have the sql files
-			files = Util.listDfsFile(getFs(), schemaHistoryFolder);
-			String[] sqlFiles = new String[]{"copys","createtables","droptables","trunctables"};
-			assertTrue(files.size()==sqlFiles.length);
-			for (String sqlFile:sqlFiles){
-				String sqlFn = String.format("%s.%s.sql_%s", prefix, sqlFile, wfid);
-				assertTrue(files.contains(sqlFn));
-			}
-			//dfsCfgFolder should have the dyn out cfg file
-			files = Util.listDfsFile(getFs(), dfsCfgFolder);
-			assertTrue(files.contains(dynCfgOutName));
+			List<String> sqlContent = Util.stringsFromDfsFile(getFs(), schemaHistoryFolder + sqlFileName);
+			logger.info(sqlContent);
 		} catch (Exception e) {
 			logger.error("Exception occured ", e);
 		}

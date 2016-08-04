@@ -31,15 +31,16 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 	public static final String cfgkey_aggr_groupkey="aggr.groupkey";
 	public static final String cfgkey_aggr_old_table="old.table";
 	public static final String cfgkey_aggr_new_table="new.table";
-	
+	public static final String cfgkey_csv_suffix="csv.suffix";
 	
 	private String[] oldTables = null;
 	private String[] newTables = null;
 	private Map<String, AggrOpMap> aoMapMap = new HashMap<String, AggrOpMap>();
 	private Map<String, List<IdxRange>> groupKeysMap = new HashMap<String, List<IdxRange>>();
+	private String csvSuffix;
 	
-	public CsvAggregateCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+	public CsvAggregateCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		if (pc.containsKey(cfgkey_aggr_old_table)){
 			oldTables = pc.getStringArray(cfgkey_aggr_old_table);
 		}
@@ -61,6 +62,7 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 				groupKeysMap.put(tableName, groupKeys);
 			}
 		}
+		csvSuffix = pc.getString(cfgkey_csv_suffix, null);
 	}
 	
 	private List<String> getCsvFields(CSVRecord r, List<IdxRange> irl){
@@ -126,7 +128,11 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 				}
 			}
 		}
-		return super.updateDynSchema(createTableSqls, schemaUpdated, Arrays.asList(newTables));
+		if (schemaUpdated){
+			return super.updateDynSchema(createTableSqls);
+		}else{
+			return null;
+		}
 	}
 
 	@Override
@@ -142,14 +148,14 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 					groupKeys = groupKeysMap.get(SINGLE_TABLE);
 				}else{
 					String fileKey = inputFileName;
-					if (inputFileName.lastIndexOf(".")!=-1){//remove suffix
-						fileKey = inputFileName.substring(0, inputFileName.lastIndexOf("."));
+					if (inputFileName.lastIndexOf(csvSuffix)!=-1){//remove suffix
+						fileKey = inputFileName.substring(0, inputFileName.lastIndexOf(csvSuffix));
 					}
 					if (groupKeysMap.containsKey(fileKey)){
 						tableKey = fileKey;
 						groupKeys = groupKeysMap.get(fileKey);
 					}else{
-						logger.debug(String.format("groupKeysMap %s does not have inputFileName %s", groupKeysMap.keySet(), fileKey));
+						logger.info(String.format("groupKeysMap %s does not have inputFileName %s", groupKeysMap.keySet(), fileKey));
 						break;
 					}
 				}
@@ -167,7 +173,7 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 	
 	
 	@Override
-	public String[] reduceProcess(Text key, Iterable<Text> values){
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
 		String[] kl = key.toString().split(KEY_SEP);
 		String tableName = kl[0];
 		List<String> ks = new ArrayList<String>();
@@ -208,6 +214,9 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 			}
 		}
 		
-		return new String[]{newKey, Util.getCsv(aggrValues, false), tableName};
+		String[] ret = new String[]{newKey, Util.getCsv(aggrValues, false), tableName};
+		List<String[]> rets = new ArrayList<String[]>();
+		rets.add(ret);
+		return rets;
 	}
 }

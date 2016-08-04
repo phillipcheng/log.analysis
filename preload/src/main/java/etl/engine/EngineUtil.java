@@ -185,8 +185,8 @@ public class EngineUtil {
 		try{
 			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
 			for (int i=0; i<cmds.length; i++){
-				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String[].class).
-						newInstance(wfid, staticCfgFiles[i], null, defaultFs, null);
+				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String[].class).
+						newInstance(wfid, staticCfgFiles[i], defaultFs, null);
 				cmds[i].setPm(ProcessMode.MRProcess);
 			}
 			return cmds;

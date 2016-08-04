@@ -19,8 +19,8 @@ public class SendLogCmd extends ETLCmd{
 	private String bootstrapServers;
 	private String logTopicName;
 	
-	public SendLogCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+	public SendLogCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		logTopicName = pc.getString(cfgkey_topic);
 		bootstrapServers = pc.getString(cfgkey_bootstrap_servers);
 		logger.info(String.format("engine configure: bootstrap:%s, topic:%s", EngineUtil.getInstance().getBootstrapServers(), 

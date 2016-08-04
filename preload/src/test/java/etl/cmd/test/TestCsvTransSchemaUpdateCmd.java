@@ -27,7 +27,6 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			//
 			String remoteCfgFolder = "/etltest/transschemaupdate/cfg/";
 			String staticCfg = "csvTransSchemaUpdate1.properties";
-			String dynCfg = "dynschema_test1_dyncfgout_wfid1";
 			String schemaFile = "dynschema_test1_schemas.txt";
 			//
 			String remoteSqlFolder="/test/dynschemacmd/schemahistory/"; //since this is hard coded in the dynCfg
@@ -36,14 +35,14 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfg), new Path(remoteCfgFolder + dynCfg));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
+			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			cmd.setExeSql(false);
 			cmd.sgProcess();
 			
 			//assertion
@@ -81,7 +80,6 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			//
 			String remoteCfgFolder = "/etltest/transschemaupdate/cfg/";
 			String staticCfg = "csvTransSchemaUpdate2.properties";
-			String dynCfg = "dynschema_test1_dyncfgout_wfid1";
 			String schemaFile = "dynschema_test2_schemas.txt";
 			//
 			String remoteSqlFolder="/test/dynschemacmd/schemahistory/"; //since this is hard coded in the dynCfg
@@ -90,14 +88,14 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + dynCfg), new Path(remoteCfgFolder + dynCfg));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, remoteCfgFolder + dynCfg, getDefaultFS(), null);
+			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			cmd.setExeSql(false);
 			cmd.sgProcess();
 			
 		} catch (Exception e) {

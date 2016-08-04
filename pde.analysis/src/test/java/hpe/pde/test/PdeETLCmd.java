@@ -89,6 +89,15 @@ public class PdeETLCmd {
     	conf.set("fs.defaultFS", defaultFs);
     	FileSystem fs = FileSystem.get(conf);
 		
+    	String remoteCfgFolder = "/pde/etlcfg/";
+    	File localDir = new File(localCfgDir);
+		String[] cfgs = localDir.list();
+		for (String cfg:cfgs){
+			String lcfg = localCfgDir + File.separator + cfg;
+			String rcfg = remoteCfgFolder + "/" + cfg;
+			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
+		}
+		
     	String[] workflows = new String[]{"workflow.xml"};
 		for (String wf: workflows){
 			String workflow = localCfgDir + File.separator + wf;

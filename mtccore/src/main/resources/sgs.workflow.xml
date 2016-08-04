@@ -60,22 +60,106 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 				</property>
 			</configuration>
 		</map-reduce>
-		<ok to="GenCsv"/>
+		<ok to="SchemaUpdateFromXml"/>
 		<error to="fail"/>
 	</action>
-	<action name="GenCsv">
+	<action name="SchemaUpdateFromXml">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.dynschema.DynSchemaCmd</arg>
+			<arg>etl.cmd.dynschema.SchemaFromXmlCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/mtccore/etlcfg/sgsiwf.dynschema.properties</arg>
-			<arg>/mtccore/schemahistory/sgsiwf.dyncfg_${wf:id()}</arg>
+			<arg>/mtccore/etlcfg/sgsiwf.schemaFromXml.properties</arg>
 		</java>
-		<ok to="UpdateAggrSchema"/>
+		<ok to="GenCsv"/>
 		<error to="fail"/>
 	</action>
+	<action name="GenCsv">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="/mtccore/csvdata/csv/${wf:id()}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeReducerMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.textoutputformat.separator</name>
+                    <value>,</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>etl.util.FilenameInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/mtccore/xmldata/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/mtccore/csvdata/csv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.map.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.map.output.value.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>etl.cmd.dynschema.XmlToCsvCmd</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/mtccore/etlcfg/sgsiwf.schemaFromXml.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="LogGenCsvInfo"/>
+        <error to="fail"/>
+    </action>
+    <action name="LogGenCsvInfo">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
+            <arg>unused</arg>
+            <arg>GenCsv</arg>
+            <arg>${hadoop:counters("GenCsv")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("GenCsv")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
+        <ok to="UpdateAggrSchema"/>
+        <error to="fail"/>
+    </action>
 	<action name="UpdateAggrSchema">
         <java>
             <job-tracker>${jobTracker}</job-tracker>
@@ -84,7 +168,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>etl.cmd.transform.CsvAggregateCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.aggr.properties</arg>
-            <arg>/mtccore/schemahistory/sgsiwf.dyncfg_${wf:id()}</arg>
         </java>
         <ok to="AggregateVlr"/>
         <error to="fail"/>
@@ -123,7 +206,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>mapreduce.input.fileinputformat.inputdir</name>
-                    <value>/mtccore/csvdata/${wf:id()}</value>
+                    <value>/mtccore/csvdata/csv/${wf:id()}</value>
                 </property>
                 <property>
                     <name>mapreduce.output.fileoutputformat.outputdir</name>
@@ -163,7 +246,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
             <arg>unused</arg>
-            <arg>unused</arg>
             <arg>AggregateVlr-Info</arg>
             <arg>${hadoop:counters("AggregateVlr")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("AggregateVlr")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -178,8 +260,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.transform.CsvTransformCmd</arg>
             <arg>${wf:id()}</arg>
-            <arg>/mtccore/etlcfg/sgsiwf.transVlr.properties</arg>
-            <arg>/mtccore/schemahistory/sgsiwf.dyncfg_${wf:id()}</arg>
+            <arg>/mtccore/etlcfg/sgsiwf.trans.properties</arg>
         </java>
         <ok to="TransformVlr"/>
         <error to="fail"/>
@@ -242,7 +323,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>staticConfigFile</name>
-                    <value>/mtccore/etlcfg/sgsiwf.transVlr.properties</value>
+                    <value>/mtccore/etlcfg/sgsiwf.trans.properties</value>
                 </property>
             </configuration>
         </map-reduce>
@@ -258,7 +339,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
             <arg>unused</arg>
-            <arg>unused</arg>
             <arg>TransformVlr-Info</arg>
             <arg>${hadoop:counters("TransformVlr")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("TransformVlr")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -270,31 +350,30 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
          <fs>
             <move 
                 source='${nameNode}/mtccore/csvdata/trans/${wf:id()}/part-r-00000' 
-                target='/mtccore/csvdata/${wf:id()}/PoolType_vlr_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/PoolType_vlr_aggr'/>
             <move 
                 source='${nameNode}/mtccore/csvdata/aggr/${wf:id()}/MME_PoolType_wss7_-r-00000' 
-                target='/mtccore/csvdata/${wf:id()}/MME_PoolType_wss7_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/MME_PoolType_wss7_aggr'/>
             <move 
                 source='${nameNode}/mtccore/csvdata/aggr/${wf:id()}/MME_PoolType_vlr_-r-00000' 
-                target='/mtccore/csvdata/${wf:id()}/MME_PoolType_vlr_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/MME_PoolType_vlr_aggr'/>
             <move 
                 source='${nameNode}/mtccore/csvdata/aggr/${wf:id()}/PoolType_vlr_TechnologyType_-r-00000' 
-                target='/mtccore/csvdata/${wf:id()}/PoolType_vlr_TechnologyType_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/PoolType_vlr_TechnologyType_aggr'/>
             <delete path='${nameNode}/mtccore/csvdata/trans/${wf:id()}'/>
             <delete path='${nameNode}/mtccore/csvdata/aggr/${wf:id()}'/>
          </fs>
-        <ok to="SqlExec"/>
+        <ok to="LoadData"/>
         <error to="fail"/>
     </action>
-	<action name="SqlExec">
+	<action name="LoadData">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.dynschema.DynSqlExecutorCmd</arg>
+			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
-			<arg>/mtccore/etlcfg/sgsiwf.sqlexecutor.properties</arg>
-			<arg>/mtccore/schemahistory/sgsiwf.dyncfg_${wf:id()}</arg>
+			<arg>/mtccore/etlcfg/sgsiwf.loaddata.properties</arg>
 		</java>
 		<ok to="BackupData"/>
 		<error to="fail"/>
@@ -307,7 +386,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<arg>etl.cmd.BackupCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.backup.properties</arg>
-			<arg>/mtccore/schemahistory/sgsiwf.dyncfg_${wf:id()}</arg>
 		</java>
 		<ok to="cleanup"/>
 		<error to="fail"/>

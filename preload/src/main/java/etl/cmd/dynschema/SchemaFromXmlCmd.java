@@ -1,10 +1,7 @@
 package etl.cmd.dynschema;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,18 +25,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import etl.engine.ETLCmd;
+import etl.engine.DynaSchemaFileETLCmd;
 import etl.util.DBUtil;
+import etl.util.ScriptEngineUtil;
 import etl.util.Util;
+import etl.util.VarType;
 
-public class DynSchemaCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(DynSchemaCmd.class);
+public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
+	public static final Logger logger = Logger.getLogger(SchemaFromXmlCmd.class);
 	
 	public static final String cfgkey_xml_folder="xml-folder";
-	public static final String cfgkey_csv_folder="csv-folder";
-	public static final String cfgkey_schema_file="schema.file";
-	public static final String cfgkey_schema_history_folder="schema-history-folder";
-	public static final String cfgkey_prefix="prefix";
 	
 	public static final String cfgkey_FileLvelSystemAttrs_xpath="FileSystemAttrs.xpath";
 	public static final String cfgkey_FileLvelSystemAttrs_name="FileSystemAttrs.name";
@@ -59,16 +54,7 @@ public class DynSchemaCmd extends ETLCmd{
 	public static final String cfgkey_TableSystemAttrs_name="TableSystemAttrs.name";
 	public static final String cfgkey_TableSystemAttrs_type="TableSystemAttrs.type";
 	
-	
 	public static final String createtablesql_name="createtables.sql";
-	public static final String droptablesql_name="droptables.sql";
-	public static final String trunctablesql_name="trunctables.sql";
-	public static final String copysql_name="copys.sql";
-	
-	//following are the keys for dynCfg
-	public static final String dynCfg_Key_TABLES_USED="tables.used";
-	public static final String dynCfg_Key_CREATETABLE_SQL_FILE="create.table.sql.file";
-	public static final String dynCfg_Key_XML_FILES="raw.xml.files";//used for backup cmd
 	
 	//used to generate table name
 	private List<String> keyWithValue = new ArrayList<String>();
@@ -79,18 +65,10 @@ public class DynSchemaCmd extends ETLCmd{
 	private List<String> tableLvlSystemFieldTypes = new ArrayList<String>();
 	
 	private String xmlFolder;
-	private String csvFolder;
-	private String schemaHistoryFolder;
-	private String prefix;//used as dbschema name
-	private String schemaFileName;
-	private LogicSchema logicSchema;
-	//
-	private XPathExpression FileLvlSystemAttrsXpath;//file level
 	private XPathExpression xpathExpTables;
 	private XPathExpression xpathExpTableRow0;
 	private XPathExpression xpathExpTableObjDesc;
 	private XPathExpression xpathExpTableAttrNames;
-	private XPathExpression xpathExpTableRows;
 	private XPathExpression[] xpathExpTableSystemAttrs;//table level
 	private XPathExpression xpathExpTableRowValues;
 	//
@@ -98,21 +76,18 @@ public class DynSchemaCmd extends ETLCmd{
 	private Map<String, List<String>> schemaAttrTypeUpdates = new HashMap<String, List<String>>();//store updated/new tables' attribute parts' type (compared with the org schema)
 	private Map<String, List<String>> newTableObjNamesAdded = new HashMap<String, List<String>>();//store new tables' obj name
 	private Map<String, List<String>> newTableObjTypesAdded = new HashMap<String, List<String>>();//store new tables' obj type
-	private Map<String, BufferedWriter> fvWriterMap = new HashMap<String, BufferedWriter>();//store all the data files generated, key by file name
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
 	
-	public DynSchemaCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, dynCfg, defaultFs, otherArgs);
+	public SchemaFromXmlCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfid, staticCfg, defaultFs, otherArgs);
 		keyWithValue = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_useValues));
 		keySkip = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_skipKeys));
-		
 		//
 		XPathFactory xPathfactory = XPathFactory.newInstance();
 		XPath xpath = xPathfactory.newXPath();
 		try {
-			
-			FileLvlSystemAttrsXpath = xpath.compile(pc.getString(cfgkey_FileLvelSystemAttrs_xpath));
+			xpath.compile(pc.getString(cfgkey_FileLvelSystemAttrs_xpath));
 			for (String name: pc.getStringArray(cfgkey_FileLvelSystemAttrs_name)){
 				fileLvlSystemFieldNames.add(name);
 			}
@@ -123,7 +98,7 @@ public class DynSchemaCmd extends ETLCmd{
 			xpathExpTableRow0 = xpath.compile(pc.getString(cfgkey_xpath_TableRow0));
 			xpathExpTableObjDesc = xpath.compile(pc.getString(cfgkey_TableObjDesc_xpath));
 			xpathExpTableAttrNames = xpath.compile(pc.getString(cfgkey_xpath_TableAttrNames));
-			xpathExpTableRows = xpath.compile(pc.getString(cfgkey_xpath_TableRows));
+			xpath.compile(pc.getString(cfgkey_xpath_TableRows));
 			xpathExpTableRowValues = xpath.compile(pc.getString(cfgkey_xpath_TableRowValues));
 			String[] tsxpaths = pc.getStringArray(cfgkey_TableSystemAttrs_xpath);
 			xpathExpTableSystemAttrs = new XPathExpression[tsxpaths.length];
@@ -136,26 +111,14 @@ public class DynSchemaCmd extends ETLCmd{
 			for (String type: pc.getStringArray(cfgkey_TableSystemAttrs_type)){
 				tableLvlSystemFieldTypes.add(type);
 			}
-			this.xmlFolder = pc.getString(cfgkey_xml_folder);
-			this.csvFolder = pc.getString(cfgkey_csv_folder);
-			this.schemaHistoryFolder = pc.getString(cfgkey_schema_history_folder);
-			this.prefix = pc.getString(cfgkey_prefix);
-			this.schemaFileName = pc.getString(cfgkey_schema_file);
-			this.logicSchema = new LogicSchema();
-			Path schemaFile = new Path(schemaFileName);
-			if (fs.exists(schemaFile)){
-				logicSchema = (LogicSchema) Util.fromDfsJsonFile(fs, schemaFileName, LogicSchema.class);
-			}
+			String xmlFolderExp = pc.getString(cfgkey_xml_folder);
+			this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
 		}catch(Exception e){
 			logger.info("", e);
 		}
 	}
 	
-	public String getOutputDataFileName(String tableName){
-		return csvFolder + wfid + "/" + tableName;
-	}
-	
-	public Document getDocument(FileStatus inputXml){
+	private Document getDocument(FileStatus inputXml){
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -168,7 +131,7 @@ public class DynSchemaCmd extends ETLCmd{
 		}
 	}
 	
-	public String generateTableName(TreeMap<String, String> moldParams){
+	private String generateTableName(TreeMap<String, String> moldParams){
 		StringBuffer sb = new StringBuffer();
 		for (String key: moldParams.keySet()){
 			if (!keySkip.contains(key)){
@@ -183,92 +146,20 @@ public class DynSchemaCmd extends ETLCmd{
 		return sb.toString();
 	}
 	
-	public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-	private void closeCsvWriters(){
-		for (BufferedWriter bw:fvWriterMap.values()){
-			if (bw!=null){
-				try {
-					bw.close();
-				}catch(Exception e){
-					logger.error("", e);
-				}
-			}
-		}
-	}
-
 	private Node getNode(NodeList nl, int idx){
 		Node n = nl.item(idx);
 		n.getParentNode().removeChild(n);//for performance
 		return n;
 	}
 	
-	/*
-	 * return number of lines generated
-	 */
-	private int genData(Node mi, Map<String, String> localDnMap, List<String> orgAttrs, List<String> newAttrs, String tableName, 
-			Map<String, BufferedWriter> fvWriterMap) throws Exception {
-		List<String> tableLvlSystemAttValues = new ArrayList<String>();
-		for (XPathExpression exp:xpathExpTableSystemAttrs){
-			tableLvlSystemAttValues.add((String) exp.evaluate(mi, XPathConstants.STRING));
-		}
-		//gen value idx mapping
-		Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//new attr to old attr idx mapping
-		for (int i=0; i<orgAttrs.size(); i++){
-			String attr = orgAttrs.get(i);
-			int idx = newAttrs.indexOf(attr);
-			if (idx!=-1){
-				mapping.put(idx, i);
-			}
-		}
-		NodeList mvl = (NodeList) xpathExpTableRows.evaluate(mi, XPathConstants.NODESET);
-		for (int k=0; k<mvl.getLength(); k++){
-			Node mv = getNode(mvl, k);
-			List<String> fieldValues = new ArrayList<String>();
-			//system values
-			for (String v:tableLvlSystemAttValues){
-				fieldValues.add(v);
-			}
-			for (String n:fileLvlSystemFieldNames){
-				fieldValues.add(localDnMap.get(n));	
-			}
-			//object values
-			String moldn = (String) xpathExpTableObjDesc.evaluate(mv, XPathConstants.STRING);
-			TreeMap<String, String> kvs = Util.parseMapParams(moldn);
-			for (String v:kvs.values()){
-				fieldValues.add(v);
-			}
-			String[] vs = new String[orgAttrs.size()];
-			NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
-			for (int i=0; i<rlist.getLength(); i++){
-				Node r = getNode(rlist, i);
-				String v = r.getTextContent();
-				vs[mapping.get(i)]=v;
-			}
-			fieldValues.addAll(Arrays.asList(vs));
-			String outputFileName = getOutputDataFileName(tableName);
-			BufferedWriter osw = fvWriterMap.get(outputFileName);
-			if (osw ==null) {
-				osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(outputFileName))));
-				fvWriterMap.put(outputFileName, osw);
-			}
-			String csv = Util.getCsv(fieldValues, true);
-			osw.write(csv);
-		}
-		return mvl.getLength();
-	}
-	
 	/**
-	 * 
-	 * @return either number of csv >=0
-	 * or schemaUpdated is true return -1
 	 */
-	private int checkSchemaUpdateOrGenData(FileStatus[] inputFileNames){
-		int schemaUpdated=0;
+	private boolean checkSchemaUpdate(FileStatus[] inputFileNames){
+		boolean schemaUpdated=false;
 		try {
 			for (FileStatus inputFile: inputFileNames){
 				logger.debug(String.format("process %s", inputFile));
 				Document mf = getDocument(inputFile);
-				Map<String, String> localDnMap = Util.parseMapParams((String)FileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
 				NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
 				for (int i=0; i<ml.getLength(); i++){
 					Node mi = getNode(ml, i);
@@ -322,11 +213,7 @@ public class DynSchemaCmd extends ETLCmd{
 							}
 							schemaAttrNameUpdates.put(tableName, newAttrNames);
 							schemaAttrTypeUpdates.put(tableName, newAttrTypes);
-							schemaUpdated=-1;
-						}else{
-							if (schemaUpdated>=0){//gen data
-								schemaUpdated +=genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName, fvWriterMap);
-							}
+							schemaUpdated=true;
 						}
 					}else{
 						//new table needed
@@ -346,40 +233,27 @@ public class DynSchemaCmd extends ETLCmd{
 						}
 						newTableObjNamesAdded.put(tableName, objNameList);
 						newTableObjTypesAdded.put(tableName, objTypeList);
-						schemaUpdated=-1;
+						schemaUpdated=true;
 					}
 				}
 			}
 		}catch(Exception e){
 			logger.error("", e);
-		}finally{
-			closeCsvWriters();
 		}
 		return schemaUpdated;
 	}
 	
-	/**
-	output: schema, createsql, csvfiles. if updated schema detected
-		  : csvfiles. if no updated schema
-		  : dynCfgOutput${wf.id} with contents:
-		  		create-sql-file-name:xxx
-		  		xml-file-names:
-		  		used-tables: (used to generate csv file names)
+	/*
+	 * output: schema, createsql
 	*/
 	@Override
 	public List<String> sgProcess() {
 		List<String> logInfo = new ArrayList<String>();
 		try {
-			String createsqlFileName = String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, createtablesql_name, wfid);
 			FileStatus[] inputFileNames = fs.listStatus(new Path(xmlFolder));
-			//1. check new/update schema, generate csv files
-			int schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames);
-			//generate schema files
-			List<String> createTableSqls = new ArrayList<String>();
-			if (schemaUpdated==-1){//updated
-				List<String> dropTableSqls = new ArrayList<String>();
-				List<String> truncTableSqls = new ArrayList<String>();
-				List<String> copysqls = new ArrayList<String>();
+			boolean schemaUpdated = checkSchemaUpdate(inputFileNames);
+			if (schemaUpdated){//updated
+				List<String> createTableSqls = new ArrayList<String>();
 				List<String> sysAttrNames = new ArrayList<String>();
 				//set sys attr names into logic schema
 				sysAttrNames.addAll(tableLvlSystemFieldNames);
@@ -395,7 +269,7 @@ public class DynSchemaCmd extends ETLCmd{
 						logicSchema.addAttributes(tn, schemaAttrNameUpdates.get(tn));
 						logicSchema.addAttrTypes(tn, schemaAttrTypeUpdates.get(tn));
 						//gen update sql
-						createTableSqls.addAll(DBUtil.genUpdateTableSql(fieldNameList, fieldTypeList, tn, prefix));
+						createTableSqls.addAll(DBUtil.genUpdateTableSql(fieldNameList, fieldTypeList, tn, dbPrefix));
 					}else{//new table
 						//gen create sql
 						fieldNameList.addAll(tableLvlSystemFieldNames);
@@ -410,48 +284,14 @@ public class DynSchemaCmd extends ETLCmd{
 						logicSchema.updateTableAttrs(tn, fieldNameList);
 						logicSchema.updateTableAttrTypes(tn, fieldTypeList);
 						//
-						createTableSqls.add(DBUtil.genCreateTableSql(fieldNameList, fieldTypeList, tn, prefix));
-						dropTableSqls.add(DBUtil.genDropTableSql(tn, prefix));
-						truncTableSqls.add(DBUtil.genTruncTableSql(tn, prefix));
+						createTableSqls.add(DBUtil.genCreateTableSql(fieldNameList, fieldTypeList, tn, dbPrefix));
 					}
 					//gen copys.sql for reference
 					List<String> attrs = new ArrayList<String>();
 					attrs.addAll(logicSchema.getAttrNames(tn));
-					String copySql = DBUtil.genCopyLocalSql(attrs, tn, prefix, getOutputDataFileName(tn));
-					copysqls.add(copySql);
 				}
-				
-				
-				//gen schema files to history dir for reference
-				Util.writeDfsFile(fs, createsqlFileName, createTableSqls);
-				Util.writeDfsFile(fs, String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, droptablesql_name, wfid), dropTableSqls);
-				Util.writeDfsFile(fs, String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, trunctablesql_name, wfid), truncTableSqls);
-				Util.writeDfsFile(fs, String.format("%s%s.%s_%s", schemaHistoryFolder, prefix, copysql_name, wfid), copysqls);
-				
-				//gen logic schema
-				Util.toDfsJsonFile(fs, schemaFileName, logicSchema);
-				
-				//gen data again using new schema
-				fvWriterMap.clear();
-				schemaAttrNameUpdates.clear();
-				schemaUpdated = checkSchemaUpdateOrGenData(inputFileNames);
-				//only generate createtable sql entry when there is schema update
-				this.dynCfgMap.put(dynCfg_Key_CREATETABLE_SQL_FILE, createsqlFileName);
+				super.updateDynSchema(createTableSqls);
 			}
-			
-			//output dyncfg
-			List<String> utl = new ArrayList<String>();
-			List<String> rawFiles = new ArrayList<String>();
-			utl.addAll(tablesUsed);
-			for (FileStatus inputFileName:inputFileNames){
-				rawFiles.add(inputFileName.getPath().getName());
-			}
-			this.dynCfgMap.put(dynCfg_Key_TABLES_USED, utl);
-			this.dynCfgMap.put(dynCfg_Key_XML_FILES, rawFiles);
-			this.saveDynCfg();
-			
-			//output loginfo
-			logInfo.add(schemaUpdated+"");//number of csv lines
 			logInfo.add(inputFileNames.length + "");//number of input files
 		}catch(Exception e){
 			logger.error("", e);

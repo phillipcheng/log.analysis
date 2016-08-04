@@ -26,7 +26,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String csvtransProp = "csvtrans.properties";
 			String[] csvFiles = new String[] {"PJ24002A_BBG2.csv"};
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass);
+			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			
 			// assertion
@@ -67,7 +67,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String csvtransProp = "csvtrans3.properties";
 			String csvFile = "csvtrans2.csv";
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, testCmdClass);
+			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+					testCmdClass, false);
 			logger.info("Output is:"+output);
 			assertTrue(output.size() > 0);
 			String sampleOutput = output.get(0);
@@ -102,7 +103,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String csvtransProp = "csvtrans2.properties";
 			String csvFile = "csvtrans2.csv";
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, testCmdClass);
+			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+					testCmdClass, false);
 			logger.info("Output is:"+output);
 			assertTrue(output.size() > 0);
 			String sampleOutput = output.get(0);
@@ -141,7 +143,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String csvtransProp = "csvtrans.telecom.properties";
 			String csvFile = "telecom.csv";
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, testCmdClass);
+			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+					testCmdClass, false);
 			logger.info("Output is:"+output);
 			String row1 = output.get(0);
 			String[] row1fields = row1.split(",",-1);
@@ -186,7 +189,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(schemaFolder));
 			getFs().copyFromLocalFile(new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, testCmdClass);
+			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+					testCmdClass, false);
 			logger.info("Output is:"+output);
 			String row1 = output.get(0);
 			String[] row1fields = row1.split(",",-1);

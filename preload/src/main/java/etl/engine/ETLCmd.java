@@ -7,7 +7,6 @@ import java.util.Map;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -27,8 +26,6 @@ public abstract class ETLCmd {
 	
 	protected String wfid;
 	protected FileSystem fs;
-	protected String dynCfgFile;
-	protected Map<String, Object> dynCfgMap;
 	protected PropertiesConfiguration pc;
 	protected String[] otherArgs;
 
@@ -44,9 +41,8 @@ public abstract class ETLCmd {
 	private Map<String, Object> systemVariables = new HashMap<String, Object>();
 	
 	
-	public ETLCmd(String wfid, String staticCfg, String dynCfg, String defaultFs, String[] otherArgs){
+	public ETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		this.wfid = wfid;
-		this.dynCfgFile = dynCfg;
 		try {
 			conf = new Configuration();
 			if (defaultFs!=null){
@@ -56,25 +52,9 @@ public abstract class ETLCmd {
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		if (dynCfg!=null){
-			try {
-				if (fs.exists(new Path(dynCfg))){
-					dynCfgMap = (Map<String, Object>) Util.fromDfsJsonFile(fs, dynCfg, Map.class);
-				}else{
-					dynCfgMap = new HashMap<String, Object>();
-				}
-			}catch(Exception e){
-				logger.error("", e);
-			}
-		}
 		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
 		this.otherArgs = otherArgs;
 		systemVariables.put(VAR_WFID, wfid);
-		systemVariables.put(VAR_DYNCFGMAP, dynCfgMap);
-	}
-	
-	public void saveDynCfg(){
-		Util.toDfsJsonFile(fs, dynCfgFile, dynCfgMap);
 	}
 	
 	public Map<String, Object> getSystemVariables(){
@@ -95,16 +75,15 @@ public abstract class ETLCmd {
 	/**
 	 * @return map
 	 */
-	
 	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		logger.error("empty reduce-map impl, should not be invoked.");
 		return null;
 	}
 	
 	/**
-	 * @return newKey, newValue, baseOutputPath
+	 * @return list of newKey, newValue, baseOutputPath
 	 */
-	public String[] reduceProcess(Text key, Iterable<Text> values){
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
 		logger.error("empty reduce impl, should not be invoked.");
 		return null;
 	}
