@@ -136,7 +136,7 @@ public class TestETLCmd {
 	 * @throws Exception
 	 */
 	public List<String> mrTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames, String kvsep) throws Exception {
+			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames, boolean nullable) throws Exception {
 		try {
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().delete(new Path(remoteInputFolder), true);
@@ -151,10 +151,14 @@ public class TestETLCmd {
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
 			getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + staticProperties);
-			getConf().set("mapreduce.output.textoutputformat.separator", kvsep);
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeReducerMapper.class);
-			job.setReducerClass(etl.engine.InvokeReducer.class);
+			if (nullable){
+				job.setReducerClass(etl.engine.InvokeNullableReducer.class);
+			}else{
+				job.setReducerClass(etl.engine.InvokeReducer.class);
+			}
+			
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(Text.class);
 			if (useFileNames){

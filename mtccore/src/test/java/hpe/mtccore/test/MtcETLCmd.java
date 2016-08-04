@@ -138,4 +138,46 @@ public class MtcETLCmd extends TestETLCmd{
 			logger.error("", e);
 		}
 	}
+	
+	@Test
+	public void cleanUp() {
+		cleanUp("hdfs://192.85.247.104:19000");
+	}
+	
+	public void realCleanUp(String defaultFs) throws Exception{
+		Configuration conf = new Configuration();
+    	conf.set("fs.defaultFS", defaultFs);
+    	FileSystem fs = FileSystem.get(conf);
+		String xmldir = "/mtccore/xmldata";
+		String csvdir = "/mtccore/csvdata";
+		String schemadir = "/mtccore/schema";
+		String schemaHistoryDir = "/mtccore/schemahistory";
+		fs.delete(new Path(csvdir), true);
+		fs.delete(new Path(xmldir), true);
+		fs.delete(new Path(schemadir), true);
+		fs.delete(new Path(schemaHistoryDir), true);
+		
+		fs.mkdirs(new Path(csvdir));
+		fs.mkdirs(new Path(xmldir));
+		fs.mkdirs(new Path(schemadir));
+		fs.mkdirs(new Path(schemaHistoryDir));
+	}
+	
+	public void cleanUp(final String defaultFs) {
+		try {
+			if (defaultFs.contains("127.0.0.1")){
+				realCleanUp(defaultFs);
+			}else{
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			    ugi.doAs(new PrivilegedExceptionAction<Void>() {
+			      public Void run() throws Exception {
+			    	  realCleanUp(defaultFs);
+					return null;
+			      }
+			    });
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+	}
 }

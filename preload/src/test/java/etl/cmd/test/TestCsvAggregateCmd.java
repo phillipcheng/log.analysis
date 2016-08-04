@@ -25,7 +25,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String csvtransProp = "csvaggregate1.properties";
 			String[] csvFiles = new String[] {"csvaggregate.data"};
 			
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, ",");
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
 			logger.info("Output is:"+output);
 			
 			// assertion
@@ -61,7 +61,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String csvtransProp = "csvAggrMultipleFiles.properties";
 			String[] csvFiles = new String[] {"MyCore_.data","MyCore1_.data"};
 			
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, ",");
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
 			logger.info("Output is:"+output);
 			
 			// assertion

@@ -61,7 +61,7 @@ public class LoadDataCmd extends DynaSchemaFileETLCmd{
 						if (fst.getPath().getName().equals(tableName)){
 							tableUsed.put(tableName, tableName);
 							continue;
-						}else if (fst.getPath().getName().startsWith(tableName+csvSuffix)){
+						}else if (fst.getPath().getName().equals(tableName+csvSuffix)){
 							tableUsed.put(tableName, tableName+csvSuffix);
 							continue;
 						}

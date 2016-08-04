@@ -97,11 +97,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>mapreduce.job.reduce.class</name>
-                    <value>etl.engine.InvokeReducer</value>
-                </property>
-                <property>
-                    <name>mapreduce.output.textoutputformat.separator</name>
-                    <value>,</value>
+                    <value>etl.engine.InvokeNullableReducer</value>
                 </property>
                 <property>
                     <name>mapreduce.task.timeout</name>
@@ -307,7 +303,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>mapreduce.input.fileinputformat.inputdir</name>
-                    <value>/mtccore/csvdata/aggr/${wf:id()}/PoolType_vlr_*</value>
+                    <value>/mtccore/csvdata/aggr/${wf:id()}/PoolType_vlr_-r-*</value>
                 </property>
                 <property>
                     <name>mapreduce.output.fileoutputformat.outputdir</name>
