@@ -251,6 +251,7 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 		List<String> logInfo = new ArrayList<String>();
 		try {
 			FileStatus[] inputFileNames = fs.listStatus(new Path(xmlFolder));
+			logInfo.add(inputFileNames.length + "");//number of input files
 			boolean schemaUpdated = checkSchemaUpdate(inputFileNames);
 			if (schemaUpdated){//updated
 				List<String> createTableSqls = new ArrayList<String>();
@@ -290,9 +291,8 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 					List<String> attrs = new ArrayList<String>();
 					attrs.addAll(logicSchema.getAttrNames(tn));
 				}
-				super.updateDynSchema(createTableSqls);
+				logInfo.addAll(super.updateDynSchema(createTableSqls));
 			}
-			logInfo.add(inputFileNames.length + "");//number of input files
 		}catch(Exception e){
 			logger.error("", e);
 		}
