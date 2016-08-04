@@ -1,50 +1,49 @@
 log.analysis
 ============
 # Features
-## Hadoop based ETL platform
+## Hadoop based Analysis platform
 ## Oozie as the workflow and coordination engine
 User make up the workflow by using the out-of-box commands, or project specific commands.
 
 Then use the oozie workflow engine and coordination engine to schedule the jobs.
 ## Commands
-### static config
-### dynamic config in
-### dynamic config out
+### config
 ### wfid
 Since ETL will be processed in batch mode, the wfid stands for workflow instance id. 
-
 It will be generated to identify a ETL batch process instance, usually that stands for a list of input files (dataset).
 ### Single Process Mode
 In single JVM process mode, each cmd is setup using
-wfid, static config, dynamic config in, dynamic config out, defaultFs (hdfs).
+wfid, static config, defaultFs (hdfs).
 
-Then the cmd will be passed offset, row, context as following signature.
 ```
-List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context)
+List<String> sgProcess()
 ```
-User can ignore the offset and context.
+return list of log info.
 
-Only the row will have the line of csv data if this command is chained.
+### Only Map Mode
+In map only mode, each cmd is setup using 
+wfid, static config, defaultFs (hdfs), FileInputFormat/FilenameInputFormat
 
-### Mapreduce Mode
-In mapreduce mode, each cmd is setup using 
-wfid, static config, dynamic config in, dynamic config out, defaultFs (hdfs).
-
-Then the cmd will be passed offset, row, context as following signature.
+Then the cmd needs to implement
 ```
-List<String> process(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context)
+public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context)
 ```
-the offset is the byte offset from the beginning of the input file
 
-the row is each line of the input file
+### Map Reduce Mode
+In map reduce mode, each cmd is setup using 
+wfid, static config, defaultFs (hdfs), FileInputFormat/FilenameInputFormat
+Then the cmd needs to implement
+```
+//return the key, value to write to context
+public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context)
+//return list of newKey, newValue, baseOutputPath
+public List<String[]> reduceProcess(Text key, Iterable<Text> values)
 
-the context is the mapper context, where user can get configuration and other info
-
-each cmd returned the list of output lines which will be further processed or output.
+```
 ### Chained Cmd
 
 # Reusable Commands
-## 1. CSV file transformation
+## 1. CSV Transformation Cmd
 **Class Name: etl.cmd.transform.CsvTransformCmd**
 User can specify following column operations (Merge, Split, Update) on the fields for each line of the csv file.
 ###  Columns Merge
@@ -111,84 +110,8 @@ We enable user to specify the row validation expression to validate each line
 row.validation=fields.length>10
 ```
     For this java script expression, the system varaible "fields" (an array of fields for each line) is passed.
-## 2. Seed Input Generation
-**Class Name: etl.cmd.GenSeedInputCmd**
-
-Mapreduce (seed) input generation for non csv files.
-
-This cmd will read all files under the input.folder, then generates a seed input file under output.seed.folder
-
-The follow up cmd usually run under mapreduce mode and with the inputformat class set to NLineInputFormat, and linespermap set to 1.
-### use.wfid
-if set to true, the input.folder becomes input.folder + '/' + wfid
-### Example 1:
-static configuration:
-```
-input.folder=/pde/rawinput
-output.seed.folder=/pde/seedinput
-```
-workflow configuration:
-```xml
-<action name="GenBinSeedInput">
-	<java>
-		<job-tracker>${jobTracker}</job-tracker>
-		<name-node>${nameNode}</name-node>
-		<main-class>etl.engine.ETLCmdMain</main-class>
-		<arg>etl.cmd.GenSeedInputCmd</arg>
-		<arg>${wf:id()}</arg>
-		<arg>/pde/etlcfg/pde.bin.genseedinput.properties</arg>
-		<arg>unused</arg>
-		<arg>unused</arg>
-		<capture-output/>
-	</java>
-	<ok to="BinCsvConverter"/>
-	<error to="fail"/>
-</action>
-<action name="BinCsvConverter">
-	<map-reduce>
-		<job-tracker>${jobTracker}</job-tracker>
-		<name-node>${nameNode}</name-node>
-		<configuration>
-			<property>
-				<name>mapreduce.job.map.class</name>
-				<value>etl.engine.InvokeMapper</value>
-			</property>
-			<property>
-				<name>mapreduce.job.inputformat.class</name>
-				<value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
-			</property>
-			<property>
-				<name>mapreduce.input.lineinputformat.linespermap</name>
-				<value>1</value>
-			</property>
-			<property>
-				<name>mapreduce.job.outputformat.class</name>
-				<value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat</value>
-			</property>
-			<property>
-				<name>mapreduce.input.fileinputformat.inputdir</name>
-				<value>${wf:actionData('GenBinSeedInput')['seed.input.filename']}</value>
-			</property>
-			<property>
-				<name>cmdClassName</name>
-				<value>etl.cmd.ShellCmd</value>
-			</property>
-			<property>
-				<name>wfid</name>
-				<value>${wf:id()}</value>
-			</property>
-			<property>
-				<name>staticConfigFile</name>
-				<value>/pde/etlcfg/tracefilter.shell.properties</value>
-			</property>
-		</configuration>
-	</map-reduce>
-</action>
-```
-In this example, GenBinSeedInput is an action using GenSeedInputCmd command, it will generate a file containing all the file names under input.folder specified within /pde/etlcfg/pde.bin.genseedinput.properties.
-
-The next action called "BinCsvConverter" will transform each bin file into an csv file, this will be invoked under mapreduce mode.
-
+## 2. Csv Aggregation Cmd
+**Class Name: etl.cmd.transform.CsvAggregateCmd**
 
 ## 3. SFTP fetch files Cmd
 **Class Name: etl.cmd.SftpCmd**
@@ -206,10 +129,10 @@ sftp.clean=true
 sftp.getRetryTimes=3
 sftp.connectRetryTimes=3
 ```
-## 4. Dynamic Schema Cmd
-**Class Name: etl.cmd.dynschema.DynSchemaCmd**
+## 4. Schema Update from XMl Cmd
+**Class Name: etl.cmd.dynschema.SchemaFromXmlCmd**
 
-Generate or update the schema based on the input xml files, then generate the csv files accordingly.
+Generate or update the schema based on the input xml files.
 
 ### Example 1:
 
@@ -303,60 +226,10 @@ VS_avePerCoreCpuUsage numeric(15,5),
 VS_peakPerCoreCpuUsage numeric(15,5));
 ```
 
-## 5. Dynamic Sql Generation/Execution Cmd
-**Class Name: etl.cmd.dynschema.DynSqlExecutorCmd**
+## 5. Xml To Csv Cmd
+**Class Name: etl.cmd.dynschema.XmlToCsvCmd**
 
-This cmd is used together with dynamic schema Cmd.
-Based on the schema generated, csv files generated, dynamic config generated by the previous cmd, 
-this cmd will 
-1. run the create/update table schema sql if specified in the dynmic config.
-2. auto generate and run the copy cmd to copy the csv data to database
 
-### Example 1
-Static Configuration:
-```
-hdfs.webhdfs.root=http://192.85.247.104:50070/webhdfs/v1
-csv-folder=/mtccore/csvdata/
-schema-folder=/mtccore/schema/
-prefix=sgsiwf
-systemAttrs.name=endTime,duration,SubNetwork,ManagedElement
-
-db.driver=com.vertica.jdbc.Driver
-db.url=jdbc:vertica://192.85.247.104:5433/cmslab
-db.user=dbadmin
-db.password=password
-db.loginTimeout=35
-```
-Workflow Configuration for dynSchema and dynSqlExecutor used sequentially.
-```xml
-<action name="GenCsv">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.dynschema.DynSchemaCmd</arg>
-			<arg>${wf:id()}</arg>
-			<arg>/mtccore/etlcfg/sgsiwf.dynschema.properties</arg>
-			<arg>unused</arg>
-			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-			<capture-output/>
-		</java>
-		<ok to="SqlExec"/>
-	</action>
-	<action name="SqlExec">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.dynschema.DynSqlExecutorCmd</arg>
-			<arg>${wf:id()}</arg>
-			<arg>/mtccore/etlcfg/sgsiwf.sqlexecutor.properties</arg>
-			<arg>${concat("/mtccore/schemahistory/sgsiwf.dyncfg_", wf:id())}</arg>
-			<arg>unused</arg>
-			<capture-output/>
-		</java>
-	</action>
-```
 ## 6. Backup Cmd
 **Class Name: etl.cmd.BackupCmd**
 
@@ -468,6 +341,8 @@ default.attr=E164
 005706.attr=IMSI,GTAddr
 ```
 
+## 11. Send Log Cmd
+**Class Name: etl.cmd.SendLogCmd**
 
 # Sample Projects
 ## PDE Analysis
@@ -475,7 +350,7 @@ default.attr=E164
 #### Session To CSV Cmd
 
 ### ETL Flow
-![PDE ETL Flow](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/pde.analysis/pic/flow1.png)
+![PDE ETL Flow](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/pde.analysis/pic/pde.png)
 ## SGSIWF Analysis
 ### ETL Flow
-![enter image description here](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/mtccore/pic/flow1.png)
+![enter image description here](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/mtccore/pic/sgsiwf.png)
