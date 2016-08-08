@@ -1,0 +1,38 @@
+<project name="preload" default="dist" basedir=".">
+	<property name="target"  location="target"/>
+	<property name="dist"  location="dist"/>
+	
+	<target name="dist" depends="clean">
+		<mkdir dir="${dist}"/>
+        <mkdir dir="${dist}/lib"/>
+		<copy todir="${dist}/lib/">
+			<fileset dir="${target}/lib/">
+		    	<include name="commons*.jar"/>
+				<include name="jackson-core-2.7.4.jar"/>
+                <include name="jackson-databind*.jar"/>
+				<include name="jackson-annotations*.jar"/>
+                <include name="jsch*.jar"/>
+                <include name="kafka-clients*.jar"/>
+				<include name="log4j*.jar"/>
+		    </fileset>
+			<fileset dir="lib/">
+                <include name="vertica*.jar"/>
+            </fileset>
+			<fileset dir="${target}">
+                <include name="preload-0.1.0.jar"/>
+            </fileset>
+		</copy>
+		<copy todir="${dist}">
+            <fileset dir="bin">
+                <include name="*.sh"/>
+            </fileset>
+			<fileset dir="src/main/resources">
+                <include name="etlengine.properties"/>
+            </fileset>
+        </copy>
+	</target>
+	
+	<target name="clean">
+		 <delete dir="${dist}"></delete>
+	</target>
+</project>

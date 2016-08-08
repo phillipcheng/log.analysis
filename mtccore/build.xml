@@ -1,0 +1,41 @@
+<project name="mtccore" default="dist" basedir=".">
+	<property name="target"  location="target"/>
+	<property name="dist"  location="dist"/>
+	
+	<target name="dist" depends="clean">
+		<mkdir dir="${dist}"/>
+        <mkdir dir="${dist}/etlcfg"/>
+		<copy todir="${dist}/etlcfg/">
+			<fileset dir="${target}/classes/">
+		    	<include name="*.properties"/>
+				<exclude name="log4j.properties"/>
+                <include name="*.job.properties"/>
+		    </fileset>
+		</copy>
+		<copy todir="${dist}">
+            <fileset dir="${target}/classes/">
+                <include name="*.job.properties"/>
+                <include name="*.xml"/>
+            </fileset>
+        </copy>
+		<copy todir="${dist}">
+            <fileset dir="${target}/classes/">
+                <include name="etlengine.properties"/>
+            </fileset>
+        </copy>
+        <copy todir="${dist}">
+            <fileset dir="bin/">
+                <include name="*.sh"/>
+            </fileset>
+        </copy>
+		<copy todir="${dist}">
+            <fileset dir="${target}">
+                <include name="mtccore-0.1.0.jar"/>
+            </fileset>
+        </copy>
+	</target>
+	
+	<target name="clean">
+		 <delete dir="${dist}"></delete>
+	</target>
+</project>

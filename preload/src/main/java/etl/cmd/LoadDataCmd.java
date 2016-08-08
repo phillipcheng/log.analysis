@@ -41,7 +41,7 @@ public class LoadDataCmd extends DynaSchemaFileETLCmd{
 	public List<String> sgProcess() {
 		List<String> logInfo = new ArrayList<String>();
 		List<String> copysqls = new ArrayList<String>();
-		if (this.logicSchema==null){
+		if (this.schemaFile==null){
 			for (int i=0; i<loadSql.length; i++){
 				String sql = null;
 				//use csvFile

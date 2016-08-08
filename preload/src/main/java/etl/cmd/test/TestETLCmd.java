@@ -151,6 +151,7 @@ public class TestETLCmd {
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
 			getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder + staticProperties);
+			getConf().set("mapreduce.output.textoutputformat.separator", ",");
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeReducerMapper.class);
 			if (nullable){

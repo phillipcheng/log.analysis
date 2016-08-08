@@ -35,7 +35,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 	
 	private void assertTableContent(String dfsConfigFolder, String staticCfgName, String csvFolder, 
 			String[] tableNames, String[] csvFileNames, int rowsUpdated){
-		PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), dfsConfigFolder + staticCfgName);
+		PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), dfsConfigFolder + staticCfgName);
 		int linesInFile = 0;
 		for (int i=0; i<tableNames.length; i++){
 			String tableName = tableNames[i];
@@ -225,7 +225,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			
 			//checking create table already created
 			String sql ="SELECT table_name from tables where table_schema='"+prefix+"' and table_name='MyCore_';";
-			PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), dfsCfgFolder + staticCfgName);
+			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), dfsCfgFolder + staticCfgName);
 			boolean result=DBUtil.checkTableExists(sql,pc);
 			assertTrue(result);
 

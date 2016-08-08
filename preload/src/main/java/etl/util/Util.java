@@ -12,6 +12,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -41,6 +42,8 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
+
+import etl.engine.EngineUtil;
 
 
 public class Util {
@@ -83,6 +86,18 @@ public class Util {
 				}
 			}
 		}
+	}
+	
+	public static PropertiesConfiguration getMergedPCFromDfs(FileSystem fs, String conf){
+		PropertiesConfiguration cmdpc = Util.getPropertiesConfigFromDfs(fs, conf);
+		PropertiesConfiguration enginepc = EngineUtil.getInstance().getEngineProp();
+		Iterator<String> it = enginepc.getKeys();
+		while (it.hasNext()){
+			String key = it.next();
+			cmdpc.addProperty(key, enginepc.getProperty(key));
+		}
+		
+		return cmdpc;
 	}
 	
 	//k1=v1,k2=v2 =>{{k1,v1},{k2,v2}}

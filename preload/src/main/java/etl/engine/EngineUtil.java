@@ -26,7 +26,7 @@ public class EngineUtil {
 	public static final String key_kafka_log_topic="kafka.log.topic";
 	public static final String key_enable_kafka="kafka.enabled";
 	
-	private PropertiesConfiguration engineProp = new PropertiesConfiguration();
+	private PropertiesConfiguration engineProp = null;
 	
 	private Producer<String, String> producer = null;
 	private String logTopicName;
@@ -60,10 +60,12 @@ public class EngineUtil {
 		InputStream input = this.getClass().getClassLoader().getResourceAsStream(config_file);
 		if (input!=null){
 			try {
+				engineProp = new PropertiesConfiguration();
 				engineProp.load(input);
 				logTopicName = engineProp.getString(key_kafka_log_topic);
 				sendLog = engineProp.getBoolean(key_enable_kafka, false);
 				bootstrapServers = engineProp.getString(key_bootstrap_servers);
+				logger.info(String.format("kafka producer bootstrap servers:%s", bootstrapServers));
 				if (sendLog){
 					producer = createProducer(bootstrapServers);
 				}
@@ -214,5 +216,13 @@ public class EngineUtil {
 	}
 	public void setBootstrapServers(String bootstrapServers) {
 		this.bootstrapServers = bootstrapServers;
+	}
+
+	public PropertiesConfiguration getEngineProp() {
+		return engineProp;
+	}
+
+	public void setEngineProp(PropertiesConfiguration engineProp) {
+		this.engineProp = engineProp;
 	}
 }

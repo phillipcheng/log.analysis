@@ -1,6 +1,7 @@
 package etl.engine;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,15 +45,17 @@ public abstract class ETLCmd {
 	public ETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		this.wfid = wfid;
 		try {
+			String fs_key = "fs.defaultFS";
 			conf = new Configuration();
 			if (defaultFs!=null){
-				conf.set("fs.defaultFS", defaultFs);
+				conf.set(fs_key, defaultFs);
 			}
+			logger.info(String.format("%s is %s", fs_key, conf.get(fs_key)));
 			this.fs = FileSystem.get(conf);
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		this.pc = Util.getPropertiesConfigFromDfs(fs, staticCfg);
+		pc = Util.getMergedPCFromDfs(fs, staticCfg);
 		this.otherArgs = otherArgs;
 		systemVariables.put(VAR_WFID, wfid);
 	}

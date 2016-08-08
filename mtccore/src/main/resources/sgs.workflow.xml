@@ -71,6 +71,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<arg>etl.cmd.dynschema.SchemaFromXmlCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.schemaFromXml.properties</arg>
+			<arg>${nameNode}</arg>
 		</java>
 		<ok to="GenCsv"/>
 		<error to="fail"/>
@@ -148,7 +149,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>etl.cmd.SendLogCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
-            <arg>unused</arg>
+            <arg>${nameNode}</arg>
             <arg>GenCsv</arg>
             <arg>${hadoop:counters("GenCsv")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("GenCsv")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -164,6 +165,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>etl.cmd.transform.CsvAggregateCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.aggr.properties</arg>
+            <arg>${nameNode}</arg>
         </java>
         <ok to="AggregateVlr"/>
         <error to="fail"/>
@@ -241,7 +243,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>etl.cmd.SendLogCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
-            <arg>unused</arg>
+            <arg>${nameNode}</arg>
             <arg>AggregateVlr-Info</arg>
             <arg>${hadoop:counters("AggregateVlr")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("AggregateVlr")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -257,6 +259,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>etl.cmd.transform.CsvTransformCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.trans.properties</arg>
+            <arg>${nameNode}</arg>
         </java>
         <ok to="TransformVlr"/>
         <error to="fail"/>
@@ -334,7 +337,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>etl.cmd.SendLogCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
-            <arg>unused</arg>
+            <arg>${nameNode}</arg>
             <arg>TransformVlr-Info</arg>
             <arg>${hadoop:counters("TransformVlr")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("TransformVlr")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -370,6 +373,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.loaddata.properties</arg>
+			<arg>${nameNode}</arg>
 		</java>
 		<ok to="BackupData"/>
 		<error to="fail"/>
@@ -382,6 +386,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<arg>etl.cmd.BackupCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.backup.properties</arg>
+			<arg>${nameNode}</arg>
 		</java>
 		<ok to="cleanup"/>
 		<error to="fail"/>

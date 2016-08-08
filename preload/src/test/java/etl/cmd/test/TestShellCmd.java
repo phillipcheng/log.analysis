@@ -52,7 +52,7 @@ public class TestShellCmd extends TestETLCmd {
 			job.waitForCompletion(true);
 
 			//check results
-			PropertiesConfiguration pc = Util.getPropertiesConfigFromDfs(getFs(), remoteCfgFolder + shellProp);
+			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			assertTrue(sourceDir.exists());
 

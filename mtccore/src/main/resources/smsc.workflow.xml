@@ -17,7 +17,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
 			<arg>etl.cmd.SftpCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/smsc_sftp.properties</arg>
-			<capture-output/>
+			<arg>${nameNode}</arg>
 		</java>
 		<ok to="loadDataCmd"/>
 		<error to="fail"/>
@@ -30,7 +30,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
 			<arg>etl.cmd.LoadDataCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/smsc_loaddata.properties</arg>
-			<capture-output/>
+			<arg>${nameNode}</arg>
 		</java>
 		<ok to="BackupData"/>
 		<error to="fail"/>
@@ -43,6 +43,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
 			<arg>etl.cmd.BackupCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/smsc_backup.properties</arg>
+			<arg>${nameNode}</arg>
 		</java>
 		<ok to="end"/>
 		<error to="fail"/>
