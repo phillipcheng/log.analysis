@@ -7,11 +7,14 @@ done
 
 hdfs dfs -mkdir -p /mtccore/xmldata
 hdfs dfs -mkdir -p /mtccore/csvdata
-hdfs dfs -mkdir -p /mtccore/schema
 hdfs dfs -mkdir -p /mtccore/schemahistory
 
-hdfs dfs -rm -r /user/oozie/mtccore/
+hdfs dfs -rm -r /mtccore/schema
+hdfs dfs -mkdir -p /mtccore/schema
+hdfs dfs -copyFromLocal smsc.schema /mtccore/schema/smsc.schema
+hdfs dfs -copyFromLocal sgsiwf.schema /mtccore/schema/sgsiwf.schema
 
+hdfs dfs -rm -r /user/oozie/mtccore/
 hdfs dfs -mkdir -p /user/oozie/mtccore/lib
 for f in *.jar
 do 

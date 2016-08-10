@@ -19,10 +19,115 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
 			<arg>/mtccore/etlcfg/smsc_sftp.properties</arg>
 			<arg>${nameNode}</arg>
 		</java>
-		<ok to="loadDataCmd"/>
+		<ok to="UpdateAggrSchema"/>
 		<error to="fail"/>
 	</action>
-	<action name="loadDataCmd">
+	<action name="UpdateAggrSchema">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.transform.CsvAggregateCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/mtccore/etlcfg/smsc_aggr.properties</arg>
+            <arg>${nameNode}</arg>
+        </java>
+        <ok to="AggregateCsv"/>
+        <error to="fail"/>
+    </action>
+    <action name="AggregateCsv">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="/mtccore/smscraw/aggr/${wf:id()}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeReducerMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.textoutputformat.separator</name>
+                    <value>,</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/mtccore/smscraw/csv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/mtccore/smscraw/aggr/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.map.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.map.output.value.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>etl.cmd.transform.CsvAggregateCmd</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/mtccore/etlcfg/smsc_aggr.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="LogAggrCsvInfo"/>
+        <error to="fail"/>
+    </action>
+    <action name="LogAggrCsvInfo">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/mtccore/etlcfg/smsc_sendlog.properties</arg>
+            <arg>${nameNode}</arg>
+            <arg>AggregateCsv</arg>
+            <arg>${hadoop:counters("AggregateCsv")["org.apache.hadoop.mapred.Task$Counter"]["MAP_INPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("AggregateCsv")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("AggregateCsv")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
+        <ok to="copyAggr"/>
+        <error to="fail"/>
+    </action>
+    <action name="copyAggr">
+         <fs>
+            <move 
+                source='${nameNode}/mtccore/smscraw/aggr/${wf:id()}/SPA_merge-r-00000' 
+                target='/mtccore/smscraw/csv/${wf:id()}/SPA_merge.csv'/>
+            <delete path='${nameNode}/mtccore/smscraw/aggr/${wf:id()}'/>
+         </fs>
+        <ok to="loadData"/>
+        <error to="fail"/>
+    </action>
+	<action name="loadData">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>

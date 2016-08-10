@@ -1,72 +1,20 @@
 package etl.cmd.test;
 
 import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
-import org.junit.Before;
 import org.junit.Test;
-
 import etl.cmd.LoadDataCmd;
-import etl.util.DBUtil;
-import etl.util.Util;
 
 public class TestLoadDatabaseCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestLoadDatabaseCmd.class);
 	
 	public String getResourceSubFolder(){
 		return "loadcsv/";
-	}
-	
-	@Before
-    public void setUp() {
-		setCfgProperties("testETLCmd_192.85.247.104.properties");
-		super.setUp();
-	}
-	
-	private void assertTableContent(String dfsConfigFolder, String staticCfgName, String csvFolder, 
-			String[] tableNames, String[] csvFileNames, int rowsUpdated){
-		PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), dfsConfigFolder + staticCfgName);
-		int linesInFile = 0;
-		for (int i=0; i<tableNames.length; i++){
-			String tableName = tableNames[i];
-			String csvFileName = csvFileNames[i];
-			BufferedReader br = null;
-			try {
-				String line = null;
-				// fetch db data
-				List<String> dbData = DBUtil.checkCsv(String.format("select * from %s",tableName), pc, 0, 0, ",");
-				logger.info(dbData);
-				// check number of lines in file same as rowsupdated, db
-				// data against each line
-				br = new BufferedReader(new InputStreamReader(getFs().open(new Path(csvFolder + csvFileName))));
-				while ((line = br.readLine()) != null) {
-					linesInFile++;
-					logger.info(line);
-					assertTrue(dbData.contains(line.trim()));
-				}
-			} catch (Exception e) {
-				logger.error("Exception occured due to invalid data-history path", e);
-			} finally {
-				if (br != null){
-					try{
-						br.close();
-					}catch(Exception e){
-						logger.error("", e);
-					}
-				}
-			}
-		}
-		assertTrue( rowsUpdated == linesInFile);
 	}
 	
 	private void test1Fun() throws Exception {
@@ -86,12 +34,14 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 
 			// run cmd
 			LoadDataCmd cmd = new LoadDataCmd("wfid1", dfsFolder + staticCfgName, getDefaultFS(),null);
-			List<String> numberOfRowsupdated = cmd.sgProcess();
+			cmd.setExecute(false);
+			List<String> sqls = cmd.sgProcess();
 			
 			//assertion
-			int rowsUpdated = Integer.parseInt(numberOfRowsupdated.get(0));
-			assertTableContent(dfsFolder, staticCfgName, csvFolder, new String[]{"lsl_sample"}, new String[]{csvFileName}, rowsUpdated);
-		
+			logger.info(sqls);
+			String sql = "copy lsl_sample (ProjectName, PackageName, TestCase, Row) "
+					+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loaddata/csv/part-*',username='dbadmin') delimiter ','";
+			assertTrue(sqls.contains(sql));
 	}
 	
 	@Test
@@ -125,11 +75,14 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 
 		//run cmd
 		LoadDataCmd cmd = new LoadDataCmd("wfid1", dfsFolder + staticCfgName, getDefaultFS(),null);
-		List<String> numberOfRowsupdated =  cmd.sgProcess();
+		cmd.setExecute(false);
+		List<String> sqls =  cmd.sgProcess();
 		
 		//assertion
-		int rowsUpdated = Integer.parseInt(numberOfRowsupdated.get(0));
-		assertTableContent(dfsFolder, staticCfgName, csvFolder, new String[]{"lsl_sample"}, new String[]{csvFileName}, rowsUpdated);
+		logger.info(sqls);
+		String sql = "copy lsl_sample (ProjectName, PackageName, TestCase, Row) "
+				+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loaddata/csv/loadcsv2.monday',username='dbadmin') delimiter ','";
+		assertTrue(sqls.contains(sql));
 	}
 	
 	@Test
@@ -165,12 +118,17 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 
 		//run cmd
 		LoadDataCmd cmd = new LoadDataCmd("wfid1", dfsFolder + staticCfgName, getDefaultFS(),null);
-		List<String> numberOfRowsupdated =  cmd.sgProcess();
+		cmd.setExecute(false);
+		List<String> sqls =  cmd.sgProcess();
 		
 		//assertion
-		int rowsUpdated = Integer.parseInt(numberOfRowsupdated.get(0));
-		assertTableContent(dfsFolder, staticCfgName, csvFolder, new String[]{"lsl_sample", "lsl_sample1"}, 
-				csvFileName, rowsUpdated);
+		logger.info(sqls);
+		String sql1 = "copy lsl_sample (ProjectName, PackageName, TestCase, Row) "
+				+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loaddata/csv/loadcsv2.monday',username='dbadmin') delimiter ','";
+		String sql2 = "copy lsl_sample1 (ProjectName, PackageName, TestCase, Row) "
+				+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loaddata/csv/loadcsv3.monday',username='dbadmin') delimiter ','";
+		assertTrue(sqls.contains(sql1));
+		assertTrue(sqls.contains(sql2));
 	}
 	
 	@Test
@@ -218,45 +176,15 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(inputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
 			//run cmd
 			LoadDataCmd cmd = new LoadDataCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
-			List<String> info = cmd.sgProcess();
-			logger.info(info);
-			int numRows = Integer.parseInt(info.get(0));
-			assertTrue(numRows==8);
-			
-			//checking create table already created
-			String sql ="SELECT table_name from tables where table_schema='"+prefix+"' and table_name='MyCore_';";
-			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), dfsCfgFolder + staticCfgName);
-			boolean result=DBUtil.checkTableExists(sql,pc);
-			assertTrue(result);
-
-			//get csvData to check
-			ArrayList<String> csvData=new ArrayList<String>();
-			String line,newline=null;
-			int startIndex=1,endIndex=5;
-			BufferedReader br=null;
-			br = new BufferedReader(new FileReader(getLocalFolder() + csvFileName));
-			while ((line = br.readLine()) != null) {
-				String[] colArray = line.split("\",\"");
-				newline="";
-				for(int j=startIndex;j<endIndex;j++) {
-					if(j==endIndex-1){
-						newline=newline+colArray[j];
-					}else{
-						newline=newline+colArray[j]+" ";
-					}
-				}
-				csvData.add(newline);  
-			}
-			br.close();
-			// get table data
-			ArrayList<String> cols=new ArrayList<String>() ;
-			sql = "SELECT * from sgsiwf.MyCore_;";
-			cols=DBUtil.checkCsv(sql, pc, startIndex+1, endIndex, " ");
-			logger.info("The Comparation status :"+cols.containsAll(csvData));
-			
-			//check dbdata has csv data 
-			assertTrue(cols.containsAll(csvData));
-			logger.info("The results are verified successfully");
+			cmd.setExecute(false);
+			List<String> sqls = cmd.sgProcess();
+			//assertion
+			logger.info(sqls);
+			String sql = "copy sgsiwf.MyCore_(endTime enclosed by '\"',duration enclosed by '\"',SubNetwork enclosed by '\"',"
+					+ "ManagedElement enclosed by '\"',Machine enclosed by '\"',MyCore enclosed by '\"',UUID enclosed by '\"',"
+					+ "VS_avePerCoreCpuUsage enclosed by '\"',VS_peakPerCoreCpuUsage enclosed by '\"') "
+					+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loadcsv/input/MyCore_.csv*',username='dbadmin') delimiter ',';";
+			assertTrue(sqls.contains(sql));
 		} catch (Exception e) {
 			logger.error("Exception occured due to invalid data-history path", e);
 		}
@@ -271,6 +199,72 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
 					loadDynSchemaFun();
+					return null;
+				}
+			});
+		}
+	}
+	
+	private void loadDynSchemaExpFun() throws Exception{
+		try {
+			String staticCfgName = "loadcsvdsexp.properties";
+			String wfid="wfid1";
+			String prefix = "sgsiwf";
+			String localSchemaFileName = "multipleTableSchemas.txt";
+			String[] csvFileNames = new String[]{"MyCore_.csv", "MyCore1_.csv"};
+
+			String inputFolder = "/test/loadcsv/input/";
+			String dfsCfgFolder = "/test/loadcsv/cfg/";
+
+			String schemaFolder="/test/loadcsv/schema/";
+			String schemaFileName = "schemas.txt";
+			
+			//generate all the data files
+			getFs().delete(new Path(inputFolder), true);
+			getFs().delete(new Path(dfsCfgFolder), true);
+			getFs().delete(new Path(schemaFolder), true);
+			//
+			getFs().mkdirs(new Path(inputFolder));
+			getFs().mkdirs(new Path(dfsCfgFolder));
+			getFs().mkdirs(new Path(schemaFolder));
+			//copy static cfg
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
+			//copy schema file
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + schemaFileName));
+			//copy csv file
+			for (String csvFileName: csvFileNames){
+				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(inputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+			}
+			//run cmd
+			LoadDataCmd cmd = new LoadDataCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			cmd.setExecute(false);
+			List<String> sqls = cmd.sgProcess();
+			//assertion
+			logger.info(sqls);
+			String sql1 = "copy sgsiwf.MyCore_(endTime enclosed by '\"',duration enclosed by '\"',SubNetwork enclosed by '\"',"
+					+ "ManagedElement enclosed by '\"',Machine enclosed by '\"',MyCore enclosed by '\"',UUID enclosed by '\"',"
+					+ "VS_avePerCoreCpuUsage enclosed by '\"',VS_peakPerCoreCpuUsage enclosed by '\"') "
+					+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loadcsv/input/MyCore_.csv*',username='dbadmin') delimiter ',';";
+			String sql2 = "copy sgsiwf.MyCore1_(endTime enclosed by '\"',duration enclosed by '\"',SubNetwork enclosed by '\"',"
+					+ "ManagedElement enclosed by '\"',Machine enclosed by '\"',MyCore enclosed by '\"',UUID enclosed by '\"',"
+					+ "VS_avePerCoreCpuUsage enclosed by '\"',VS_peakPerCoreCpuUsage enclosed by '\"') "
+					+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loadcsv/input/MyCore1_.csv*',username='dbadmin') delimiter ',';";
+			assertTrue(sqls.contains(sql1));
+			assertTrue(sqls.contains(sql2));
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+	}
+
+	@Test
+	public void testLoadDynSchemaExp() throws Exception{
+		if (getDefaultFS().contains("127.0.0.1")){
+			loadDynSchemaExpFun();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					loadDynSchemaExpFun();
 					return null;
 				}
 			});

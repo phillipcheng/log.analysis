@@ -16,6 +16,10 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 	public static final String cfgkey_schema_file="schema.file";
 	public static final String cfgkey_db_prefix="db.prefix"; //db schema
 	public static final String cfgkey_create_sql="create.sql";
+	
+	//system variable map
+	public static final String VAR_LOGIC_SCHEMA="logicSchema"; //
+	public static final String VAR_DB_PREFIX="dbPrefix";//
 
 	protected String schemaFile;
 	protected String dbPrefix;
@@ -29,6 +33,7 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 		super(wfid, staticCfg, defaultFs, otherArgs);
 		this.schemaFile = pc.getString(cfgkey_schema_file, null);
 		this.dbPrefix = pc.getString(cfgkey_db_prefix, null);
+		this.getSystemVariables().put(VAR_DB_PREFIX, dbPrefix);
 		logger.info(String.format("schemaFile: %s", schemaFile));
 		if (this.schemaFile!=null){
 			try{
@@ -38,6 +43,7 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 					this.logicSchema = new LogicSchema();
 					logger.warn(String.format("schema file %s not exists.", schemaFile));
 				}
+				this.getSystemVariables().put(VAR_LOGIC_SCHEMA, logicSchema);
 			}catch(Exception e){
 				logger.error("", e);
 			}

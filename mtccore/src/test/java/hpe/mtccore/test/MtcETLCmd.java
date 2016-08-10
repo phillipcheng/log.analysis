@@ -8,7 +8,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
-import org.junit.Before;
 import org.junit.Test;
 
 import etl.cmd.test.TestETLCmd;
@@ -32,6 +31,7 @@ public class MtcETLCmd extends TestETLCmd{
 		String csvdir = "/mtccore/csvdata";
 		String schemadir = "/mtccore/schema";
 		String schemaHistoryDir = "/mtccore/schemahistory";
+		
 		fs.delete(new Path(remoteEtlcfg), true);
 		fs.delete(new Path(csvdir), true);
 		fs.delete(new Path(xmldir), true);
@@ -42,6 +42,12 @@ public class MtcETLCmd extends TestETLCmd{
 		fs.mkdirs(new Path(xmldir));
 		fs.mkdirs(new Path(schemadir));
 		fs.mkdirs(new Path(schemaHistoryDir));
+		
+		//copy etlengine.properties
+		String etlengineProp= "etlengine.properties";
+		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + etlengineProp), new Path("/user/dbadmin/mtccore/lib/"+etlengineProp));
+		
+		//copy config
 		File localDir = new File(localCfgDir);
 		String[] cfgs = localDir.list();
 		for (String cfg:cfgs){
@@ -49,19 +55,34 @@ public class MtcETLCmd extends TestETLCmd{
 			String rcfg = remoteEtlcfg + "/" + cfg;
 			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
 		}
+		
+		//copy schema
+		String[] schemas = new String[]{"smsc.schema", "sgsiwf.schema"};
+		for (String schema: schemas){
+			String workflow = localCfgDir + File.separator + schema;
+			String remoteWorkflow = schemadir + "/" + schema;
+			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+		}
+		
+		//copy workflow
 		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml"};
 		for (String wf: workflows){
 			String workflow = localCfgDir + File.separator + wf;
 			String remoteWorkflow = "/user/dbadmin/mtccore/" + wf;
 			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
 		}
-		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\target\\";
-		String localLibFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\lib\\";
-		String libName = "mtccore-0.1.0-jar-with-dependencies.jar";
-		String verticaLibName = "vertica-jdbc-7.0.1-0.jar";
+		
+		//copy lib
+		String mtcLocalTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\target\\";
+		String[] libNames = new String[]{"mtccore-0.1.0.jar"};
 		String remoteLibFolder="/user/dbadmin/mtccore/lib/";
-		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder+libName));
-		fs.copyFromLocalFile(new Path(localLibFolder + verticaLibName), new Path(remoteLibFolder+verticaLibName));
+		for (String libName:libNames){
+			fs.copyFromLocalFile(new Path(mtcLocalTargetFolder + libName), new Path(remoteLibFolder+libName));
+		}
+		String preloadLocalTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\preload\\target\\";
+		String remoteShareLibFolder="/user/dbadmin/share/lib/preload/lib/";
+		String libName = "preload-0.1.0.jar";
+		fs.copyFromLocalFile(new Path(preloadLocalTargetFolder + libName), new Path(remoteShareLibFolder+libName));
 	}
 	
 	public void setupETLCfg(final String defaultFs, final String localCfgDir) {

@@ -37,8 +37,8 @@ public abstract class ETLCmd {
 	private boolean sendLog = true;//command level send log flag
 	
 	//system variable map
-	public static final String VAR_DYNCFGMAP="dynCfgMap";
-	public static final String VAR_WFID="WFID";
+	public static final String VAR_WFID="WFID"; //string type 
+	public static final String VAR_FIELDS="fields"; //string[] type
 	private Map<String, Object> systemVariables = new HashMap<String, Object>();
 	
 	

@@ -12,8 +12,12 @@ import etl.util.IdxRange;
 
 public class AggrOpMap {
 	public static final Logger logger = Logger.getLogger(AggrOpMap.class);
-	Map<Integer, AggrOperator> opMap = new HashMap<Integer, AggrOperator>();
+	
+	Map<Integer, AggrOperator> opMap = new HashMap<Integer, AggrOperator>(); //index to aggr op
 	private List<AggrOp> oplist = new ArrayList<AggrOp>();
+	
+	public AggrOpMap(){	
+	}
 	
 	public AggrOpMap(String[] strAggrOpList){
 		for (String strAggrOp:strAggrOpList){

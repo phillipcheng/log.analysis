@@ -1,26 +1,25 @@
 <project name="mtccore" default="dist" basedir=".">
 	<property name="target"  location="target"/>
 	<property name="dist"  location="dist"/>
+	<property name="src.resources" location="src/main/resources"/>
 	
 	<target name="dist" depends="clean">
 		<mkdir dir="${dist}"/>
         <mkdir dir="${dist}/etlcfg"/>
 		<copy todir="${dist}/etlcfg/">
-			<fileset dir="${target}/classes/">
+			<fileset dir="${src.resources}">
 		    	<include name="*.properties"/>
 				<exclude name="log4j.properties"/>
-                <include name="*.job.properties"/>
+                <exclude name="*mapping.properties"/>
 		    </fileset>
 		</copy>
 		<copy todir="${dist}">
-            <fileset dir="${target}/classes/">
+            <fileset dir="${src.resources}">
                 <include name="*.job.properties"/>
                 <include name="*.xml"/>
-            </fileset>
-        </copy>
-		<copy todir="${dist}">
-            <fileset dir="${target}/classes/">
-                <include name="etlengine.properties"/>
+            	<include name="etlengine.properties"/>
+            	<include name="*.schema"/>
+            	<include name="*mapping.properties"/>
             </fileset>
         </copy>
         <copy todir="${dist}">

@@ -98,12 +98,16 @@ public class DBUtil {
 		return copysql.toString();
 	}
 
-	public static String genCopyHdfsSql(List<String> fieldNameList, String tn, String dbschema, 
+	public static String genCopyHdfsSql(String prefix, List<String> fieldNameList, String tn, String dbschema, 
 			String rootWebHdfs, String csvFileName, String username){
 		StringBuffer copysql = new StringBuffer();
 		List<String> fnl = normalizeDBFieldNames(fieldNameList);
 		//gen table sql
-		copysql.append(String.format("copy %s.%s(", dbschema, tn));
+		if (prefix==null){
+			copysql.append(String.format("copy %s.%s(", dbschema, tn));
+		}else{
+			copysql.append(String.format("copy %s.%s(%s", dbschema, tn, prefix));
+		}
 		for (int i=0; i<fnl.size(); i++){
 			String name = fnl.get(i);
 			copysql.append(String.format("%s enclosed by '\"'", name));
@@ -115,7 +119,7 @@ public class DBUtil {
 		return copysql.toString();
 	}
 
-	private static Connection getConnection(PropertiesConfiguration pc){
+	public static Connection getConnection(PropertiesConfiguration pc){
 		Connection conn = null;
 		try { 
 			Class.forName(pc.getString(key_db_driver)); 
