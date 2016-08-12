@@ -18,8 +18,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
-import com.vertica.dsi.dataengine.filters.StringFilter;
-
 import etl.engine.AggrOperator;
 import etl.engine.DynaSchemaFileETLCmd;
 import etl.engine.ETLCmd;
