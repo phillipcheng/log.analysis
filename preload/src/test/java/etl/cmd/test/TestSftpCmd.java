@@ -54,6 +54,7 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void test1() throws Exception {
+		if (!super.isTestSftp()) return;
 		if (getDefaultFS().contains("127.0.0.1")){
 			testFun1();
 		}else{
@@ -95,6 +96,7 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void testCommonFailure() throws Exception {
+		if (!super.isTestSftp()) return;
 		if (getDefaultFS().contains("127.0.0.1")){
 			testCommonFailureFun();
 		}else{
@@ -139,6 +141,7 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void testConnectionFailure() throws Exception {
+		if (!super.isTestSftp()) return;
 		if (getDefaultFS().contains("127.0.0.1")){
 			testConnectionFailureFun();
 		}else{
@@ -189,6 +192,7 @@ public class TestSftpCmd extends TestETLCmd {
 
 	@Test
 	public void testDeleteFileNotEnabled() throws Exception {
+		if (!super.isTestSftp()) return;
 		if (getDefaultFS().contains("127.0.0.1")){
 			testDeleteFileNotEnabledFun();
 		}else{
@@ -234,6 +238,7 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void testSelectFile() throws Exception {
+		if (!super.isTestSftp()) return;
 		if (getDefaultFS().contains("127.0.0.1")){
 			selectFileFun();
 		}else{

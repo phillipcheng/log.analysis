@@ -118,6 +118,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			//assertTrue(sqls.contains(expectedSql));
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
@@ -185,6 +186,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			assertTrue(sqls.contains(expectedSql2));
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
@@ -243,6 +245,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			assertTrue(sqls.contains(sql));
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	

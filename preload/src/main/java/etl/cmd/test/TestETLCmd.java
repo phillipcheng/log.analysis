@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -29,17 +31,24 @@ public class TestETLCmd {
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
 	public static final String remoteUser = "dbadmin";
+	
 	private static String cfgProperties="testETLCmd.properties";
+	
 	private static String key_localFolder="localFolder";
 	private static String key_defaultFs="defaultFS";
 	private static String key_jobTracker="jobTracker";
+	private static String key_test_sftp="test.sftp";
+	private static String key_test_kafka="test.kafka";
 	
-	private Properties p = new Properties();
+	
+	private PropertiesConfiguration pc;
 	
 	private String localFolder = "";
 	private FileSystem fs;
 	private String defaultFS;
 	private Configuration conf;
+	private boolean testSftp=true;
+	private boolean testKafka=true;
 	
 	//
 	public static void setCfgProperties(String testProperties){
@@ -49,34 +58,31 @@ public class TestETLCmd {
 	@Before
     public void setUp() {
 		try{
-			InputStream input = this.getClass().getClassLoader().getResourceAsStream(cfgProperties);
-			if (input!=null){
-				p.load(input);
-				localFolder = (p.getProperty(key_localFolder));
-				conf = new Configuration();
-				String jobTracker=p.getProperty(key_jobTracker);
-				if (jobTracker!=null){
-					String host = jobTracker.substring(0,jobTracker.indexOf(":"));
-					conf.set("mapreduce.jobtracker.address", jobTracker);
-					conf.set("yarn.resourcemanager.hostname", host);
-					conf.set("mapreduce.framework.name", "yarn");
-					conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
-				}
-				defaultFS = p.getProperty(key_defaultFs);
-				conf.set("fs.defaultFS", defaultFS);
-				if (defaultFS.contains("127.0.0.1")){
-					fs = FileSystem.get(conf);
-				}else{
-					UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-					ugi.doAs(new PrivilegedExceptionAction<Void>() {
-						public Void run() throws Exception {
-							fs = FileSystem.get(conf);
-							return null;
-						}
-					});
-				}
+			pc = Util.getPropertiesConfig(cfgProperties);
+			localFolder = pc.getString(key_localFolder);
+			setTestSftp(pc.getBoolean(key_test_sftp, true));
+			setTestKafka(pc.getBoolean(key_test_kafka, true));
+			conf = new Configuration();
+			String jobTracker=pc.getString(key_jobTracker);
+			if (jobTracker!=null){
+				String host = jobTracker.substring(0,jobTracker.indexOf(":"));
+				conf.set("mapreduce.jobtracker.address", jobTracker);
+				conf.set("yarn.resourcemanager.hostname", host);
+				conf.set("mapreduce.framework.name", "yarn");
+				conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
+			}
+			defaultFS = pc.getString(key_defaultFs);
+			conf.set("fs.defaultFS", defaultFS);
+			if (defaultFS.contains("127.0.0.1")){
+				fs = FileSystem.get(conf);
 			}else{
-				logger.error(String.format("%s not found in classpath.", cfgProperties));
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+				ugi.doAs(new PrivilegedExceptionAction<Void>() {
+					public Void run() throws Exception {
+						fs = FileSystem.get(conf);
+						return null;
+					}
+				});
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -239,5 +245,21 @@ public class TestETLCmd {
 	
 	public Configuration getConf(){
 		return conf;
+	}
+
+	public boolean isTestKafka() {
+		return testKafka;
+	}
+
+	public void setTestKafka(boolean testKafka) {
+		this.testKafka = testKafka;
+	}
+
+	public boolean isTestSftp() {
+		return testSftp;
+	}
+
+	public void setTestSftp(boolean testSftp) {
+		this.testSftp = testSftp;
 	}
 }

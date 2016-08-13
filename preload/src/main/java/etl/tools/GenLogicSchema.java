@@ -30,9 +30,12 @@ public class GenLogicSchema {
 		}
 	}
 	
-	public static void genLogicSchemaFromDB(PropertiesConfiguration dbconf, String schemaName, String localLogicSchemaOutputFile){
+	public static boolean genLogicSchemaFromDB(PropertiesConfiguration dbconf, String schemaName, String localLogicSchemaOutputFile){
 		LogicSchema ls = new LogicSchema();
 		Connection con = DBUtil.getConnection(dbconf);
+		if (con==null){
+			return false;
+		}
 		try {
 			DatabaseMetaData dbmd = con.getMetaData();
 			ResultSet tableResults = dbmd.getTables(null, schemaName, null, null);
@@ -67,6 +70,6 @@ public class GenLogicSchema {
 				}
 			}
 		}
+		return true;
 	}
-
 }

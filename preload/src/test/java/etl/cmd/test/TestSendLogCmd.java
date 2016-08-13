@@ -28,6 +28,7 @@ public class TestSendLogCmd extends TestETLCmd {
 	
 	@Test
 	public void test1() throws Exception{
+		if (!super.isTestKafka()) return;
 		if (getDefaultFS().contains("127.0.0.1")){
 			test1Fun();
 		}else{

@@ -9,13 +9,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import etl.cmd.test.TestETLCmd;
 import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
 import etl.util.DateUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
-public class TestEngineUtil {
+public class TestEngineUtil extends TestETLCmd{
 	public static final Logger logger = Logger.getLogger(TestEngineUtil.class);
 	private ETLLog getETLLog(){
 		ETLLog etllog = new ETLLog();
@@ -27,6 +28,7 @@ public class TestEngineUtil {
 	
 	@Test
 	public void testNormalSend(){
+		if (!super.isTestKafka()) return;
 		EngineUtil.setConfFile("etlengine_enable_kafka.properties");
 		EngineUtil.getInstance().sendLog(getETLLog());
 		EngineUtil.getInstance().getProducer().flush();
@@ -34,12 +36,14 @@ public class TestEngineUtil {
 	
 	@Test
 	public void testNotSend(){
+		if (!super.isTestKafka()) return;
 		EngineUtil.setConfFile("etlengine.properties");
 		EngineUtil.getInstance().sendLog(getETLLog());
 	}
 	
 	@Test
 	public void testAbnormalSend(){
+		if (!super.isTestKafka()) return;
 		EngineUtil.setConfFile("etlengine_bad_kafka.properties");
 		EngineUtil.getInstance().sendLog(getETLLog());
 	}
