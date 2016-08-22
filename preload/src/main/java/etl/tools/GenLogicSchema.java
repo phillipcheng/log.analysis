@@ -14,20 +14,25 @@ import etl.cmd.dynschema.LogicSchema;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.Util;
+import etl.util.VarType;
 
 public class GenLogicSchema {
 	public static final Logger logger = Logger.getLogger(GenLogicSchema.class);
 	
-	public static String getTypeString(int type, int size, int digits){
+	public static FieldType getFieldType(int type, int size, int digits){
 		if (Types.TIMESTAMP == type){
-			return "timestamp";
+			return new FieldType(VarType.TIMESTAMP);
 		}else if (Types.VARCHAR == type){
-			return String.format("varchar(%d)", size);
+			return new FieldType(VarType.STRING, size);
 		}else if (Types.NUMERIC == type){
-			return String.format("numeric(%d,%d)", size, digits);
+			return new FieldType(VarType.NUMERIC, size, digits);
+		}else if (Types.BIGINT == type){
+			return new FieldType(VarType.INT);
+		}else if (Types.DATE == type){
+			return new FieldType(VarType.DATE);
 		}else{
-			logger.error(String.format("unsupported type:%d", type));
-			return "";
+			logger.error(String.format("not supported:%d", type));
+			return null;
 		}
 	}
 	
@@ -51,8 +56,14 @@ public class GenLogicSchema {
 			        int columnSize = columnResults.getInt("COLUMN_SIZE");
 			        int digits = columnResults.getInt("DECIMAL_DIGITS");
 			        attrNames.add(columnName);
-			        attrTypes.add(new FieldType(getTypeString(columnType, columnSize, digits)));
-			        logger.info(String.format("%s,%s,%d,%d,%d", tableName, columnName, columnType, columnSize, digits));
+			        FieldType ft = getFieldType(columnType, columnSize, digits);
+			        if (ft!=null){
+			        	attrTypes.add(ft);
+			        	logger.info(String.format("%s,%s,%d,%d,%d", tableName, columnName, columnType, columnSize, digits));
+			        }else{
+			        	logger.error(String.format("error: %s,%s,%d,%d,%d", tableName, columnName, columnType, columnSize, digits));
+			        }
+			        
 			    }
 			    columnResults.close();
 			    ls.addAttributes(tableName, attrNames);

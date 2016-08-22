@@ -44,6 +44,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
 			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
@@ -110,6 +111,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
 			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
@@ -129,14 +131,12 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 					+ "MyCore decimal(15,5),VS_avePerCoreCpuUsage decimal(15,5),VS_peakPerCoreCpuUsage decimal(15,5)) "
 					+ "ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"";
 			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			logger.info(sqls);
 			if (cmd.getDbtype()==DBType.HIVE){
 				assertTrue(sqls.contains(expectedSqlHive));
 			}else{
 				assertTrue(sqls.contains(expectedSqlVertica));
 			}
-			logger.info(sqls);
-			
-			//assertTrue(sqls.contains(expectedSql));
 		} catch (Exception e) {
 			logger.error("", e);
 			assertTrue(false);
@@ -178,6 +178,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
 			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
@@ -261,6 +262,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
 			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());

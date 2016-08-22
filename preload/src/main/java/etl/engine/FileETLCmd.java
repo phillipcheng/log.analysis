@@ -3,10 +3,13 @@ package etl.engine;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
 public abstract class FileETLCmd extends ETLCmd{
+	public static final Logger logger = Logger.getLogger(FileETLCmd.class);
 
 	public static final String cfgkey_add_filename="add.filename";
 	public static final String cfgkey_exp_filename="exp.filename";//filename extraction expression

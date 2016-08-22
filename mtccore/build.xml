@@ -6,6 +6,7 @@
 	<target name="dist" depends="clean">
 		<mkdir dir="${dist}"/>
         <mkdir dir="${dist}/etlcfg"/>
+		<mkdir dir="${dist}/sql"/>
 		<copy todir="${dist}/etlcfg/">
 			<fileset dir="${src.resources}">
 		    	<include name="*.properties"/>
@@ -30,6 +31,11 @@
 		<copy todir="${dist}">
             <fileset dir="${target}">
                 <include name="mtccore-0.1.0.jar"/>
+            </fileset>
+        </copy>
+		<copy todir="${dist}/sql">
+            <fileset dir="sql">
+                <include name="*.sql"/>
             </fileset>
         </copy>
 	</target>

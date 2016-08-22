@@ -15,10 +15,18 @@ import etl.util.Util;
 
 public class TestGenLogicSchema {
 	
-	//@Test
-	public void testGenSchemaFromDB(){
+	@Test
+	public void testGenSMSCSchemaFromDB(){
 		PropertiesConfiguration pc = Util.getPropertiesConfig("etlengine.properties");
-		boolean ret = GenLogicSchema.genLogicSchemaFromDB(pc, "SMSC", "testls.out");
+		boolean ret = GenLogicSchema.genLogicSchemaFromDB(pc, "SMSC", "smsc.schema");
+		assertTrue(ret);
+		
+	}
+	
+	@Test
+	public void testGenSgsiwfSchemaFromDB(){
+		PropertiesConfiguration pc = Util.getPropertiesConfig("etlengine.properties");
+		boolean ret = GenLogicSchema.genLogicSchemaFromDB(pc, "sgsiwf", "sgsiwf.schema");
 		assertTrue(ret);
 		
 	}

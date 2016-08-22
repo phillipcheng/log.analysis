@@ -349,16 +349,16 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
          <fs>
             <move 
                 source='${nameNode}/mtccore/csvdata/trans/${wf:id()}/part-r-00000' 
-                target='/mtccore/csvdata/csv/${wf:id()}/PoolType_vlr_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/PoolType_vlr_aggr-r-00000'/>
             <move 
                 source='${nameNode}/mtccore/csvdata/aggr/${wf:id()}/MME_PoolType_wss7_-r-00000' 
-                target='/mtccore/csvdata/csv/${wf:id()}/MME_PoolType_wss7_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/MME_PoolType_wss7_aggr-r-00000'/>
             <move 
                 source='${nameNode}/mtccore/csvdata/aggr/${wf:id()}/MME_PoolType_vlr_-r-00000' 
-                target='/mtccore/csvdata/csv/${wf:id()}/MME_PoolType_vlr_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/MME_PoolType_vlr_aggr-r-00000'/>
             <move 
                 source='${nameNode}/mtccore/csvdata/aggr/${wf:id()}/PoolType_vlr_TechnologyType_-r-00000' 
-                target='/mtccore/csvdata/csv/${wf:id()}/PoolType_vlr_TechnologyType_aggr'/>
+                target='/mtccore/csvdata/csv/${wf:id()}/PoolType_vlr_TechnologyType_aggr-r-00000'/>
             <delete path='${nameNode}/mtccore/csvdata/trans/${wf:id()}'/>
             <delete path='${nameNode}/mtccore/csvdata/aggr/${wf:id()}'/>
          </fs>

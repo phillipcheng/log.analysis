@@ -77,11 +77,14 @@ public class MtcETLCmd extends TestETLCmd{
 		String[] libNames = new String[]{"mtccore-0.1.0.jar"};
 		String remoteLibFolder="/user/dbadmin/mtccore/lib/";
 		for (String libName:libNames){
+			fs.delete(new Path(remoteLibFolder+libName), true);
 			fs.copyFromLocalFile(new Path(mtcLocalTargetFolder + libName), new Path(remoteLibFolder+libName));
 		}
+		
 		String preloadLocalTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\preload\\target\\";
 		String remoteShareLibFolder="/user/dbadmin/share/lib/preload/lib/";
 		String libName = "preload-0.1.0.jar";
+		fs.delete(new Path(remoteShareLibFolder + libName), true);
 		fs.copyFromLocalFile(new Path(preloadLocalTargetFolder + libName), new Path(remoteShareLibFolder+libName));
 	}
 	

@@ -168,6 +168,8 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 				if (existNewAttrs.containsAll(newAttrs)){//
 					//do nothing
 				}else{
+					logger.info(String.format("exist attrs for table %s:%s", newTable, existNewAttrs));
+					logger.info(String.format("new attrs for table %s:%s", newTable, newAttrs));
 					//update schema, happens only when the schema is updated by external force
 					logicSchema.updateTableAttrs(newTable, newAttrs);
 					logicSchema.updateTableAttrTypes(newTable, newTypes);

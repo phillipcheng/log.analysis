@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 
 import etl.cmd.dynschema.LogicSchema;
 import etl.util.DBType;
@@ -14,6 +15,7 @@ import etl.util.Util;
 import etl.util.VarType;
 
 public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
+	public static final Logger logger = Logger.getLogger(DynaSchemaFileETLCmd.class);
 
 	public static final String cfgkey_schema_file="schema.file";
 	public static final String cfgkey_db_prefix="db.prefix"; //db schema

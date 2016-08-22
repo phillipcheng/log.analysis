@@ -1,15 +1,11 @@
 package etl.cmd.test;
 
 import java.io.File;
-import java.io.InputStream;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
-
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,6 +29,7 @@ public class TestETLCmd {
 	public static final String remoteUser = "dbadmin";
 	
 	private static String cfgProperties="testETLCmd.properties";
+	//private static String cfgProperties="testETLCmd_192.85.247.104.properties";
 	
 	private static String key_localFolder="localFolder";
 	private static String key_defaultFs="defaultFS";

@@ -106,6 +106,7 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
 			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
 			logger.info(sqls);
