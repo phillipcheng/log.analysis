@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import etl.engine.DynaSchemaFileETLCmd;
 import etl.engine.MRMode;
 import etl.util.DBUtil;
+import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
@@ -81,10 +82,10 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 		List<String> attrs = logicSchema.getAttrNames(this.oldTable);
 		List<String> createTableSqls = new ArrayList<String>();
 		List<String> addFns = new ArrayList<String>();
-		List<String> addFts = new ArrayList<String>();
+		List<FieldType> addFts = new ArrayList<FieldType>();
 		for (int i=0; i<addFieldsNames.size(); i++){
 			String fn = addFieldsNames.get(i);
-			String ft = addFieldsTypes.get(i);
+			FieldType ft = new FieldType(addFieldsTypes.get(i));
 			if (!attrs.contains(fn)){
 				//update schema
 				addFns.add(fn);
@@ -94,7 +95,8 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 		if (addFns.size()>0){
 			logicSchema.addAttributes(oldTable, addFns);
 			logicSchema.addAttrTypes(oldTable, addFts);
-			createTableSqls.addAll(DBUtil.genUpdateTableSql(addFns, addFts, oldTable, dbPrefix));
+			createTableSqls.addAll(DBUtil.genUpdateTableSql(addFns, addFts, oldTable, 
+					dbPrefix, super.getDbtype()));
 			return super.updateDynSchema(createTableSqls);
 		}else{
 			return null;

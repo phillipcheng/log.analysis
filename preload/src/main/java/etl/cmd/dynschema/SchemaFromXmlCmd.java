@@ -27,6 +27,7 @@ import org.xml.sax.InputSource;
 
 import etl.engine.DynaSchemaFileETLCmd;
 import etl.util.DBUtil;
+import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
@@ -60,9 +61,9 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 	private List<String> keyWithValue = new ArrayList<String>();
 	private List<String> keySkip = new ArrayList<String>();
 	private List<String> fileLvlSystemFieldNames = new ArrayList<String>();
-	private List<String> fileLvlSystemFieldTypes = new ArrayList<String>();
+	private List<FieldType> fileLvlSystemFieldTypes = new ArrayList<FieldType>();
 	private List<String> tableLvlSystemFieldNames = new ArrayList<String>();
-	private List<String> tableLvlSystemFieldTypes = new ArrayList<String>();
+	private List<FieldType> tableLvlSystemFieldTypes = new ArrayList<FieldType>();
 	
 	private String xmlFolder;
 	private XPathExpression xpathExpTables;
@@ -73,9 +74,9 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 	private XPathExpression xpathExpTableRowValues;
 	//
 	private Map<String, List<String>> schemaAttrNameUpdates = new HashMap<String, List<String>>();//store updated/new tables' attribute parts' name (compared with the org schema)
-	private Map<String, List<String>> schemaAttrTypeUpdates = new HashMap<String, List<String>>();//store updated/new tables' attribute parts' type (compared with the org schema)
+	private Map<String, List<FieldType>> schemaAttrTypeUpdates = new HashMap<String, List<FieldType>>();//store updated/new tables' attribute parts' type (compared with the org schema)
 	private Map<String, List<String>> newTableObjNamesAdded = new HashMap<String, List<String>>();//store new tables' obj name
-	private Map<String, List<String>> newTableObjTypesAdded = new HashMap<String, List<String>>();//store new tables' obj type
+	private Map<String, List<FieldType>> newTableObjTypesAdded = new HashMap<String, List<FieldType>>();//store new tables' obj type
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
 	
@@ -92,7 +93,7 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 				fileLvlSystemFieldNames.add(name);
 			}
 			for (String type: pc.getStringArray(cfgkey_FileLvelSystemAttrs_type)){
-				fileLvlSystemFieldTypes.add(type);
+				fileLvlSystemFieldTypes.add(new FieldType(type));
 			}
 			xpathExpTables = xpath.compile(pc.getString(cfgkey_xpath_Tables));
 			xpathExpTableRow0 = xpath.compile(pc.getString(cfgkey_xpath_TableRow0));
@@ -109,7 +110,7 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 				tableLvlSystemFieldNames.add(name);
 			}
 			for (String type: pc.getStringArray(cfgkey_TableSystemAttrs_type)){
-				tableLvlSystemFieldTypes.add(type);
+				tableLvlSystemFieldTypes.add(new FieldType(type));
 			}
 			String xmlFolderExp = pc.getString(cfgkey_xml_folder);
 			this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
@@ -197,7 +198,7 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 					if (orgSchemaAttributes!=null){
 						//check new attribute
 						List<String> newAttrNames = new ArrayList<String>();
-						List<String> newAttrTypes = new ArrayList<String>();
+						List<FieldType> newAttrTypes = new ArrayList<FieldType>();
 						for (int j=0; j<tableAttrNamesList.size(); j++){
 							String mtc = tableAttrNamesList.get(j);
 							if (!orgSchemaAttributes.contains(mtc)){
@@ -217,7 +218,7 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 						}
 					}else{
 						//new table needed
-						List<String> onlyAttrTypesList = new ArrayList<String>();
+						List<FieldType> onlyAttrTypesList = new ArrayList<FieldType>();
 						for (int j=0; j<mv0vs.getLength(); j++){
 							Node mv0vj = getNode(mv0vs, j);
 							onlyAttrTypesList.add(DBUtil.guessDBType(mv0vj.getTextContent()));
@@ -226,7 +227,7 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 						schemaAttrTypeUpdates.put(tableName, onlyAttrTypesList);
 						//
 						List<String> objNameList = new ArrayList<String>();
-						List<String> objTypeList = new ArrayList<String>();
+						List<FieldType> objTypeList = new ArrayList<FieldType>();
 						for (String key: moldParams.keySet()){
 							objNameList.add(key);
 							objTypeList.add(DBUtil.guessDBType(moldParams.get(key)));
@@ -262,7 +263,7 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 				//
 				for(String tn:schemaAttrNameUpdates.keySet()){
 					List<String> fieldNameList = new ArrayList<String>(); 
-					List<String> fieldTypeList = new ArrayList<String>();
+					List<FieldType> fieldTypeList = new ArrayList<FieldType>();
 					if (logicSchema.getAttrNames(tn)!=null){//update table
 						fieldNameList.addAll(schemaAttrNameUpdates.get(tn));
 						fieldTypeList.addAll(schemaAttrTypeUpdates.get(tn));
@@ -270,7 +271,8 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 						logicSchema.addAttributes(tn, schemaAttrNameUpdates.get(tn));
 						logicSchema.addAttrTypes(tn, schemaAttrTypeUpdates.get(tn));
 						//gen update sql
-						createTableSqls.addAll(DBUtil.genUpdateTableSql(fieldNameList, fieldTypeList, tn, dbPrefix));
+						createTableSqls.addAll(DBUtil.genUpdateTableSql(fieldNameList, fieldTypeList, tn, 
+								dbPrefix, super.getDbtype()));
 					}else{//new table
 						//gen create sql
 						fieldNameList.addAll(tableLvlSystemFieldNames);
@@ -285,7 +287,8 @@ public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
 						logicSchema.updateTableAttrs(tn, fieldNameList);
 						logicSchema.updateTableAttrTypes(tn, fieldTypeList);
 						//
-						createTableSqls.add(DBUtil.genCreateTableSql(fieldNameList, fieldTypeList, tn, dbPrefix));
+						createTableSqls.add(DBUtil.genCreateTableSql(fieldNameList, fieldTypeList, tn, 
+								dbPrefix, super.getDbtype()));
 					}
 					//gen copys.sql for reference
 					List<String> attrs = new ArrayList<String>();

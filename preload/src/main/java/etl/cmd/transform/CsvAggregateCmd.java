@@ -23,6 +23,7 @@ import etl.engine.DynaSchemaFileETLCmd;
 import etl.engine.ETLCmd;
 import etl.engine.FileETLCmd;
 import etl.util.DBUtil;
+import etl.util.FieldType;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
@@ -147,22 +148,23 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 		return keys;
 	}
 	
-	private List<String> updateSchema(Map<String, List<String>> attrsMap, Map<String, List<String>> attrTypesMap){
+	private List<String> updateSchema(Map<String, List<String>> attrsMap, Map<String, List<FieldType>> attrTypesMap){
 		boolean schemaUpdated = false;
 		List<String> createTableSqls = new ArrayList<String>();
 		for (String newTable: attrsMap.keySet()){
 			List<String> newAttrs = attrsMap.get(newTable);
-			List<String> newTypes = attrTypesMap.get(newTable);
+			List<FieldType> newTypes = attrTypesMap.get(newTable);
 			if (!logicSchema.hasTable(newTable)){
 				//update schema
 				logicSchema.updateTableAttrs(newTable, newAttrs);
 				logicSchema.updateTableAttrTypes(newTable, newTypes);
 				schemaUpdated = true;
 				//generate create table
-				createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, dbPrefix));
+				createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, 
+						dbPrefix, super.getDbtype()));
 			}else{
 				List<String> existNewAttrs = logicSchema.getAttrNames(newTable);
-				List<String> existNewAttrTypes = logicSchema.getAttrTypes(newTable);
+				List<FieldType> existNewAttrTypes = logicSchema.getAttrTypes(newTable);
 				if (existNewAttrs.containsAll(newAttrs)){//
 					//do nothing
 				}else{
@@ -173,7 +175,8 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 					//generate alter table
 					newAttrs.removeAll(existNewAttrs);
 					newTypes.removeAll(existNewAttrTypes);
-					createTableSqls.addAll(DBUtil.genUpdateTableSql(newAttrs, newTypes, newTable, dbPrefix));
+					createTableSqls.addAll(DBUtil.genUpdateTableSql(newAttrs, newTypes, newTable, 
+							dbPrefix, super.getDbtype()));
 				}
 			}
 		}
@@ -187,16 +190,16 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 	@Override
 	public List<String> sgProcess(){
 		Map<String, List<String>> attrsMap = new HashMap<String, List<String>>();
-		Map<String, List<String>> attrTypesMap = new HashMap<String, List<String>>();
+		Map<String, List<FieldType>> attrTypesMap = new HashMap<String, List<FieldType>>();
 		if (!mergeTable){//one to one aggr
 			for (int tbIdx=0; tbIdx<oldTables.length; tbIdx++){
 				String oldTable = oldTables[tbIdx];
 				String newTable = newTables[tbIdx];
 				List<String> attrs = logicSchema.getAttrNames(oldTable);
-				List<String> attrTypes = logicSchema.getAttrTypes(oldTable);
+				List<FieldType> attrTypes = logicSchema.getAttrTypes(oldTable);
 				int idxMax = attrs.size()-1;
 				List<String> newAttrs = new ArrayList<String>();
-				List<String> newTypes = new ArrayList<String>();
+				List<FieldType> newTypes = new ArrayList<FieldType>();
 				List<IdxRange> commonGroupKeys = groupKeysMap.get(oldTable).getCommonGroupIdx();
 				AggrOp aop = new AggrOp(AggrOperator.group, commonGroupKeys);
 				AggrOpMap aoMap = aoMapMap.get(oldTable);
@@ -213,7 +216,7 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 				if (groupExpNames!=null){
 					for (int i=0; i<groupExpNames.length; i++){
 						newAttrs.add(0, groupExpNames[groupExpNames.length-1-i]);
-						newTypes.add(0, groupExpTypes[groupExpNames.length-1-i]);
+						newTypes.add(0, new FieldType(groupExpTypes[groupExpNames.length-1-i]));
 					}
 				}
 				attrsMap.put(newTable, newAttrs);
@@ -226,9 +229,9 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 			AggrOpMap groupAOMap = new AggrOpMap();
 			groupAOMap.addAggrOp(aop);
 			List<String> attrs = logicSchema.getAttrNames(firstTable);
-			List<String> attrTypes = logicSchema.getAttrTypes(firstTable);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(firstTable);
 			List<String> newAttrs = new ArrayList<String>();
-			List<String> newTypes = new ArrayList<String>();
+			List<FieldType> newTypes = new ArrayList<FieldType>();
 			int idxMax = attrs.size()-1;
 			groupAOMap.constructMap(idxMax);
 			for (int i=0; i<=idxMax; i++){
@@ -242,7 +245,7 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 			if (groupExpNames!=null){
 				for (int i=0; i<groupExpNames.length; i++){
 					newAttrs.add(0, groupExpNames[groupExpNames.length-1-i]);//use common attr name
-					newTypes.add(0, groupExpTypes[groupExpNames.length-1-i]);
+					newTypes.add(0, new FieldType(groupExpTypes[groupExpNames.length-1-i]));
 				}
 			}
 			for (String oldTable: oldTables){

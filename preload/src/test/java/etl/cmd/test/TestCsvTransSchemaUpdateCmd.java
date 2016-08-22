@@ -12,6 +12,8 @@ import org.junit.Test;
 
 import etl.cmd.dynschema.LogicSchema;
 import etl.cmd.transform.CsvTransformCmd;
+import etl.util.DBType;
+import etl.util.DBUtil;
 import etl.util.Util;
 
 public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
@@ -42,19 +44,28 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
 			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
-			cmd.setExeSql(false);
+			List<String> createSqls = cmd.getCreateSqls();
+			DBUtil.executeSqls(createSqls, cmd.getPc());
 			cmd.sgProcess();
-			
+			List<String> dropSqls = cmd.getDropSqls();
+			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			//assertion
-			LogicSchema ls = (LogicSchema) Util.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = cmd.getLogicSchema();
 			String tableName = "MyCore_";
 			assertTrue(ls.hasTable(tableName));
 			List<String> attrs = ls.getAttrNames(tableName);
 			assertTrue(attrs.contains("aveActiveSubsNum"));
 			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
-			String expectedUpdateSql = String.format("alter table sgsiwf.%s add column aveActiveSubsNum numeric(15,5);", tableName);
-			logger.info(sqls);
-			assertTrue(sqls.contains(expectedUpdateSql));
+			logger.info("sqls:" + String.join("\n", sqls));
+			String expectedSqlVertica = String.format(
+					"alter table sgsiwf.%s add column aveActiveSubsNum numeric(15,5)", tableName);
+			String expectedSqlHive = String.format(
+					"alter table sgsiwf.%s add columns (aveActiveSubsNum decimal(15,5))", tableName);
+			if (cmd.getDbtype()==DBType.HIVE){
+				assertTrue(sqls.contains(expectedSqlHive));
+			}else{
+				assertTrue(sqls.contains(expectedSqlVertica));
+			}
 		} catch (Exception e) {
 			logger.error("", e);
 		}
@@ -95,9 +106,11 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
 			CsvTransformCmd cmd = new CsvTransformCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
-			cmd.setExeSql(false);
 			cmd.sgProcess();
-			
+			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			logger.info(sqls);
+			List<String> dropSqls = cmd.getDropSqls();
+			DBUtil.executeSqls(dropSqls, cmd.getPc());
 		} catch (Exception e) {
 			logger.error("", e);
 		}

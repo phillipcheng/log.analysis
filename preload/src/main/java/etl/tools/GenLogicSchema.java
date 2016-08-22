@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import etl.cmd.dynschema.LogicSchema;
 import etl.util.DBUtil;
+import etl.util.FieldType;
 import etl.util.Util;
 
 public class GenLogicSchema {
@@ -42,7 +43,7 @@ public class GenLogicSchema {
 			while(tableResults.next()) {
 			    String tableName = tableResults.getString(3);
 			    List<String> attrNames = new ArrayList<String>();
-			    List<String> attrTypes = new ArrayList<String>();
+			    List<FieldType> attrTypes = new ArrayList<FieldType>();
 			    ResultSet columnResults = dbmd.getColumns(null, schemaName, tableName, null);
 			    while(columnResults.next()){
 			        String columnName = columnResults.getString("COLUMN_NAME");
@@ -50,7 +51,7 @@ public class GenLogicSchema {
 			        int columnSize = columnResults.getInt("COLUMN_SIZE");
 			        int digits = columnResults.getInt("DECIMAL_DIGITS");
 			        attrNames.add(columnName);
-			        attrTypes.add(getTypeString(columnType, columnSize, digits));
+			        attrTypes.add(new FieldType(getTypeString(columnType, columnSize, digits)));
 			        logger.info(String.format("%s,%s,%d,%d,%d", tableName, columnName, columnType, columnSize, digits));
 			    }
 			    columnResults.close();

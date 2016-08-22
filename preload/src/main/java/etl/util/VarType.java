@@ -3,13 +3,17 @@ package etl.util;
 public enum VarType {
 
     STRING("string"),
+	TIMESTAMP("timestamp"),
+	DATE("date"),
+    NUMERIC("numeric"),
     INT("int"),
+    
     FLOAT("float"),
-    DATE("date"),
     LIST("list"),
     ARRAY("array"),
     BOOLEAN("boolean"),
     OBJECT("object");
+	
     private final String value;
 
     VarType(String v) {

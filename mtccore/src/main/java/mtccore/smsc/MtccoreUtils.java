@@ -19,16 +19,17 @@ public class MtccoreUtils {
 		return csvFile;
 	}
 	
-	public static String getCopySql(LogicSchema ls, String tableName, String csvFileName, String dbPrefix, String username, String rootWebHdfs){
+	public static String getCopySql(LogicSchema ls, String tableName, String csvFileName, 
+			String dbPrefix, String username, String rootWebHdfs, String dbType){
 		logger.info(String.format("csvFileName:%s", csvFileName));
 		List<String> attrs = ls.getAttrNames(tableName);
 		if (tableName.endsWith("_merge")){
-			return DBUtil.genCopyHdfsSql(null, attrs, tableName, dbPrefix, rootWebHdfs, csvFileName, username);
+			return DBUtil.genCopyHdfsSql(null, attrs, tableName, dbPrefix, rootWebHdfs, csvFileName, username, dbType);
 		}else{
 			attrs.remove("SchedTime");
 			attrs.remove("ActualTime");
 			String prefix = "epochT1 FILLER VARCHAR(15),epochT2 FILLER VARCHAR(15),SchedTime AS TO_TIMESTAMP(epochT1),ActualTime AS TO_TIMESTAMP(epochT2),";
-			return DBUtil.genCopyHdfsSql(prefix, attrs, tableName, dbPrefix, rootWebHdfs, csvFileName, username);
+			return DBUtil.genCopyHdfsSql(prefix, attrs, tableName, dbPrefix, rootWebHdfs, csvFileName, username, dbType);
 		}
 	}
 }

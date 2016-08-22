@@ -16,16 +16,17 @@ import org.apache.log4j.Logger;
 public class DBUtil {
 	public static final Logger logger = Logger.getLogger(DBUtil.class);
 
+	public static final String key_db_type="db.type";
 	public static final String key_db_driver="db.driver";
 	public static final String key_db_url="db.url";
 	public static final String key_db_user="db.user";
 	public static final String key_db_password="db.password";
 	public static final String key_db_loginTimeout="db.loginTimeout";
 
-	//db
 	private static String normalizeDBFieldName(String fn){
 		return fn.replaceAll("[ .-]", "_");
 	}
+	
 	private static List<String> normalizeDBFieldNames(List<String> fieldNameList){
 		List<String> retlist = new ArrayList<String>();
 		for (String fn:fieldNameList){
@@ -34,45 +35,65 @@ public class DBUtil {
 		return retlist;
 	}
 
-	public static String guessDBType(String value){
+	public static FieldType guessDBType(String value){
 		int len = value.length();
 		try {
 			Float.parseFloat(value);
-			return String.format("numeric(%d,%d)", 15,5);
+			return new FieldType(VarType.NUMERIC, 15, 5);
 		}catch(Exception e){
-			return String.format("varchar(%d)", Math.max(20, 2*len));
+			return new FieldType(VarType.STRING,Math.max(20, 2*len));
 		}
 	}
 
-	public static String genCreateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
+	public static String genCreateTableSql(List<String> fieldNameList, List<FieldType> fieldTypeList, 
+			String tn, String dbschema, DBType dbtype){
 		List<String> fnl = normalizeDBFieldNames(fieldNameList);
 		StringBuffer tablesql = new StringBuffer();
 		//gen table sql
 		tablesql.append(String.format("create table if not exists %s.%s(", dbschema, tn));
 		for (int i=0; i<fnl.size(); i++){
 			String name = fnl.get(i);
-			String type = fieldTypeList.get(i);
-			tablesql.append(String.format("%s %s", name, type));
+			FieldType type = fieldTypeList.get(i);
+			tablesql.append(String.format("%s %s", name, type.toSql(dbtype)));
 			if (i<fnl.size()-1){
 				tablesql.append(",");
 			}
 		}
-		tablesql.append(");");
+		tablesql.append(")");
+		if (DBType.HIVE == dbtype){
+			tablesql.append(" ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"");
+		}
 		return tablesql.toString();
 	}
 
-	public static List<String> genUpdateTableSql(List<String> fieldNameList, List<String> fieldTypeList, String tn, String dbschema){
+	public static List<String> genUpdateTableSql(List<String> fieldNameList, List<FieldType> fieldTypeList, 
+			String tn, String dbschema, DBType dbtype){
 		List<String> updateSqls = new ArrayList<String>();
-		for (int i=0; i<fieldNameList.size(); i++){
-			String name = normalizeDBFieldName(fieldNameList.get(i));
-			updateSqls.add(String.format("alter table %s.%s add column %s %s;\n", dbschema, tn, name, fieldTypeList.get(i)));
+		if (DBType.VERTICA == dbtype || DBType.NONE == dbtype){
+			for (int i=0; i<fieldNameList.size(); i++){
+				String name = normalizeDBFieldName(fieldNameList.get(i));
+				updateSqls.add(String.format("alter table %s.%s add column %s %s", dbschema, tn, 
+						name, fieldTypeList.get(i).toSql(dbtype)));
+			}
+		}else{
+			StringBuffer sb = new StringBuffer();
+			sb.append(String.format("alter table %s.%s add columns (", dbschema, tn));
+			for (int i=0; i<fieldNameList.size(); i++){
+				String name = normalizeDBFieldName(fieldNameList.get(i));
+				sb.append(String.format("%s %s", name, fieldTypeList.get(i).toSql(dbtype)));
+				if (i<fieldNameList.size()-1){
+					sb.append(",");
+				}
+			}
+			sb.append(")");
+			updateSqls.add(sb.toString());
 		}
 		return updateSqls;
 	}
 
 	public static String genDropTableSql(String tn, String dbschema){
 		StringBuffer tablesql = new StringBuffer();
-		tablesql.append(String.format("drop table %s.%s;\n", dbschema, tn));
+		tablesql.append(String.format("drop table %s.%s", dbschema, tn));
 		return tablesql.toString();
 	}
 
@@ -98,25 +119,36 @@ public class DBUtil {
 		return copysql.toString();
 	}
 
+	//for external invocation
 	public static String genCopyHdfsSql(String prefix, List<String> fieldNameList, String tn, String dbschema, 
-			String rootWebHdfs, String csvFileName, String username){
+			String rootWebHdfs, String csvFileName, String username, String dbType){
+		DBType dbtype = DBType.fromValue(dbType);
+		return genCopyHdfsSql(prefix, fieldNameList, tn, dbschema, rootWebHdfs, csvFileName, username, dbtype);
+	}
+	
+	public static String genCopyHdfsSql(String prefix, List<String> fieldNameList, String tn, String dbschema, 
+			String rootWebHdfs, String csvFileName, String username, DBType dbType){
 		StringBuffer copysql = new StringBuffer();
-		List<String> fnl = normalizeDBFieldNames(fieldNameList);
-		//gen table sql
-		if (prefix==null){
-			copysql.append(String.format("copy %s.%s(", dbschema, tn));
+		if (DBType.HIVE == dbType){
+			return String.format("load data inpath '%s%s' into table %s.%s", rootWebHdfs, csvFileName, dbschema, tn);
 		}else{
-			copysql.append(String.format("copy %s.%s(%s", dbschema, tn, prefix));
-		}
-		for (int i=0; i<fnl.size(); i++){
-			String name = fnl.get(i);
-			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fnl.size()-1){
-				copysql.append(",");
+			List<String> fnl = normalizeDBFieldNames(fieldNameList);
+			//gen table sql
+			if (prefix==null){
+				copysql.append(String.format("copy %s.%s(", dbschema, tn));
+			}else{
+				copysql.append(String.format("copy %s.%s(%s", dbschema, tn, prefix));
 			}
+			for (int i=0; i<fnl.size(); i++){
+				String name = fnl.get(i);
+				copysql.append(String.format("%s enclosed by '\"'", name));
+				if (i<fnl.size()-1){
+					copysql.append(",");
+				}
+			}
+			copysql.append(String.format(") SOURCE Hdfs(url='%s%s*',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
+			return copysql.toString();
 		}
-		copysql.append(String.format(") SOURCE Hdfs(url='%s%s*',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
-		return copysql.toString();
 	}
 
 	public static Connection getConnection(PropertiesConfiguration pc){
@@ -178,6 +210,7 @@ public class DBUtil {
 		logger.info("Rows Updated:"+rowsUpdated);
 		return rowsUpdated;
 	}
+	
 	public static boolean checkTableExists(String sql, PropertiesConfiguration pc){
 		Connection conn = null;
 		try {

@@ -6,7 +6,9 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 
 import etl.cmd.dynschema.LogicSchema;
+import etl.util.DBType;
 import etl.util.DBUtil;
+import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
@@ -16,18 +18,19 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 	public static final String cfgkey_schema_file="schema.file";
 	public static final String cfgkey_db_prefix="db.prefix"; //db schema
 	public static final String cfgkey_create_sql="create.sql";
+	public static final String cfgkey_db_type="db.type";
 	
 	//system variable map
 	public static final String VAR_LOGIC_SCHEMA="logicSchema"; //
 	public static final String VAR_DB_PREFIX="dbPrefix";//
+	public static final String VAR_DB_TYPE="dbType";//
 
 	protected String schemaFile;
 	protected String dbPrefix;
 	protected LogicSchema logicSchema;
 	private String createTablesSqlFileName;
 	
-	private boolean exeSql=true;
-	
+	private DBType dbtype = DBType.NONE;
 	
 	public DynaSchemaFileETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, defaultFs, otherArgs);
@@ -51,6 +54,11 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 		String createSqlExp = pc.getString(cfgkey_create_sql, null);
 		if (createSqlExp!=null)
 			this.createTablesSqlFileName = (String) ScriptEngineUtil.eval(createSqlExp, VarType.STRING, super.getSystemVariables());
+		String strDbType = pc.getString(cfgkey_db_type, null);
+		this.getSystemVariables().put(VAR_DB_TYPE, strDbType);
+		if (strDbType!=null){
+			dbtype = DBType.fromValue(strDbType);
+		}
 	}
 	
 	//return loginfo
@@ -62,7 +70,7 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 			//update logic schema file
 			Util.toDfsJsonFile(fs, this.schemaFile, logicSchema);
 			//execute the sql
-			if (exeSql){
+			if (dbtype != DBType.NONE){
 				DBUtil.executeSqls(createTableSqls, pc);
 			}
 		}
@@ -72,11 +80,39 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 		return loginfo;
 	}
 
-	public boolean isExeSql() {
-		return exeSql;
+	public DBType getDbtype() {
+		return dbtype;
 	}
 
-	public void setExeSql(boolean exeSql) {
-		this.exeSql = exeSql;
+	public void setDbtype(DBType dbtype) {
+		this.dbtype = dbtype;
+	}
+	
+	public List<String> getCreateSqls(){
+		List<String> sqls = new ArrayList<String>();
+		for (String tn: logicSchema.getAttrNameMap().keySet()){
+			List<String> attrNames = logicSchema.getAttrNames(tn);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(tn);
+			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbPrefix, dbtype);
+			sqls.add(sql);
+		}
+		return sqls;
+	}
+	
+	public List<String> getDropSqls(){
+		List<String> sqls = new ArrayList<String>();
+		for (String tn: logicSchema.getAttrNameMap().keySet()){
+			String sql = DBUtil.genDropTableSql(tn, dbPrefix);
+			sqls.add(sql);
+		}
+		return sqls;
+	}
+
+	public LogicSchema getLogicSchema() {
+		return logicSchema;
+	}
+
+	public void setLogicSchema(LogicSchema logicSchema) {
+		this.logicSchema = logicSchema;
 	}
 }

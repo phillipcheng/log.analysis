@@ -8,16 +8,18 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import etl.util.FieldType;
+
 
 public class LogicSchema {
 	public static final Logger logger = Logger.getLogger(LogicSchema.class);
 	
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
-	private Map<String, List<String>> attrTypeMap = null; //table-name to list of attribute types mapping
+	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping
 
 	public LogicSchema(){
 		attrNameMap = new HashMap<String, List<String>>();
-		attrTypeMap = new HashMap<String, List<String>>();
+		attrTypeMap = new HashMap<String, List<FieldType>>();
 	}
 	
 	public boolean hasTable(String tableName){
@@ -44,12 +46,12 @@ public class LogicSchema {
 	}
 	
 	@JsonIgnore
-	public List<String> getAttrTypes(String tableName){
+	public List<FieldType> getAttrTypes(String tableName){
 		return attrTypeMap.get(tableName);
 	}
 	
-	public void addAttrTypes(String tableName, List<String> attrTypes){
-		List<String> orgTypes = attrTypeMap.get(tableName);
+	public void addAttrTypes(String tableName, List<FieldType> attrTypes){
+		List<FieldType> orgTypes = attrTypeMap.get(tableName);
 		if (orgTypes==null){
 			attrTypeMap.put(tableName, attrTypes);
 		}else{
@@ -58,7 +60,7 @@ public class LogicSchema {
 		}
 	}
 	
-	public void updateTableAttrTypes(String tableName, List<String> attrTypes){
+	public void updateTableAttrTypes(String tableName, List<FieldType> attrTypes){
 		attrTypeMap.put(tableName, attrTypes);
 	}
 	
@@ -70,11 +72,11 @@ public class LogicSchema {
 		this.attrNameMap = attrNameMap;
 	}
 
-	public Map<String, List<String>> getAttrTypeMap() {
+	public Map<String, List<FieldType>> getAttrTypeMap() {
 		return attrTypeMap;
 	}
 
-	public void setAttrTypeMap(Map<String, List<String>> attrTypeMap) {
+	public void setAttrTypeMap(Map<String, List<FieldType>> attrTypeMap) {
 		this.attrTypeMap = attrTypeMap;
 	}
 }

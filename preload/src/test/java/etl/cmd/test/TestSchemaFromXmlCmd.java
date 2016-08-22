@@ -59,7 +59,6 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 			
 			//run cmd
 			SchemaFromXmlCmd cmd = new SchemaFromXmlCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
-			cmd.setExeSql(false);
 			List<String> info = cmd.sgProcess();
 			int numFiles = Integer.parseInt(info.get(0));
 			logger.info(info);
