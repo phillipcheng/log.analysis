@@ -108,7 +108,7 @@ public class MtcETLCmd extends TestETLCmd{
 	
 	@Test
 	public void testCopyXml() {
-		copyXml("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\main\\resources");
+		copyXml(this.getDefaultFS(), this.getLocalFolder());
 	}
 	
 	public void realCopyXml(String defaultFs, String localCfgDir) throws Exception{
