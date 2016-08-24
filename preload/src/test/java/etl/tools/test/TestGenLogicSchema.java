@@ -8,7 +8,7 @@ import java.util.List;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.junit.Test;
 
-import etl.cmd.dynschema.LogicSchema;
+import etl.engine.LogicSchema;
 import etl.tools.GenLogicSchema;
 import etl.util.FieldType;
 import etl.util.Util;

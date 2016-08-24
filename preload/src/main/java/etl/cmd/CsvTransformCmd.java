@@ -1,4 +1,4 @@
-package etl.cmd.transform;
+package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
-import etl.engine.DynaSchemaFileETLCmd;
+import etl.cmd.transform.ColOp;
 import etl.engine.MRMode;
 import etl.util.DBUtil;
 import etl.util.FieldType;

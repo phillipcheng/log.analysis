@@ -1,4 +1,4 @@
-package etl.cmd.transform;
+package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.Arrays;

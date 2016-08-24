@@ -10,7 +10,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
 import org.junit.Test;
 
-import etl.cmd.dynschema.SchemaFromXmlCmd;
+import etl.cmd.SchemaFromXmlCmd;
 import etl.util.Util;
 
 import org.apache.log4j.Logger;

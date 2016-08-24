@@ -27,7 +27,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
-            <arg>etl.cmd.transform.CsvAggregateCmd</arg>
+            <arg>etl.cmd.CsvAggregateCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/smsc_aggr.properties</arg>
             <arg>${nameNode}</arg>
@@ -85,7 +85,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
                 </property>
                 <property>
                     <name>cmdClassName</name>
-                    <value>etl.cmd.transform.CsvAggregateCmd</value>
+                    <value>etl.cmd.CsvAggregateCmd</value>
                 </property>
                 <property>
                     <name>wfid</name>

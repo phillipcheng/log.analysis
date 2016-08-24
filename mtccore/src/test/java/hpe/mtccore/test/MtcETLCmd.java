@@ -19,10 +19,10 @@ public class MtcETLCmd extends TestETLCmd{
 	
 	@Test
 	public void setupLabETLCfg() {
-		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\src\\main\\resources");
+		setupETLCfg(this.getDefaultFS(), this.getProjectFolder());
 	}
 	
-	public void realSetupEtlCfg(String defaultFs, String localCfgDir) throws Exception{
+	public void realSetupEtlCfg(String defaultFs, String projectFolder) throws Exception{
 		Configuration conf = new Configuration();
     	conf.set("fs.defaultFS", defaultFs);
     	FileSystem fs = FileSystem.get(conf);
@@ -45,6 +45,8 @@ public class MtcETLCmd extends TestETLCmd{
 		
 		//copy etlengine.properties
 		String etlengineProp= "etlengine.properties";
+		String localCfgDir = projectFolder + File.separator + "mtccore" + File.separator + "src" + 
+				File.separator + "main" + File.separator + "resources";
 		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + etlengineProp), new Path("/user/dbadmin/mtccore/lib/"+etlengineProp));
 		
 		//copy config
@@ -73,7 +75,7 @@ public class MtcETLCmd extends TestETLCmd{
 		}
 		
 		//copy lib
-		String mtcLocalTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\mtccore\\target\\";
+		String mtcLocalTargetFolder = projectFolder + File.separator + "mtccore" + File.separator + "target" + File.separator;
 		String[] libNames = new String[]{"mtccore-0.1.0.jar"};
 		String remoteLibFolder="/user/dbadmin/mtccore/lib/";
 		for (String libName:libNames){
@@ -81,7 +83,7 @@ public class MtcETLCmd extends TestETLCmd{
 			fs.copyFromLocalFile(new Path(mtcLocalTargetFolder + libName), new Path(remoteLibFolder+libName));
 		}
 		
-		String preloadLocalTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\preload\\target\\";
+		String preloadLocalTargetFolder = projectFolder + File.separator + "preload" + File.separator + "target" + File.separator;
 		String remoteShareLibFolder="/user/dbadmin/share/lib/preload/lib/";
 		String libName = "preload-0.1.0.jar";
 		fs.delete(new Path(remoteShareLibFolder + libName), true);

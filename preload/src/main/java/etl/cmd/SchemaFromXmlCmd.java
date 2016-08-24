@@ -1,4 +1,4 @@
-package etl.cmd.dynschema;
+package etl.cmd;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -25,7 +25,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import etl.engine.DynaSchemaFileETLCmd;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;

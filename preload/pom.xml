@@ -97,21 +97,28 @@
 	    <scope>provided</scope>
 	</dependency>
 	<dependency>
+	    <groupId>com.fasterxml.jackson.core</groupId>
+	    <artifactId>jackson-core</artifactId>
+	    <version>2.6.5</version>
+        <scope>provided</scope>
+	</dependency>
+	<dependency>
 	    <groupId>com.jcraft</groupId>
 	    <artifactId>jsch</artifactId>
 	    <version>0.1.53</version>
 	    <scope>provided</scope>
 	</dependency>
-	 <dependency>
+	<dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.11</artifactId>
       <version>2.0.0</version>
+      <scope>provided</scope>
     </dependency>
-	<!-- https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc -->
 	<dependency>
 	    <groupId>org.apache.hive</groupId>
 	    <artifactId>hive-jdbc</artifactId>
-	    <version>2.1.0</version>
+	    <version>1.2.1</version>
+	    <scope>provided</scope>
 	</dependency>
   </dependencies>
   

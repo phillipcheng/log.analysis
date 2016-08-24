@@ -10,7 +10,7 @@ import java.util.List;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
-import etl.cmd.dynschema.LogicSchema;
+import etl.engine.LogicSchema;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.Util;

@@ -68,7 +68,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
-			<arg>etl.cmd.dynschema.SchemaFromXmlCmd</arg>
+			<arg>etl.cmd.SchemaFromXmlCmd</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.schemaFromXml.properties</arg>
 			<arg>${nameNode}</arg>
@@ -126,7 +126,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>cmdClassName</name>
-                    <value>etl.cmd.dynschema.XmlToCsvCmd</value>
+                    <value>etl.cmd.XmlToCsvCmd</value>
                 </property>
                 <property>
                     <name>wfid</name>
@@ -162,7 +162,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
-            <arg>etl.cmd.transform.CsvAggregateCmd</arg>
+            <arg>etl.cmd.CsvAggregateCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.aggr.properties</arg>
             <arg>${nameNode}</arg>
@@ -220,7 +220,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>cmdClassName</name>
-                    <value>etl.cmd.transform.CsvAggregateCmd</value>
+                    <value>etl.cmd.CsvAggregateCmd</value>
                 </property>
                 <property>
                     <name>wfid</name>
@@ -256,7 +256,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
-            <arg>etl.cmd.transform.CsvTransformCmd</arg>
+            <arg>etl.cmd.CsvTransformCmd</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.trans.properties</arg>
             <arg>${nameNode}</arg>
@@ -314,7 +314,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>cmdClassName</name>
-                    <value>etl.cmd.transform.CsvTransformCmd</value>
+                    <value>etl.cmd.CsvTransformCmd</value>
                 </property>
                 <property>
                     <name>wfid</name>

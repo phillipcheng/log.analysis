@@ -7,7 +7,6 @@ import javax.script.CompiledScript;
 
 import org.apache.log4j.Logger;
 
-import etl.engine.DynaSchemaFileETLCmd;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;

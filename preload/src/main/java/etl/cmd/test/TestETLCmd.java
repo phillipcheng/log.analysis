@@ -32,6 +32,7 @@ public class TestETLCmd {
 	//private static String cfgProperties="testETLCmd_192.85.247.104.properties";
 	
 	private static String key_localFolder="localFolder";
+	private static String key_projectFolder="projectFolder";
 	private static String key_defaultFs="defaultFS";
 	private static String key_jobTracker="jobTracker";
 	private static String key_test_sftp="test.sftp";
@@ -41,6 +42,7 @@ public class TestETLCmd {
 	private PropertiesConfiguration pc;
 	
 	private String localFolder = "";
+	private String projectFolder = "";
 	private FileSystem fs;
 	private String defaultFS;
 	private Configuration conf;
@@ -57,6 +59,7 @@ public class TestETLCmd {
 		try{
 			pc = Util.getPropertiesConfig(cfgProperties);
 			localFolder = pc.getString(key_localFolder);
+			projectFolder = pc.getString(key_projectFolder);
 			setTestSftp(pc.getBoolean(key_test_sftp, true));
 			setTestKafka(pc.getBoolean(key_test_kafka, true));
 			conf = new Configuration();
@@ -258,5 +261,13 @@ public class TestETLCmd {
 
 	public void setTestSftp(boolean testSftp) {
 		this.testSftp = testSftp;
+	}
+
+	public String getProjectFolder() {
+		return projectFolder;
+	}
+
+	public void setProjectFolder(String projectFolder) {
+		this.projectFolder = projectFolder;
 	}
 }

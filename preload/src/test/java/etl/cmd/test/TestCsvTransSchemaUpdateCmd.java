@@ -10,8 +10,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import etl.cmd.dynschema.LogicSchema;
-import etl.cmd.transform.CsvTransformCmd;
+import etl.cmd.CsvTransformCmd;
+import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.Util;

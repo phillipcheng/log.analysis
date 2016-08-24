@@ -1,4 +1,4 @@
-package etl.engine;
+package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,8 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
-import etl.cmd.dynschema.LogicSchema;
+import etl.engine.FileETLCmd;
+import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.FieldType;

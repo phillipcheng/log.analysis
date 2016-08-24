@@ -1,4 +1,4 @@
-package etl.cmd.transform;
+package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +18,10 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
+import etl.cmd.transform.AggrOp;
+import etl.cmd.transform.AggrOpMap;
+import etl.cmd.transform.GroupOp;
 import etl.engine.AggrOperator;
-import etl.engine.DynaSchemaFileETLCmd;
 import etl.engine.ETLCmd;
 import etl.engine.FileETLCmd;
 import etl.util.DBUtil;

@@ -1,4 +1,4 @@
-package etl.cmd.transform;
+package etl.cmd;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

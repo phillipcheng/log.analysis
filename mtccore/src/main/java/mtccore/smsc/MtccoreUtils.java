@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import etl.cmd.dynschema.LogicSchema;
+import etl.engine.LogicSchema;
 import etl.util.DBUtil;
 import etl.util.KeyValueMapping;
 

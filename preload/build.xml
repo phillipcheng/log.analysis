@@ -8,12 +8,12 @@
 		<copy todir="${dist}/lib/">
 			<fileset dir="${target}/lib/">
 		    	<include name="commons*.jar"/>
-				<include name="jackson-core-2.7.4.jar"/>
-                <include name="jackson-databind*.jar"/>
+				<include name="jackson-core-2.6.5.jar"/>
+                <include name="jackson-databind-2.6.5.jar"/>
 				<include name="jackson-annotations*.jar"/>
                 <include name="jsch*.jar"/>
                 <include name="kafka-clients*.jar"/>
-				<include name="log4j*.jar"/>
+				<include name="log4j-1.2.16.jar"/>
 		    </fileset>
 			<fileset dir="lib/">
                 <include name="vertica*.jar"/>
