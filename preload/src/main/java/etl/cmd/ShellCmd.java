@@ -41,11 +41,11 @@ public class ShellCmd extends ETLCmd{
 	@Override
 	public List<String> sgProcess() {
 		try {
-			command = StringUtil.fillParams(command, params, "$", "");
+			String cmd = StringUtil.fillParams(command, params, "$", "");
 			//pass wfid as the last parameter to the shell script
-			command += " " + this.wfid;
-			logger.info(String.format("mr command is %s", command));
-			CommandLine cmdLine = CommandLine.parse(command);
+			cmd += " " + this.wfid;
+			logger.info(String.format("mr command is %s", cmd));
+			CommandLine cmdLine = CommandLine.parse(cmd);
 			DefaultExecutor executor = new DefaultExecutor();
 			int exitValue = executor.execute(cmdLine);
 			logger.info(String.format("process for key:%s ended with exitValue %d.", params.get(cfgkey_param_key), exitValue));

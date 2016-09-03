@@ -37,6 +37,7 @@ public class TestETLCmd {
 	private static String key_jobTracker="jobTracker";
 	private static String key_test_sftp="test.sftp";
 	private static String key_test_kafka="test.kafka";
+	private static String key_oozie_user="oozie.user";
 	
 	
 	private PropertiesConfiguration pc;
@@ -48,6 +49,7 @@ public class TestETLCmd {
 	private Configuration conf;
 	private boolean testSftp=true;
 	private boolean testKafka=true;
+	private String oozieUser = "";
 	
 	//
 	public static void setCfgProperties(String testProperties){
@@ -60,6 +62,7 @@ public class TestETLCmd {
 			pc = Util.getPropertiesConfig(cfgProperties);
 			localFolder = pc.getString(key_localFolder);
 			projectFolder = pc.getString(key_projectFolder);
+			oozieUser = pc.getString(key_oozie_user);
 			setTestSftp(pc.getBoolean(key_test_sftp, true));
 			setTestKafka(pc.getBoolean(key_test_kafka, true));
 			conf = new Configuration();
@@ -269,5 +272,13 @@ public class TestETLCmd {
 
 	public void setProjectFolder(String projectFolder) {
 		this.projectFolder = projectFolder;
+	}
+
+	public String getOozieUser() {
+		return oozieUser;
+	}
+
+	public void setOozieUser(String oozieUser) {
+		this.oozieUser = oozieUser;
 	}
 }

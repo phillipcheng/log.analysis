@@ -3,6 +3,8 @@ package hpe.mtccore.test;
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -10,6 +12,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import etl.cmd.SftpCmd;
 import etl.cmd.test.TestETLCmd;
 
 public class MtcETLCmd extends TestETLCmd{
@@ -47,7 +50,7 @@ public class MtcETLCmd extends TestETLCmd{
 		String etlengineProp= "etlengine.properties";
 		String localCfgDir = projectFolder + File.separator + "mtccore" + File.separator + "src" + 
 				File.separator + "main" + File.separator + "resources";
-		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + etlengineProp), new Path("/user/dbadmin/mtccore/lib/"+etlengineProp));
+		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + etlengineProp), new Path("/user/" + super.getOozieUser() + "/mtccore/lib/"+etlengineProp));
 		
 		//copy config
 		File localDir = new File(localCfgDir);
@@ -70,21 +73,21 @@ public class MtcETLCmd extends TestETLCmd{
 		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml"};
 		for (String wf: workflows){
 			String workflow = localCfgDir + File.separator + wf;
-			String remoteWorkflow = "/user/dbadmin/mtccore/" + wf;
+			String remoteWorkflow = "/user/" + super.getOozieUser() + "/mtccore/" + wf;
 			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
 		}
 		
 		//copy lib
 		String mtcLocalTargetFolder = projectFolder + File.separator + "mtccore" + File.separator + "target" + File.separator;
-		String[] libNames = new String[]{"mtccore-0.1.0.jar"};
-		String remoteLibFolder="/user/dbadmin/mtccore/lib/";
+		String[] libNames = new String[]{"mtccore-0.1.0.jar", "mtccore-0.1.0-jar-with-dependencies.jar"};
+		String remoteLibFolder="/user/" + super.getOozieUser() + "/mtccore/lib/";
 		for (String libName:libNames){
 			fs.delete(new Path(remoteLibFolder+libName), true);
 			fs.copyFromLocalFile(new Path(mtcLocalTargetFolder + libName), new Path(remoteLibFolder+libName));
 		}
 		
 		String preloadLocalTargetFolder = projectFolder + File.separator + "preload" + File.separator + "target" + File.separator;
-		String remoteShareLibFolder="/user/dbadmin/share/lib/preload/lib/";
+		String remoteShareLibFolder="/user/" + super.getOozieUser() + "/share/lib/preload/lib/";
 		String libName = "preload-0.1.0.jar";
 		fs.delete(new Path(remoteShareLibFolder + libName), true);
 		fs.copyFromLocalFile(new Path(preloadLocalTargetFolder + libName), new Path(remoteShareLibFolder+libName));
@@ -95,7 +98,7 @@ public class MtcETLCmd extends TestETLCmd{
 			if (defaultFs.contains("127.0.0.1")){
 				realSetupEtlCfg(defaultFs, localCfgDir);
 			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser(super.getOozieUser(), UserGroupInformation.getLoginUser());
 			    ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			      public Void run() throws Exception {
 			    	realSetupEtlCfg(defaultFs, localCfgDir);
@@ -109,11 +112,20 @@ public class MtcETLCmd extends TestETLCmd{
 	}
 	
 	@Test
-	public void testCopyXml() {
-		copyXml(this.getDefaultFS(), this.getLocalFolder());
+	public void getData(){
+		String remoteEtlcfg = "/mtccore/etlcfg/";
+		String sftpCmdProperties="sgsiwf.sftp.properties";
+		SftpCmd cmd = new SftpCmd("wfid", remoteEtlcfg+sftpCmdProperties, this.getDefaultFS(), null);
+		List<String> ret = cmd.sgProcess();
+		logger.info(ret);
 	}
 	
-	public void realCopyXml(String defaultFs, String localCfgDir) throws Exception{
+	@Test
+	public void testCopyXml() {
+		copyXml(this.getDefaultFS(), this.getProjectFolder());
+	}
+	
+	public void realCopyXml(String defaultFs, String projectFolder) throws Exception{
 		Configuration conf = new Configuration();
     	conf.set("fs.defaultFS", defaultFs);
     	FileSystem fs = FileSystem.get(conf);
@@ -132,6 +144,14 @@ public class MtcETLCmd extends TestETLCmd{
 		fs.mkdirs(new Path(xmldir));
 		fs.mkdirs(new Path(schemadir));
 		fs.mkdirs(new Path(schemaHistoryDir));
+		
+		//copy etlengine.properties
+		String etlengineProp= "etlengine.properties";
+		String localCfgDir = projectFolder + File.separator + "mtccore" + File.separator + "src" + 
+				File.separator + "main" + File.separator + "resources";
+		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + etlengineProp), new Path("/user/" + super.getOozieUser() + "/mtccore/lib/"+etlengineProp));
+		
+		//copy config
 		File localDir = new File(localCfgDir);
 		String[] cfgs = localDir.list();
 		for (String cfg:cfgs){
@@ -139,10 +159,20 @@ public class MtcETLCmd extends TestETLCmd{
 			String rcfg = remoteEtlcfg + "/" + cfg;
 			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
 		}
+		
+		//copy schema
+		String[] schemas = new String[]{"smsc.schema", "sgsiwf.schema"};
+		for (String schema: schemas){
+			String workflow = localCfgDir + File.separator + schema;
+			String remoteWorkflow = schemadir + "/" + schema;
+			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+		}
+		
+		//copy workflow
 		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml"};
 		for (String wf: workflows){
 			String workflow = localCfgDir + File.separator + wf;
-			String remoteWorkflow = "/user/dbadmin/mtccore/" + wf;
+			String remoteWorkflow = "/user/" + super.getOozieUser() + "/mtccore/" + wf;
 			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
 		}
 	}
@@ -152,7 +182,7 @@ public class MtcETLCmd extends TestETLCmd{
 			if (defaultFs.contains("127.0.0.1")){
 				realCopyXml(defaultFs, localCfgDir);
 			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser(super.getOozieUser(), UserGroupInformation.getLoginUser());
 			    ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			      public Void run() throws Exception {
 			    	  realCopyXml(defaultFs, localCfgDir);
@@ -194,7 +224,7 @@ public class MtcETLCmd extends TestETLCmd{
 			if (defaultFs.contains("127.0.0.1")){
 				realCleanUp(defaultFs);
 			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser(super.getOozieUser(), UserGroupInformation.getLoginUser());
 			    ugi.doAs(new PrivilegedExceptionAction<Void>() {
 			      public Void run() throws Exception {
 			    	  realCleanUp(defaultFs);

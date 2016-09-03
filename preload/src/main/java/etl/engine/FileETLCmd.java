@@ -20,8 +20,15 @@ public abstract class FileETLCmd extends ETLCmd{
 	private boolean addFileName = false;
 	private String expFileName = null;
 	
+	public FileETLCmd(){
+	}
+	
 	public FileETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfid, staticCfg, defaultFs, otherArgs);
 		addFileName = pc.getBoolean(cfgkey_add_filename, false);
 		expFileName = pc.getString(cfgkey_exp_filename);
 	}

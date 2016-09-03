@@ -27,7 +27,7 @@ public class TestMultipleCmds extends TestETLCmd{
 			String remoteCsvFolder = "/etltest/multiplecmds/";
 			String remoteCsvOutputFolder = "/etltest/multiplecmdsoutput/";
 			//setup testing env
-			String[] cmdClasses = new String[]{"etl.cmd.transform.CsvTransformCmd","etl.cmd.transform.EvtBasedMsgParseCmd"};
+			String[] cmdClasses = new String[]{"etl.cmd.CsvTransformCmd","etl.cmd.EvtBasedMsgParseCmd"};
 			String[] cmdProperties = new String[]{"hlr.csvtransform.properties","hlr.msgparse.properties"};
 			String[] csvFiles = new String[]{"input.hlr1.txt"};
 			getFs().mkdirs(new Path(remoteCfgFolder));

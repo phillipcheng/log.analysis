@@ -28,8 +28,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -85,6 +83,21 @@ public class Util {
 					logger.error("", e);
 				}
 			}
+		}
+	}
+	
+	public static FileSystem getHadoopFs(String defaultFs){
+		String fs_key = "fs.defaultFS";
+		Configuration conf = new Configuration();
+		if (defaultFs!=null){
+			conf.set(fs_key, defaultFs);
+		}
+		logger.info(String.format("%s is %s", fs_key, conf.get(fs_key)));
+		try {
+			return FileSystem.get(conf);
+		} catch (IOException e) {
+			logger.error("", e);
+			return null;
 		}
 	}
 	
@@ -277,14 +290,18 @@ public class Util {
 		}
 	}
 	
-	public static void writeDfsFile(FileSystem fs, String fileName, List<String> contents){
+	public static int writeDfsFile(FileSystem fs, String fileName, Iterable<String> contents){
 		BufferedWriter osw = null;
 		try {
 			osw = new BufferedWriter(new OutputStreamWriter(fs.create(new Path(fileName))));
+			int i=0;
 			for (String line:contents){
+				i++;
 				osw.write(line);
 				osw.write("\n");
 			}
+			logger.info(String.format("write %d lines to file:%s", i, fileName));
+			return i;
 		}catch(Exception e){
 			logger.error("",e);
 		}finally{
@@ -296,6 +313,7 @@ public class Util {
 				}
 			}
 		}
+		return 0;
 	}
 	
 	/*

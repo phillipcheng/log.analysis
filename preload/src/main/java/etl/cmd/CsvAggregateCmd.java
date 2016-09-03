@@ -1,8 +1,10 @@
 package etl.cmd;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,7 +32,11 @@ import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 
-public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
+import scala.Tuple2;
+import scala.Tuple3;
+
+public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
+	private static final long serialVersionUID = 1L;
 	public static final Logger logger = Logger.getLogger(CsvAggregateCmd.class);
 
 	public static final String AGGR_OP_SUM="sum";
@@ -48,11 +54,16 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 	
 	private String[] oldTables = null;
 	private String[] newTables = null;
-	private Map<String, AggrOpMap> aoMapMap = new HashMap<String, AggrOpMap>(); //table name to AggrOpMap
-	private Map<String, GroupOp> groupKeysMap = new HashMap<String, GroupOp>(); //table name to 
 	private String strFileTableMap;
-	private CompiledScript expFileTableMap;
+	
+	private transient Map<String, String> oldnewTableMap;
+	private transient Map<String, AggrOpMap> aoMapMap; //table name to AggrOpMap
+	private transient Map<String, GroupOp> groupKeysMap; //table name to 
+	private transient CompiledScript expFileTableMap;
 	private boolean mergeTable = false;
+	
+	public CsvAggregateCmd(){
+	}
 	
 	private GroupOp getGroupOp(String keyPrefix){
 		String groupKey = keyPrefix==null? cfgkey_aggr_groupkey:keyPrefix+"."+cfgkey_aggr_groupkey;
@@ -75,7 +86,13 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 	}
 	
 	public CsvAggregateCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfid, staticCfg, defaultFs, otherArgs);
+		aoMapMap = new HashMap<String, AggrOpMap>();
+		groupKeysMap = new HashMap<String, GroupOp>();
 		if (pc.containsKey(cfgkey_aggr_old_table)){
 			oldTables = pc.getStringArray(cfgkey_aggr_old_table);
 		}
@@ -89,7 +106,13 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 			GroupOp groupOp = getGroupOp(null);
 			groupKeysMap.put(SINGLE_TABLE, groupOp);
 		}else{
-			for (String tableName: oldTables){
+			oldnewTableMap = new HashMap<String, String>();
+			for (int i=0; i<oldTables.length; i++){
+				String tableName = oldTables[i];
+				if (newTables.length>i){
+					String newTable = newTables[i];
+					oldnewTableMap.put(tableName, newTable);
+				}
 				AggrOpMap aoMap = null;
 				GroupOp groupOp = null;
 				if (pc.containsKey(tableName+"."+cfgkey_aggr_op)){
@@ -271,12 +294,13 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 		return updateSchema(attrsMap, attrTypesMap);
 	}
 
+	//tableKey.aggrKeys,aggrValues
 	@Override
-	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+		super.init();
+		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
-			String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-			Map<String, Object> varMap = new HashMap<String, Object>();
-			varMap.put(FileETLCmd.VAR_NAME_FILE_NAME, inputFileName);
+			String row = value.toString();
 			CSVParser parser = CSVParser.parse(row, CSVFormat.DEFAULT);
 			List<CSVRecord> csvl = parser.getRecords();
 			String tableKey = SINGLE_TABLE;
@@ -285,16 +309,11 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 				if (oldTables==null){
 					groupKeys = groupKeysMap.get(SINGLE_TABLE);
 				}else{
-					String fileKey = inputFileName;
-					if (expFileTableMap!=null){
-						fileKey = ScriptEngineUtil.eval(expFileTableMap, varMap);
-					}
-					logger.info(String.format("tableName:%s from inputFileName:%s", fileKey, inputFileName));
-					if (groupKeysMap.containsKey(fileKey)){
-						tableKey = fileKey;
-						groupKeys = groupKeysMap.get(fileKey);
+					if (groupKeysMap.containsKey(key)){
+						tableKey = key;
+						groupKeys = groupKeysMap.get(key);
 					}else{
-						logger.info(String.format("groupKeysMap %s does not have inputFileName %s", groupKeysMap.keySet(), fileKey));
+						logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), key));
 						break;
 					}
 				}
@@ -307,7 +326,28 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 				}
 				String newKey = Util.getCsv(keys, false);
 				logger.debug(String.format("key:%s, value:%s", newKey, v));
-				context.write(new Text(newKey), new Text(v));
+				ret.add(new Tuple2<String, String>(newKey, v));
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		return ret.iterator();
+	}
+	
+	@Override
+	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+		try {
+			String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+			Map<String, Object> varMap = new HashMap<String, Object>();
+			varMap.put(FileETLCmd.VAR_NAME_FILE_NAME, inputFileName);
+			String tableName = "";
+			if (expFileTableMap!=null){
+				tableName = ScriptEngineUtil.eval(expFileTableMap, varMap);
+			}
+			Iterator<Tuple2<String, String>> it = flatMapToPair(tableName, row);
+			while (it.hasNext()){
+				Tuple2<String,String> t = it.next();
+				context.write(new Text(t._1), new Text(t._2));
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -357,8 +397,8 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 	}
 	
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
-		List<String[]> rets = new ArrayList<String[]>();
+	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
+		super.init();
 		if (!mergeTable){
 			String[] kl = key.toString().split(KEY_SEP);
 			String tableName = kl[0];
@@ -368,7 +408,9 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 			}
 			String newKey = String.join(KEY_SEP, ks);
 			List<CSVRecord> rl = new ArrayList<CSVRecord>();
-			for (Text v: values){
+			Iterator<String> its = it.iterator();
+			while (its.hasNext()){
+				String v = its.next();
 				try {
 					CSVParser parser = CSVParser.parse(v.toString(), CSVFormat.DEFAULT);
 					rl.addAll(parser.getRecords());
@@ -376,13 +418,19 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 					logger.error("", e);
 				}
 			}
-			String[] ret = new String[]{newKey, Util.getCsv(getAggrValues(tableName, rl), false), tableName};
-			rets.add(ret);
+			String newTableName = tableName;
+			if (oldnewTableMap!=null && oldnewTableMap.containsKey(tableName)){
+				newTableName = oldnewTableMap.get(tableName);
+			}
+			return new Tuple3<String, String, String>(newKey, 
+					Util.getCsv(getAggrValues(tableName, rl), false), 
+					newTableName);
 		}else{
 			TreeMap<String, List<CSVRecord>> sortedTableValuesMap = new TreeMap<String, List<CSVRecord>>();
-			for (Text v: values){
+			Iterator<String> its = it.iterator();
+			while (its.hasNext()){
 				try {
-					String s = v.toString();
+					String s = its.next().toString();
 					int firstComma =s.indexOf(",");
 					String tableName = s.substring(0, firstComma);
 					String vs = s.substring(firstComma+1);
@@ -407,9 +455,39 @@ public class CsvAggregateCmd extends DynaSchemaFileETLCmd{
 				aggrValues.addAll(avs);
 				
 			}
-			String[] ret = new String[]{key.toString(), Util.getCsv(aggrValues, false), newTables[0]};
-			rets.add(ret);
+			return new Tuple3<String, String, String>(
+					key.toString(), 
+					Util.getCsv(aggrValues, false), 
+					newTables[0]);
 		}
-		return rets;
+	}
+	
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
+		List<String> svalues = new ArrayList<String>();
+		Iterator<Text> vit = values.iterator();
+		while (vit.hasNext()){
+			svalues.add(vit.next().toString());
+		}
+		Tuple3<String, String, String> ret = reduceByKey(key.toString(), svalues);
+		List<String[]> retlist = new ArrayList<String[]>();
+		retlist.add(new String[]{ret._1(), ret._2(), ret._3()});
+		return retlist;
+	}
+
+	public String[] getOldTables() {
+		return oldTables;
+	}
+
+	public void setOldTables(String[] oldTables) {
+		this.oldTables = oldTables;
+	}
+
+	public String[] getNewTables() {
+		return newTables;
+	}
+
+	public void setNewTables(String[] newTables) {
+		this.newTables = newTables;
 	}
 }

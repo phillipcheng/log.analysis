@@ -14,6 +14,8 @@
                 <include name="jsch*.jar"/>
                 <include name="kafka-clients*.jar"/>
 				<include name="log4j-1.2.16.jar"/>
+				<include name="spark-core_*.jar"/>
+				<include name="scala-library-*.jar"/>
 		    </fileset>
 			<fileset dir="lib/">
                 <include name="vertica*.jar"/>

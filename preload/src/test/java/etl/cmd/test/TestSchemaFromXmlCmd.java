@@ -20,7 +20,7 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 	public static final Logger logger = Logger.getLogger(TestSchemaFromXmlCmd.class);
 
 	public String getResourceSubFolder(){
-		return "dynschema/";
+		return "xmltocsv/";
 	}
 	
 	private void test1Fun() throws Exception{

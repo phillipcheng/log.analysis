@@ -1,9 +1,13 @@
 package etl.util;
 
+import java.io.Serializable;
+
 import org.apache.log4j.Logger;
 
 
-public class FieldType {
+public class FieldType implements Serializable{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(FieldType.class);
 	
 	public static final String TYPE_NUMERIC="numeric";

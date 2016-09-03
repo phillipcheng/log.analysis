@@ -17,10 +17,10 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 
 	public static final Logger logger = Logger.getLogger(TestXmlToCsvCmd.class);
 	
-	private static final String cmdClassName = "etl.cmd.dynschema.XmlToCsvCmd";
+	private static final String cmdClassName = "etl.cmd.XmlToCsvCmd";
 
 	public String getResourceSubFolder(){
-		return "dynschema/";
+		return "xmltocsv/";
 	}
 	
 	private void test1Fun() throws Exception{

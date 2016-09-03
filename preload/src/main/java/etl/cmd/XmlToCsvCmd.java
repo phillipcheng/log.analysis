@@ -2,9 +2,11 @@ package etl.cmd;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,7 +29,11 @@ import org.xml.sax.InputSource;
 
 import etl.util.Util;
 
-public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
+import scala.Tuple2;
+
+public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(XmlToCsvCmd.class);
 	
 	public static final String cfgkey_xml_folder="xml-folder";
@@ -53,26 +59,36 @@ public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
 	public static final String cfgkey_TableSystemAttrs_type="TableSystemAttrs.type";
 	
 	//used to generate table name
-	private List<String> keyWithValue = new ArrayList<String>();
-	private List<String> keySkip = new ArrayList<String>();
-	private List<String> fileLvlSystemFieldNames = new ArrayList<String>();
-	private List<String> fileLvlSystemFieldTypes = new ArrayList<String>();
-	private List<String> tableLvlSystemFieldNames = new ArrayList<String>();
-	private List<String> tableLvlSystemFieldTypes = new ArrayList<String>();
+	private transient List<String> keyWithValue = new ArrayList<String>();
+	private transient List<String> keySkip = new ArrayList<String>();
+	private transient List<String> fileLvlSystemFieldNames = new ArrayList<String>();
+	private transient List<String> fileLvlSystemFieldTypes = new ArrayList<String>();
+	private transient List<String> tableLvlSystemFieldNames = new ArrayList<String>();
+	private transient List<String> tableLvlSystemFieldTypes = new ArrayList<String>();
 	
-	private String xmlFolder;
 	//
-	private XPathExpression FileLvlSystemAttrsXpath;//file level
-	private XPathExpression xpathExpTables;
-	private XPathExpression xpathExpTableRow0;
-	private XPathExpression xpathExpTableObjDesc;
-	private XPathExpression xpathExpTableAttrNames;
-	private XPathExpression xpathExpTableRows;
-	private XPathExpression[] xpathExpTableSystemAttrs;//table level
-	private XPathExpression xpathExpTableRowValues;
+	private transient XPathExpression FileLvlSystemAttrsXpath;//file level
+	private transient XPathExpression xpathExpTables;
+	private transient XPathExpression xpathExpTableRow0;
+	private transient XPathExpression xpathExpTableObjDesc;
+	private transient XPathExpression xpathExpTableAttrNames;
+	private transient XPathExpression xpathExpTableRows;
+	private transient XPathExpression[] xpathExpTableSystemAttrs;//table level
+	private transient XPathExpression xpathExpTableRowValues;
 
 	public XmlToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfid, staticCfg, defaultFs, otherArgs);
+		keyWithValue = new ArrayList<String>();
+		keySkip = new ArrayList<String>();
+		fileLvlSystemFieldNames = new ArrayList<String>();
+		fileLvlSystemFieldTypes = new ArrayList<String>();
+		tableLvlSystemFieldNames = new ArrayList<String>();
+		tableLvlSystemFieldTypes = new ArrayList<String>();
+		
 		keyWithValue = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_useValues));
 		keySkip = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_skipKeys));
 		
@@ -105,7 +121,6 @@ public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
 			for (String type: pc.getStringArray(cfgkey_TableSystemAttrs_type)){
 				tableLvlSystemFieldTypes.add(type);
 			}
-			this.xmlFolder = pc.getString(cfgkey_xml_folder);
 		}catch(Exception e){
 			logger.info("", e);
 		}
@@ -149,8 +164,8 @@ public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
 	 * @param: orgAttrs: attrs defined in the schema
 	 * @param: newAttrs: attrs found in xml
 	 */
-	private void genData(Node mi, Map<String, String> localDnMap, List<String> orgAttrs, List<String> newAttrs, String tableName, 
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+	private List<Tuple2<String, String>> genData(Node mi, Map<String, String> localDnMap, List<String> orgAttrs, 
+			List<String> newAttrs, String tableName) throws Exception {
 		List<String> tableLvlSystemAttValues = new ArrayList<String>();
 		for (XPathExpression exp:xpathExpTableSystemAttrs){
 			tableLvlSystemAttValues.add((String) exp.evaluate(mi, XPathConstants.STRING));
@@ -164,6 +179,7 @@ public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
 				mapping.put(idx, i);
 			}
 		}
+		List<Tuple2<String, String>> retList  = new ArrayList<Tuple2<String, String>>();
 		NodeList mvl = (NodeList) xpathExpTableRows.evaluate(mi, XPathConstants.NODESET);
 		for (int k=0; k<mvl.getLength(); k++){
 			Node mv = getNode(mvl, k);
@@ -190,20 +206,24 @@ public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
 			}
 			fieldValues.addAll(Arrays.asList(vs));
 			String csv = Util.getCsv(fieldValues, false);
-			context.write(new Text(tableName), new Text(csv));
+			logger.debug(String.format("%s,%s", tableName, csv));
+			retList.add(new Tuple2<String, String>(tableName, csv));
 		}
+		
+		return retList;
 	}
 	
-	/**
-	 * @param row: each row is a xml file name
-	 */
+	//tableName to csv
 	@Override
-	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+		super.init();
 		try {
-			logger.debug(String.format("process %s", row));
+			String row = value.toString();
+			//logger.info(String.format("process %s", row));
 			Document mf = getDocument(new Path(row));
 			Map<String, String> localDnMap = Util.parseMapParams((String)FileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
 			NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
+			List<Tuple2<String, String>> retList  = new ArrayList<Tuple2<String, String>>();
 			for (int i=0; i<ml.getLength(); i++){
 				Node mi = getNode(ml, i);
 				Node mv0 = (Node)xpathExpTableRow0.evaluate(mi, XPathConstants.NODE);
@@ -226,8 +246,26 @@ public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
 					allAttributes.removeAll(moldParams.keySet());
 					orgSchemaAttributes.addAll(allAttributes);
 					
-					genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName, context);
+					retList.addAll(genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName));
 				}
+			}
+			logger.info(String.format("file:%s generates %d tuple2.", row, retList.size()));
+			return retList.iterator();
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	/**
+	 * @param row: each row is a xml file name
+	 */
+	@Override
+	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+		try {
+			Iterator<Tuple2<String, String>> pairs = flatMapToPair(String.valueOf(offset), row);
+			while (pairs.hasNext()){
+				Tuple2<String, String> pair = pairs.next();
+				context.write(new Text(pair._1), new Text(pair._2));
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -242,7 +280,7 @@ public class XmlToCsvCmd extends DynaSchemaFileETLCmd{
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
 		List<String[]> rets = new ArrayList<String[]>();
 		for (Text v: values){
-			logger.info(String.format("v:%s", v.toString()));
+			//logger.info(String.format("v:%s", v.toString()));
 			String[] ret = new String[]{v.toString(), "", key.toString()};
 			rets.add(ret);
 		}

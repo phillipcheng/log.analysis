@@ -26,6 +26,8 @@ public class GenLogicSchema {
 			return new FieldType(VarType.STRING, size);
 		}else if (Types.NUMERIC == type){
 			return new FieldType(VarType.NUMERIC, size, digits);
+		}else if (Types.DECIMAL == type){
+			return new FieldType(VarType.NUMERIC, size, digits);
 		}else if (Types.BIGINT == type){
 			return new FieldType(VarType.INT);
 		}else if (Types.DATE == type){

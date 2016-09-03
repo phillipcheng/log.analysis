@@ -3,6 +3,7 @@ package etl.cmd;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.io.LongWritable;
@@ -20,7 +21,11 @@ import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 
-public class CsvTransformCmd extends DynaSchemaFileETLCmd{
+import scala.Tuple2;
+
+public class CsvTransformCmd extends SchemaFileETLCmd{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(CsvTransformCmd.class);
 	
 	public static final String cfgkey_skip_header="skip.header";
@@ -33,22 +38,31 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 	private boolean skipHeader=false;
 	private String rowValidation;
 	private boolean inputEndWithComma=false;
-	private List<ColOp> colOpList = new ArrayList<ColOp>();
 	private String oldTable;
-	private List<String> addFieldsNames = new ArrayList<String>();
-	private List<String> addFieldsTypes = new ArrayList<String>();
+	
+	private transient List<String> addFieldsNames;
+	private transient List<String> addFieldsTypes;
+	private transient List<ColOp> colOpList;
 	
 	//
-	private List<String> tableAttrs = null;
-	private Map<String, Integer> nameIdxMap = null;
+	private transient List<String> tableAttrs = null;
+	private transient Map<String, Integer> nameIdxMap = null;
 	
 	
 	public CsvTransformCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfid, staticCfg, defaultFs, otherArgs);
 		skipHeader =pc.getBoolean(cfgkey_skip_header, false);
 		rowValidation = pc.getString(cfgkey_row_validation);
 		inputEndWithComma = pc.getBoolean(cfgkey_input_endwithcomma, false);
 		oldTable = pc.getString(cfgkey_old_talbe, null);
+		addFieldsNames = new ArrayList<String>();
+		addFieldsTypes = new ArrayList<String>();
+		colOpList = new ArrayList<ColOp>();
+		
 		//for dynamic trans
 		if (this.logicSchema!=null){
 			nameIdxMap = new HashMap<String, Integer>();
@@ -104,15 +118,12 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 	}
 
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
-		Map<String, Object> retMap = new HashMap<String, Object>();
+	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+		super.init();
+		String fileName = key;
+		String row = value;
+		List<Tuple2<String, String>> retList = new ArrayList<Tuple2<String, String>>();
 		String output="";
-		
-		//process skip header
-		if (skipHeader && offset==0) {
-			logger.info("skip header:" + row);
-			return null;
-		}
 		
 		//get all fiels
 		List<String> items = new ArrayList<String>();
@@ -152,7 +163,6 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 		String[] strItems = new String[items.size()];
 		vars.put(ColOp.VAR_NAME_FIELDS, items.toArray(strItems));
 		vars.put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
-		String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
 		vars.put(VAR_NAME_FILE_NAME, fileName);
 		for (ColOp co: colOpList){
 			items = co.process(vars);
@@ -160,11 +170,35 @@ public class CsvTransformCmd extends DynaSchemaFileETLCmd{
 			vars.put(ColOp.VAR_NAME_FIELDS, items.toArray(strItems));
 		}
 		output = Util.getCsv(Arrays.asList(strItems), false);
-		if (isAddFileName()){
-			output+="," + getAbbreFileName(fileName);
-		}
 		logger.debug("output:" + output);
-		retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{output}));
+		retList.add(new Tuple2<String, String>(fileName, output));
+		return retList.iterator();
+	}
+	
+	@Override
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+		Map<String, Object> retMap = new HashMap<String, Object>();
+		//process skip header
+		if (skipHeader && offset==0) {
+			logger.info("skip header:" + row);
+			return null;
+		}
+		
+		String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+		Iterator<Tuple2<String, String>> retList = flatMapToPair(fileName, row);
+		if (retList!=null && retList.hasNext()){
+			retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{retList.next()._2}));
+		}else{
+			retMap.put(RESULT_KEY_OUTPUT, null);
+		}
 		return retMap;
+	}
+
+	public String getOldTable() {
+		return oldTable;
+	}
+
+	public void setOldTable(String oldTable) {
+		this.oldTable = oldTable;
 	}
 }

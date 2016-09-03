@@ -15,8 +15,8 @@ import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 
-public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
-	public static final Logger logger = Logger.getLogger(DynaSchemaFileETLCmd.class);
+public abstract class SchemaFileETLCmd extends FileETLCmd{
+	public static final Logger logger = Logger.getLogger(SchemaFileETLCmd.class);
 
 	public static final String cfgkey_schema_file="schema.file";
 	public static final String cfgkey_db_prefix="db.prefix"; //db schema
@@ -29,21 +29,31 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 	public static final String VAR_DB_TYPE="dbType";//
 
 	protected String schemaFile;
+	protected String schemaFileName;
 	protected String dbPrefix;
 	protected LogicSchema logicSchema;
 	private String createTablesSqlFileName;
 	
 	private DBType dbtype = DBType.NONE;
 	
-	public DynaSchemaFileETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+	public SchemaFileETLCmd(){
+	}
+	
+	public SchemaFileETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfid, staticCfg, defaultFs, otherArgs);
 		this.schemaFile = pc.getString(cfgkey_schema_file, null);
 		this.dbPrefix = pc.getString(cfgkey_db_prefix, null);
 		this.getSystemVariables().put(VAR_DB_PREFIX, dbPrefix);
 		logger.info(String.format("schemaFile: %s", schemaFile));
 		if (this.schemaFile!=null){
 			try{
-				if (fs.exists(new Path(schemaFile))){
+				Path schemaFilePath = new Path(schemaFile);
+				if (fs.exists(schemaFilePath)){
+					schemaFileName = schemaFilePath.getName();
 					this.logicSchema = (LogicSchema) Util.fromDfsJsonFile(fs, schemaFile, LogicSchema.class);
 				}else{
 					this.logicSchema = new LogicSchema();
@@ -63,7 +73,6 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 			dbtype = DBType.fromValue(strDbType);
 		}
 	}
-	
 	//return loginfo
 	public List<String> updateDynSchema(List<String> createTableSqls){
 		if (createTableSqls.size()>0){
@@ -117,5 +126,13 @@ public abstract class DynaSchemaFileETLCmd extends FileETLCmd{
 
 	public void setLogicSchema(LogicSchema logicSchema) {
 		this.logicSchema = logicSchema;
+	}
+
+	public String getSchemaFileName() {
+		return schemaFileName;
+	}
+
+	public void setSchemaFileName(String schemaFileName) {
+		this.schemaFileName = schemaFileName;
 	}
 }

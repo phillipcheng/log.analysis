@@ -1,5 +1,6 @@
 package etl.cmd.transform;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +11,9 @@ import org.apache.log4j.Logger;
 import etl.engine.AggrOperator;
 import etl.util.IdxRange;
 
-public class AggrOpMap {
+public class AggrOpMap implements Serializable{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(AggrOpMap.class);
 	
 	Map<Integer, AggrOperator> opMap = new HashMap<Integer, AggrOperator>(); //index to aggr op

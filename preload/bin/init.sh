@@ -24,3 +24,13 @@ $KAFKA_ROOT/bin/kafka-topics.sh --create --zookeeper 127.0.0.1:2181 --replicatio
 
 oozie job -oozie http://127.0.0.1:11000/oozie/ -config sgs.job.properties -run
 oozie job -oozie http://127.0.0.1:11000/oozie/ -config smsc.job.properties -run
+
+hive setup
+$HADOOP_HOME/bin/hadoop fs -mkdir /tmp
+$HADOOP_HOME/bin/hadoop fs -mkdir -p /user/hive/warehouse
+$HADOOP_HOME/bin/hadoop fs -chmod g+w /tmp
+$HADOOP_HOME/bin/hadoop fs -chmod g+w /user/hive/warehouse
+
+$HIVE_HOME/bin/schematool -dbType derby -initSchema
+
+oozie setup

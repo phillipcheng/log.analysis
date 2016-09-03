@@ -1,5 +1,6 @@
 package etl.engine;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,8 +16,12 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import etl.util.Util;
+import scala.Tuple2;
+import scala.Tuple3;
 
-public abstract class ETLCmd {
+public abstract class ETLCmd implements Serializable{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(ETLCmd.class);
 	
 	public static final String RESULT_KEY_LOG="log";
@@ -26,11 +31,14 @@ public abstract class ETLCmd {
 	public static final String SINGLE_TABLE="single.table";
 	
 	protected String wfid;
-	protected FileSystem fs;
-	protected PropertiesConfiguration pc;
+	protected String staticCfg;
+	protected String defaultFs;
 	protected String[] otherArgs;
+	
+	protected transient FileSystem fs;
+	protected transient PropertiesConfiguration pc;
 
-	private Configuration conf;
+	private transient Configuration conf;
 	
 	private ProcessMode pm = ProcessMode.SingleProcess;
 	private MRMode mrMode = MRMode.file;
@@ -39,11 +47,20 @@ public abstract class ETLCmd {
 	//system variable map
 	public static final String VAR_WFID="WFID"; //string type 
 	public static final String VAR_FIELDS="fields"; //string[] type
-	private Map<String, Object> systemVariables = new HashMap<String, Object>();
+	private transient Map<String, Object> systemVariables = null;
 	
+	public ETLCmd(){
+	}
 	
 	public ETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		this.wfid = wfid;
+		this.staticCfg = staticCfg;
+		this.defaultFs = defaultFs;
+		this.otherArgs = otherArgs;
 		try {
 			String fs_key = "fs.defaultFS";
 			conf = new Configuration();
@@ -56,8 +73,14 @@ public abstract class ETLCmd {
 			logger.error("", e);
 		}
 		pc = Util.getMergedPCFromDfs(fs, staticCfg);
-		this.otherArgs = otherArgs;
+		systemVariables = new HashMap<String, Object>();
 		systemVariables.put(VAR_WFID, wfid);
+	}
+	
+	public void init(){
+		if (fs==null){
+			init(wfid, staticCfg, defaultFs, otherArgs);
+		}
 	}
 	
 	public Map<String, Object> getSystemVariables(){
@@ -65,6 +88,28 @@ public abstract class ETLCmd {
 	}
 	
 	/**
+	 * used by spark driver
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+		logger.error("empty map impl, should not be invoked.");
+		return null;
+	}
+	/**
+	 * used by spark driver
+	 * @param key
+	 * @param it
+	 * @return
+	 */
+	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
+		logger.error("empty map impl, should not be invoked.");
+		return null;
+	}
+	
+	/**
+	 * map function in map-only mode
 	 * @return map may contains following key:
 	 * RESULT_KEY_LOG: list of String user defined log info
 	 * RESULT_KEY_LIST_OUTPUT: list of String output
@@ -76,6 +121,7 @@ public abstract class ETLCmd {
 	}
 	
 	/**
+	 * map function in map-reduce mode
 	 * @return map
 	 */
 	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
@@ -84,6 +130,7 @@ public abstract class ETLCmd {
 	}
 	
 	/**
+	 * reduce function in map-reduce mode
 	 * @return list of newKey, newValue, baseOutputPath
 	 */
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
@@ -92,6 +139,7 @@ public abstract class ETLCmd {
 	}
 	
 	/**
+	 * single thread process
 	 * @return list of String user defined log info
 	 */
 	public List<String> sgProcess(){
@@ -139,5 +187,13 @@ public abstract class ETLCmd {
 
 	public void setSendLog(boolean sendLog) {
 		this.sendLog = sendLog;
+	}
+
+	public FileSystem getFs() {
+		return fs;
+	}
+
+	public void setFs(FileSystem fs) {
+		this.fs = fs;
 	}
 }

@@ -44,7 +44,7 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
  			}
  			getFs().delete(new Path(remoteCsvOutputFolder), true);
  			//run job
- 			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.transform.EvtBasedMsgParseCmd");
+ 			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.EvtBasedMsgParseCmd");
  			getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
  			getConf().set(InvokeMapper.cfgkey_staticconfigfile, remoteCfgFolder+csvtransProp);
  			Job job = Job.getInstance(getConf(), "testCsvTransformCmd");

@@ -50,7 +50,7 @@ public class ScriptEngineUtil {
 		}
 		try {
 			Object ret = cs.eval(bindings);
-			logger.debug(String.format("eval get result %s", ret));
+			logger.debug(String.format("eval get result: '%s'", ret));
 			if (ret!=null){
 				if (ret instanceof String){
 					return (String) ret;

@@ -1,9 +1,11 @@
 package etl.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IdxRange {
+public class IdxRange implements Serializable{
+	private static final long serialVersionUID = 1L;
 	
 	public static final String SEP=";";
 	public static final String TO="-";

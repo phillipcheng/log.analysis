@@ -12,7 +12,7 @@ import org.junit.Test;
 
 public class TestCsvTransformCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestCsvTransformCmd.class);
-	public static final String testCmdClass="etl.cmd.transform.CsvTransformCmd";
+	public static final String testCmdClass="etl.cmd.CsvTransformCmd";
 
 	public String getResourceSubFolder(){
 		return "csvtrans/";

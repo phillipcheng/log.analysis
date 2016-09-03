@@ -17,7 +17,6 @@ import etl.util.Util;
 
 public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestCsvAggrSchemaUpdateCmd.class);
-	public static final String testCmdClass = "etl.cmd.transform.CsvAggrSchemaUpdateCmd";
 	
 
 	@Override

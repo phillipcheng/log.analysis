@@ -1,11 +1,14 @@
 package etl.cmd.transform;
 
+import java.io.Serializable;
 import java.util.List;
 
 import etl.engine.AggrOperator;
 import etl.util.IdxRange;
 
-public class AggrOp {
+public class AggrOp implements Serializable{
+	private static final long serialVersionUID = 1L;
+	
 	public static final String AGGR_OP_SUM="sum";
 	public static final String AGGR_OPERATOR_SEP="\\|";
 	

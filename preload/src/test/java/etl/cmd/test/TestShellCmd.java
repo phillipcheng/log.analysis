@@ -20,22 +20,37 @@ import org.junit.Test;
 
 import etl.cmd.ShellCmd;
 import etl.engine.InvokeMapper;
+import etl.util.OSType;
+import etl.util.SystemUtil;
 import etl.util.Util;
 
 public class TestShellCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(ShellCmd.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
+	public String getResourceSubFolder(){
+		return "shell/";
+	}
+	
 	private void test1Fun() throws Exception {
 		try{
-			String remoteCfgFolder = "/pde/cfg";
-			String remoteOutputFolder="/pde/output";
+			String remoteCfgFolder = "/pde/cfg/";
+			String remoteOutputFolder="/pde/output/";
+			OSType os = SystemUtil.getOsType();
 			//setup testing env
-			String shellProp = "shellCmd1.properties";
+			String inputFile = "input.txt";
+			String shellProp = "shellCmd1Win.properties";
 			String executableFile = "copyFile.bat";
 			String executableDir = "C:\\Users";
+			if (os == OSType.MAC || os == OSType.UNIX){
+				shellProp = "shellCmd1Unix.properties";
+				executableFile = "copyfile.sh";
+				executableDir = "/tmp";
+			}
+			
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));
+			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteCfgFolder+inputFile));
 			//run job  
 			FileUtils.copyFileToDirectory(new File(getLocalFolder()+executableFile), new File(executableDir));
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.ShellCmd");
@@ -47,7 +62,7 @@ public class TestShellCmd extends TestETLCmd {
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(NullWritable.class);
 			FileInputFormat.setInputDirRecursive(job, true);
-			FileInputFormat.addInputPath(job, new Path(remoteCfgFolder+shellProp));
+			FileInputFormat.addInputPath(job, new Path(remoteCfgFolder+inputFile));
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 			job.waitForCompletion(true);
 

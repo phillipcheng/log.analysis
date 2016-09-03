@@ -31,7 +31,7 @@ import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 
-public class SchemaFromXmlCmd extends DynaSchemaFileETLCmd{
+public class SchemaFromXmlCmd extends SchemaFileETLCmd{
 	public static final Logger logger = Logger.getLogger(SchemaFromXmlCmd.class);
 	
 	public static final String cfgkey_xml_folder="xml-folder";

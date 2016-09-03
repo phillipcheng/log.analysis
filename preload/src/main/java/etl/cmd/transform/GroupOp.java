@@ -1,17 +1,20 @@
 package etl.cmd.transform;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.script.CompiledScript;
 
 import etl.util.IdxRange;
 
-public class GroupOp {
+public class GroupOp implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	
 	private String[] expGroupNames;
 	private String[] expGroupTypes;
 	private String[] expGroupExps;
-	private CompiledScript[] expGroupExpScripts;
+	private transient CompiledScript[] expGroupExpScripts;
 	private List<IdxRange> commonGroupIdx;
 	
 	public GroupOp(String[] expGroupNames, String[] expGroupTypes, String[] expGroupExps, CompiledScript[] expGroupExpScripts, List<IdxRange> commonGroupIdx){

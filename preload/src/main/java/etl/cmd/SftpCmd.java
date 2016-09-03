@@ -122,7 +122,8 @@ public class SftpCmd extends ETLCmd {
 			int fileNumberTransfer=0;
 			for (LsEntry entry : v) {
 				String srcFile = fromDir + entry.getFilename();
-				String destFile = incomingFolder + entry.getFilename();
+				String fileNorm = entry.getFilename().replace(",", "_");
+				String destFile = incomingFolder + fileNorm;
 				logger.info(String.format("put file to %s from %s", destFile, srcFile));
 				fileNumberTransfer++;
 				getRetryCntTemp = 1;// reset the count to 1 for every file

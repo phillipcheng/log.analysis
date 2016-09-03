@@ -3,15 +3,19 @@ package etl.cmd.test;
 import static org.junit.Assert.*;
 
 import java.security.PrivilegedExceptionAction;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import etl.engine.SafeSimpleDateFormat;
+import etl.util.GroupFun;
+
 public class TestCsvAggregateCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestCsvAggregateCmd.class);
-	public static final String testCmdClass = "etl.cmd.transform.CsvAggregateCmd";
+	public static final String testCmdClass = "etl.cmd.CsvAggregateCmd";
 
 	public String getResourceSubFolder(){
 		return "csvaggr/";
@@ -124,7 +128,12 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String[] csvFiles = new String[] {"MyCore_.data", "MyCore1_.data"};
 			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
 			logger.info("Output is:"+String.join("\n", output));
-			String line = "15,2016-03-09,PT300S,vQDSD0101SGS-L-AL-20,lcp-1,vQDSD0101SGS-L-AL-20-VLR-01,1.0,36049.0,32907.0,36049.0,32907.0";
+			String dt = "2016-03-09T07:50:00+00:00";
+			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
+			String hour = GroupFun.hour(dt, dtformat);
+			String day = GroupFun.day(dt, dtformat);
+			String line = String.format("%s,%s,PT300S,vQDSD0101SGS-L-AL-20,lcp-1,vQDSD0101SGS-L-AL-20-VLR-01,1.0,36049.0,32907.0,36049.0,32907.0"
+					,hour,day);
 			assertTrue(output.contains(line));
 		} catch (Exception e) {
 			logger.error("", e);
@@ -155,7 +164,12 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
 			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
 			logger.info("Output is:"+String.join("\n", output));
-			String csv="19,2016-03-28,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0.0,0.0,0.0,114258.0,114258.0";
+			String dt = "2016-03-28T11:05:00+00:00";
+			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
+			String hour = GroupFun.hour(dt, dtformat);
+			String day = GroupFun.day(dt, dtformat);
+			String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0.0,0.0,0.0,114258.0,114258.0",
+					hour, day);
 			assertTrue(output.contains(csv));
 		} catch (Exception e) {
 			logger.error("", e);

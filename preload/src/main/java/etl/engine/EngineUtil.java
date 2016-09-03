@@ -131,6 +131,7 @@ public class EngineUtil {
 						List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
 						sendLog(cmd, startTime, endTime, logoutputs);
 					}
+					//for all mapper cmd, the result should contains the RESULT_KEY_OUTPUT
 					if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT)){
 						List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT);
 						if (i<cmds.length-1){//intermediate steps

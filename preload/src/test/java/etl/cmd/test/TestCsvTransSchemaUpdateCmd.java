@@ -18,7 +18,6 @@ import etl.util.Util;
 
 public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestCsvTransSchemaUpdateCmd.class);
-	public static final String testCmdClass = "etl.cmd.transform.CsvTransSchemaUpdateCmd";
 
 	public String getResourceSubFolder(){
 		return "csvtrans/";

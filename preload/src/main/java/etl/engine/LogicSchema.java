@@ -1,5 +1,6 @@
 package etl.engine;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import etl.util.FieldType;
 
 
-public class LogicSchema {
+public class LogicSchema implements Serializable{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(LogicSchema.class);
 	
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping

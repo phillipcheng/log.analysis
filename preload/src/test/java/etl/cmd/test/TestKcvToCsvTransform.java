@@ -19,7 +19,7 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestKcvToCsvTransform.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
-	public static final String cmdClassName = "etl.cmd.transform.KcvToCsvCmd";
+	public static final String cmdClassName = "etl.cmd.KcvToCsvCmd";
 
 	private void test1Fun() throws Exception{
 		BufferedReader br = null;
