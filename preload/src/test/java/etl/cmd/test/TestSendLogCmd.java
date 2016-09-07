@@ -10,7 +10,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import etl.cmd.KafkaMsgGenCmd;
 import etl.cmd.SendLogCmd;
 import etl.engine.ETLCmdMain;
 
@@ -102,6 +101,7 @@ public class TestSendLogCmd extends TestETLCmd {
 	
 	@Test
 	public void genMsgs() throws Exception{
+		if (!super.isTestKafka()) return;
 		final String dfsFolder = "/test/sendmsg/";
 		final String staticCfgName = "msggen.properties";
 		final String schemaFile = "kafkaTimeTriggerMsg.schema";

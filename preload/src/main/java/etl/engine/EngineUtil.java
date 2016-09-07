@@ -8,7 +8,6 @@ import java.util.Properties;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -135,7 +134,7 @@ public class EngineUtil {
 	}
 	
 	public void processMapperCmds(ETLCmd[] cmds, long offset, String row, 
-			Mapper<LongWritable, Text, Text, NullWritable>.Context context) throws Exception {
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
 		String input = row;
 		for (int i=0; i<cmds.length; i++){
 			ETLCmd cmd = cmds[i];
@@ -149,8 +148,8 @@ public class EngineUtil {
 						List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
 						sendLog(cmd, startTime, endTime, logoutputs);
 					}
-					//for all mapper cmd, the result should contains the RESULT_KEY_OUTPUT
 					if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT)){
+						//for all mapper only cmd, the result should contains the RESULT_KEY_OUTPUT
 						List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT);
 						if (i<cmds.length-1){//intermediate steps
 							if (outputs!=null && outputs.size()==1){
@@ -166,15 +165,19 @@ public class EngineUtil {
 							if (outputs!=null){
 								if (context!=null){
 									for (String line:outputs){
-										context.write(new Text(line), NullWritable.get());
+										context.write(new Text(line), null);
 									}
 								}else{
 									logger.debug(String.format("final output:%s", outputs));
 								}
 							}
 						}
-					}else{
-						logger.error("wrong mapper used, for key,value output please use InvokeReducerMapper");
+					}else{//for map-reduce mapper phrase, the result is key-value pair
+						if (alloutputs!=null && context!=null){
+							for (String key:alloutputs.keySet()){
+								context.write(new Text(key), new Text((String) alloutputs.get(key)));
+							}
+						}
 					}
 				}
 			}else{
@@ -182,19 +185,6 @@ public class EngineUtil {
 				List<String> logoutputs = cmd.sgProcess();
 				Date endTime = new Date();
 				sendLog(cmd, startTime, endTime, logoutputs);
-			}
-		}
-	}
-	
-	//
-	public void processReducerMapperCmds(ETLCmd[] cmds, long offset, String row, 
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		String input = row;
-		ETLCmd cmd = cmds[0];
-		Map<String, String> alloutputs = cmd.reduceMapProcess(offset, input, context);
-		if (alloutputs!=null && context!=null){
-			for (String key:alloutputs.keySet()){
-				context.write(new Text(key), new Text(alloutputs.get(key)));
 			}
 		}
 	}

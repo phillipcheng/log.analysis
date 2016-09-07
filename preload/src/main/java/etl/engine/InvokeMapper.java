@@ -7,7 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-public class InvokeMapper extends Mapper<LongWritable, Text, Text, NullWritable>{
+public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 	public static final Logger logger = Logger.getLogger(InvokeMapper.class);
 	
 	public static final String cfgkey_cmdclassname = "cmdClassName";

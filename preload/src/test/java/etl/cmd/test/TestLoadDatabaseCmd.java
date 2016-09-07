@@ -48,18 +48,21 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(inputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
 			//run cmd
 			LoadDataCmd cmd = new LoadDataCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> sqls = cmd.getCopysqls();
 			DBUtil.executeSqls(cmd.getDropSqls(), cmd.getPc());
-			
+			String hdfsroot = cmd.getPc().getString("hdfs.webhdfs.root");
+			String dbuser = cmd.getPc().getString("db.user");
 			//assertion
 			logger.info(sqls);
 			String sqlVertica = "copy sgsiwf.MyCore_(endTime enclosed by '\"',duration enclosed by '\"',SubNetwork enclosed by '\"',"
 					+ "ManagedElement enclosed by '\"',Machine enclosed by '\"',MyCore enclosed by '\"',UUID enclosed by '\"',"
 					+ "VS_avePerCoreCpuUsage enclosed by '\"',VS_peakPerCoreCpuUsage enclosed by '\"') "
-					+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loadcsv/input/MyCore_.csv*',username='dbadmin') delimiter ',';";
-			String sqlHive = "load data inpath 'hdfs://127.0.0.1:19000/test/loadcsv/input/MyCore_.csv' into table sgsiwf.MyCore_";
+					+ String.format("SOURCE Hdfs(url='%s/test/loadcsv/input/MyCore_.csv*',username='%s') delimiter ',';", hdfsroot, dbuser);
+			String sqlHive = String.format("load data inpath '%s/test/loadcsv/input/MyCore_.csv' into table sgsiwf.MyCore_", hdfsroot);
+			logger.info("sqlVertica:" + sqlVertica);
 			if (cmd.getDbtype()==DBType.HIVE){
 				assertTrue(sqls.contains(sqlHive));
 			}else{
@@ -121,19 +124,21 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			cmd.sgProcess();
 			List<String> sqls = cmd.getCopysqls();
 			DBUtil.executeSqls(cmd.getDropSqls(), cmd.getPc());
-			
+
+			String hdfsroot = cmd.getPc().getString("hdfs.webhdfs.root");
+			String dbuser = cmd.getPc().getString("db.user");
 			//assertion
 			logger.info(sqls);
 			String sqlVertica1 = "copy sgsiwf.MyCore_(endTime enclosed by '\"',duration enclosed by '\"',SubNetwork enclosed by '\"',"
 					+ "ManagedElement enclosed by '\"',Machine enclosed by '\"',MyCore enclosed by '\"',UUID enclosed by '\"',"
 					+ "VS_avePerCoreCpuUsage enclosed by '\"',VS_peakPerCoreCpuUsage enclosed by '\"') "
-					+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loadcsv/input/MyCore_.csv*',username='dbadmin') delimiter ',';";
+					+ String.format("SOURCE Hdfs(url='%s/test/loadcsv/input/MyCore_.csv*',username='%s') delimiter ',';", hdfsroot, dbuser);
 			String sqlVertica2 = "copy sgsiwf.MyCore1_(endTime enclosed by '\"',duration enclosed by '\"',SubNetwork enclosed by '\"',"
 					+ "ManagedElement enclosed by '\"',Machine enclosed by '\"',MyCore enclosed by '\"',UUID enclosed by '\"',"
 					+ "VS_avePerCoreCpuUsage enclosed by '\"',VS_peakPerCoreCpuUsage enclosed by '\"') "
-					+ "SOURCE Hdfs(url='http://192.85.247.104:50070/webhdfs/v1/test/loadcsv/input/MyCore1_.csv*',username='dbadmin') delimiter ',';";
-			String sqlHive1 = "load data inpath 'hdfs://127.0.0.1:19000/test/loadcsv/input/MyCore_.csv' into table sgsiwf.MyCore_";
-			String sqlHive2 = "load data inpath 'hdfs://127.0.0.1:19000/test/loadcsv/input/MyCore1_.csv' into table sgsiwf.MyCore1_";
+					+ String.format("SOURCE Hdfs(url='%s/test/loadcsv/input/MyCore1_.csv*',username='%s') delimiter ',';", hdfsroot, dbuser);
+			String sqlHive1 = String.format("load data inpath '%s/test/loadcsv/input/MyCore_.csv' into table sgsiwf.MyCore_", hdfsroot);
+			String sqlHive2 = String.format("load data inpath '%s/test/loadcsv/input/MyCore1_.csv' into table sgsiwf.MyCore1_", hdfsroot);
 			
 			if (DBType.HIVE == cmd.getDbtype()){
 				assertTrue(sqls.contains(sqlHive1));

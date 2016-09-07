@@ -29,7 +29,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String csvtransProp = "csvaggregate1.properties";
 			String[] csvFiles = new String[] {"csvaggregate.data"};
 			
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			
 			// assertion
@@ -64,7 +64,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrMultipleFiles.properties";
 			String[] csvFiles = new String[] {"MyCore_.data","MyCore1_.data"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			// assertion
 			assertTrue(output.size() == 4);
@@ -95,7 +95,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrGroupFun1.properties";
 			String[] csvFiles = new String[] {"MyCore_.data"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+String.join("\n", output));
 			// assertion
 			assertTrue(output.size()==4);
@@ -126,7 +126,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrMergeTables.properties";
 			String[] csvFiles = new String[] {"MyCore_.data", "MyCore1_.data"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+String.join("\n", output));
 			String dt = "2016-03-09T07:50:00+00:00";
 			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
@@ -162,7 +162,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrMergeTablesOuterjoin.properties";
 			String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false, false);
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+String.join("\n", output));
 			String dt = "2016-03-28T11:05:00+00:00";
 			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";

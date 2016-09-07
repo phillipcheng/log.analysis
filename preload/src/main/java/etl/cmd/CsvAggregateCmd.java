@@ -335,7 +335,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	@Override
-	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
 			String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
 			Map<String, Object> varMap = new HashMap<String, Object>();

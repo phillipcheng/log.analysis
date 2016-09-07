@@ -55,8 +55,8 @@ public class ColOp {
 				logger.error(String.format("wrong col op type:%s", op));
 			}
 			String idxexp = strs[1];
-			String[] ies = idxexp.split("\\:");
-			if (ies.length>=2){
+			String[] ies = idxexp.split("\\:", 2);
+			if (ies.length==2){
 				exp = ies[1];
 				if (type == ColOpType.update){
 					expCS = ScriptEngineUtil.compileScript(exp);

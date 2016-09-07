@@ -102,7 +102,7 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	}
 
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
 		String output="";
 		String evtType="";
 		

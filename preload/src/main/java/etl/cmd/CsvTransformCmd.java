@@ -83,7 +83,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		String[] nvs = pc.getStringArray(cfgkey_add_fields);
 		if (nvs!=null){
 			for (String nv:nvs){
-				String[] nva = nv.split("\\:");
+				String[] nva = nv.split("\\:",2);
 				addFieldsNames.add(nva[0]);
 				addFieldsTypes.add(nva[1]);
 			}
@@ -176,7 +176,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	}
 	
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
 		Map<String, Object> retMap = new HashMap<String, Object>();
 		//process skip header
 		if (skipHeader && offset==0) {

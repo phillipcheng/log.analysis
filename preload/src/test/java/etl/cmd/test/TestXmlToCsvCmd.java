@@ -42,7 +42,7 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
 			
 			//run cmd
-			super.mrTest(dfsCfgFolder, inputFolder, outputFolder, staticCfgName, inputFiles, cmdClassName, true, true);
+			super.mrTest(dfsCfgFolder, inputFolder, outputFolder, staticCfgName, inputFiles, cmdClassName, true);
 			
 			//check results
 			//outputFolder should have the csv file

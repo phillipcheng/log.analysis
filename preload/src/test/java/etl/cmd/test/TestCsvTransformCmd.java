@@ -214,4 +214,37 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			});
 		}
 	}
+	
+	private void transformMultipleFiles() throws Exception {
+		try {
+			String remoteCfgFolder = "/etltest/csvtrans/cfg/";
+			String remoteCsvInputFolder = "/etltest/csvtrans/input/";
+			String remoteCsvOutputFolder = "/etltest/csvtrans/output/";
+			String csvtransProp = "csvtrans.multiplefiles.properties";
+			String[] csvFiles = new String[]{"DPC_PoolType_nss7_-r-00000","PoolType_mi_SNEType_-r-00000"};
+			
+			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, 
+					testCmdClass, false);
+			logger.info("Output is:"+output);
+			//assert
+			
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+	}
+	
+	@Test
+	public void testTransformMultipleFiles() throws Exception {
+		if (getDefaultFS().contains("127.0.0.1")){
+			transformMultipleFiles();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					transformMultipleFiles();
+					return null;
+				}
+			});
+		}
+	}
 }

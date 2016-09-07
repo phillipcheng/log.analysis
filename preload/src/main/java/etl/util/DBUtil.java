@@ -152,6 +152,10 @@ public class DBUtil {
 	}
 
 	public static Connection getConnection(PropertiesConfiguration pc){
+		String dbType = pc.getString(key_db_type);
+		if (DBType.NONE.value().equals(dbType)){
+			return null;
+		}
 		Connection conn = null;
 		try { 
 			Class.forName(pc.getString(key_db_driver)); 
@@ -202,7 +206,9 @@ public class DBUtil {
 			logger.error("", e);
 		}finally{
 			try{
-				conn.close();
+				if (conn!=null){
+					conn.close();
+				}
 			}catch(Exception e){
 				logger.error("", e);
 			}
@@ -238,7 +244,9 @@ public class DBUtil {
 			logger.error("", e);
 		}finally{
 			try{
-				conn.close();
+				if (conn!=null){
+					conn.close();
+				}
 			}catch(Exception e){
 				logger.error("", e);
 			}
@@ -297,7 +305,9 @@ public class DBUtil {
                logger.error("", e);
         }finally{
                try{
+            	   if (conn!=null){
                      conn.close();
+            	   }
                }catch(Exception e){
                      logger.error("", e);
                }

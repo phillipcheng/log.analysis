@@ -188,7 +188,7 @@ public class SftpCmd extends ETLCmd {
 	}
 	
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		//override param
 		logger.info(String.format("param: %s", row));
 		Map<String, String> pm = Util.parseMapParams(row);

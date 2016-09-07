@@ -10,7 +10,6 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
@@ -109,23 +108,14 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	/**
-	 * map function in map-only mode
+	 * map function in map-only or map-reduce mode, for map mode output null for no key or value
 	 * @return map may contains following key:
 	 * RESULT_KEY_LOG: list of String user defined log info
 	 * RESULT_KEY_LIST_OUTPUT: list of String output
 	 * in the value map, if it contains only 1 value, the key is RESULT_VALUE_KEY_SINGLE_VALUE
 	 */
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context){
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		logger.error("empty map impl, should not be invoked.");
-		return null;
-	}
-	
-	/**
-	 * map function in map-reduce mode
-	 * @return map
-	 */
-	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
-		logger.error("empty reduce-map impl, should not be invoked.");
 		return null;
 	}
 	
@@ -145,6 +135,10 @@ public abstract class ETLCmd implements Serializable{
 	public List<String> sgProcess(){
 		logger.error("empty single impl, should not be invoked.");
 		return null;
+	}
+	
+	//for long running command
+	public void close(){
 	}
 	
 	///
@@ -196,8 +190,12 @@ public abstract class ETLCmd implements Serializable{
 	public void setFs(FileSystem fs) {
 		this.fs = fs;
 	}
-	
-	public void close(){
-		
+
+	public String getDefaultFs() {
+		return defaultFs;
+	}
+
+	public void setDefaultFs(String defaultFs) {
+		this.defaultFs = defaultFs;
 	}
 }

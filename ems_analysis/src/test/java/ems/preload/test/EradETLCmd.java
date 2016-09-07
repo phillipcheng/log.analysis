@@ -17,4 +17,10 @@ public class EradETLCmd extends TestETLCmd {
 	public void copyWFs() throws Exception{
 		super.copyWorkflow("/user/dbadmin/atterad", new String[]{"workflow.xml"});
 	}
+
+	@Override
+	public String getResourceSubFolder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

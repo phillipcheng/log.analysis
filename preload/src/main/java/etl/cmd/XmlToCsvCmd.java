@@ -260,7 +260,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	 * @param row: each row is a xml file name
 	 */
 	@Override
-	public Map<String, String> reduceMapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
 			Iterator<Tuple2<String, String>> pairs = flatMapToPair(String.valueOf(offset), row);
 			while (pairs.hasNext()){
@@ -281,7 +281,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 		List<String[]> rets = new ArrayList<String[]>();
 		for (Text v: values){
 			//logger.info(String.format("v:%s", v.toString()));
-			String[] ret = new String[]{v.toString(), "", key.toString()};
+			String[] ret = new String[]{v.toString(), null, key.toString()};
 			rets.add(ret);
 		}
 		return rets;

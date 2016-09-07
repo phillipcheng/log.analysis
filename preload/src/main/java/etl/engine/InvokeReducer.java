@@ -51,9 +51,17 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 		List<String[]> rets = cmd.reduceProcess(key, values);
 		for (String[] ret: rets){
 			if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
-				context.write(new Text(ret[0]), new Text(ret[1]));
+				if (ret[1]!=null){
+					context.write(new Text(ret[0]), new Text(ret[1]));
+				}else{
+					context.write(new Text(ret[0]), null);
+				}
 			}else{
-				mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
+				if (ret[1]!=null){
+					mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
+				}else{
+					mos.write(new Text(ret[0]), null, ret[2]);
+				}
 			}
 		}
 	}

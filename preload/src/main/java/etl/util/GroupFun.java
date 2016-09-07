@@ -3,6 +3,8 @@ package etl.util;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.log4j.Logger;
 
 import etl.engine.SafeSimpleDateFormat;
@@ -15,6 +17,7 @@ public class GroupFun {
 	
 	public static SafeSimpleDateFormat dateSdf = new SafeSimpleDateFormat("yyyy-MM-dd");
 	public static SafeSimpleDateFormat hourSdf = new SafeSimpleDateFormat("HH");
+	public static ConcurrentHashMap<String, SafeSimpleDateFormat> formatMap = new ConcurrentHashMap<String, SafeSimpleDateFormat>();
 	
 	public static String hourEpoch(String input){
 		Date d = new Date(Long.parseLong(input)*1000);
@@ -63,5 +66,13 @@ public class GroupFun {
 	public static String getDateTime(){
 		Date d = new Date();
 		return FieldType.sdatetimeFormat.format(d);
+	}
+	
+	public static String getDateTime(String format){
+		if (!formatMap.containsKey(format)){
+			formatMap.put(format, new SafeSimpleDateFormat(format));
+		}
+		SafeSimpleDateFormat ssdt = formatMap.get(format);
+		return ssdt.format(new Date());
 	}
 }

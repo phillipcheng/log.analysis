@@ -109,7 +109,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 	
 	//fix file name
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, NullWritable>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
 		Path kcvFile = new Path(row);
