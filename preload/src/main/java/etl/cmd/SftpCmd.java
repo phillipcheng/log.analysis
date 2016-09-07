@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -27,8 +28,11 @@ import etl.engine.ETLCmd;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
+import scala.Tuple2;
 
 public class SftpCmd extends ETLCmd {
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(SftpCmd.class);
 
 	public static final String cfgkey_incoming_folder = "incoming.folder";
@@ -80,16 +84,15 @@ public class SftpCmd extends ETLCmd {
 	}
 
 	@Override
-	public List<String> sgProcess(){
+	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
 		int sftConnectRetryCntTemp = 1;
 		OutputStream fsos = null;
 		InputStream is = null;
-		List<String> logInfo = new ArrayList<String>();
+		List<Tuple2<String, String>> files = new ArrayList<Tuple2<String, String>>();
 		try {
-			
 			// connect
 			JSch jsch = new JSch();
 			Channel channel = null;
@@ -156,8 +159,8 @@ public class SftpCmd extends ETLCmd {
 					logger.info("Deleting file:" + srcFile);
 					sftpChannel.rm(srcFile);
 				}
+				files.add(new Tuple2<String, String>(wfid, destFile));
 			}
-			logInfo.add(fileNumberTransfer + "");
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);
 		} finally {
@@ -168,6 +171,19 @@ public class SftpCmd extends ETLCmd {
 				session.disconnect();
 			}
 		}
+		return files.iterator();
+	}
+	
+	@Override
+	public List<String> sgProcess(){
+		Iterator<Tuple2<String, String>> ret = this.flatMapToPair(null, null);
+		int fileNumberTransfer=0;
+		while(ret.hasNext()){
+			ret.next();
+			fileNumberTransfer++;
+		}
+		List<String> logInfo = new ArrayList<String>();
+		logInfo.add(fileNumberTransfer + "");
 		return logInfo;
 	}
 	

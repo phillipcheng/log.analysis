@@ -70,4 +70,9 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 			});
 		}
 	}
+
+	@Override
+	public String getResourceSubFolder() {
+		return "kcvToCsv/";
+	}
 }

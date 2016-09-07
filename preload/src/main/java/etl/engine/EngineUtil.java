@@ -11,6 +11,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -45,15 +47,28 @@ public class EngineUtil {
 	public static Producer<String, String> createProducer(String bootstrapServers){
 		Properties props = new Properties();
 		props.put("bootstrap.servers", bootstrapServers);
-		props.put("acks", "all");
+		props.put("request.required.acks", "1");
 		props.put("retries", 0);
-		props.put("request.timeout.ms", 5000);
 		props.put("batch.size", 16384);
 		props.put("linger.ms", 1);
 		props.put("buffer.memory", 33554432);
 		props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		return new KafkaProducer<String, String>(props);
+	}
+	
+	public static Consumer<String, String> createConsumer(String bootstrapServers, String[] topics){
+		Properties props = new Properties();
+		props.put("bootstrap.servers", bootstrapServers);
+		props.put("group.id", "test");
+		props.put("enable.auto.commit", "true");
+	    props.put("auto.commit.interval.ms", "1000");
+	    props.put("session.timeout.ms", "30000");
+		props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+		props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+		KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
+		consumer.subscribe(topics);
+		return consumer;
 	}
 	
 	private EngineUtil(){
@@ -84,10 +99,13 @@ public class EngineUtil {
 	}
 	
 	public static void sendLog(Producer<String, String> producer, String topicName, ETLLog etllog){
+		sendMsg(producer, topicName, etllog.toString());
+	}
+	
+	public static void sendMsg(Producer<String, String> producer, String topicName, String msg){
 		if (producer!=null){
-			String value = etllog.toString();
-			logger.info(String.format("log: %s", value));
-			producer.send(new ProducerRecord<String,String>(topicName, value), new Callback(){
+			logger.info(String.format("kafka produce msg: %s", msg));
+			producer.send(new ProducerRecord<String,String>(topicName, msg), new Callback(){
 				@Override
 				public void onCompletion(RecordMetadata metadata, Exception e) {
 					if (e!=null){

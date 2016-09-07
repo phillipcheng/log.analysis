@@ -31,7 +31,6 @@ public class TestEngineUtil extends TestETLCmd{
 		if (!super.isTestKafka()) return;
 		EngineUtil.setConfFile("etlengine_enable_kafka.properties");
 		EngineUtil.getInstance().sendLog(getETLLog());
-		EngineUtil.getInstance().getProducer().flush();
 	}
 	
 	@Test
@@ -86,5 +85,10 @@ public class TestEngineUtil extends TestETLCmd{
 	public void testDayOfWeekYesterday(){
 		String str = DateUtil.getWeekOfDayForYesterday();
 		logger.info(str);
+	}
+
+	@Override
+	public String getResourceSubFolder() {
+		return "engineutil/";
 	}
 }

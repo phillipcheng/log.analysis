@@ -92,4 +92,9 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
 			});
 		}
 	}
+
+	@Override
+	public String getResourceSubFolder() {
+		return "evtbased/";
+	}
 }

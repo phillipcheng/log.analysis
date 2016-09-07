@@ -16,6 +16,8 @@ import etl.util.Util;
 import etl.util.VarType;
 
 public abstract class SchemaFileETLCmd extends FileETLCmd{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(SchemaFileETLCmd.class);
 
 	public static final String cfgkey_schema_file="schema.file";

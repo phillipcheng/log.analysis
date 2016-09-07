@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 
+import etl.engine.SafeSimpleDateFormat;
+
 
 public class FieldType implements Serializable{
 	private static final long serialVersionUID = 1L;
@@ -15,6 +17,11 @@ public class FieldType implements Serializable{
 	public static final String TYPE_TIMESTAMP="timestamp";
 	public static final String TYPE_INT="int";
 	public static final String TYPE_DATE="date";
+	
+	public static final String datetimeFormat="yyyyMMddHHmmssSSS";
+	public static final String dateFormat="yyyyMMdd";
+	public static final SafeSimpleDateFormat sdatetimeFormat = new SafeSimpleDateFormat(datetimeFormat);
+	public static final SafeSimpleDateFormat sdateFormat = new SafeSimpleDateFormat(dateFormat);
 	
 	public static final String HIVE_TYPE_NUMERIC="decimal";
 	
@@ -62,6 +69,33 @@ public class FieldType implements Serializable{
 		}else{
 			String[] tn = t.split(" ");
 			this.type = VarType.fromValue(tn[0]);
+		}
+	}
+	
+	public Object decode(String v){
+		if (this.type==VarType.STRING){
+			return v;
+		}else if (this.type == VarType.TIMESTAMP){
+			try {
+				return sdatetimeFormat.parse(v);
+			}catch(Exception e){
+				logger.error(String.format("datetime format expected %s, get %s", datetimeFormat, v));
+				return null;
+			}
+		}else if (this.type == VarType.DATE){
+			try{
+				return sdateFormat.parse(v);
+			}catch(Exception e){
+				logger.error(String.format("date format expected %s, get %s", dateFormat, v));
+				return null;
+			}
+		}else if (this.type == VarType.NUMERIC){
+			return Double.parseDouble(v);
+		}else if (this.type == VarType.INT){
+			return Integer.parseInt(v);
+		}else{
+			logger.error(String.format("type %s not supported for %s", this, v));
+			return null;
 		}
 	}
 	

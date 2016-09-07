@@ -1,0 +1,1 @@
+["etl.engine.LogicSchema",{"attrNameMap":["java.util.HashMap",{"TimeTrigger":["java.util.ArrayList",["timestamp"]]}],"attrTypeMap":["java.util.HashMap",{"TimeTrigger":["java.util.ArrayList",[["etl.util.FieldType",{"type":"TIMESTAMP","size":0,"precision":0,"scale":0}]]]}]}]

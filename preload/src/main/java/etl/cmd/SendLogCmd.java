@@ -12,20 +12,15 @@ import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
 
 public class SendLogCmd extends ETLCmd{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(SendLogCmd.class);
 	
-	public static final String cfgkey_topic = "kafka.log.topic";
-	public static final String cfgkey_bootstrap_servers = "kafka.bootstrap.servers";
-	private String bootstrapServers;
-	private String logTopicName;
+	private transient KafkaAdaptorCmd kac;
 	
 	public SendLogCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, defaultFs, otherArgs);
-		logTopicName = pc.getString(cfgkey_topic);
-		bootstrapServers = pc.getString(cfgkey_bootstrap_servers);
-		logger.info(String.format("engine configure: bootstrap:%s, topic:%s", EngineUtil.getInstance().getBootstrapServers(), 
-				EngineUtil.getInstance().getLogTopicName()));
-		logger.info(String.format("cmd configure: bootstrap:%s, topic:%s", bootstrapServers, logTopicName));
+		kac = new KafkaAdaptorCmd(pc);
 	}
 
 	@Override
@@ -36,7 +31,7 @@ public class SendLogCmd extends ETLCmd{
 			return loginfo;
 		}else{
 			ETLLog etllog = new ETLLog();
-			Producer<String, String> producer = EngineUtil.createProducer(bootstrapServers);
+			Producer<String, String> producer = EngineUtil.createProducer(kac.getBootstrapServers());
 			Date curTime = new Date();
 			etllog.setStart(curTime);
 			etllog.setEnd(curTime);
@@ -45,7 +40,7 @@ public class SendLogCmd extends ETLCmd{
 			}
 			etllog.setActionName(getClass().getName());
 			etllog.setCounts(loginfo);
-			EngineUtil.sendLog(producer, logTopicName, etllog);
+			EngineUtil.sendLog(producer, kac.getLogTopicName(), etllog);
 			producer.close();
 			return null;
 		}

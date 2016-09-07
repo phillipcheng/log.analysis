@@ -16,7 +16,7 @@ public class SparkUtil {
 
 	public static final Logger logger = Logger.getLogger(SparkUtil.class);
 	
-	public static void saveByKey(JavaPairDStream<String, String> dstream, final String defaultFs, String dir){
+	public static void saveByKey(JavaPairDStream<String, String> dstream, final String defaultFs, final String dir){
 		dstream.groupByKey().foreachRDD(new VoidFunction2<JavaPairRDD<String, Iterable<String>>, Time>(){
 			private static final long serialVersionUID = 1L;
 			@Override

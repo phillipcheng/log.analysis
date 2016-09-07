@@ -3,10 +3,7 @@ package mtccore.sgsiwf;
 import java.util.Iterator;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
@@ -42,6 +39,8 @@ public class SGSIWFFlow {
 			final String aggrcsvProperties = "sgsiwf.aggr.properties";
 			final String transcsvProperties = "sgsiwf.trans.properties";
 			final String csvloadProperties = "sgsiwf.loaddata.properties";
+			final String sendLogProperties = "sgsiwf.sendlog.properties";
+			final String backupProperties = "sgsiwf.backup.properties";
 			
 			final XmlToCsvCmd xml2csvCmd = new XmlToCsvCmd(wfid, remoteCfg + xml2csvProperties, defaultFs, null);
 			final CsvAggregateCmd aggrCmd = new CsvAggregateCmd(wfid, remoteCfg + aggrcsvProperties, defaultFs, null);
@@ -50,8 +49,10 @@ public class SGSIWFFlow {
 			SparkConf conf = new SparkConf().setAppName("mtccore").setMaster("local[3]");
 			
 			JavaStreamingContext jsc = new JavaStreamingContext(conf, Durations.seconds(10));
+			
 			JavaPairInputDStream<LongWritable, Text> ds = jsc.fileStream(
 					defaultFs+inputdir, LongWritable.class, Text.class, FilenameInputFormat.class);
+			
 			//tableName to csv
 			JavaPairDStream<String, String> csvret = ds.flatMapToPair(new PairFlatMapFunction<Tuple2<LongWritable, Text>, String, String>(){
 				private static final long serialVersionUID = 1L;

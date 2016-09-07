@@ -61,13 +61,13 @@ public abstract class ETLCmd implements Serializable{
 		this.staticCfg = staticCfg;
 		this.defaultFs = defaultFs;
 		this.otherArgs = otherArgs;
+		logger.info(String.format("wfid:%s, cfg:%s, defaultFs:%s", wfid, staticCfg, defaultFs));
 		try {
 			String fs_key = "fs.defaultFS";
 			conf = new Configuration();
 			if (defaultFs!=null){
 				conf.set(fs_key, defaultFs);
 			}
-			logger.info(String.format("%s is %s", fs_key, conf.get(fs_key)));
 			this.fs = FileSystem.get(conf);
 		}catch(Exception e){
 			logger.error("", e);
@@ -195,5 +195,9 @@ public abstract class ETLCmd implements Serializable{
 
 	public void setFs(FileSystem fs) {
 		this.fs = fs;
+	}
+	
+	public void close(){
+		
 	}
 }

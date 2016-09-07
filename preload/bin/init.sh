@@ -17,7 +17,7 @@ oozie job -oozie http://192.85.246.17:11000/oozie/ -config /data/mtccore/sgs.job
 
 
 mac
-KAFKA_ROOT=/Applications/kafka_2.11-0.10.0.1/
+KAFKA_ROOT=/Applications/kafka_2.11-0.8.2.1/
 $KAFKA_ROOT/bin/kafka-console-consumer.sh --zookeeper 127.0.0.1:2181 --topic log-analysis-topic --from-beginning
 $KAFKA_ROOT/bin/kafka-console-producer.sh --broker-list 127.0.0.1:9092 --topic log-analysis-topic
 $KAFKA_ROOT/bin/kafka-topics.sh --create --zookeeper 127.0.0.1:2181 --replication-factor 1 --partitions 3 --topic log-analysis-topic
@@ -34,3 +34,5 @@ $HADOOP_HOME/bin/hadoop fs -chmod g+w /user/hive/warehouse
 $HIVE_HOME/bin/schematool -dbType derby -initSchema
 
 oozie setup
+OOZIE_ROOT=/Applications/oozie-4.2.0/
+$OOZIE_ROOT/bin/oozie-setup.sh sharelib create -fs hdfs://127.0.0.1:19000/

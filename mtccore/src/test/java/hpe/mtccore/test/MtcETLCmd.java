@@ -236,4 +236,9 @@ public class MtcETLCmd extends TestETLCmd{
 			logger.error("", e);
 		}
 	}
+
+	@Override
+	public String getResourceSubFolder() {
+		return null;
+	}
 }

@@ -7,7 +7,7 @@ public enum VarType {
 	DATE("date"),
     NUMERIC("numeric"),
     INT("int"),
-    
+
     FLOAT("float"),
     LIST("list"),
     ARRAY("array"),

@@ -39,4 +39,9 @@ public class TestSesToCsvCmd extends TestETLCmd{
 			logger.error("", e);
 		}
 	}
+	@Override
+	public String getResourceSubFolder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

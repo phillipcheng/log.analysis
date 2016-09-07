@@ -22,7 +22,7 @@ import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
 import etl.util.Util;
 
-public class TestETLCmd {
+public abstract class TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestETLCmd.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
@@ -230,12 +230,13 @@ public class TestETLCmd {
 	}
 
 	//override by sub test cases
-	public String getResourceSubFolder(){
-		return "";
-	}
+	public abstract String getResourceSubFolder();
 	
 	public String getLocalFolder() {
-		return localFolder + getResourceSubFolder();
+		if (getResourceSubFolder()==null){
+			return localFolder;
+		}else
+			return localFolder + getResourceSubFolder();
 	}
 
 	public FileSystem getFs() {

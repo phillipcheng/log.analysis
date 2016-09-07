@@ -59,4 +59,9 @@ public class GroupFun {
 		}
 		return "error";
 	}
+	
+	public static String getDateTime(){
+		Date d = new Date();
+		return FieldType.sdatetimeFormat.format(d);
+	}
 }

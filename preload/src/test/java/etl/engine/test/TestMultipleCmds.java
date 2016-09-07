@@ -62,4 +62,9 @@ public class TestMultipleCmds extends TestETLCmd{
 			logger.error("", e);
 		}
 	}
+
+	@Override
+	public String getResourceSubFolder() {
+		return "multiplecmds/";
+	}
 }

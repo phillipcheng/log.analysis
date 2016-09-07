@@ -103,7 +103,7 @@ public class ETLCmdMain {
 				}
 			}else{//repeated
 				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-				ScheduledFuture<?> taskHandler = scheduler.scheduleAtFixedRate(
+				final ScheduledFuture<?> taskHandler = scheduler.scheduleAtFixedRate(
 						new Runnable(){
 							@Override
 							public void run() {
@@ -119,6 +119,9 @@ public class ETLCmdMain {
 						@Override
 						public void run() {
 							taskHandler.cancel(true);
+							for (ETLCmd cmd:cmds){
+								cmd.close();
+							}
 						}}, exeSeconds, SECONDS);
 				}
 				try {
