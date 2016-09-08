@@ -7,13 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
 import etl.cmd.transform.ColOp;
+import etl.engine.FileETLCmd;
 import etl.engine.MRMode;
 import etl.util.DBUtil;
 import etl.util.FieldType;
@@ -22,6 +22,7 @@ import etl.util.Util;
 import etl.util.VarType;
 
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class CsvTransformCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -118,7 +119,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	}
 
 	@Override
-	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
 		super.init();
 		String fileName = key;
 		String row = value;
@@ -127,7 +128,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		
 		//get all fiels
 		List<String> items = new ArrayList<String>();
-		items.addAll(Arrays.asList(row.split(",")));
+		items.addAll(Arrays.asList(row.split(",", -1)));
 		
 		//set the fieldsMap
 		Map<String, String> fieldMap = null;
@@ -172,7 +173,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		output = Util.getCsv(Arrays.asList(strItems), false);
 		logger.debug("output:" + output);
 		retList.add(new Tuple2<String, String>(fileName, output));
-		return retList.iterator();
+		return retList;
 	}
 	
 	@Override
@@ -183,15 +184,29 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			logger.info("skip header:" + row);
 			return null;
 		}
-		
-		String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-		Iterator<Tuple2<String, String>> retList = flatMapToPair(fileName, row);
-		if (retList!=null && retList.hasNext()){
-			retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{retList.next()._2}));
-		}else{
-			retMap.put(RESULT_KEY_OUTPUT, null);
+		String tableName = getTableName(context);
+		List<Tuple2<String, String>> retList = flatMapToPair(tableName, row);
+		if (retList!=null && retList.size()>=1){
+			retMap.put(RESULT_KEY_OUTPUT_TUPLE2, retList);
 		}
 		return retMap;
+	}
+	
+	//newKey, csv, entity/table name
+	@Override
+	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
+		String value = it.iterator().next();
+		return new Tuple3<String, String,String>(key, value, key);
+	}
+	
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
+		List<String[]> ret = new ArrayList<String[]>();
+		Iterator<Text> it = values.iterator();
+		while (it.hasNext()){
+			ret.add(new String[]{it.next().toString(), null, key.toString()});
+		}
+		return ret;
 	}
 
 	public String getOldTable() {

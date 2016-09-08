@@ -58,7 +58,7 @@ public class SGSIWFFlow {
 				private static final long serialVersionUID = 1L;
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<LongWritable, Text> t) throws Exception {
-					return xml2csvCmd.flatMapToPair(String.valueOf(t._1), t._2.toString());
+					return xml2csvCmd.flatMapToPair(String.valueOf(t._1), t._2.toString()).iterator();
 				}
 			});
 			
@@ -71,7 +71,7 @@ public class SGSIWFFlow {
 				private static final long serialVersionUID = 1L;
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-					return aggrCmd.flatMapToPair(t._1, t._2);
+					return aggrCmd.flatMapToPair(t._1, t._2).iterator();
 				}
 			});
 			
@@ -93,7 +93,7 @@ public class SGSIWFFlow {
 				private static final long serialVersionUID = 1L;
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-					return transCmd.flatMapToPair(t._1, t._2);
+					return transCmd.flatMapToPair(t._1, t._2).iterator();
 				}
 			});
 			SparkUtil.saveByKey(csvtrans, defaultFs, outputdir);

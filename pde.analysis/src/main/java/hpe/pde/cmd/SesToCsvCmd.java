@@ -399,7 +399,7 @@ public class SesToCsvCmd extends FileETLCmd{
 			}
 		}
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		retMap.put(RESULT_KEY_OUTPUT, outputList);
+		retMap.put(RESULT_KEY_OUTPUT_LINE, outputList);
 		List<String> infoList = new ArrayList<String>();
 		infoList.add(outputList.size()+"");
 		retMap.put(RESULT_KEY_LOG, infoList);

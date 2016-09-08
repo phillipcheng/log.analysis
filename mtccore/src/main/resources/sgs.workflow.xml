@@ -94,11 +94,11 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>mapreduce.job.map.class</name>
-                    <value>etl.engine.InvokeReducerMapper</value>
+                    <value>etl.engine.InvokeMapper</value>
                 </property>
                 <property>
                     <name>mapreduce.job.reduce.class</name>
-                    <value>etl.engine.InvokeNullableReducer</value>
+                    <value>etl.engine.InvokeReducer</value>
                 </property>
                 <property>
                     <name>mapreduce.task.timeout</name>
@@ -114,7 +114,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>mapreduce.output.fileoutputformat.outputdir</name>
-                    <value>/mtccore/csvdata/csv/${wf:id()}</value>
+                    <value>/mtccore/csvdata/csvin/${wf:id()}</value>
                 </property>
                 <property>
                     <name>mapreduce.map.output.key.class</name>
@@ -154,6 +154,91 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <arg>${hadoop:counters("GenCsv")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("GenCsv")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
         </java>
+        <ok to="UpdateTimeStamp"/>
+        <error to="fail"/>
+    </action>
+    <action name="UpdateTimeStamp">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="/mtccore/csvdata/csv/${wf:id()}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.outputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.value.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/mtccore/csvdata/csvin/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/mtccore/csvdata/csv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>etl.cmd.CsvTransformCmd</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/mtccore/etlcfg/sgsiwf.updatedt.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="LogUpdateDtInfo"/>
+        <error to="fail"/>
+    </action>
+    <action name="LogUpdateDtInfo">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
+            <arg>${nameNode}</arg>
+            <arg>TransformVlr-Info</arg>
+            <arg>${hadoop:counters("UpdateTimeStamp")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("UpdateTimeStamp")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
         <ok to="UpdateAggrSchema"/>
         <error to="fail"/>
     </action>
@@ -188,7 +273,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>mapreduce.job.map.class</name>
-                    <value>etl.engine.InvokeReducerMapper</value>
+                    <value>etl.engine.InvokeMapper</value>
                 </property>
                 <property>
                     <name>mapreduce.job.reduce.class</name>
@@ -285,6 +370,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                     <value>etl.engine.InvokeMapper</value>
                 </property>
                 <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
                     <name>mapreduce.job.inputformat.class</name>
                     <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
                 </property>
@@ -298,7 +387,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                 </property>
                 <property>
                     <name>mapreduce.job.output.value.class</name>
-                    <value>org.apache.hadoop.io.NullWritable</value>
+                    <value>org.apache.hadoop.io.Text</value>
                 </property>
                 <property>
                     <name>mapreduce.task.timeout</name>
@@ -348,7 +437,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
     <action name="copyVlrMerge">
          <fs>
             <move 
-                source='${nameNode}/mtccore/csvdata/trans/${wf:id()}/part-r-00000' 
+                source='${nameNode}/mtccore/csvdata/trans/${wf:id()}/PoolType_vlr_aggr-r-00000'
                 target='/mtccore/csvdata/csv/${wf:id()}/PoolType_vlr_aggr-r-00000'/>
             <move 
                 source='${nameNode}/mtccore/csvdata/aggr/${wf:id()}/MME_PoolType_wss7_aggr-r-00000' 

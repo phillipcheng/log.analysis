@@ -24,7 +24,7 @@ public class AggrOpMap implements Serializable{
 	
 	public AggrOpMap(String[] strAggrOpList){
 		for (String strAggrOp:strAggrOpList){
-			String[] arr = strAggrOp.split(AggrOp.AGGR_OPERATOR_SEP);
+			String[] arr = strAggrOp.split(AggrOp.AGGR_OPERATOR_SEP, -1);
 			String op = arr[0];
 			String arg = arr[1];
 			List<IdxRange> irl = IdxRange.parseString(arg);

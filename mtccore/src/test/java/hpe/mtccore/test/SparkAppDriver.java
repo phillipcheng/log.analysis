@@ -104,7 +104,7 @@ public class SparkAppDriver implements Serializable{
 					logger.info(String.format("recieved message %s", t));
 					wfid.set(t._2);
 					SftpCmd sftpCmd = new SftpCmd(wfid.get(), remoteCfg + sftpProperties, defaultFs, null);
-					return sftpCmd.flatMapToPair(t._1, t._2);
+					return sftpCmd.flatMapToPair(t._1, t._2).iterator();
 				}
 			});
 			
@@ -114,7 +114,7 @@ public class SparkAppDriver implements Serializable{
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
 					logger.info(String.format("going to process message %s", t));
-					return xml2csvCmd.flatMapToPair(t._1, t._2);
+					return xml2csvCmd.flatMapToPair(t._1, t._2).iterator();
 				}
 			});
 			
@@ -128,7 +128,7 @@ public class SparkAppDriver implements Serializable{
 				private static final long serialVersionUID = 1L;
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-					return aggrCmd.flatMapToPair(t._1, t._2);
+					return aggrCmd.flatMapToPair(t._1, t._2).iterator();
 				}
 			});
 			
@@ -151,7 +151,7 @@ public class SparkAppDriver implements Serializable{
 				private static final long serialVersionUID = 1L;
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-					return transCmd.flatMapToPair(t._1, t._2);
+					return transCmd.flatMapToPair(t._1, t._2).iterator();
 				}
 			});
 			SparkUtil.saveByKey(csvtrans, defaultFs, outputdir);

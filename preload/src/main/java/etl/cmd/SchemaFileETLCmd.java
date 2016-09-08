@@ -1,9 +1,17 @@
 package etl.cmd;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.script.CompiledScript;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
 import etl.engine.FileETLCmd;
@@ -24,6 +32,7 @@ public abstract class SchemaFileETLCmd extends FileETLCmd{
 	public static final String cfgkey_db_prefix="db.prefix"; //db schema
 	public static final String cfgkey_create_sql="create.sql";
 	public static final String cfgkey_db_type="db.type";
+	public static final String cfgkey_file_table_map="file.table.map";
 	
 	//system variable map
 	public static final String VAR_LOGIC_SCHEMA="logicSchema"; //
@@ -34,7 +43,9 @@ public abstract class SchemaFileETLCmd extends FileETLCmd{
 	protected String schemaFileName;
 	protected String dbPrefix;
 	protected LogicSchema logicSchema;
-	private String createTablesSqlFileName;
+	protected String createTablesSqlFileName;
+	protected String strFileTableMap;
+	protected transient CompiledScript expFileTableMap;
 	
 	private DBType dbtype = DBType.NONE;
 	
@@ -73,6 +84,12 @@ public abstract class SchemaFileETLCmd extends FileETLCmd{
 		this.getSystemVariables().put(VAR_DB_TYPE, strDbType);
 		if (strDbType!=null){
 			dbtype = DBType.fromValue(strDbType);
+		}
+		strFileTableMap = pc.getString(cfgkey_file_table_map, null);
+		logger.info(String.format("fileTableMap:%s", strFileTableMap));
+		if (strFileTableMap!=null){
+			expFileTableMap = ScriptEngineUtil.compileScript(strFileTableMap);
+			logger.info(String.format("fileTableMapExp:%s", expFileTableMap));
 		}
 	}
 	//return loginfo
@@ -120,6 +137,17 @@ public abstract class SchemaFileETLCmd extends FileETLCmd{
 			sqls.add(sql);
 		}
 		return sqls;
+	}
+	
+	public String getTableName(Mapper<LongWritable, Text, Text, Text>.Context context){
+		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+		Map<String, Object> varMap = new HashMap<String, Object>();
+		varMap.put(FileETLCmd.VAR_NAME_FILE_NAME, inputFileName);
+		String tableName = inputFileName;
+		if (expFileTableMap!=null){
+			tableName = ScriptEngineUtil.eval(expFileTableMap, varMap);
+		}
+		return tableName;
 	}
 
 	public LogicSchema getLogicSchema() {

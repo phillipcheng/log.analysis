@@ -24,8 +24,8 @@ public abstract class ETLCmd implements Serializable{
 	public static final Logger logger = Logger.getLogger(ETLCmd.class);
 	
 	public static final String RESULT_KEY_LOG="log";
-	public static final String RESULT_KEY_OUTPUT="lineoutput";
-	public static final String RESULT_KEY_OUTPUT_MAP="mapoutput";
+	public static final String RESULT_KEY_OUTPUT_LINE="lineoutput";
+	public static final String RESULT_KEY_OUTPUT_TUPLE2="mapoutput";
 
 	public static final String SINGLE_TABLE="single.table";
 	
@@ -90,9 +90,9 @@ public abstract class ETLCmd implements Serializable{
 	 * used by spark driver
 	 * @param key
 	 * @param value
-	 * @return
+	 * @return key, value pairs
 	 */
-	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
 		logger.error("empty map impl, should not be invoked.");
 		return null;
 	}
@@ -100,7 +100,7 @@ public abstract class ETLCmd implements Serializable{
 	 * used by spark driver
 	 * @param key
 	 * @param it
-	 * @return
+	 * @return newKey, csv, entity/table name
 	 */
 	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
 		logger.error("empty map impl, should not be invoked.");
@@ -108,11 +108,12 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	/**
-	 * map function in map-only or map-reduce mode, for map mode output null for no key or value
+	 * map function in map-only or map-reduce mode, for map mode: output null for no key or value
 	 * @return map may contains following key:
-	 * RESULT_KEY_LOG: list of String user defined log info
-	 * RESULT_KEY_LIST_OUTPUT: list of String output
-	 * in the value map, if it contains only 1 value, the key is RESULT_VALUE_KEY_SINGLE_VALUE
+	 * ETLCmd.RESULT_KEY_LOG: list of String user defined log info
+	 * ETLCmd.RESULT_KEY_OUTPUT: list of String output
+	 * ETLCmd.RESULT_KEY_OUTPUT_MAP: list of Tuple2<key, value>
+	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		logger.error("empty map impl, should not be invoked.");

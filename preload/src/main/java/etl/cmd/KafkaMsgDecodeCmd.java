@@ -34,7 +34,7 @@ public class KafkaMsgDecodeCmd extends SchemaFileETLCmd{
 		List<FieldType> ftlist = logicSchema.getAttrTypes(entityName);
 		List<String> attrList = logicSchema.getAttrNames(entityName);
 		Map<String, Object> ret = new HashMap<String, Object>();
-		String[] vs = v.split(",");
+		String[] vs = v.split(",", -1);
 		for (int i=0; i<ftlist.size(); i++){
 			FieldType ft = ftlist.get(i);
 			String sv = vs[i];
@@ -49,20 +49,17 @@ public class KafkaMsgDecodeCmd extends SchemaFileETLCmd{
 		if (consumer==null){
 			consumer = EngineUtil.createConsumer(kac.getBootstrapServers(), new String[]{kac.getLogTopicName()});
 		}
-		Map<String, ConsumerRecords<String, String>> records = consumer.poll(100);
-        for (String topic : records.keySet()){
-        	ConsumerRecords<String, String> rs = records.get(topic);
-        	for (ConsumerRecord<String, String> r: rs.records()){
-        		try {
-		            logger.info(String.format("offset = %d, key = %s, value = %s", r.offset(), r.key(), r.value()));
-		            Map<String, Object> map = decode(r.value());
-		            logger.info(String.format("map got:%s", map));
-        		}catch(Exception e){
-        			logger.error("", e);
-        		}
-        	}
-        	logger.info(String.format("# records:%d", rs.records().size()));
-        }
+		ConsumerRecords<String, String> rs = consumer.poll(100);
+    	for (ConsumerRecord<String, String> r: rs){
+    		try {
+	            logger.info(String.format("offset = %d, key = %s, value = %s", r.offset(), r.key(), r.value()));
+	            Map<String, Object> map = decode(r.value());
+	            logger.info(String.format("map got:%s", map));
+    		}catch(Exception e){
+    			logger.error("", e);
+    		}
+    	}
+    	logger.info(String.format("# records:%d", rs.count()));
         
 		return null;
 	}

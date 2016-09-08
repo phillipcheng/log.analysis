@@ -1,6 +1,7 @@
 package etl.engine;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
+
+import scala.Tuple2;
 
 public class EngineUtil {
 	public static final Logger logger = Logger.getLogger(EngineUtil.class);
@@ -66,7 +69,7 @@ public class EngineUtil {
 		props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 		props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 		KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
-		consumer.subscribe(topics);
+		consumer.subscribe(Arrays.asList(topics));
 		return consumer;
 	}
 	
@@ -148,9 +151,9 @@ public class EngineUtil {
 						List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
 						sendLog(cmd, startTime, endTime, logoutputs);
 					}
-					if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT)){
+					if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_LINE)){
 						//for all mapper only cmd, the result should contains the RESULT_KEY_OUTPUT
-						List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT);
+						List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_LINE);
 						if (i<cmds.length-1){//intermediate steps
 							if (outputs!=null && outputs.size()==1){
 								input = outputs.get(0);
@@ -172,12 +175,15 @@ public class EngineUtil {
 								}
 							}
 						}
-					}else{//for map-reduce mapper phrase, the result is key-value pair
+					}else if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2)){//for map-reduce mapper phrase, the result is key-value pair
 						if (alloutputs!=null && context!=null){
-							for (String key:alloutputs.keySet()){
-								context.write(new Text(key), new Text((String) alloutputs.get(key)));
+							List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
+							for (Tuple2<String, String> kv: tl){
+								context.write(new Text(kv._1), new Text(kv._2));
 							}
 						}
+					}else{
+						logger.info("no output.");
 					}
 				}
 			}else{
@@ -190,8 +196,8 @@ public class EngineUtil {
 	}
 	
 	public static ETLCmd[] getCmds(String strCmdClassNames, String strStaticConfigFiles, String wfid, String defaultFs){
-		String[] cmdClassNames = strCmdClassNames.split(",");
-		String[] staticCfgFiles = strStaticConfigFiles.split(",");
+		String[] cmdClassNames = strCmdClassNames.split(",", -1);
+		String[] staticCfgFiles = strStaticConfigFiles.split(",", -1);
 		
 		try{
 			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];

@@ -3,12 +3,16 @@ package etl.cmd.test;
 import static org.junit.Assert.*;
 
 import java.security.PrivilegedExceptionAction;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
+
+import etl.util.Util;
 
 public class TestCsvTransformCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestCsvTransformCmd.class);
@@ -32,7 +36,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			// assertion
 			assertTrue(output.size() > 0);
 			String sampleOutput = output.get(0);
-			String[] csvs = sampleOutput.split(",");
+			String[] csvs = sampleOutput.split(",", -1);
 			int mergedColumn = 2;
 			logger.info("Last element:"+csvs[csvs.length - 1]+" "+ csvs[mergedColumn] + " "+csvs[mergedColumn-1]+ " " +csvs[mergedColumn+1]);
 			assertTrue("BBG2".equals(csvs[csvs.length - 1])); // check filename appended to last
@@ -72,7 +76,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			logger.info("Output is:"+output);
 			assertTrue(output.size() > 0);
 			String sampleOutput = output.get(0);
-			String[] csvs = sampleOutput.split(",");
+			String[] csvs = sampleOutput.split(",", -1);
 			int splitColumn = 2;
 			logger.info("Updated Column value"+csvs[splitColumn]+" "+ csvs[splitColumn+1] + " "+csvs[splitColumn+2]);
 			assertFalse(csvs[splitColumn].contains("."));
@@ -108,7 +112,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			logger.info("Output is:"+output);
 			assertTrue(output.size() > 0);
 			String sampleOutput = output.get(0);
-			String[] csvs = sampleOutput.split(",");
+			String[] csvs = sampleOutput.split(",", -1);
 			int updateColumn1 = 2;
 			int updateColumn2 = 3;
 			String replaceString1 = ".";
@@ -221,15 +225,25 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String remoteCsvInputFolder = "/etltest/csvtrans/input/";
 			String remoteCsvOutputFolder = "/etltest/csvtrans/output/";
 			String csvtransProp = "csvtrans.multiplefiles.properties";
-			String[] csvFiles = new String[]{"DPC_PoolType_nss7_-r-00000","PoolType_mi_SNEType_-r-00000"};
+			String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, 
-					testCmdClass, false);
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			//assert
-			
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			List<String> outputs = Util.listDfsFile(super.getFs(), remoteCsvOutputFolder);
+			for (String csvFile: csvFiles){
+				String outputCsv = csvFile + "-r-00000";
+				assertTrue(outputs.contains(outputCsv));
+				List<String> contents = Util.stringsFromDfsFile(super.getFs(), remoteCsvOutputFolder+outputCsv);
+				String content = contents.get(0);
+				String[] fields = content.split(",", -1);
+				Date d = sdf.parse(fields[0]);
+				logger.info(String.format("date:%s", d));
+			}
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
@@ -242,6 +256,54 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
 					transformMultipleFiles();
+					return null;
+				}
+			});
+		}
+	}
+	
+	private void emptyEndings() throws Exception {
+		try {
+			String remoteCfgFolder = "/etltest/csvtrans/cfg/";
+			String remoteCsvInputFolder = "/etltest/csvtrans/input/";
+			String remoteCsvOutputFolder = "/etltest/csvtrans/output/";
+			String csvtransProp = "csvtrans.multiplefiles.properties";
+			String[] csvFiles = new String[]{"MME_PoolType_vlr_"};
+			
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			logger.info("Output is:"+output);
+			//assert
+			List<String> input = Util.stringsFromDfsFile(super.getFs(), remoteCsvInputFolder+csvFiles[0]);
+			int fn = 0;
+			for (String in:input){
+				fn = in.split(",", -1).length;
+				logger.info(fn);
+			}
+			List<String> outputs = Util.listDfsFile(super.getFs(), remoteCsvOutputFolder);
+			for (String csvFile: csvFiles){
+				String outputCsv = csvFile + "-r-00000";
+				assertTrue(outputs.contains(outputCsv));
+				List<String> contents = Util.stringsFromDfsFile(super.getFs(), remoteCsvOutputFolder+outputCsv);
+				for (String content:contents){
+					String[] fields = content.split(",", -1);
+					assertTrue(fn==fields.length);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("", e);
+			assertTrue(false);
+		}
+	}
+	
+	@Test
+	public void testEmptyEndings() throws Exception {
+		if (getDefaultFS().contains("127.0.0.1")){
+			emptyEndings();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					emptyEndings();
 					return null;
 				}
 			});

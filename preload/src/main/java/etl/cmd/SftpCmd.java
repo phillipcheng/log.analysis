@@ -84,7 +84,7 @@ public class SftpCmd extends ETLCmd {
 	}
 
 	@Override
-	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
@@ -171,17 +171,13 @@ public class SftpCmd extends ETLCmd {
 				session.disconnect();
 			}
 		}
-		return files.iterator();
+		return files;
 	}
 	
 	@Override
 	public List<String> sgProcess(){
-		Iterator<Tuple2<String, String>> ret = this.flatMapToPair(null, null);
-		int fileNumberTransfer=0;
-		while(ret.hasNext()){
-			ret.next();
-			fileNumberTransfer++;
-		}
+		List<Tuple2<String, String>> ret = this.flatMapToPair(null, null);
+		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");
 		return logInfo;

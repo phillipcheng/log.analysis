@@ -42,7 +42,7 @@ public class ColOp {
 	}
 	
 	public ColOp(String str, Map<String, Integer> attrMap){
-		String[] strs = str.split("\\|");
+		String[] strs = str.split("\\|", -1);
 		if (strs.length==2){
 			String op = strs[0];
 			if (UPDATE_OP.equals(op)){
@@ -100,7 +100,7 @@ public class ColOp {
 			items.remove(targetIdx);
 		}else if (type == ColOpType.split){
 			String item = items.get(targetIdx);
-			String[] newItem = item.split(Pattern.quote(exp));
+			String[] newItem = item.split(Pattern.quote(exp), -1);
 			items.remove(targetIdx);
 			items.addAll(targetIdx, Arrays.asList(newItem));
 		}

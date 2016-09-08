@@ -160,7 +160,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 			}
 		}
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		retMap.put(RESULT_KEY_OUTPUT, outputList);
+		retMap.put(RESULT_KEY_OUTPUT_LINE, outputList);
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(outputList.size()+"");
 		retMap.put(RESULT_KEY_LOG, logInfo);

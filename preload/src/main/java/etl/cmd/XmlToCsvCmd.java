@@ -215,7 +215,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	
 	//tableName to csv
 	@Override
-	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
 		super.init();
 		try {
 			String row = value.toString();
@@ -250,7 +250,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 				}
 			}
 			logger.info(String.format("file:%s generates %d tuple2.", row, retList.size()));
-			return retList.iterator();
+			return retList;
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
@@ -262,9 +262,8 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			Iterator<Tuple2<String, String>> pairs = flatMapToPair(String.valueOf(offset), row);
-			while (pairs.hasNext()){
-				Tuple2<String, String> pair = pairs.next();
+			List<Tuple2<String, String>> pairs = flatMapToPair(String.valueOf(offset), row);
+			for (Tuple2<String, String> pair: pairs){
 				context.write(new Text(pair._1), new Text(pair._2));
 			}
 		}catch(Exception e){

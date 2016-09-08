@@ -141,7 +141,7 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 		}
 		logger.info("output:" + output);
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		retMap.put(RESULT_KEY_OUTPUT, Arrays.asList(new String[]{output}));
+		retMap.put(RESULT_KEY_OUTPUT_LINE, Arrays.asList(new String[]{output}));
 		return retMap;
 	}
 }

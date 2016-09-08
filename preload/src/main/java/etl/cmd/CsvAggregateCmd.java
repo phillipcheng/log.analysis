@@ -50,16 +50,14 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	
 	public static final String cfgkey_aggr_old_table="old.table";
 	public static final String cfgkey_aggr_new_table="new.table";
-	public static final String cfgkey_file_table_map="file.table.map";
 	
 	private String[] oldTables = null;
 	private String[] newTables = null;
-	private String strFileTableMap;
 	
 	private transient Map<String, String> oldnewTableMap;
 	private transient Map<String, AggrOpMap> aoMapMap; //table name to AggrOpMap
 	private transient Map<String, GroupOp> groupKeysMap; //table name to 
-	private transient CompiledScript expFileTableMap;
+	
 	private boolean mergeTable = false;
 	
 	public CsvAggregateCmd(){
@@ -133,12 +131,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 				aoMapMap.put(tableName, aoMap);
 				groupKeysMap.put(tableName, groupOp);
 			}
-		}
-		strFileTableMap = pc.getString(cfgkey_file_table_map, null);
-		logger.info(String.format("fileTableMap:%s", strFileTableMap));
-		if (strFileTableMap!=null){
-			expFileTableMap = ScriptEngineUtil.compileScript(strFileTableMap);
-			logger.info(String.format("fileTableMapExp:%s", expFileTableMap));
 		}
 		this.mergeTable = (oldTables!=null && newTables!=null && oldTables.length>1 && newTables.length==1);
 		if (mergeTable){
@@ -296,7 +288,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 
 	//tableKey.aggrKeys,aggrValues
 	@Override
-	public Iterator<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
 		super.init();
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
@@ -331,22 +323,15 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		return ret.iterator();
+		return ret;
 	}
 	
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-			Map<String, Object> varMap = new HashMap<String, Object>();
-			varMap.put(FileETLCmd.VAR_NAME_FILE_NAME, inputFileName);
-			String tableName = "";
-			if (expFileTableMap!=null){
-				tableName = ScriptEngineUtil.eval(expFileTableMap, varMap);
-			}
-			Iterator<Tuple2<String, String>> it = flatMapToPair(tableName, row);
-			while (it.hasNext()){
-				Tuple2<String,String> t = it.next();
+			String tableName = getTableName(context);
+			List<Tuple2<String, String>> it = flatMapToPair(tableName, row);
+			for (Tuple2<String,String> t : it){
 				context.write(new Text(t._1), new Text(t._2));
 			}
 		}catch(Exception e){
@@ -400,7 +385,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
 		super.init();
 		if (!mergeTable){
-			String[] kl = key.toString().split(KEY_SEP);
+			String[] kl = key.toString().split(KEY_SEP, -1);
 			String tableName = kl[0];
 			List<String> ks = new ArrayList<String>();
 			for (int i=1; i<kl.length; i++){

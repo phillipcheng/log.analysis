@@ -33,7 +33,7 @@ public class ETLCmdMain {
 		Map<String, String> kvMap = new HashMap<String, String>();
 		if (otherArgs!=null){
 			for (String arg: otherArgs){
-				String[] kv = arg.split("=");
+				String[] kv = arg.split("=", 2);
 				if (kv.length==2){
 					kvMap.put(kv[0], kv[1]);
 				}
@@ -48,10 +48,10 @@ public class ETLCmdMain {
 			logger.error(usage());
 		}else{
 			String strCmdClassNames = args[0];
-			String[] cmdClassNames = strCmdClassNames.split(",");
+			String[] cmdClassNames = strCmdClassNames.split(",", -1);
 			String wfid = args[1];
 			String strStaticCfgs = args[2];
-			String[] staticCfgs = strStaticCfgs.split(",");
+			String[] staticCfgs = strStaticCfgs.split(",", -1);
 			if (cmdClassNames.length!=staticCfgs.length){
 				logger.error(String.format("multiple cmds with different cmdClass size and staticCfg size. %d, %d", cmdClassNames.length, staticCfgs.length));
 				return;
