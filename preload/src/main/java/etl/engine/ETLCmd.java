@@ -13,6 +13,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 
 import etl.util.Util;
 import scala.Tuple2;
@@ -87,23 +89,12 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	/**
-	 * used by spark driver
-	 * @param key
-	 * @param value
-	 * @return key, value pairs
+	 * 
+	 * @param input
+	 * @return
 	 */
-	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
-		logger.error("empty map impl, should not be invoked.");
-		return null;
-	}
-	/**
-	 * used by spark driver
-	 * @param key
-	 * @param it
-	 * @return newKey, csv, entity/table name
-	 */
-	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
-		logger.error("empty map impl, should not be invoked.");
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+		logger.error("empty spark process impl, should not be invoked.");
 		return null;
 	}
 	

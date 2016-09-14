@@ -79,7 +79,7 @@ public class MtcETLCmd extends TestETLCmd{
 		
 		//copy lib
 		String mtcLocalTargetFolder = projectFolder + File.separator + "mtccore" + File.separator + "target" + File.separator;
-		String[] libNames = new String[]{"mtccore-0.1.0.jar"};//, "mtccore-0.1.0-jar-with-dependencies.jar"
+		String[] libNames = new String[]{"mtccore-0.1.0.jar", "mtccore-0.1.0-jar-with-dependencies.jar"};
 		String remoteLibFolder="/user/" + super.getOozieUser() + "/mtccore/lib/";
 		for (String libName:libNames){
 			fs.delete(new Path(remoteLibFolder+libName), true);

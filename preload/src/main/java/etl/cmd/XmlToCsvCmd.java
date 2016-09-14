@@ -22,6 +22,9 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -214,7 +217,6 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	//tableName to csv
-	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
 		super.init();
 		try {
@@ -255,6 +257,19 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 			logger.error("", e);
 			return null;
 		}
+	}
+	
+	@Override
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+		JavaRDD<Tuple2<String, String>> ret = input.flatMap(new FlatMapFunction<Tuple2<String, String>, 
+				Tuple2<String, String>>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
+				return flatMapToPair(t._1, t._2).iterator();
+			}
+		});
+		return ret;
 	}
 	/**
 	 * @param row: each row is a xml file name

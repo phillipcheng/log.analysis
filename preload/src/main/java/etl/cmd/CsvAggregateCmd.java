@@ -19,6 +19,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.Function;
 
 import etl.cmd.transform.AggrOp;
 import etl.cmd.transform.AggrOpMap;
@@ -287,7 +293,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 
 	//tableKey.aggrKeys,aggrValues
-	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
 		super.init();
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
@@ -381,7 +386,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		return aggrValues;
 	}
 	
-	@Override
 	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
 		super.init();
 		if (!mergeTable){
@@ -458,6 +462,31 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		List<String[]> retlist = new ArrayList<String[]>();
 		retlist.add(new String[]{ret._1(), ret._2(), ret._3()});
 		return retlist;
+	}
+	
+	@Override
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
+				List<Tuple2<String, String>> ret = flatMapToPair(t._1, t._2);
+				return ret.iterator();
+			}
+		});
+		
+		JavaRDD<Tuple2<String, String>> csvaggr = csvgroup.groupByKey().map(new Function<Tuple2<String, Iterable<String>>, Tuple2<String, String>>(){
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				Tuple3<String, String, String> t3 = reduceByKey(t._1, t._2);
+				return new Tuple2<String, String>(t3._3(), t3._1()+","+t3._2());
+			}
+		});
+		
+		return csvaggr;
+		
 	}
 
 	public String[] getOldTables() {

@@ -16,6 +16,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -83,8 +85,7 @@ public class SftpCmd extends ETLCmd {
 		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
 	}
 
-	@Override
-	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> iProcess(){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
@@ -175,8 +176,19 @@ public class SftpCmd extends ETLCmd {
 	}
 	
 	@Override
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+		if (input!=null){
+			//map over input
+			return null;
+		}else{
+			List<Tuple2<String, String>> ret = iProcess();
+			return jsc.parallelize(ret);
+		}
+	}
+	
+	@Override
 	public List<String> sgProcess(){
-		List<Tuple2<String, String>> ret = this.flatMapToPair(null, null);
+		List<Tuple2<String, String>> ret = iProcess();
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");

@@ -1,10 +1,13 @@
 package etl.spark;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction2;
 import org.apache.spark.streaming.Time;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
@@ -16,23 +19,23 @@ public class SparkUtil {
 
 	public static final Logger logger = Logger.getLogger(SparkUtil.class);
 	
-	public static void saveByKey(JavaPairDStream<String, String> dstream, final String defaultFs, final String dir){
-		dstream.groupByKey().foreachRDD(new VoidFunction2<JavaPairRDD<String, Iterable<String>>, Time>(){
-			private static final long serialVersionUID = 1L;
+	public static void saveByKey(JavaRDD<Tuple2<String, String>> input, final String defaultFs, 
+			final String dir, String wfid){
+		JavaPairRDD<String, String> pairs = input.mapToPair(new PairFunction<Tuple2<String, String>, String, String>(){
 			@Override
-			public void call(JavaPairRDD<String, Iterable<String>> v1, Time v2) throws Exception {
-				if (!v1.partitions().isEmpty() && v1.count()>0){
-					List<Tuple2<String, Iterable<String>>> datalist = v1.collect();
-					for (Tuple2<String, Iterable<String>> data: datalist){
-						String key = data._1;
-						Iterable<String> vs = data._2;
-						String fileName = String.format("%s%s%d/%s", defaultFs, dir, v2.milliseconds(), key);
-						logger.info(String.format("going to save as hadoop file:%s with count %d", fileName, v1.count()));
-						FileSystem fs = Util.getHadoopFs(defaultFs);
-						Util.writeDfsFile(fs, fileName, vs);
-					}
-				}
+			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
+				return t;
 			}
 		});
+		
+		List<Tuple2<String, Iterable<String>>> datalist = pairs.groupByKey().collect();
+		for (Tuple2<String, Iterable<String>> data: datalist){
+			String key = data._1;
+			Iterable<String> vs = data._2;
+			String fileName = String.format("%s%s%s/%s", defaultFs, dir, wfid, key);
+			logger.info(String.format("going to save as hadoop file:%s with count %d", fileName, input.count()));
+			FileSystem fs = Util.getHadoopFs(defaultFs);
+			Util.writeDfsFile(fs, fileName, vs);
+		}
 	}
 }

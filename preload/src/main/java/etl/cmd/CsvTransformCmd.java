@@ -11,6 +11,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.PairFunction;
 
 import etl.cmd.transform.ColOp;
 import etl.engine.FileETLCmd;
@@ -118,12 +124,10 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		}
 	}
 
-	@Override
-	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public Tuple2<String, String> mapToPair(String key, String value){
 		super.init();
 		String fileName = key;
 		String row = value;
-		List<Tuple2<String, String>> retList = new ArrayList<Tuple2<String, String>>();
 		String output="";
 		
 		//get all fiels
@@ -172,8 +176,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		}
 		output = Util.getCsv(Arrays.asList(strItems), false);
 		logger.debug("output:" + output);
-		retList.add(new Tuple2<String, String>(fileName, output));
-		return retList;
+		return new Tuple2<String, String>(fileName, output);
 	}
 	
 	@Override
@@ -185,18 +188,11 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			return null;
 		}
 		String tableName = getTableName(context);
-		List<Tuple2<String, String>> retList = flatMapToPair(tableName, row);
+		List<Tuple2<String, String>> retList = Arrays.asList(mapToPair(tableName, row));
 		if (retList!=null && retList.size()>=1){
 			retMap.put(RESULT_KEY_OUTPUT_TUPLE2, retList);
 		}
 		return retMap;
-	}
-	
-	//newKey, csv, entity/table name
-	@Override
-	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
-		String value = it.iterator().next();
-		return new Tuple3<String, String,String>(key, value, key);
 	}
 	
 	@Override
@@ -207,6 +203,18 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			ret.add(new String[]{it.next().toString(), null, key.toString()});
 		}
 		return ret;
+	}
+	
+	@Override
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+		JavaRDD<Tuple2<String, String>> mapret = input.map(new Function<Tuple2<String, String>, Tuple2<String, String>>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
+				return mapToPair(t._1, t._2);
+			}
+		});
+		return mapret;
 	}
 
 	public String getOldTable() {
