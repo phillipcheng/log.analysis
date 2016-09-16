@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import javax.script.CompiledScript;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -17,13 +20,21 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-import etl.engine.FileETLCmd;
+import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.ProcessMode;
+import etl.util.GroupFun;
+import etl.util.ScriptEngineUtil;
 
 //key colon value format to csv
-public class SesToCsvCmd extends FileETLCmd{
+public class SesToCsvCmd extends ETLCmd{
+	private static final long serialVersionUID = 1L;
+
 	public static final Logger logger = Logger.getLogger(SesToCsvCmd.class);
+	public static final String cfgkey_line_suffix="line.suffix";
+	
+	private static long WEEK_TO_MILLSEC = 7*24*3600*1000;
+	private static long gpsElaps = new GregorianCalendar(1980,Calendar.JANUARY,6,0,0,0).getTimeInMillis();
 	
 	private String SESSION = "";
 	private String ALMAN_EPH_EVENT = "";
@@ -33,19 +44,23 @@ public class SesToCsvCmd extends FileETLCmd{
 	private String ALMAN = "";
 	private String END_SESSION = "";
 	private String EPH_ALMAN_EVENT = "";
-
-
+	
 	private String PRIMARY = "";
 	private String PRIMARY_INCOMPLETE = "";
 	private String INCOMPLETE_RECORD = "";
 	private String INCOMPLETE_RECORD_EVENT =  "";
 	private String DELTA_INCOMPLETE_RECORD_EVENT = "";
-	private static long WEEK_TO_MILLSEC = 7*24*3600*1000;
-	private static long gpsElaps = new GregorianCalendar(1980,Calendar.JANUARY,6,0,0,0).getTimeInMillis();
+	
+	private transient CompiledScript suffixExp;
+	
 	
 	public SesToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
-		
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfid, staticCfg, defaultFs, otherArgs);
+		this.setMrMode(MRMode.file);
 		SESSION = pc.getString("session");
 		ALMAN_EPH_EVENT = pc.getString("alman_eph_event");
 		ALMAN_EVENT = pc.getString("alman_event");
@@ -59,7 +74,10 @@ public class SesToCsvCmd extends FileETLCmd{
 		INCOMPLETE_RECORD = pc.getString("incomplete_record");
 		INCOMPLETE_RECORD_EVENT = pc.getString("incomplete_record_event");
 		DELTA_INCOMPLETE_RECORD_EVENT = pc.getString("delta_incomplete_record_event");
-		this.setMrMode(MRMode.file);
+		String strSuffixExp = pc.getString(cfgkey_line_suffix, null);
+		if (strSuffixExp!=null){
+			suffixExp = ScriptEngineUtil.compileScript(strSuffixExp);
+		}
 	}
 	
 
@@ -349,8 +367,9 @@ public class SesToCsvCmd extends FileETLCmd{
 						logger.warn(String.format("no output for line:%s", line));
 					}
 					if (lineOutput!=null){
-						if (isAddFileName() && context!=null){
-							lineOutput+="," + getAbbreFileName(filename);
+						if (suffixExp!=null){
+							super.getSystemVariables().put(super.VAR_NAME_FILE_NAME, filename);
+							lineOutput+="," + ScriptEngineUtil.eval(suffixExp, super.getSystemVariables());
 						}
 						outputList.add(lineOutput);
 					}

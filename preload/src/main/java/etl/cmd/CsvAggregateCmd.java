@@ -17,13 +17,11 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.Function;
 
 import etl.cmd.transform.AggrOp;
@@ -31,7 +29,6 @@ import etl.cmd.transform.AggrOpMap;
 import etl.cmd.transform.GroupOp;
 import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
-import etl.engine.FileETLCmd;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.IdxRange;
@@ -319,7 +316,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 				if (!mergeTable){
 					keys.add(0, tableKey);
 				}else{
-					v = tableKey + "," + row;
+					v = tableKey + KEY_SEP + row;
 				}
 				String newKey = Util.getCsv(keys, false);
 				logger.debug(String.format("key:%s, value:%s", newKey, v));
@@ -420,7 +417,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			while (its.hasNext()){
 				try {
 					String s = its.next().toString();
-					int firstComma =s.indexOf(",");
+					int firstComma =s.indexOf(KEY_SEP);
 					String tableName = s.substring(0, firstComma);
 					String vs = s.substring(firstComma+1);
 					CSVParser parser = CSVParser.parse(vs, CSVFormat.DEFAULT);
@@ -481,7 +478,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			@Override
 			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
 				Tuple3<String, String, String> t3 = reduceByKey(t._1, t._2);
-				return new Tuple2<String, String>(t3._3(), t3._1()+","+t3._2());
+				return new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2());
 			}
 		});
 		

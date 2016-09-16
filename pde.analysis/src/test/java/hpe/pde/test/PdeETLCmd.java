@@ -10,14 +10,21 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-public class PdeETLCmd {
+import etl.cmd.test.TestETLCmd;
+
+public class PdeETLCmd extends TestETLCmd{
 	public static final Logger logger = Logger.getLogger(PdeETLCmd.class);
 	String pdeCsvProp = "preload.pde.csv.properties";
 	String pdeFixProp = "preload.pde.fix.properties";
 	
+	@Override
+	public String getResourceSubFolder() {
+		return null;
+	}
+	
 	@Test
 	public void setupLabETLCfg() {
-		setupETLCfg("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\src\\main\\resources");
+		setupETLCfg(super.getDefaultFS(), super.getLocalFolder());
 	}
 	
 	public void realSetupEtlCfg(String defaultFs, String localCfgDir) throws Exception{
@@ -25,7 +32,7 @@ public class PdeETLCmd {
     	conf.set("fs.defaultFS", defaultFs);
     	FileSystem fs = FileSystem.get(conf);
     	
-    	String remoteLibFolder = "/user/dbadmin/pde";
+    	String remoteLibFolder = "/user/"+super.getOozieUser()+"/pde";
     	Path remoteLibPath = new Path(remoteLibFolder);
     	if (fs.exists(remoteLibPath)){
     		fs.delete(remoteLibPath, true);
@@ -33,18 +40,23 @@ public class PdeETLCmd {
     	//
     	String workflow = localCfgDir + File.separator + "workflow.xml";
 		String remoteWorkflow = remoteLibFolder + File.separator + "workflow.xml";
+		fs.delete(new Path(remoteWorkflow), true);
 		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
-		//
-		String jobProperties = localCfgDir + File.separator + "job.properties";
-		String remoteJobProperties = remoteLibFolder + File.separator + "job.properties";
-		fs.copyFromLocalFile(new Path(jobProperties), new Path(remoteJobProperties));
-		//
-		String localTargetFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\target\\";
-		String localLibFolder = "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\lib\\";
+		
+		//copy libs
+		String localTargetFolder = super.getProjectFolder()+File.separator+ "pde.analysis" +File.separator+"target"+File.separator;
 		String libName = "pde-0.1.0-jar-with-dependencies.jar";
 		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder + "/lib/" +libName));
-		String verticaLibName = "vertica-jdbc-7.0.1-0.jar";
-		fs.copyFromLocalFile(new Path(localLibFolder + verticaLibName), new Path(remoteLibFolder+ "/lib/" + verticaLibName));
+		
+		String localLibFolder = super.getProjectFolder()+File.separator+ "pde.analysis" +File.separator+"lib"+File.separator;
+		libName = "vertica-jdbc-7.0.1-0.jar";
+		fs.copyFromLocalFile(new Path(localLibFolder + libName), new Path(remoteLibFolder+ "/lib/" + libName));
+		
+		String preloadLocalTargetFolder = super.getProjectFolder() + File.separator + "preload" + File.separator + "target" + File.separator;
+		String remoteShareLibFolder="/user/" + super.getOozieUser() + "/share/lib/preload/lib/";
+		libName = "preload-0.1.0.jar";
+		fs.delete(new Path(remoteShareLibFolder + libName), true);
+		fs.copyFromLocalFile(new Path(preloadLocalTargetFolder + libName), new Path(remoteShareLibFolder+libName));
 		
 		//copy etlcfg
 		String remoteCfgFolder = "/pde/etlcfg/";
@@ -81,7 +93,7 @@ public class PdeETLCmd {
 	
 	@Test
 	public void testCopyXml() {
-		copyXml("hdfs://192.85.247.104:19000", "C:\\mydoc\\myprojects\\log.analysis\\pde.analysis\\src\\main\\resources");
+		copyXml(super.getDefaultFS(), super.getLocalFolder());
 	}
 	
 	public void realCopyXml(String defaultFs, String localCfgDir) throws Exception{
@@ -123,4 +135,6 @@ public class PdeETLCmd {
 			logger.error("", e);
 		}
 	}
+
+
 }

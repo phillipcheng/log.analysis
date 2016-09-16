@@ -3,6 +3,7 @@ package etl.cmd.test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class TestSftpCmd extends TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestSftpCmd.class);
 
 	public String getResourceSubFolder(){
-		return "sftp/";
+		return "sftp"+File.separator;
 	}
 	
 	private void testFun1() throws Exception {
@@ -246,6 +247,55 @@ public class TestSftpCmd extends TestETLCmd {
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
 					selectFileFun();
+					return null;
+				}
+			});
+		}
+	}
+	
+	private void multipleFolders() throws Exception {
+		String dfsCfg = "/test/sftpcmd/cfg/";
+		String cfg = "sftp_multiple_dirs.properties";
+		
+		getFs().delete(new Path(dfsCfg), true);
+		getFs().mkdirs(new Path(dfsCfg));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
+		
+		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, getDefaultFS(), null);
+		
+		String dfsIncomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(dfsIncomingFolder), true);
+		getFs().mkdirs(new Path(dfsIncomingFolder));
+		String[] sftpFolders = cmd.getFromDirs();
+		String host = cmd.getHost();
+		int port = cmd.getPort();
+		String user = cmd.getUser();
+		String pass = cmd.getPass();
+		String fileName0 = "RTDB_ACCESS.friday";
+		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
+		String fileName1 = "RTDB_ACCESS.monday";
+		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
+		
+		List<String> ret = cmd.sgProcess();
+		logger.info(ret);
+		
+		//assertion
+		List<String> fl = Util.listDfsFile(getFs(), dfsIncomingFolder);
+		logger.info(fl);
+		assertTrue(fl.contains(fileName0));
+		assertTrue(fl.contains(fileName1));
+	}
+	
+	@Test
+	public void testMultipleFolders() throws Exception {
+		if (!super.isTestSftp()) return;
+		if (getDefaultFS().contains("127.0.0.1")){
+			multipleFolders();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					multipleFolders();
 					return null;
 				}
 			});

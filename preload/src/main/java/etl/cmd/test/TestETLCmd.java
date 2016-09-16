@@ -3,6 +3,7 @@ package etl.cmd.test;
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -21,6 +22,7 @@ import org.junit.Before;
 import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
 import etl.util.Util;
+import scala.Tuple2;
 
 public abstract class TestETLCmd {
 	public static final Logger logger = Logger.getLogger(TestETLCmd.class);
@@ -132,30 +134,21 @@ public abstract class TestETLCmd {
 		return null;
 	}
 	
-	/**
-	 * 
-	 * @param remoteCfgFolder
-	 * @param remoteInputFolder
-	 * @param remoteOutputFolder
-	 * @param staticProperties
-	 * @param inputDataFiles
-	 * @param cmdClassName
-	 * @param useFileNames: 
-	 * @return
-	 * @throws Exception
-	 */
-	public List<String> mrTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
+	public List<String> mrTest(String remoteCfgFolder, List<Tuple2<String, String[]>>remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
 		try {
 			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().delete(new Path(remoteInputFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
-			getFs().mkdirs(new Path(remoteInputFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticProperties), new Path(remoteCfgFolder + staticProperties));
-			for (String csvFile : inputDataFiles) {
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
+			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
+				getFs().delete(new Path(rfifs._1), true);
+				getFs().mkdirs(new Path(rfifs._1));
+				for (String csvFile : rfifs._2) {
+					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
+				}
 			}
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticProperties), new Path(remoteCfgFolder + staticProperties));
+			
 			//run job
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(InvokeMapper.cfgkey_wfid, sdf.format(new Date()));
@@ -172,7 +165,10 @@ public abstract class TestETLCmd {
 			}else{
 				FileInputFormat.setInputDirRecursive(job, true);
 			}
-			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
+			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
+				FileInputFormat.addInputPath(job, new Path(rfifs._1));
+			}
+			
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 			job.waitForCompletion(true);
 
@@ -183,6 +179,25 @@ public abstract class TestETLCmd {
 			logger.error("", e);
 		}
 		return null;
+	}
+	
+	/**
+	 * 
+	 * @param remoteCfgFolder
+	 * @param remoteInputFolder
+	 * @param remoteOutputFolder
+	 * @param staticProperties
+	 * @param inputDataFiles
+	 * @param cmdClassName
+	 * @param useFileNames: 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> mrTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(remoteInputFolder, inputDataFiles));
+		return mrTest(remoteCfgFolder, rfifs, remoteOutputFolder, staticProperties, cmdClassName, useFileNames);
 	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 
@@ -277,5 +292,13 @@ public abstract class TestETLCmd {
 
 	public void setOozieUser(String oozieUser) {
 		this.oozieUser = oozieUser;
+	}
+
+	public PropertiesConfiguration getPc() {
+		return pc;
+	}
+
+	public void setPc(PropertiesConfiguration pc) {
+		this.pc = pc;
 	}
 }

@@ -57,9 +57,13 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 		this.getSystemVariables().put(VAR_USERNAME, this.userName);
 		if (this.csvFile!=null){
 			csCsvFile = ScriptEngineUtil.compileScript(csvFile);
+		}else{
+			logger.warn(String.format("csvFile is not specified."));
 		}
 		if (this.loadSql!=null){
 			csLoadSql = ScriptEngineUtil.compileScript(loadSql);
+		}else{
+			logger.warn(String.format("loadSql is not specified."));
 		}
 		copysqls = new ArrayList<String>();
 	}
@@ -67,32 +71,38 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 	@Override
 	public List<String> sgProcess() {
 		if (this.getFs()==null) init();
-		
 		List<String> logInfo = new ArrayList<String>();
 		try{
-			List<String> tryTables = new ArrayList<String>();
-			if (tableNames==null || tableNames.length==0){//default sql, match all the files against the tables
-				tryTables.addAll(logicSchema.getAttrNameMap().keySet());
-			}else{
-				tryTables.addAll(Arrays.asList(tableNames));
-			}
-		
-			for (String tableName:tryTables){
-				String csvFileName = null;
-				this.getSystemVariables().put(VAR_TABLE_NAME, tableName);
-				csvFileName = ScriptEngineUtil.eval(this.csCsvFile, this.getSystemVariables());
-				//
-				this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
-				String sql = null;
-				if (csLoadSql!=null){
-					sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
+			String sql = null;
+			if (logicSchema!=null && (csLoadSql==null||loadSql.contains(VAR_TABLE_NAME))){	
+				List<String> tryTables = new ArrayList<String>();
+				if (tableNames==null || tableNames.length==0){//default sql, match all the files against the tables
+					tryTables.addAll(logicSchema.getAttrNameMap().keySet());
 				}else{
-					sql = DBUtil.genCopyHdfsSql(null, logicSchema.getAttrNames(tableName), tableName, 
-							dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype());
+					tryTables.addAll(Arrays.asList(tableNames));
 				}
-				logger.info(String.format("sql:%s", sql));
-				copysqls.add(sql);
+			
+				for (String tableName:tryTables){
+					String csvFileName = null;
+					this.getSystemVariables().put(VAR_TABLE_NAME, tableName);
+					csvFileName = ScriptEngineUtil.eval(this.csCsvFile, this.getSystemVariables());
+					//
+					this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
+					
+					if (csLoadSql!=null){
+						sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
+					}else{
+						sql = DBUtil.genCopyHdfsSql(null, logicSchema.getAttrNames(tableName), tableName, 
+								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype());
+					}
+				}
+			}else{//just evaluate the loadSql
+				String csvFileName = ScriptEngineUtil.eval(this.csCsvFile, this.getSystemVariables());
+				this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
+				sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
 			}
+			logger.info(String.format("sql:%s", sql));
+			copysqls.add(sql);
 		}catch(Exception e){
 			logger.error("", e);
 		}

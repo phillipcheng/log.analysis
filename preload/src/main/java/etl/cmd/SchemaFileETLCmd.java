@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
-import etl.engine.FileETLCmd;
+import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
@@ -23,7 +23,7 @@ import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 
-public abstract class SchemaFileETLCmd extends FileETLCmd{
+public abstract class SchemaFileETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = Logger.getLogger(SchemaFileETLCmd.class);
@@ -141,11 +141,10 @@ public abstract class SchemaFileETLCmd extends FileETLCmd{
 	
 	public String getTableName(Mapper<LongWritable, Text, Text, Text>.Context context){
 		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-		Map<String, Object> varMap = new HashMap<String, Object>();
-		varMap.put(FileETLCmd.VAR_NAME_FILE_NAME, inputFileName);
+		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
 		String tableName = inputFileName;
 		if (expFileTableMap!=null){
-			tableName = ScriptEngineUtil.eval(expFileTableMap, varMap);
+			tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
 		}
 		return tableName;
 	}

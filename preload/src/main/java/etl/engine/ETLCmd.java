@@ -2,7 +2,6 @@ package etl.engine;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,9 +15,10 @@ import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import etl.util.ScriptEngineUtil;
 import etl.util.Util;
+import etl.util.VarType;
 import scala.Tuple2;
-import scala.Tuple3;
 
 public abstract class ETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
@@ -28,6 +28,10 @@ public abstract class ETLCmd implements Serializable{
 	public static final String RESULT_KEY_LOG="log";
 	public static final String RESULT_KEY_OUTPUT_LINE="lineoutput";
 	public static final String RESULT_KEY_OUTPUT_TUPLE2="mapoutput";
+	
+	public static final String KEY_VARS="vars";
+	public static final String VAR_NAME_FILE_NAME="filename";
+	public static final String KEY_SEP=",";
 
 	public static final String SINGLE_TABLE="single.table";
 	
@@ -76,6 +80,15 @@ public abstract class ETLCmd implements Serializable{
 		pc = Util.getMergedPCFromDfs(fs, staticCfg);
 		systemVariables = new HashMap<String, Object>();
 		systemVariables.put(VAR_WFID, wfid);
+		String[] varnames = pc.getStringArray(KEY_VARS);
+		if (varnames!=null){
+			for (String varname: varnames){
+				String exp = pc.getString(varname);
+				logger.info(String.format("global var:%s:%s", varname, exp));
+				Object value = ScriptEngineUtil.eval(exp, VarType.OBJECT, systemVariables);
+				systemVariables.put(varname, value);
+			}
+		}
 	}
 	
 	public void init(){
@@ -113,6 +126,8 @@ public abstract class ETLCmd implements Serializable{
 	
 	/**
 	 * reduce function in map-reduce mode
+	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
+	 * set newValue to null, if output line results
 	 * @return list of newKey, newValue, baseOutputPath
 	 */
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values){

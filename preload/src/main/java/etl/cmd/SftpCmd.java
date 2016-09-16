@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -12,7 +11,6 @@ import java.util.Vector;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
@@ -55,7 +53,7 @@ public class SftpCmd extends ETLCmd {
 	private int port;
 	private String user;
 	private String pass;
-	private String fromDir;
+	private String[] fromDirs;
 	private String fileFilter = "*";
 	private int sftpGetRetryCount;
 	private int sftpGetRetryWait;
@@ -73,7 +71,7 @@ public class SftpCmd extends ETLCmd {
 		this.port = pc.getInt(cfgkey_sftp_port);
 		this.user = pc.getString(cfgkey_sftp_user);
 		this.pass = pc.getString(cfgkey_sftp_pass);
-		this.fromDir = pc.getString(cfgkey_sftp_folder);
+		this.fromDirs = pc.getStringArray(cfgkey_sftp_folder);
 		String fileFilterExp = pc.getString(cfgkey_file_filter, null);
 		if (fileFilterExp!=null){
 			this.fileFilter = (String) ScriptEngineUtil.eval(fileFilterExp, VarType.STRING, super.getSystemVariables());
@@ -119,48 +117,50 @@ public class SftpCmd extends ETLCmd {
 			}
 
 			channel.connect();
-			logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
 			sftpChannel = (ChannelSftp) channel;
-			sftpChannel.cd(fromDir);
-			Vector<LsEntry> v = sftpChannel.ls(fileFilter);
-			int fileNumberTransfer=0;
-			for (LsEntry entry : v) {
-				String srcFile = fromDir + entry.getFilename();
-				String fileNorm = entry.getFilename().replace(",", "_");
-				String destFile = incomingFolder + fileNorm;
-				logger.info(String.format("put file to %s from %s", destFile, srcFile));
-				fileNumberTransfer++;
-				getRetryCntTemp = 1;// reset the count to 1 for every file
-				while (getRetryCntTemp <= sftpGetRetryCount) {
-					try {
-						fsos = fs.create(new Path(destFile));
-						is = sftpChannel.get(srcFile);
-						IOUtils.copy(is, fsos);
-						break;
-					} catch (Exception e) {
-						logger.error("Exception during transferring the file.", e);
-						if (getRetryCntTemp == sftpGetRetryCount) {
-							logger.info("Copying" + srcFile + "failed Retried for maximum times");
-							break;
+			for (String fromDir:fromDirs){
+				logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
+				sftpChannel.cd(fromDir);
+				Vector<LsEntry> v = sftpChannel.ls(fileFilter);
+				for (LsEntry entry : v) {
+					if (!entry.getAttrs().isDir()){
+						String srcFile = fromDir + entry.getFilename();
+						String fileNorm = entry.getFilename().replace(",", "_");
+						String destFile = incomingFolder + fileNorm;
+						logger.info(String.format("put file to %s from %s", destFile, srcFile));
+						getRetryCntTemp = 1;// reset the count to 1 for every file
+						while (getRetryCntTemp <= sftpGetRetryCount) {
+							try {
+								fsos = fs.create(new Path(destFile));
+								is = sftpChannel.get(srcFile);
+								IOUtils.copy(is, fsos);
+								break;
+							} catch (Exception e) {
+								logger.error("Exception during transferring the file.", e);
+								if (getRetryCntTemp == sftpGetRetryCount) {
+									logger.info("Copying" + srcFile + "failed Retried for maximum times");
+									break;
+								}
+								getRetryCntTemp++;
+								logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
+								Thread.sleep(this.sftpGetRetryWait);
+							} finally {
+								if (fsos != null) {
+									fsos.close();
+								}
+								if (is != null) {
+									is.close();
+								}
+							}
 						}
-						getRetryCntTemp++;
-						logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
-						Thread.sleep(this.sftpGetRetryWait);
-					} finally {
-						if (fsos != null) {
-							fsos.close();
+						// deleting file one by one if sftp.clean is enabled
+						if (sftpClean) {
+							logger.info("Deleting file:" + srcFile);
+							sftpChannel.rm(srcFile);
 						}
-						if (is != null) {
-							is.close();
-						}
+						files.add(new Tuple2<String, String>(wfid, destFile));
 					}
 				}
-				// deleting file one by one if sftp.clean is enabled
-				if (sftpClean) {
-					logger.info("Deleting file:" + srcFile);
-					sftpChannel.rm(srcFile);
-				}
-				files.add(new Tuple2<String, String>(wfid, destFile));
 			}
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);
@@ -213,7 +213,7 @@ public class SftpCmd extends ETLCmd {
 			this.pass = pm.get(cfgkey_sftp_pass);
 		}
 		if (pm.containsKey(cfgkey_sftp_folder)) {
-			this.fromDir = pm.get(cfgkey_sftp_folder);
+			this.fromDirs = new String[]{pm.get(cfgkey_sftp_folder)};
 		}
 		if (pm.containsKey(cfgkey_file_filter)) {
 			String fileFilterExp = pm.get(cfgkey_file_filter);
@@ -242,5 +242,53 @@ public class SftpCmd extends ETLCmd {
 		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
 		
 		return retMap;
+	}
+
+	public String[] getFromDirs() {
+		return fromDirs;
+	}
+
+	public void setFromDirs(String[] fromDirs) {
+		this.fromDirs = fromDirs;
+	}
+
+	public String getIncomingFolder() {
+		return incomingFolder;
+	}
+
+	public void setIncomingFolder(String incomingFolder) {
+		this.incomingFolder = incomingFolder;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getPass() {
+		return pass;
+	}
+
+	public void setPass(String pass) {
+		this.pass = pass;
 	}
 }

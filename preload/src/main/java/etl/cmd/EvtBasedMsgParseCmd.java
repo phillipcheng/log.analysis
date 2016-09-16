@@ -48,7 +48,12 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	private Set<String> missedEvtType = new HashSet<String>();
 	
 	public EvtBasedMsgParseCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+		init(wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfid, staticCfg, defaultFs, otherArgs);
+		this.setMrMode(MRMode.line);
 		eventIdx = pc.getInt(EVT_IDX, -1);
 		String[] evtTypes = pc.getStringArray(EVT_TYPE_KEY);
 		for (String et:evtTypes){
@@ -62,7 +67,6 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 		}
 		msgIdx = pc.getInt(MESSAGE_IDX, -1);
 		msgFields = pc.getStringArray(MESSAGE_FIELDS);
-		this.setMrMode(MRMode.line);
 	}
 	
 	public String getOutputValues(String evtType, String input){

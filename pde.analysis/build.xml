@@ -1,22 +1,55 @@
-<project name="pde" default="oozie-dist" basedir=".">
-    <description>
-        simple example build file
-    </description>
-  <!-- set global properties for this build -->
-  <property name="src" location="src"/>
-  <property name="target" location="target"/>
-  <property name="dist"  location="oozie-dist"/>
-
-  <target name="oozie-dist">
-    <!-- Create the distribution directory -->
-    <mkdir dir="${dist}/pde"/>
-    <copy file="${target}/classes/job.properties" todir="${dist}/pde"/>
-    <copy file="${target}/classes/workflow.xml" todir="${dist}/pde"/>
-    <mkdir dir="${dist}/pde/lib"/>
-    <copy file="${target}/pde-0.0.1-jar-with-dependencies.jar" todir="${dist}/pde/lib"/>
-  </target>
-
-  <target name="clean" description="clean up" >
-    <delete dir="${dist}"/>
-  </target>
+<project name="pde" default="dist" basedir=".">
+	<property name="target"  location="target"/>
+	    <property name="dist"  location="dist"/>
+	    <property name="src.resources" location="src/main/resources"/>
+	    
+	    <target name="dist" depends="clean">
+	        <mkdir dir="${dist}"/>
+	        <mkdir dir="${dist}/etlcfg"/>
+	        <mkdir dir="${dist}/sql"/>
+	    	<mkdir dir="${dist}/bin"/>
+	        <copy todir="${dist}/etlcfg/">
+	            <fileset dir="${src.resources}">
+	                <include name="*.properties"/>
+	                <exclude name="log4j.properties"/>
+	                <exclude name="*mapping.properties"/>
+	            </fileset>
+	        </copy>
+	        <copy todir="${dist}">
+	            <fileset dir="${src.resources}">
+	                <include name="*.job.properties"/>
+	                <include name="*.xml"/>
+	                <include name="etlengine.properties"/>
+	                <include name="*.schema"/>
+	                <include name="*mapping.properties"/>
+	            </fileset>
+	        </copy>
+	        <copy todir="${dist}">
+	            <fileset dir="bin/">
+	                <include name="install.sh"/>
+	            	<include name="sync.sh"/>
+	            </fileset>
+	        </copy>
+	    	<copy todir="${dist}/bin">
+                <fileset dir="bin/">
+                	<include name="*.sh"/>
+                    <exclude name="install.sh"/>
+                	<exclude name="sync.sh"/>
+                </fileset>
+            </copy>
+	    	<copy todir="${dist}">
+	            <fileset dir="${target}">
+	                <include name="pde-0.1.0-jar-with-dependencies.jar"/>
+	            </fileset>
+	        </copy>
+	        <copy todir="${dist}/sql">
+	            <fileset dir="sql">
+	                <include name="*.sql"/>
+	            </fileset>
+	        </copy>
+	    </target>
+	    
+	    <target name="clean">
+	         <delete dir="${dist}"></delete>
+	    </target>
 </project>

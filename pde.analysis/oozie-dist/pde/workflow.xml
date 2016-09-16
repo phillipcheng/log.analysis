@@ -123,16 +123,12 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
 					<name>mapreduce.job.output.value.class</name>
-					<value>org.apache.hadoop.io.Text</value>
+					<value>org.apache.hadoop.io.NullWritable</value>
 				</property>
 				<property>
 					<name>mapreduce.task.timeout</name>
 					<value>0</value>
 				</property>
-				<property>
-                    <name>mapreduce.job.reduces</name>
-                    <value>0</value>
-                </property>
 				<property>
 					<name>mapreduce.input.fileinputformat.inputdir</name>
 					<value>/pde/fix/${wf:id()}</value>
@@ -155,10 +151,73 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 			</configuration>
 		</map-reduce>
-		<ok to="CsvTransform"/>
+		<ok to="MergeCmd"/>
 		<error to="fail"/>
 	</action>
 	
+	<action name="MergeCmd">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>etl.util.FilenameInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.outputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.value.class</name>
+                    <value>org.apache.hadoop.io.NullWritable</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/pde/fixcsv/${wf:id()},/pde/csv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/pde/mergecsv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>etl.cmd.CsvMergeCmd</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/pde/etlcfg/csv.fix.merge.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="CsvTransform"/>
+        <error to="fail"/>
+    </action>
+    
     <action name="CsvTransform">
         <map-reduce>
             <job-tracker>${jobTracker}</job-tracker>
@@ -177,10 +236,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                     <value>etl.engine.InvokeMapper</value>
                 </property>
                 <property>
-                    <name>mapreduce.job.reduce.class</name>
-                    <value>etl.engine.InvokeReducer</value>
-                </property>
-                <property>
                     <name>mapreduce.job.inputformat.class</name>
                     <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
                 </property>
@@ -194,7 +249,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                 </property>
                 <property>
                     <name>mapreduce.job.output.value.class</name>
-                    <value>org.apache.hadoop.io.Text</value>
+                    <value>org.apache.hadoop.io.NullWritable</value>
                 </property>
                 <property>
                     <name>mapreduce.task.timeout</name>
@@ -202,11 +257,11 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                 </property>
                 <property>
                     <name>mapreduce.input.fileinputformat.inputdir</name>
-                    <value>/pde/csv/${wf:id()}</value>
+                    <value>/pde/mergecsv/${wf:id()}</value>
                 </property>
                 <property>
                     <name>mapreduce.output.fileoutputformat.outputdir</name>
-                    <value>/pde/transcvs/${wf:id()}</value>
+                    <value>/pde/finalcsv/${wf:id()}</value>
                 </property>
                 <property>
                     <name>cmdClassName</name>
@@ -238,90 +293,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>CsvTranform-Info</arg>
             <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
-        </java>
-        <ok to="MergeCmd"/>
-        <error to="fail"/>
-    </action>
-    
-    <action name="MergeCmd">
-        <map-reduce>
-            <job-tracker>${jobTracker}</job-tracker>
-            <name-node>${nameNode}</name-node>
-            <configuration>
-                <property>
-                    <name>mapred.mapper.new-api</name>
-                    <value>true</value>
-                </property>
-                <property>
-                    <name>mapred.reducer.new-api</name>
-                    <value>true</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.map.class</name>
-                    <value>etl.engine.InvokeMapper</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.reduce.class</name>
-                    <value>etl.engine.InvokeReducer</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.inputformat.class</name>
-                    <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.outputformat.class</name>
-                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.output.key.class</name>
-                    <value>org.apache.hadoop.io.Text</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.output.value.class</name>
-                    <value>org.apache.hadoop.io.Text</value>
-                </property>
-                <property>
-                    <name>mapreduce.task.timeout</name>
-                    <value>0</value>
-                </property>
-                <property>
-                    <name>mapreduce.input.fileinputformat.inputdir</name>
-                    <value>/pde/transcvs/${wf:id()},/pde/fixcsv/${wf:id()}</value>
-                </property>
-                <property>
-                    <name>mapreduce.output.fileoutputformat.outputdir</name>
-                    <value>/pde/mergecsv/${wf:id()}</value>
-                </property>
-                <property>
-                    <name>cmdClassName</name>
-                    <value>etl.cmd.CsvMergeCmd</value>
-                </property>
-                <property>
-                    <name>wfid</name>
-                    <value>${wf:id()}</value>
-                </property>
-                <property>
-                    <name>staticConfigFile</name>
-                    <value>/pde/etlcfg/csv.fix.merge.properties</value>
-                </property>
-            </configuration>
-        </map-reduce>
-        <ok to="LogMergeCmd"/>
-        <error to="fail"/>
-    </action>
-    
-    <action name="LogMergeCmd">
-        <java>
-            <job-tracker>${jobTracker}</job-tracker>
-            <name-node>${nameNode}</name-node>
-            <main-class>etl.engine.ETLCmdMain</main-class>
-            <arg>etl.cmd.SendLogCmd</arg>
-            <arg>${wf:id()}</arg>
-            <arg>/pde/etlcfg/sendlog.properties</arg>
-            <arg>unused</arg>
-            <arg>CsvTranform-Info</arg>
-            <arg>${hadoop:counters("MergeCmd")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
-            <arg>${hadoop:counters("MergeCmd")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
         </java>
         <ok to="loadCsvCmd"/>
         <error to="fail"/>
@@ -372,11 +343,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                 </property>
                 <property>
                     <name>mapreduce.job.output.value.class</name>
-                    <value>org.apache.hadoop.io.Text</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.reduces</name>
-                    <value>0</value>
+                    <value>org.apache.hadoop.io.NullWritable</value>
                 </property>
                 <property>
                     <name>mapreduce.task.timeout</name>

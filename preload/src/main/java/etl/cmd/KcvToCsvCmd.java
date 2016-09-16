@@ -17,13 +17,14 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-import etl.engine.FileETLCmd;
+import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 
 //key colon value format to csv
-public class KcvToCsvCmd extends FileETLCmd{
+public class KcvToCsvCmd extends ETLCmd{
+	private static final long serialVersionUID = 1L;
+	
 	public static final Logger logger = Logger.getLogger(KcvToCsvCmd.class);
-	public static final String cfgkey_kcv_folder="kcv.folder";
 	
 	//record format overall specification
 	public static final String RECORD_START="record.start";
@@ -42,6 +43,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 	
 	public KcvToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		super(wfid, staticCfg, defaultFs, otherArgs);
+		this.setMrMode(MRMode.file);
 		String strVal = pc.getString(RECORD_START);
 		if (strVal!=null){
 			this.recordStart = strVal;
@@ -57,7 +59,6 @@ public class KcvToCsvCmd extends FileETLCmd{
 		if (strVal!=null){
 			this.recordFieldNum = Integer.parseInt(strVal);
 		}
-		this.setMrMode(MRMode.file);
 	}
 
 	//
@@ -100,10 +101,7 @@ public class KcvToCsvCmd extends FileETLCmd{
 				output+=",";
 			}
 		}
-		if (isAddFileName()){
-			output+=",";
-			output+=getAbbreFileName(filename);
-		}
+		
 		return output;
 	}
 	

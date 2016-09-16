@@ -53,7 +53,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="smsc">
                 </property>
                 <property>
                     <name>mapreduce.job.map.class</name>
-                    <value>etl.engine.InvokeReducerMapper</value>
+                    <value>etl.engine.InvokeMapper</value>
                 </property>
                 <property>
                     <name>mapreduce.job.reduce.class</name>

@@ -134,7 +134,7 @@ public class Util {
 	public static String getCsv(List<String> csv, boolean newline){
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<csv.size(); i++){
-			String v = csv.get(i);
+			String v = (String) csv.get(i);
 			if (v!=null){
 				sb.append(v);
 			}

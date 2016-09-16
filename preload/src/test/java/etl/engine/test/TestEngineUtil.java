@@ -14,6 +14,7 @@ import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
 import etl.util.DateUtil;
 import etl.util.ScriptEngineUtil;
+import etl.util.StringUtil;
 import etl.util.VarType;
 
 public class TestEngineUtil extends TestETLCmd{
@@ -82,13 +83,31 @@ public class TestEngineUtil extends TestETLCmd{
 	}
 	
 	@Test
+	public void testJSEngine(){
+		String sqlStr = super.getPc().getString("sql");
+		Map<String, Object> vars = new HashMap<String, Object>();
+		vars.put("rootWebHdfs", "hdfs://1.1.1.1:1000/");
+		vars.put("csvFileName", "csv1");
+		vars.put("userName", "dbadmin");
+		String ret = (String) ScriptEngineUtil.eval(sqlStr, VarType.STRING, vars);
+		logger.info(ret);
+	}
+	
+	@Test
 	public void testDayOfWeekYesterday(){
 		String str = DateUtil.getWeekOfDayForYesterday();
 		logger.info(str);
 	}
 
+	@Test
+	public void testGlobToRegExp(){
+		String a = StringUtil.convertGlobToRegEx("/test/a/*-part*");
+		logger.info(a);
+	}
 	@Override
 	public String getResourceSubFolder() {
 		return "engineutil/";
 	}
+	
+	
 }

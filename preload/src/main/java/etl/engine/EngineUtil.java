@@ -179,7 +179,9 @@ public class EngineUtil {
 						if (alloutputs!=null && context!=null){
 							List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
 							for (Tuple2<String, String> kv: tl){
-								context.write(new Text(kv._1), new Text(kv._2));
+								if (kv!=null){
+									context.write(new Text(kv._1), new Text(kv._2));
+								}
 							}
 						}
 					}else{
