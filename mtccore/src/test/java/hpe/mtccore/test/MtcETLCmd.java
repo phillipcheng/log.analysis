@@ -70,7 +70,7 @@ public class MtcETLCmd extends TestETLCmd{
 		}
 		
 		//copy workflow
-		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml", "coordinator.xml"};
+		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml", "sgs.coordinator.xml", "smsc.coordinator.xml"};
 		for (String wf: workflows){
 			String workflow = localCfgDir + File.separator + wf;
 			String remoteWorkflow = "/user/" + super.getOozieUser() + "/mtccore/" + wf;

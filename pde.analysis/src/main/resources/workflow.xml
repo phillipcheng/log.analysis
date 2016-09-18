@@ -5,6 +5,12 @@ uri:oozie:shell-action:0.3
 C:\Java\oozie\shell-action-0.3.xsd
 uri:oozie:ssh-action:0.2
 C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
+    <parameters>
+        <property>
+            <name>wfName</name>
+            <value>pde</value>
+        </property>
+    </parameters>
 	<start to="SftpGetRawFiles"/>
 	<kill name="fail">
         <message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
@@ -15,6 +21,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SftpCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sftp.properties</arg>
             <arg>${nameNode}</arg>
@@ -60,9 +67,14 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 					<value>etl.cmd.ShellCmd</value>
 				</property>
 				<property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+				<property>
 					<name>wfid</name>
 					<value>${wf:id()}</value>
 				</property>
+				
 				<property>
 					<name>staticConfigFile</name>
 					<value>/pde/etlcfg/tracefilter.shell.properties</value>
@@ -78,6 +90,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
             <arg>unused</arg>
@@ -146,6 +159,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 					<value>etl.cmd.KcvToCsvCmd</value>
 				</property>
 				<property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+				<property>
 					<name>wfid</name>
 					<value>${wf:id()}</value>
 				</property>
@@ -213,6 +230,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                     <value>etl.cmd.CsvTransformCmd</value>
                 </property>
                 <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
                     <name>wfid</name>
                     <value>${wf:id()}</value>
                 </property>
@@ -232,6 +253,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
             <arg>unused</arg>
@@ -297,6 +319,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                     <value>etl.cmd.CsvMergeCmd</value>
                 </property>
                 <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
                     <name>wfid</name>
                     <value>${wf:id()}</value>
                 </property>
@@ -316,6 +342,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
             <arg>unused</arg>
@@ -333,6 +360,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.LoadDataCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/load.csv.properties</arg>
             <capture-output/>
@@ -395,6 +423,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                     <value>hpe.pde.cmd.SesToCsvCmd</value>
                 </property>
                 <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
                     <name>wfid</name>
                     <value>${wf:id()}</value>
                 </property>
@@ -413,6 +445,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.LoadDataCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/load.sescsv.properties</arg>
             <capture-output/>

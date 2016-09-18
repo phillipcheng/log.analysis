@@ -1,4 +1,4 @@
-<coordinator-app name="cron-coord" frequency="${coord:minutes(1)}" start="${start}" end="${end}" timezone="GMT"
+<coordinator-app name="cron-coord" frequency="${coord:minutes(5)}" start="${start}" end="${end}" timezone="GMT"
                  xmlns="uri:oozie:coordinator:0.2">
         <action>
             <workflow>

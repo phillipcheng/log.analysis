@@ -161,7 +161,11 @@ public class EngineUtil {
 						newInstance(wfName, wfid, staticCfgFiles[i], defaultFs, otherArgs);
 				cmds[i].setPm(pm);
 			}catch(Throwable t){
-				logger.error(new ETLLog(cmds[i], null, t), t);
+				if (cmds[i]!=null){
+					logger.error(new ETLLog(cmds[i], null, t), t);
+				}else{
+					logger.error("", t);
+				}
 				return null;
 			}
 		}
