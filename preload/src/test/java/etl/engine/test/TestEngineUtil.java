@@ -6,21 +6,24 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.test.TestETLCmd;
 import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
+import etl.engine.LogType;
 import etl.util.DateUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.StringUtil;
 import etl.util.VarType;
 
 public class TestEngineUtil extends TestETLCmd{
-	public static final Logger logger = Logger.getLogger(TestEngineUtil.class);
+	public static final Logger logger = LogManager.getLogger(TestEngineUtil.class);
 	private ETLLog getETLLog(){
-		ETLLog etllog = new ETLLog();
+		ETLLog etllog = new ETLLog(LogType.statistics);
 		etllog.setActionName("test");
 		etllog.setStart(new Date());
 		etllog.setEnd(new Date());
@@ -80,17 +83,6 @@ public class TestEngineUtil extends TestETLCmd{
 		exp = "dynCfgMap['abcArray'];";
 		output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
 		logger.info(output);
-	}
-	
-	@Test
-	public void testJSEngine(){
-		String sqlStr = super.getPc().getString("sql");
-		Map<String, Object> vars = new HashMap<String, Object>();
-		vars.put("rootWebHdfs", "hdfs://1.1.1.1:1000/");
-		vars.put("csvFileName", "csv1");
-		vars.put("userName", "dbadmin");
-		String ret = (String) ScriptEngineUtil.eval(sqlStr, VarType.STRING, vars);
-		logger.info(ret);
 	}
 	
 	@Test

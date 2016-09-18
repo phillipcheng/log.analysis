@@ -2,7 +2,10 @@ package etl.util;
 
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import etl.engine.SafeSimpleDateFormat;
 
@@ -10,7 +13,7 @@ import etl.engine.SafeSimpleDateFormat;
 public class FieldType implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(FieldType.class);
+	public static final Logger logger = LogManager.getLogger(FieldType.class);
 	
 	public static final String TYPE_NUMERIC="numeric";
 	public static final String TYPE_VARCHAR="varchar";

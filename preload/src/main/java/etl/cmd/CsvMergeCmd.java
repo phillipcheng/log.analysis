@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import javax.script.CompiledScript;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -17,7 +21,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.JoinType;
@@ -30,7 +33,7 @@ import scala.Tuple2;
 public class CsvMergeCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
 	
-	public static final Logger logger = Logger.getLogger(CsvMergeCmd.class);
+	public static final Logger logger = LogManager.getLogger(CsvMergeCmd.class);
 	
 	public static final String KEY_HEADER_SEP="----";
 	public static final String KEY_SYSTEM_VAR_TABLE="table";
@@ -50,12 +53,12 @@ public class CsvMergeCmd extends ETLCmd{
 	private transient CompiledScript retValueExp;
 	private int srcNum;
 	
-	public CsvMergeCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public CsvMergeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
 		String[] srcFiles =pc.getStringArray(cfgkey_src_files);
 		srcNum = srcFiles.length;

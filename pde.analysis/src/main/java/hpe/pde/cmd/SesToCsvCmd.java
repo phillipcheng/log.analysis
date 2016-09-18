@@ -13,24 +13,25 @@ import java.util.TimeZone;
 
 import javax.script.CompiledScript;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
-import etl.engine.ProcessMode;
-import etl.util.GroupFun;
 import etl.util.ScriptEngineUtil;
 
 //key colon value format to csv
 public class SesToCsvCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(SesToCsvCmd.class);
+	public static final Logger logger = LogManager.getLogger(SesToCsvCmd.class);
+	
 	public static final String cfgkey_line_suffix="line.suffix";
 	
 	private static long WEEK_TO_MILLSEC = 7*24*3600*1000;
@@ -54,12 +55,12 @@ public class SesToCsvCmd extends ETLCmd{
 	private transient CompiledScript suffixExp;
 	
 	
-	public SesToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public SesToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		this.setMrMode(MRMode.file);
 		SESSION = pc.getString("session");
 		ALMAN_EPH_EVENT = pc.getString("alman_eph_event");

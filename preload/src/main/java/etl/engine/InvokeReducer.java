@@ -1,19 +1,20 @@
 package etl.engine;
 
 import java.io.IOException;
-import java.util.List;
-
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
-	public static final Logger logger = Logger.getLogger(InvokeMapper.class);
+	public static final Logger logger = LogManager.getLogger(InvokeMapper.class);
 	
 	public static final String cfgkey_cmdclassname = "cmdClassName";
 	public static final String cfgkey_wfid = "wfid";
+	public static final String cfgkey_wfName = "wfName";
 	public static final String cfgkey_staticconfigfile = "staticConfigFile";
 	
 	private ETLCmd[] cmds = null;
@@ -25,12 +26,13 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 		if (cmds == null){
 			String inputdir = context.getConfiguration().get("mapreduce.input.fileinputformat.inputdir");
 			String wfid = context.getConfiguration().get(cfgkey_wfid);
+			String wfName = context.getConfiguration().get(cfgkey_wfName);
 			String strCmdClassNames = context.getConfiguration().get(cfgkey_cmdclassname);
 			String strStaticConfigFiles = context.getConfiguration().get(cfgkey_staticconfigfile);
 			String defaultFs = context.getConfiguration().get("fs.defaultFS");
 			logger.info(String.format("input file:%s, cmdClassName:%s, wfid:%s, staticConfigFile:%s, %s", inputdir, strCmdClassNames, wfid, 
 					strStaticConfigFiles, defaultFs));
-			cmds = EngineUtil.getCmds(strCmdClassNames, strStaticConfigFiles, wfid, defaultFs);
+			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.MRProcess);
 		}
 		mos = new MultipleOutputs<Text,Text>(context);
 	}
@@ -40,29 +42,10 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
     	mos.close();
     }
     
-	/**
-	 * following parameters should be in the config
-	 * CmdClassName:
-	 * wfid:
-	 * staticConfigFile:
-	 */
+    @Override
 	public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-		ETLCmd cmd = cmds[0];
-		List<String[]> rets = cmd.reduceProcess(key, values);
-		for (String[] ret: rets){
-			if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
-				if (ret[1]!=null){
-					context.write(new Text(ret[0]), new Text(ret[1]));
-				}else{
-					context.write(new Text(ret[0]), null);
-				}
-			}else{
-				if (ret[1]!=null){
-					mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
-				}else{
-					mos.write(new Text(ret[0]), null, ret[2]);
-				}
-			}
-		}
+    	if (cmds!=null){
+    		EngineUtil.getInstance().processReduceCmd(cmds[0], key, values, context, mos);
+    	}
 	}
 }

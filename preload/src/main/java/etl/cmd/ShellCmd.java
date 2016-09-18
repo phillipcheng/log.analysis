@@ -5,20 +5,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
-import etl.engine.ProcessMode;
 import etl.util.StringUtil;
 
 public class ShellCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(ShellCmd.class);
+	private static final long serialVersionUID = 1L;
+
+	public static final Logger logger = LogManager.getLogger(ShellCmd.class);
 	
 	public static final String cfgkey_param_key="key"; //the special key name for mapreduce mode, each key is a line of input
 	public static final String cfgkey_command="command";
@@ -27,8 +30,8 @@ public class ShellCmd extends ETLCmd{
 	private String command;
 	private Map<String, Object> params;
 
-	public ShellCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+	public ShellCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		command = pc.getString(cfgkey_command);
 		params = new HashMap<String, Object>();
 		Iterator<String> keys = pc.getKeys();

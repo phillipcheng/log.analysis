@@ -4,7 +4,13 @@ C:\Java\oozie\wf-0.5.xsd
 uri:oozie:shell-action:0.3
 C:\Java\oozie\shell-action-0.3.xsd
 uri:oozie:ssh-action:0.2
-C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
+C:\Java\oozie\ssh-action-0.2.xsd" name="sgsiwf">
+    <parameters>
+        <property>
+            <name>wfName</name>
+            <value>sgsiwf</value>
+        </property>
+    </parameters>
 	<start to="SftpGetRawFiles"/>
 	<kill name="fail">
         <message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
@@ -51,6 +57,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 					<value>etl.cmd.SftpCmd</value>
 				</property>
 				<property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+				<property>
 					<name>wfid</name>
 					<value>${wf:id()}</value>
 				</property>
@@ -69,6 +79,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.SchemaFromXmlCmd</arg>
+			<arg>${wfName}</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.schemaFromXml.properties</arg>
 			<arg>${nameNode}</arg>
@@ -129,6 +140,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                     <value>etl.cmd.XmlToCsvCmd</value>
                 </property>
                 <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
                     <name>wfid</name>
                     <value>${wf:id()}</value>
                 </property>
@@ -147,6 +162,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
             <arg>${nameNode}</arg>
@@ -214,6 +230,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                     <value>etl.cmd.CsvTransformCmd</value>
                 </property>
                 <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
                     <name>wfid</name>
                     <value>${wf:id()}</value>
                 </property>
@@ -232,6 +252,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
             <arg>${nameNode}</arg>
@@ -248,6 +269,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.CsvAggregateCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.aggr.properties</arg>
             <arg>${nameNode}</arg>
@@ -308,6 +330,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                     <value>etl.cmd.CsvAggregateCmd</value>
                 </property>
                 <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
                     <name>wfid</name>
                     <value>${wf:id()}</value>
                 </property>
@@ -326,6 +352,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
             <arg>${nameNode}</arg>
@@ -342,6 +369,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.CsvTransformCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.trans.properties</arg>
             <arg>${nameNode}</arg>
@@ -406,6 +434,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
                     <value>etl.cmd.CsvTransformCmd</value>
                 </property>
                 <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
                     <name>wfid</name>
                     <value>${wf:id()}</value>
                 </property>
@@ -424,6 +456,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
             <name-node>${nameNode}</name-node>
             <main-class>etl.engine.ETLCmdMain</main-class>
             <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/mtccore/etlcfg/sgsiwf.sendlog.properties</arg>
             <arg>${nameNode}</arg>
@@ -460,6 +493,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.LoadDataCmd</arg>
+			<arg>${wfName}</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.loaddata.properties</arg>
 			<arg>${nameNode}</arg>
@@ -473,6 +507,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="mtccore">
 			<name-node>${nameNode}</name-node>
 			<main-class>etl.engine.ETLCmdMain</main-class>
 			<arg>etl.cmd.BackupCmd</arg>
+			<arg>${wfName}</arg>
 			<arg>${wf:id()}</arg>
 			<arg>/mtccore/etlcfg/sgsiwf.backup.properties</arg>
 			<arg>${nameNode}</arg>

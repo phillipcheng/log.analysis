@@ -7,7 +7,9 @@ import java.util.Map;
 
 import javax.script.CompiledScript;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import etl.util.DBType;
 import etl.util.DBUtil;
@@ -16,7 +18,7 @@ import etl.util.ScriptEngineUtil;
 public class LoadDataCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(LoadDataCmd.class);
+	public static final Logger logger = LogManager.getLogger(LoadDataCmd.class);
 	
 	public static final String cfgkey_webhdfs="hdfs.webhdfs.root";
 	public static final String cfgkey_csvfile = "csv.file";
@@ -39,12 +41,12 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 	private transient CompiledScript csLoadSql;
 	private transient List<String> copysqls;
 	
-	public LoadDataCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public LoadDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		
 		this.csvFile = pc.getString(cfgkey_csvfile);
 		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
@@ -95,14 +97,15 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 						sql = DBUtil.genCopyHdfsSql(null, logicSchema.getAttrNames(tableName), tableName, 
 								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype());
 					}
+					copysqls.add(sql);
 				}
 			}else{//just evaluate the loadSql
 				String csvFileName = ScriptEngineUtil.eval(this.csCsvFile, this.getSystemVariables());
 				this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
 				sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
+				copysqls.add(sql);
 			}
 			logger.info(String.format("sql:%s", sql));
-			copysqls.add(sql);
 		}catch(Exception e){
 			logger.error("", e);
 		}

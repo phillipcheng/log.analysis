@@ -10,12 +10,14 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
@@ -24,7 +26,7 @@ import etl.engine.MRMode;
 public class KcvToCsvCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
 	
-	public static final Logger logger = Logger.getLogger(KcvToCsvCmd.class);
+	public static final Logger logger = LogManager.getLogger(KcvToCsvCmd.class);
 	
 	//record format overall specification
 	public static final String RECORD_START="record.start";
@@ -41,8 +43,12 @@ public class KcvToCsvCmd extends ETLCmd{
 	private Pattern recordVKExp = null;
 	private int recordFieldNum = RECORD_FIELDNUM_DEFAULT;
 	
-	public KcvToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+	public KcvToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		this.setMrMode(MRMode.file);
 		String strVal = pc.getString(RECORD_START);
 		if (strVal!=null){
@@ -108,6 +114,7 @@ public class KcvToCsvCmd extends ETLCmd{
 	//fix file name
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
+		super.init();
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
 		Path kcvFile = new Path(row);

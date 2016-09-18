@@ -11,13 +11,17 @@ import java.util.TreeMap;
 
 import javax.script.CompiledScript;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -40,7 +44,7 @@ import scala.Tuple3;
 
 public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
-	public static final Logger logger = Logger.getLogger(CsvAggregateCmd.class);
+	public static final Logger logger = LogManager.getLogger(CsvAggregateCmd.class);
 
 	public static final String AGGR_OP_SUM="sum";
 	public static final String AGGR_OPERATOR_SEP="\\|";
@@ -86,12 +90,12 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		return new GroupOp(groupKeyExpNames, groupKeyExpTypes, groupKeyExps, groupKeyExpScripts, commonGroupKeys);
 	}
 	
-	public CsvAggregateCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		aoMapMap = new HashMap<String, AggrOpMap>();
 		groupKeysMap = new HashMap<String, GroupOp>();
 		if (pc.containsKey(cfgkey_aggr_old_table)){
@@ -332,9 +336,14 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
 			String tableName = getTableName(context);
-			List<Tuple2<String, String>> it = flatMapToPair(tableName, row);
-			for (Tuple2<String,String> t : it){
-				context.write(new Text(t._1), new Text(t._2));
+			if (tableName==null || "".equals(tableName.trim())){
+				logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
+						((FileSplit) context.getInputSplit()).getPath().getName()));
+			}else{
+				List<Tuple2<String, String>> it = flatMapToPair(tableName, row);
+				for (Tuple2<String,String> t : it){
+					context.write(new Text(t._1), new Text(t._2));
+				}
 			}
 		}catch(Exception e){
 			logger.error("", e);

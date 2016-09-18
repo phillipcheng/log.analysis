@@ -12,19 +12,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
 import org.apache.hadoop.fs.PathFilter;
 
 import etl.engine.ETLCmd;
+import etl.engine.ETLLog;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
 public class BackupCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(BackupCmd.class);
+	private static final long serialVersionUID = 1L;
+
+	public static final Logger logger = LogManager.getLogger(BackupCmd.class);
 
 	public static final String cfgkey_data_history_folder="data-history-folder";
 	public static final String cfgkey_Folder_filter="file.folder";
@@ -36,8 +43,9 @@ public class BackupCmd extends ETLCmd{
 	private String destZipFile;
 	private ZipOutputStream zos;
 	private Map<String, Object> vars = new HashMap<String, Object>();
-	public BackupCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+	
+	public BackupCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		vars=super.getSystemVariables();
 		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
 		String[] ffExps = pc.getStringArray(cfgkey_Folder_filter);
@@ -64,7 +72,7 @@ public class BackupCmd extends ETLCmd{
 				totalFiles +=n;
 			}
 		}catch (Exception e) {
-			logger.error(" ", e);
+			logger.error(new ETLLog(this, null, e), e);
 		}finally{
 			try {
 				zos.close();

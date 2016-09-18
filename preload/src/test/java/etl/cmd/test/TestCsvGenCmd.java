@@ -7,7 +7,9 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.CsvFileGenCmd;
@@ -15,7 +17,7 @@ import etl.util.Util;
 
 
 public class TestCsvGenCmd extends TestETLCmd {
-	public static final Logger logger = Logger.getLogger(TestCsvGenCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestCsvGenCmd.class);
 	public static final String testCmdClass = "etl.cmd.CsvFileGenCmd";
 
 	public String getResourceSubFolder(){
@@ -38,7 +40,7 @@ public class TestCsvGenCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(remoteSchemaFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteSchemaFolder + schemaFile));
 			
-			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
 			
 			getFs().delete(new Path(cmd.getOutputFolder()), true);
 			getFs().mkdirs(new Path(cmd.getOutputFolder()));

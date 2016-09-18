@@ -6,10 +6,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
@@ -26,7 +31,7 @@ import scala.Tuple2;
 public class CsvTransformCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(CsvTransformCmd.class);
+	public static final Logger logger = LogManager.getLogger(CsvTransformCmd.class);
 	
 	public static final String cfgkey_skip_header="skip.header";
 	public static final String cfgkey_row_validation="row.validation";
@@ -49,12 +54,12 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	private transient Map<String, Integer> nameIdxMap = null;
 	
 	
-	public CsvTransformCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
 		skipHeader =pc.getBoolean(cfgkey_skip_header, false);
 		rowValidation = pc.getString(cfgkey_row_validation);
@@ -175,9 +180,14 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			return null;
 		}
 		String tableName = getTableName(context);
-		List<Tuple2<String, String>> retList = Arrays.asList(mapToPair(tableName, row));
-		if (retList!=null && retList.size()>=1){
-			retMap.put(RESULT_KEY_OUTPUT_TUPLE2, retList);
+		if (tableName==null || "".equals(tableName.trim())){
+			logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
+					((FileSplit) context.getInputSplit()).getPath().getName()));
+		}else{
+			List<Tuple2<String, String>> retList = Arrays.asList(mapToPair(tableName, row));
+			if (retList!=null && retList.size()>=1){
+				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, retList);
+			}
 		}
 		return retMap;
 	}

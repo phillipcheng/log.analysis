@@ -9,12 +9,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.Logger;
 
 
 public class DBUtil {
-	public static final Logger logger = Logger.getLogger(DBUtil.class);
+	public static final Logger logger = LogManager.getLogger(DBUtil.class);
 
 	public static final String key_db_type="db.type";
 	public static final String key_db_driver="db.driver";

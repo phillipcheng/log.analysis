@@ -1,18 +1,18 @@
 package etl.cmd;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.script.CompiledScript;
+
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
@@ -26,7 +26,7 @@ import etl.util.VarType;
 public abstract class SchemaFileETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(SchemaFileETLCmd.class);
+	public static final Logger logger = LogManager.getLogger(SchemaFileETLCmd.class);
 
 	public static final String cfgkey_schema_file="schema.file";
 	public static final String cfgkey_db_prefix="db.prefix"; //db schema
@@ -52,12 +52,12 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 	public SchemaFileETLCmd(){
 	}
 	
-	public SchemaFileETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public SchemaFileETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		this.schemaFile = pc.getString(cfgkey_schema_file, null);
 		this.dbPrefix = pc.getString(cfgkey_db_prefix, null);
 		this.getSystemVariables().put(VAR_DB_PREFIX, dbPrefix);
@@ -163,5 +163,13 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 
 	public void setSchemaFileName(String schemaFileName) {
 		this.schemaFileName = schemaFileName;
+	}
+
+	public String getStrFileTableMap() {
+		return strFileTableMap;
+	}
+
+	public void setStrFileTableMap(String strFileTableMap) {
+		this.strFileTableMap = strFileTableMap;
 	}
 }

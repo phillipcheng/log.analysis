@@ -1,23 +1,20 @@
 package etl.spark;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction2;
-import org.apache.spark.streaming.Time;
-import org.apache.spark.streaming.api.java.JavaPairDStream;
-
 import etl.util.Util;
 import scala.Tuple2;
 
 public class SparkUtil {
 
-	public static final Logger logger = Logger.getLogger(SparkUtil.class);
+	public static final Logger logger = LogManager.getLogger(SparkUtil.class);
 	
 	public static void saveByKey(JavaRDD<Tuple2<String, String>> input, final String defaultFs, 
 			final String dir, String wfid){

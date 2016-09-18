@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import etl.engine.LogicSchema;
 import etl.util.DBUtil;
@@ -17,7 +20,7 @@ import etl.util.Util;
 import etl.util.VarType;
 
 public class GenLogicSchema {
-	public static final Logger logger = Logger.getLogger(GenLogicSchema.class);
+	public static final Logger logger = LogManager.getLogger(GenLogicSchema.class);
 	
 	public static FieldType getFieldType(int type, int size, int digits){
 		if (Types.TIMESTAMP == type){

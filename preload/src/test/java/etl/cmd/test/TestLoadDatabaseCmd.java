@@ -6,14 +6,18 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
+
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.junit.Test;
 import etl.cmd.LoadDataCmd;
 import etl.util.DBType;
 import etl.util.DBUtil;
 
 public class TestLoadDatabaseCmd extends TestETLCmd {
-	public static final Logger logger = Logger.getLogger(TestLoadDatabaseCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestLoadDatabaseCmd.class);
 	
 	public String getResourceSubFolder(){
 		return "loadcsv/";
@@ -47,7 +51,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			//copy csv file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(inputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
 			//run cmd
-			LoadDataCmd cmd = new LoadDataCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
 			
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
@@ -119,7 +123,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(inputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
 			}
 			//run cmd
-			LoadDataCmd cmd = new LoadDataCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> sqls = cmd.getCopysqls();
@@ -144,7 +148,9 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 				assertTrue(sqls.contains(sqlHive1));
 				assertTrue(sqls.contains(sqlHive2));
 			}else{
+				logger.info(sqlVertica1);
 				assertTrue(sqls.contains(sqlVertica1));
+				logger.info(sqlVertica2);
 				assertTrue(sqls.contains(sqlVertica2));
 			}
 			

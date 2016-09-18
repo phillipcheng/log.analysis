@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import etl.engine.AggrOperator;
 import etl.util.IdxRange;
@@ -14,7 +16,7 @@ import etl.util.IdxRange;
 public class AggrOpMap implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(AggrOpMap.class);
+	public static final Logger logger = LogManager.getLogger(AggrOpMap.class);
 	
 	Map<Integer, AggrOperator> opMap = new HashMap<Integer, AggrOperator>(); //index to aggr op
 	private List<AggrOp> oplist = new ArrayList<AggrOp>();

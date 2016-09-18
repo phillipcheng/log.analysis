@@ -1,19 +1,23 @@
 package etl.util;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import etl.engine.SafeSimpleDateFormat;
 
 public class GroupFun {
 	
-	public static final Logger logger = Logger.getLogger(GroupFun.class);
+	public static final Logger logger = LogManager.getLogger(GroupFun.class);
 	
 	private static Map<String, SafeSimpleDateFormat> dtMap = new HashMap<String, SafeSimpleDateFormat>();
 	
@@ -78,6 +82,17 @@ public class GroupFun {
 		return ssdt.format(new Date());
 	}
 	
+	//change the date part of the epoch (in seconds) to the current date
+	public static String changeDateToCurrent(String epochInSec){
+		Calendar inputCal = Calendar.getInstance();
+		inputCal.setTimeInMillis(Long.parseLong(epochInSec)*1000);
+		Calendar currentCal = Calendar.getInstance();
+		inputCal.set(Calendar.YEAR, currentCal.get(Calendar.YEAR));
+		inputCal.set(Calendar.MONTH, currentCal.get(Calendar.MONTH));
+		inputCal.set(Calendar.DATE, currentCal.get(Calendar.DATE));
+		long outputSec = inputCal.getTimeInMillis()/1000;
+		return String.valueOf(outputSec);
+	}
 	
 	public static Map<String, String> getMap(String mappingFile, String keyKey, String valueKey){
 		logger.info(String.format("mapping file:%s", mappingFile));
@@ -92,4 +107,6 @@ public class GroupFun {
 		}
 		return mapping;
 	}
+	
+
 }

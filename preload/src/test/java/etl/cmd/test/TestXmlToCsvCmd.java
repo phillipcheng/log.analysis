@@ -11,11 +11,13 @@ import org.junit.Test;
 
 import etl.util.Util;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TestXmlToCsvCmd extends TestETLCmd{
 
-	public static final Logger logger = Logger.getLogger(TestXmlToCsvCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestXmlToCsvCmd.class);
 	
 	private static final String cmdClassName = "etl.cmd.XmlToCsvCmd";
 

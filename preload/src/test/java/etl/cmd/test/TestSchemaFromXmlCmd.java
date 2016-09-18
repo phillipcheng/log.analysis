@@ -7,17 +7,17 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.junit.Before;
 import org.junit.Test;
 
 import etl.cmd.SchemaFromXmlCmd;
 import etl.util.Util;
-
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TestSchemaFromXmlCmd extends TestETLCmd{
 
-	public static final Logger logger = Logger.getLogger(TestSchemaFromXmlCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestSchemaFromXmlCmd.class);
 
 	public String getResourceSubFolder(){
 		return "xmltocsv/";
@@ -58,7 +58,7 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			
 			//run cmd
-			SchemaFromXmlCmd cmd = new SchemaFromXmlCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			SchemaFromXmlCmd cmd = new SchemaFromXmlCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
 			List<String> info = cmd.sgProcess();
 			int numFiles = Integer.parseInt(info.get(0));
 			logger.info(info);

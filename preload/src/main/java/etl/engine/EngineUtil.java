@@ -7,10 +7,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import scala.Tuple2;
+
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.Callback;
@@ -18,12 +27,10 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.log4j.Logger;
 
-import scala.Tuple2;
 
 public class EngineUtil {
-	public static final Logger logger = Logger.getLogger(EngineUtil.class);
+	public static final Logger logger = LogManager.getLogger(EngineUtil.class);
 	
 	public static String config_file="etlengine.properties";
 	public static final String key_bootstrap_servers="kafka.bootstrap.servers";
@@ -46,7 +53,7 @@ public class EngineUtil {
 		return producer;
 	}
 	
-	public static Producer<String, String> createProducer(String bootstrapServers){
+	private Producer<String, String> createProducer(String bootstrapServers){
 		Properties props = new Properties();
 		props.put("bootstrap.servers", bootstrapServers);
 		props.put("request.required.acks", "1");
@@ -100,11 +107,11 @@ public class EngineUtil {
 		return singleton;
 	}
 	
-	public static void sendLog(Producer<String, String> producer, String topicName, ETLLog etllog){
-		sendMsg(producer, topicName, etllog.toString());
+	public void sendLog(String topicName, ETLLog etllog){
+		sendMsg(topicName, etllog.toString());
 	}
 	
-	public static void sendMsg(Producer<String, String> producer, String topicName, String msg){
+	public void sendMsg(String topicName, String msg){
 		if (producer!=null){
 			logger.info(String.format("kafka produce msg: %s", msg));
 			producer.send(new ProducerRecord<String,String>(topicName, msg), new Callback(){
@@ -115,104 +122,140 @@ public class EngineUtil {
 					}
 				}
 			});
+		}else{
+			logger.warn("producer is null.");
 		}
 	}
 	
 	public void sendLog(ETLLog etllog){
-		sendLog(this.producer, this.logTopicName, etllog);
+		sendLog(this.logTopicName, etllog);
 	}
 	
-	public void sendLog(ETLCmd cmd, Date startTime, Date endTime, List<String> loginfo){
+	public void sendCmdLog(ETLCmd cmd, Date startTime, Date endTime, List<String> loginfo){
 		if (cmd.isSendLog()){
-			ETLLog etllog = new ETLLog();
+			ETLLog etllog = new ETLLog(LogType.statistics);
 			etllog.setStart(startTime);
 			etllog.setEnd(endTime);
-			if (cmd.getWfid()!=null) {
-				etllog.setWfid(cmd.getWfid());
-			}
+			etllog.setWfName(cmd.getWfName());
+			etllog.setWfid(cmd.getWfid());
 			etllog.setActionName(cmd.getClass().getName());
 			etllog.setCounts(loginfo);
-			sendLog(this.producer, this.logTopicName, etllog);
+			sendLog(this.logTopicName, etllog);
+		}
+	}
+	
+	
+	public ETLCmd[] getCmds(String strCmdClassNames, String strStaticConfigFiles, String wfName, String wfid, String defaultFs, 
+			String[] otherArgs, ProcessMode pm){
+		String[] cmdClassNames = strCmdClassNames.split(",", -1);
+		String[] staticCfgFiles = strStaticConfigFiles.split(",", -1);
+		ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
+		if (cmdClassNames.length!=staticCfgFiles.length){
+			String msg =String.format("cmdClass %s and staticCfg %s not matching.", strCmdClassNames, strStaticConfigFiles);
+			logger.error(new ETLLog(wfName, wfid, strCmdClassNames, msg, null));
+		}
+		
+		for (int i=0; i<cmds.length; i++){
+			try {
+				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String[].class).
+						newInstance(wfName, wfid, staticCfgFiles[i], defaultFs, otherArgs);
+				cmds[i].setPm(pm);
+			}catch(Throwable t){
+				logger.error(new ETLLog(cmds[i], null, t), t);
+				return null;
+			}
+		}
+		return cmds;
+		
+	}
+	
+	public void processReduceCmd(ETLCmd cmd, Text key, Iterable<Text> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
+		try {
+			List<String[]> rets = cmd.reduceProcess(key, values);
+			for (String[] ret: rets){
+				if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
+					if (ret[1]!=null){
+						context.write(new Text(ret[0]), new Text(ret[1]));
+					}else{
+						context.write(new Text(ret[0]), null);
+					}
+				}else{
+					if (ret[1]!=null){
+						mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
+					}else{
+						mos.write(new Text(ret[0]), null, ret[2]);
+					}
+				}
+			}
+		}catch(Throwable t){
+			logger.error(new ETLLog(cmd, null, t), t);
 		}
 	}
 	
 	public void processMapperCmds(ETLCmd[] cmds, long offset, String row, 
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+			Mapper<LongWritable, Text, Text, Text>.Context context) {
 		String input = row;
 		for (int i=0; i<cmds.length; i++){
 			ETLCmd cmd = cmds[i];
-			if (cmd.getPm()==ProcessMode.MRProcess){
-				Date startTime = new Date();
-				Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context);
-				Date endTime = new Date();
-				if (alloutputs!=null){
-					if (cmd.getMrMode()==MRMode.file){
-						//generate log for file mode mr processing
-						List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
-						sendLog(cmd, startTime, endTime, logoutputs);
-					}
-					if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_LINE)){
-						//for all mapper only cmd, the result should contains the RESULT_KEY_OUTPUT
-						List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_LINE);
-						if (i<cmds.length-1){//intermediate steps
-							if (outputs!=null && outputs.size()==1){
-								input = outputs.get(0);
-							}else{
-								String outputString = "null";
-								if (outputs!=null){
-									outputString = outputs.toString();
-								}
-								logger.error(String.format("output from chained cmd should be a string. %s", outputString));
-							}
-						}else{//last step
-							if (outputs!=null){
-								if (context!=null){
-									for (String line:outputs){
-										context.write(new Text(line), null);
-									}
+			try {
+				if (cmd.getPm()==ProcessMode.MRProcess){
+					Date startTime = new Date();
+					Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context);
+					Date endTime = new Date();
+					if (alloutputs!=null){
+						if (cmd.getMrMode()==MRMode.file){
+							//generate log for file mode mr processing
+							List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
+							sendCmdLog(cmd, startTime, endTime, logoutputs);
+						}
+						if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_LINE)){
+							//for all mapper only cmd, the result should contains the RESULT_KEY_OUTPUT
+							List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_LINE);
+							if (i<cmds.length-1){//intermediate steps
+								if (outputs!=null && outputs.size()==1){
+									input = outputs.get(0);
 								}else{
-									logger.debug(String.format("final output:%s", outputs));
+									String outputString = "null";
+									if (outputs!=null){
+										outputString = outputs.toString();
+									}
+									logger.error(String.format("output from chained cmd should be a string. %s", outputString));
+								}
+							}else{//last step
+								if (outputs!=null){
+									if (context!=null){
+										for (String line:outputs){
+											context.write(new Text(line), null);
+										}
+									}else{
+										logger.debug(String.format("final output:%s", outputs));
+									}
 								}
 							}
-						}
-					}else if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2)){//for map-reduce mapper phrase, the result is key-value pair
-						if (alloutputs!=null && context!=null){
-							List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
-							for (Tuple2<String, String> kv: tl){
-								if (kv!=null){
-									context.write(new Text(kv._1), new Text(kv._2));
+						}else if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2)){//for map-reduce mapper phrase, the result is key-value pair
+							if (alloutputs!=null && context!=null){
+								List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
+								for (Tuple2<String, String> kv: tl){
+									if (kv!=null){
+										context.write(new Text(kv._1), new Text(kv._2));
+									}
 								}
 							}
+						}else{
+							logger.info("no output.");
 						}
-					}else{
-						logger.info("no output.");
 					}
+				}else{
+					Date startTime = new Date();
+					List<String> logoutputs = cmd.sgProcess();
+					Date endTime = new Date();
+					sendCmdLog(cmd, startTime, endTime, logoutputs);
 				}
-			}else{
-				Date startTime = new Date();
-				List<String> logoutputs = cmd.sgProcess();
-				Date endTime = new Date();
-				sendLog(cmd, startTime, endTime, logoutputs);
+			}catch(Throwable t){
+				logger.error(new ETLLog(cmd, null, t), t);
 			}
 		}
-	}
-	
-	public static ETLCmd[] getCmds(String strCmdClassNames, String strStaticConfigFiles, String wfid, String defaultFs){
-		String[] cmdClassNames = strCmdClassNames.split(",", -1);
-		String[] staticCfgFiles = strStaticConfigFiles.split(",", -1);
-		
-		try{
-			ETLCmd[] cmds = new ETLCmd[cmdClassNames.length];
-			for (int i=0; i<cmds.length; i++){
-				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String[].class).
-						newInstance(wfid, staticCfgFiles[i], defaultFs, null);
-				cmds[i].setPm(ProcessMode.MRProcess);
-			}
-			return cmds;
-		}catch(Throwable e){
-			logger.error("", e);
-		}
-		return null;
 	}
 	
 	//

@@ -4,8 +4,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -15,7 +16,7 @@ import etl.util.FieldType;
 public class LogicSchema implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(LogicSchema.class);
+	public static final Logger logger = LogManager.getLogger(LogicSchema.class);
 	
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
 	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping

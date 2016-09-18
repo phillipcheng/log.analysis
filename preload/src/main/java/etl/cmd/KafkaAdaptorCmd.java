@@ -1,14 +1,16 @@
 package etl.cmd;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.Logger;
 
 import etl.engine.EngineUtil;
 
 public class KafkaAdaptorCmd{
 
-	public static final Logger logger = Logger.getLogger(KafkaAdaptorCmd.class);
+	public static final Logger logger = LogManager.getLogger(KafkaAdaptorCmd.class);
 	
 	public static final String cfgkey_topic = "kafka.log.topic";
 	public static final String cfgkey_bootstrap_servers = "kafka.bootstrap.servers";

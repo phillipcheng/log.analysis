@@ -9,14 +9,16 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.SftpCmd;
 import etl.util.Util;
 
 public class TestSftpCmd extends TestETLCmd {
-	public static final Logger logger = Logger.getLogger(TestSftpCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestSftpCmd.class);
 
 	public String getResourceSubFolder(){
 		return "sftp"+File.separator;
@@ -43,7 +45,7 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		
-		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true,incoming.folder='%s'", host, ftpFolder,incomingFolder), null);
 		// check incoming fodler
 		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
@@ -87,7 +89,7 @@ public class TestSftpCmd extends TestETLCmd {
 		
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
 		
-		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsFolder + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
 
 		// check incoming fodler
@@ -131,7 +133,7 @@ public class TestSftpCmd extends TestETLCmd {
 		
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
 		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-		SftpCmd cmd = new SftpCmd(null, dfsFolder + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsFolder + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.port=%s", host, ftpFolder, port),
 				null);
 
@@ -180,7 +182,7 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		//
-		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=%s,incoming.folder='%s'", host, ftpFolder, sftpClean,incomingFolder),
 				null);
 		// check incoming fodler
@@ -229,7 +231,7 @@ public class TestSftpCmd extends TestETLCmd {
 			Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, sftpFolder + fileName);
 		}
 		
-		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, null, null);
 		// check incoming fodler
 		List<String> fl = Util.listDfsFile(getFs(), dfsIncomingFolder);
@@ -261,7 +263,7 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().mkdirs(new Path(dfsCfg));
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		
-		SftpCmd cmd = new SftpCmd(null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		
 		String dfsIncomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(dfsIncomingFolder), true);

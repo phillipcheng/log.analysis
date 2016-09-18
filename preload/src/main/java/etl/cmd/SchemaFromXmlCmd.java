@@ -17,9 +17,12 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,7 +35,9 @@ import etl.util.Util;
 import etl.util.VarType;
 
 public class SchemaFromXmlCmd extends SchemaFileETLCmd{
-	public static final Logger logger = Logger.getLogger(SchemaFromXmlCmd.class);
+	private static final long serialVersionUID = 1L;
+
+	public static final Logger logger = LogManager.getLogger(SchemaFromXmlCmd.class);
 	
 	public static final String cfgkey_xml_folder="xml-folder";
 	
@@ -79,8 +84,8 @@ public class SchemaFromXmlCmd extends SchemaFileETLCmd{
 	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
 	
 	
-	public SchemaFromXmlCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+	public SchemaFromXmlCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		keyWithValue = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_useValues));
 		keySkip = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_skipKeys));
 		//

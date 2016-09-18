@@ -10,11 +10,13 @@ import org.junit.Test;
 import etl.cmd.BackupCmd;
 import etl.util.Util;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TestBackupCmd extends TestETLCmd{
 
-	public static final Logger logger = Logger.getLogger(TestBackupCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestBackupCmd.class);
 	
 	public String getResourceSubFolder(){
 		return "backup/";
@@ -27,6 +29,7 @@ public class TestBackupCmd extends TestETLCmd{
 
 			String dfsCfgFolder = "/test/BackupCmd/cfg/";
 			String staticCfgName = "backup_test1_staticCfg.properties";
+			String wfName="wfid1";
 			String wfid="wfid1";
 
 			String[] allFiles = new String[]{"all1", "all2"};
@@ -50,7 +53,7 @@ public class TestBackupCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));			
 		
 			//run cmd
-			BackupCmd cmd = new BackupCmd(wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			BackupCmd cmd = new BackupCmd(wfName, wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
 			List<String> info = cmd.sgProcess();
 			int numFiles = Integer.parseInt(info.get(0));
 			logger.info(String.format("%d files backedup", numFiles));

@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.CsvFileGenCmd;
@@ -14,7 +16,7 @@ import etl.engine.ETLCmdMain;
 import etl.util.Util;
 
 public class TestExeIntervalCmd extends TestETLCmd{
-	public static final Logger logger = Logger.getLogger(TestExeIntervalCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestExeIntervalCmd.class);
 	
 	public String getResourceSubFolder(){
 		return "csvgen/";
@@ -36,7 +38,7 @@ public class TestExeIntervalCmd extends TestETLCmd{
 			getFs().mkdirs(new Path(remoteSchemaFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteSchemaFolder + schemaFile));
 			
-			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
 			
 			getFs().delete(new Path(cmd.getOutputFolder()), true);
 			getFs().mkdirs(new Path(cmd.getOutputFolder()));
@@ -66,12 +68,12 @@ public class TestExeIntervalCmd extends TestETLCmd{
 			getFs().mkdirs(new Path(remoteSchemaFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteSchemaFolder + schemaFile));
 			
-			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
 			
 			getFs().delete(new Path(cmd.getOutputFolder()), true);
 			getFs().mkdirs(new Path(cmd.getOutputFolder()));
 			
-			ETLCmdMain.main(new String[]{"etl.cmd.CsvFileGenCmd", "wf1", remoteCfgFolder+staticCfg, getDefaultFS(),
+			ETLCmdMain.main(new String[]{"etl.cmd.CsvFileGenCmd", "wfName1", "wf1", remoteCfgFolder+staticCfg, getDefaultFS(),
 					String.format("%s=%s",ETLCmdMain.param_exe_interval, "4"),
 					String.format("%s=%s",ETLCmdMain.param_exe_time, "5")
 					});

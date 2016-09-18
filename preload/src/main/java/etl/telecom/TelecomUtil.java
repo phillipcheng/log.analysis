@@ -1,10 +1,13 @@
 package etl.telecom;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class TelecomUtil {
 
-	public static final Logger logger = Logger.getLogger(TelecomUtil.class);
+	public static final Logger logger = LogManager.getLogger(TelecomUtil.class);
 	
 	private static CountryCode ccMap = new CountryCode();
 	private static NanpaCode nanpaMap = new NanpaCode();

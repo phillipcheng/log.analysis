@@ -4,28 +4,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.log4j.Logger;
 
 import etl.engine.EngineUtil;
 import etl.util.FieldType;
 
 public class KafkaMsgDecodeCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
-	public static final Logger logger = Logger.getLogger(KafkaMsgDecodeCmd.class);
+	public static final Logger logger = LogManager.getLogger(KafkaMsgDecodeCmd.class);
 	public static final String cfgkey_entity_name="entity.name";
 	private String entityName;
 	private transient KafkaAdaptorCmd kac;
 	private transient Consumer<String, String> consumer;
 	
-	public KafkaMsgDecodeCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public KafkaMsgDecodeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		entityName = pc.getString(cfgkey_entity_name);
 		kac = new KafkaAdaptorCmd(pc);
 	}

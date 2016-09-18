@@ -1,14 +1,15 @@
 package mtccore.smsc;
 
 import java.util.List;
-
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import etl.engine.LogicSchema;
 import etl.util.DBUtil;
 
 public class MtccoreUtils {
-	public static final Logger logger = Logger.getLogger(MtccoreUtils.class);
+	public static final Logger logger = LogManager.getLogger(MtccoreUtils.class);
 	
 	/*
 	public static String getCsvFile(String tableName, String wfid){

@@ -57,7 +57,7 @@ public class SparkAppDriver implements Serializable{
 			SparkConf conf = new SparkConf().setAppName("mtccore").setMaster("local[3]");
 			
 			final JavaStreamingContext jsc = new JavaStreamingContext(conf, Durations.seconds(5));
-			
+			String wfName  = "sgsiwf";
 			String groupId = "testgid";
 			String topicName = "log-analysis-topic";
 			Map<String, Object> kafkaParams = new HashMap<String, Object>();
@@ -76,20 +76,20 @@ public class SparkAppDriver implements Serializable{
 					if (!v1.isEmpty() && v1.count()>0){
 						
 						String wfid = v2.toString();
-						SftpCmd sftpCmd = new SftpCmd(wfid, remoteCfg+sftpProperties, defaultFs, null);
+						SftpCmd sftpCmd = new SftpCmd(wfName, wfid, remoteCfg+sftpProperties, defaultFs, null);
 						JavaRDD<Tuple2<String, String>> files = sftpCmd.sparkProcess(null, jsc.sparkContext()).cache();
 						
-						XmlToCsvCmd xml2csvCmd = new XmlToCsvCmd(wfid, remoteCfg+xml2csvProperties, defaultFs, null);
+						XmlToCsvCmd xml2csvCmd = new XmlToCsvCmd(wfName, wfid, remoteCfg+xml2csvProperties, defaultFs, null);
 						JavaRDD<Tuple2<String, String>> csvs = xml2csvCmd.sparkProcess(files, jsc.sparkContext()).cache();
 						
 						SparkUtil.saveByKey(csvs, defaultFs, outputdir, wfid);
 						
-						CsvAggregateCmd aggrCmd = new CsvAggregateCmd(wfid, remoteCfg+aggrcsvProperties, defaultFs, null);
+						CsvAggregateCmd aggrCmd = new CsvAggregateCmd(wfName, wfid, remoteCfg+aggrcsvProperties, defaultFs, null);
 						JavaRDD<Tuple2<String, String>> aggrcsvs = aggrCmd.sparkProcess(csvs, jsc.sparkContext());
 						
 						SparkUtil.saveByKey(aggrcsvs, defaultFs, outputdir, wfid);
 						
-						CsvTransformCmd transCmd = new CsvTransformCmd(wfid, remoteCfg+transcsvProperties, defaultFs, null);
+						CsvTransformCmd transCmd = new CsvTransformCmd(wfName, wfid, remoteCfg+transcsvProperties, defaultFs, null);
 						JavaRDD<Tuple2<String, String>> transcsvs = transCmd.sparkProcess(aggrcsvs, jsc.sparkContext());
 						
 						SparkUtil.saveByKey(transcsvs, defaultFs, outputdir, wfid);

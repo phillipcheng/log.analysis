@@ -6,18 +6,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.BackupCmd;
 import etl.engine.ETLLog;
+import etl.engine.LogType;
 
 public class TestETLLog {
-	public static final Logger logger = Logger.getLogger(TestETLLog.class);
+	public static final Logger logger = LogManager.getLogger(TestETLLog.class);
 	
 	@Test
 	public void test1() throws Exception {
-		ETLLog etllog = new ETLLog();
+		ETLLog etllog = new ETLLog(LogType.statistics);
 		//"yyyy-MM-ddTHH:mm:ss.SSS"
 		String startDate = "2016-05-16T12:10:15.123";
 		etllog.setStart(ETLLog.ssdf.parse(startDate));
@@ -29,14 +32,14 @@ public class TestETLLog {
 		logInfo.add("122");
 		etllog.setCounts(logInfo);
 		String str = etllog.toString();
-		String expected = "2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,123,122,,";
+		String expected = "statistics,2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,123,122,,";
 		logger.info(str);
 		assertTrue(expected.equals(str));
 	}
 	
 	@Test
 	public void test2() throws Exception {
-		ETLLog etllog = new ETLLog();
+		ETLLog etllog = new ETLLog(LogType.statistics);
 		//"yyyy-MM-ddTHH:mm:ss.SSS"
 		String startDate = "2016-05-16T12:10:15.123";
 		etllog.setStart(ETLLog.ssdf.parse(startDate));
@@ -44,7 +47,7 @@ public class TestETLLog {
 		etllog.setEnd(ETLLog.ssdf.parse(endDate));
 		etllog.setActionName(BackupCmd.class.getName());
 		String str = etllog.toString();
-		String expected = "2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,,,,";
+		String expected = "statistics,2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,,,,";
 		logger.info(str);
 		assertTrue(expected.equals(str));
 	}

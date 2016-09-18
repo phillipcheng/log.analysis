@@ -16,12 +16,14 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
@@ -37,7 +39,7 @@ import scala.Tuple2;
 public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(XmlToCsvCmd.class);
+	public static final Logger logger = LogManager.getLogger(XmlToCsvCmd.class);
 	
 	public static final String cfgkey_xml_folder="xml-folder";
 	public static final String cfgkey_csv_folder="csv-folder";
@@ -79,12 +81,12 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	private transient XPathExpression[] xpathExpTableSystemAttrs;//table level
 	private transient XPathExpression xpathExpTableRowValues;
 
-	public XmlToCsvCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public XmlToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		keyWithValue = new ArrayList<String>();
 		keySkip = new ArrayList<String>();
 		fileLvlSystemFieldNames = new ArrayList<String>();

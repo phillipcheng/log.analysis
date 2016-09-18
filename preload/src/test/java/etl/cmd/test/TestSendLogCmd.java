@@ -7,14 +7,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.SendLogCmd;
 import etl.engine.ETLCmdMain;
 
 public class TestSendLogCmd extends TestETLCmd {
-	public static final Logger logger = Logger.getLogger(TestSendLogCmd.class);
+	public static final Logger logger = LogManager.getLogger(TestSendLogCmd.class);
 	
 	private void testSendLogFun() throws Exception {
 		String dfsFolder = "/test/sendlog/";
@@ -27,7 +29,7 @@ public class TestSendLogCmd extends TestETLCmd {
 		
 		// run cmd
 		String[] infoArray = new String[]{"cmd1", "1000"};
-		SendLogCmd cmd = new SendLogCmd(wfid, dfsFolder + staticCfgName, getDefaultFS(), infoArray);
+		SendLogCmd cmd = new SendLogCmd("wf1", wfid, dfsFolder + staticCfgName, getDefaultFS(), infoArray);
 		cmd.sgProcess();
 	}
 	

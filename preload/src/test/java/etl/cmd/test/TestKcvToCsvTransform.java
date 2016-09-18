@@ -12,11 +12,13 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 public class TestKcvToCsvTransform extends TestETLCmd {
-	public static final Logger logger = Logger.getLogger(TestKcvToCsvTransform.class);
+	public static final Logger logger = LogManager.getLogger(TestKcvToCsvTransform.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
 	public static final String cmdClassName = "etl.cmd.KcvToCsvCmd";

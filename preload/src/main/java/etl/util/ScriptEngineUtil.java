@@ -11,10 +11,13 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class ScriptEngineUtil {
-	public static final Logger logger = Logger.getLogger(ScriptEngineUtil.class);
+	public static final Logger logger = LogManager.getLogger(ScriptEngineUtil.class);
 	
 	public static String ListSeparator=",";
 	

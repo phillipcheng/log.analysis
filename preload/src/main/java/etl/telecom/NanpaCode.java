@@ -4,11 +4,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import org.apache.log4j.Logger;
 
 public class NanpaCode {
-	public static final Logger logger = Logger.getLogger(NanpaCode.class);
+	public static final Logger logger = LogManager.getLogger(NanpaCode.class);
 	private static final String nanpa_file ="allutlzd.txt";
 	private static Set<String> ccSet = new HashSet<String>();
 	

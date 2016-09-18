@@ -7,8 +7,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
 
 import etl.util.FieldType;
 import etl.util.VarType;
@@ -16,7 +19,7 @@ import etl.util.VarType;
 public class CsvFileGenCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(CsvFileGenCmd.class);
+	public static final Logger logger = LogManager.getLogger(CsvFileGenCmd.class);
 	
 	public static final String TS_FORMAT="yyyy-MM-dd HH:mm:ss.SSS";
 	public static final SimpleDateFormat tsSdf = new SimpleDateFormat(TS_FORMAT);
@@ -46,8 +49,8 @@ public class CsvFileGenCmd extends SchemaFileETLCmd{
 		}
 	}
 	
-	public CsvFileGenCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs) {
-		super(wfid, staticCfg, defaultFs, otherArgs);
+	public CsvFileGenCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs) {
+		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		this.tableNames = pc.getStringArray(cfgkey_table_names);
 		this.outputFolder = pc.getString(cfgkey_output_folder);
 		this.fileSize = pc.getInt(cfgkey_file_size);

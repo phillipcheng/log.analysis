@@ -7,13 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -33,7 +35,7 @@ import scala.Tuple2;
 public class SftpCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(SftpCmd.class);
+	public static final Logger logger = LogManager.getLogger(SftpCmd.class);
 
 	public static final String cfgkey_incoming_folder = "incoming.folder";
 	public static final String cfgkey_sftp_host = "sftp.host";
@@ -61,8 +63,8 @@ public class SftpCmd extends ETLCmd {
 	private int sftpConnectRetryWait;
 	private boolean sftpClean;
 
-	public SftpCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfid, staticCfg, defaultFs, otherArgs);
+	public SftpCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		String incomingFolderExp = pc.getString(cfgkey_incoming_folder, null);
 		if (incomingFolderExp!=null){
 			this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());

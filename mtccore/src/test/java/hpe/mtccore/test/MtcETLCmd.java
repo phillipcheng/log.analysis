@@ -116,7 +116,7 @@ public class MtcETLCmd extends TestETLCmd{
 	public void getData(){
 		String remoteEtlcfg = "/mtccore/etlcfg/";
 		String sftpCmdProperties="sgsiwf.sftp.properties";
-		SftpCmd cmd = new SftpCmd("wfid", remoteEtlcfg+sftpCmdProperties, this.getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wfName", "wfid", remoteEtlcfg+sftpCmdProperties, this.getDefaultFS(), null);
 		List<String> ret = cmd.sgProcess();
 		logger.info(ret);
 	}

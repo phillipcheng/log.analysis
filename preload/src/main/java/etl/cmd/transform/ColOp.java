@@ -8,13 +8,14 @@ import java.util.regex.Pattern;
 
 import javax.script.CompiledScript;
 
-import org.apache.log4j.Logger;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import etl.util.ScriptEngineUtil;
-import etl.util.VarType;
 
 public class ColOp {
-	public static final Logger logger = Logger.getLogger(ColOp.class);
+	public static final Logger logger = LogManager.getLogger(ColOp.class);
 	
 	public static final String UPDATE_OP="u";
 	public static final String REMOVE_OP="r";

@@ -5,13 +5,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
+
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -23,7 +27,7 @@ import scala.Tuple2;
 public abstract class ETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = Logger.getLogger(ETLCmd.class);
+	public static final Logger logger = LogManager.getLogger(ETLCmd.class);
 	
 	public static final String RESULT_KEY_LOG="log";
 	public static final String RESULT_KEY_OUTPUT_LINE="lineoutput";
@@ -35,6 +39,7 @@ public abstract class ETLCmd implements Serializable{
 
 	public static final String SINGLE_TABLE="single.table";
 	
+	private String wfName;//wf template name
 	protected String wfid;
 	protected String staticCfg;
 	protected String defaultFs;
@@ -57,16 +62,17 @@ public abstract class ETLCmd implements Serializable{
 	public ETLCmd(){
 	}
 	
-	public ETLCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public ETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs) {
+		this.wfName = wfName;
 		this.wfid = wfid;
 		this.staticCfg = staticCfg;
 		this.defaultFs = defaultFs;
 		this.otherArgs = otherArgs;
-		logger.info(String.format("wfid:%s, cfg:%s, defaultFs:%s", wfid, staticCfg, defaultFs));
+		logger.info(String.format("wfName:%s, wfid:%s, cfg:%s, defaultFs:%s", wfName, wfid, staticCfg, defaultFs));
 		try {
 			String fs_key = "fs.defaultFS";
 			conf = new Configuration();
@@ -93,7 +99,7 @@ public abstract class ETLCmd implements Serializable{
 	
 	public void init(){
 		if (fs==null){
-			init(wfid, staticCfg, defaultFs, otherArgs);
+			init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		}
 	}
 	
@@ -119,7 +125,7 @@ public abstract class ETLCmd implements Serializable{
 	 * ETLCmd.RESULT_KEY_OUTPUT_MAP: list of Tuple2<key, value>
 	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
 	 */
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
 		logger.error("empty map impl, should not be invoked.");
 		return null;
 	}
@@ -130,7 +136,7 @@ public abstract class ETLCmd implements Serializable{
 	 * set newValue to null, if output line results
 	 * @return list of newKey, newValue, baseOutputPath
 	 */
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values) throws Exception{
 		logger.error("empty reduce impl, should not be invoked.");
 		return null;
 	}
@@ -204,5 +210,13 @@ public abstract class ETLCmd implements Serializable{
 
 	public void setDefaultFs(String defaultFs) {
 		this.defaultFs = defaultFs;
+	}
+
+	public String getWfName() {
+		return wfName;
+	}
+
+	public void setWfName(String wfName) {
+		this.wfName = wfName;
 	}
 }

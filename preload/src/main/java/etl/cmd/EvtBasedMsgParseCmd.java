@@ -11,18 +11,19 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
-import etl.engine.ProcessMode;
 
 public class EvtBasedMsgParseCmd extends ETLCmd{
-	public static final Logger logger = Logger.getLogger(EvtBasedMsgParseCmd.class);
+	public static final Logger logger = LogManager.getLogger(EvtBasedMsgParseCmd.class);
 	//record type specification
 	public static final String EVT_IDX="event.idx";
 	public static final String EVT_TYPE_KEY="event.types";
@@ -47,12 +48,12 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	private Map<String, String[]> msgAttrMap = new HashMap<String, String[]>();//attr map
 	private Set<String> missedEvtType = new HashSet<String>();
 	
-	public EvtBasedMsgParseCmd(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfid, staticCfg, defaultFs, otherArgs);
+	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfid, staticCfg, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
 		eventIdx = pc.getInt(EVT_IDX, -1);
 		String[] evtTypes = pc.getStringArray(EVT_TYPE_KEY);
