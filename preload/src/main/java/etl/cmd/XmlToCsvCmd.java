@@ -32,6 +32,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import etl.spark.CmdReciever;
 import etl.util.Util;
 
 import scala.Tuple2;
@@ -41,9 +42,6 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 
 	public static final Logger logger = LogManager.getLogger(XmlToCsvCmd.class);
 	
-	public static final String cfgkey_xml_folder="xml-folder";
-	public static final String cfgkey_csv_folder="csv-folder";
-	public static final String cfgkey_schema_file="schema.file";
 	
 	public static final String cfgkey_FileLvelSystemAttrs_xpath="FileSystemAttrs.xpath";
 	public static final String cfgkey_FileLvelSystemAttrs_name="FileSystemAttrs.name";
@@ -219,7 +217,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	//tableName to csv
-	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String value){
 		super.init();
 		try {
 			String row = value.toString();
@@ -262,13 +260,14 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
-		JavaRDD<Tuple2<String, String>> ret = input.flatMap(new FlatMapFunction<Tuple2<String, String>, 
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
+		JavaRDD<Tuple2<String, String>> ret = input.flatMap(new FlatMapFunction<String, 
 				Tuple2<String, String>>(){
 			private static final long serialVersionUID = 1L;
 			@Override
-			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-				return flatMapToPair(t._1, t._2).iterator();
+			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
+				String value = t.substring(t.indexOf(CmdReciever.WFID_SEP)+1);
+				return flatMapToPair(value).iterator();
 			}
 		});
 		return ret;
@@ -279,7 +278,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			List<Tuple2<String, String>> pairs = flatMapToPair(String.valueOf(offset), row);
+			List<Tuple2<String, String>> pairs = flatMapToPair(row);
 			for (Tuple2<String, String> pair: pairs){
 				context.write(new Text(pair._1), new Text(pair._2));
 			}

@@ -67,9 +67,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	
 	private boolean mergeTable = false;
 	
-	public CsvAggregateCmd(){
-	}
-	
 	private GroupOp getGroupOp(String keyPrefix){
 		String groupKey = keyPrefix==null? cfgkey_aggr_groupkey:keyPrefix+"."+cfgkey_aggr_groupkey;
 		String groupKeyExp = keyPrefix==null? cfgkey_aggr_groupkey_exp:keyPrefix+"."+cfgkey_aggr_groupkey_exp;
@@ -471,7 +468,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
 		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override

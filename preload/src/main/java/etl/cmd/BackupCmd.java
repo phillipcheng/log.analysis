@@ -45,7 +45,11 @@ public class BackupCmd extends ETLCmd{
 	private Map<String, Object> vars = new HashMap<String, Object>();
 	
 	public BackupCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		vars=super.getSystemVariables();
 		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
 		String[] ffExps = pc.getStringArray(cfgkey_Folder_filter);

@@ -170,7 +170,23 @@ public class EngineUtil {
 			}
 		}
 		return cmds;
-		
+	}
+	
+	public ETLCmd getCmd(String cmdClassName, String configFile, String wfName, String wfid, String defaultFs, 
+			String[] otherArgs, ProcessMode pm){
+		ETLCmd cmd = null;
+		try {
+			cmd = (ETLCmd) Class.forName(cmdClassName).getConstructor(String.class, String.class, String.class, 
+					String.class, String[].class).newInstance(wfName, wfid, configFile, defaultFs, otherArgs);
+			cmd.setPm(pm);
+		}catch(Throwable t){
+			if (cmd!=null){
+				logger.error(new ETLLog(cmd, null, t), t);
+			}else{
+				logger.error("", t);
+			}
+		}
+		return cmd;
 	}
 	
 	public void processReduceCmd(ETLCmd cmd, Text key, Iterable<Text> values, 
@@ -196,6 +212,13 @@ public class EngineUtil {
 			logger.error(new ETLLog(cmd, null, t), t);
 		}
 	}
+
+	public void processJavaCmd(ETLCmd cmd){
+		Date startTime = new Date();
+		List<String> logoutputs = cmd.sgProcess();
+		Date endTime = new Date();
+		sendCmdLog(cmd, startTime, endTime, logoutputs);
+	}
 	
 	public void processMapperCmds(ETLCmd[] cmds, long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context) {
@@ -203,58 +226,51 @@ public class EngineUtil {
 		for (int i=0; i<cmds.length; i++){
 			ETLCmd cmd = cmds[i];
 			try {
-				if (cmd.getPm()==ProcessMode.MRProcess){
-					Date startTime = new Date();
-					Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context);
-					Date endTime = new Date();
-					if (alloutputs!=null){
-						if (cmd.getMrMode()==MRMode.file){
-							//generate log for file mode mr processing
-							List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
-							sendCmdLog(cmd, startTime, endTime, logoutputs);
-						}
-						if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_LINE)){
-							//for all mapper only cmd, the result should contains the RESULT_KEY_OUTPUT
-							List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_LINE);
-							if (i<cmds.length-1){//intermediate steps
-								if (outputs!=null && outputs.size()==1){
-									input = outputs.get(0);
-								}else{
-									String outputString = "null";
-									if (outputs!=null){
-										outputString = outputs.toString();
-									}
-									logger.error(String.format("output from chained cmd should be a string. %s", outputString));
-								}
-							}else{//last step
-								if (outputs!=null){
-									if (context!=null){
-										for (String line:outputs){
-											context.write(new Text(line), null);
-										}
-									}else{
-										logger.debug(String.format("final output:%s", outputs));
-									}
-								}
-							}
-						}else if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2)){//for map-reduce mapper phrase, the result is key-value pair
-							if (alloutputs!=null && context!=null){
-								List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
-								for (Tuple2<String, String> kv: tl){
-									if (kv!=null){
-										context.write(new Text(kv._1), new Text(kv._2));
-									}
-								}
-							}
-						}else{
-							logger.info("no output.");
-						}
+				Date startTime = new Date();
+				Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context);
+				Date endTime = new Date();
+				if (alloutputs!=null){
+					if (cmd.getMrMode()==MRMode.file){
+						//generate log for file mode mr processing
+						List<String> logoutputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_LOG);
+						sendCmdLog(cmd, startTime, endTime, logoutputs);
 					}
-				}else{
-					Date startTime = new Date();
-					List<String> logoutputs = cmd.sgProcess();
-					Date endTime = new Date();
-					sendCmdLog(cmd, startTime, endTime, logoutputs);
+					if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_LINE)){
+						//for all mapper only cmd, the result should contains the RESULT_KEY_OUTPUT
+						List<String> outputs = (List<String>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_LINE);
+						if (i<cmds.length-1){//intermediate steps
+							if (outputs!=null && outputs.size()==1){
+								input = outputs.get(0);
+							}else{
+								String outputString = "null";
+								if (outputs!=null){
+									outputString = outputs.toString();
+								}
+								logger.error(String.format("output from chained cmd should be a string. %s", outputString));
+							}
+						}else{//last step
+							if (outputs!=null){
+								if (context!=null){
+									for (String line:outputs){
+										context.write(new Text(line), null);
+									}
+								}else{
+									logger.debug(String.format("final output:%s", outputs));
+								}
+							}
+						}
+					}else if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2)){//for map-reduce mapper phrase, the result is key-value pair
+						if (alloutputs!=null && context!=null){
+							List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
+							for (Tuple2<String, String> kv: tl){
+								if (kv!=null){
+									context.write(new Text(kv._1), new Text(kv._2));
+								}
+							}
+						}
+					}else{
+						logger.info("no output.");
+					}
 				}
 			}catch(Throwable t){
 				logger.error(new ETLLog(cmd, null, t), t);

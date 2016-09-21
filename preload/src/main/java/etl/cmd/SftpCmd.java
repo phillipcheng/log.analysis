@@ -27,12 +27,13 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
+import etl.spark.SparkReciever;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 import scala.Tuple2;
 
-public class SftpCmd extends ETLCmd {
+public class SftpCmd extends ETLCmd implements SparkReciever{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(SftpCmd.class);
@@ -64,7 +65,11 @@ public class SftpCmd extends ETLCmd {
 	private boolean sftpClean;
 
 	public SftpCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		String incomingFolderExp = pc.getString(cfgkey_incoming_folder, null);
 		if (incomingFolderExp!=null){
 			this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
@@ -85,14 +90,15 @@ public class SftpCmd extends ETLCmd {
 		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
 	}
 
-	public List<Tuple2<String, String>> iProcess(){
+	@Override
+	public List<String> sparkRecieve() {
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
 		int sftConnectRetryCntTemp = 1;
 		OutputStream fsos = null;
 		InputStream is = null;
-		List<Tuple2<String, String>> files = new ArrayList<Tuple2<String, String>>();
+		List<String> files = new ArrayList<String>();
 		try {
 			// connect
 			JSch jsch = new JSch();
@@ -160,7 +166,7 @@ public class SftpCmd extends ETLCmd {
 							logger.info("Deleting file:" + srcFile);
 							sftpChannel.rm(srcFile);
 						}
-						files.add(new Tuple2<String, String>(wfid, destFile));
+						files.add(destFile);
 					}
 				}
 			}
@@ -178,19 +184,23 @@ public class SftpCmd extends ETLCmd {
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
 		if (input!=null){
 			//map over input
 			return null;
 		}else{
-			List<Tuple2<String, String>> ret = iProcess();
+			List<String> files = sparkRecieve();
+			List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
+			for (String file:files){
+				ret.add(new Tuple2<String,String>(wfid, file));
+			}
 			return jsc.parallelize(ret);
 		}
 	}
 	
 	@Override
 	public List<String> sgProcess(){
-		List<Tuple2<String, String>> ret = iProcess();
+		List<String> ret = sparkRecieve();
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");

@@ -203,7 +203,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
 		JavaRDD<Tuple2<String, String>> mapret = input.map(new Function<Tuple2<String, String>, Tuple2<String, String>>(){
 			private static final long serialVersionUID = 1L;
 			@Override

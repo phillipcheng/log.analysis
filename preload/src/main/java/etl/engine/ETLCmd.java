@@ -19,12 +19,13 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import etl.spark.SparkProcessor;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
 import scala.Tuple2;
 
-public abstract class ETLCmd implements Serializable{
+public abstract class ETLCmd implements Serializable, SparkProcessor{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(ETLCmd.class);
@@ -103,6 +104,10 @@ public abstract class ETLCmd implements Serializable{
 		}
 	}
 	
+	public void reinit(){
+		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	}
+	
 	public Map<String, Object> getSystemVariables(){
 		return systemVariables;
 	}
@@ -112,7 +117,17 @@ public abstract class ETLCmd implements Serializable{
 	 * @param input
 	 * @return
 	 */
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+		logger.error("empty spark process impl, should not be invoked.");
+		return null;
+	}
+	
+	/**
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
 		logger.error("empty spark process impl, should not be invoked.");
 		return null;
 	}
@@ -180,6 +195,10 @@ public abstract class ETLCmd implements Serializable{
 		return wfid;
 	}
 	
+	public void setWfid(String wfid) {
+		this.wfid = wfid;
+	}
+
 	public PropertiesConfiguration getPc() {
 		return pc;
 	}

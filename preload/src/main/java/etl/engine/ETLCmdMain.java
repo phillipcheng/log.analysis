@@ -62,10 +62,9 @@ public class ETLCmdMain {
 			if (args.length>mandatoryArgNum+1){//otherArgs
 				otherArgs = Arrays.copyOfRange(args, mandatoryArgNum+1, args.length);
 			}
-			final ETLCmd[] cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticCfgs, wfName, wfid, defaultFs, 
+			final ETLCmd cmd = EngineUtil.getInstance().getCmd(strCmdClassNames, strStaticCfgs, wfName, wfid, defaultFs, 
 					otherArgs, ProcessMode.SingleProcess);
-			if (cmds!=null){
-				final String input = null;
+			if (cmd!=null){
 				int exeInterval=0;
 				int exeSeconds=0;
 				if (otherArgs!=null){
@@ -81,7 +80,7 @@ public class ETLCmdMain {
 				}
 				if (exeInterval==0){//one shot
 					try{
-						EngineUtil.getInstance().processMapperCmds(cmds, 0, input, null);
+						EngineUtil.getInstance().processJavaCmd(cmd);
 					}catch(Throwable e){
 						logger.error("", e);
 					}
@@ -92,7 +91,7 @@ public class ETLCmdMain {
 								@Override
 								public void run() {
 									try{
-										EngineUtil.getInstance().processMapperCmds(cmds, 0, input, null);
+										EngineUtil.getInstance().processJavaCmd(cmd);
 									}catch(Throwable e){
 										logger.error("", e);
 									}
@@ -103,9 +102,7 @@ public class ETLCmdMain {
 							@Override
 							public void run() {
 								taskHandler.cancel(true);
-								for (ETLCmd cmd:cmds){
-									cmd.close();
-								}
+								cmd.close();
 							}}, exeSeconds, SECONDS);
 					}
 					try {
