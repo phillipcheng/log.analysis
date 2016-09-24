@@ -50,6 +50,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public static final String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
 	public static final String cfgkey_sftp_connect_retry_wait = "sftp.connectRetryWait";
 	public static final String cfgkey_sftp_clean = "sftp.clean";
+	public static final String cfgkey_file_limit ="file.limit";
 
 	private String incomingFolder;
 	private String host;
@@ -63,6 +64,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private int sftpConnectRetryCount;
 	private int sftpConnectRetryWait;
 	private boolean sftpClean;
+	private int fileLimit=0;
 
 	public SftpCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
@@ -88,6 +90,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		this.sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
 		this.sftpConnectRetryWait =  pc.getInt(cfgkey_sftp_connect_retry_wait, 15000);//
 		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
+		this.fileLimit = pc.getInt(cfgkey_file_limit, 0);
 	}
 
 	@Override
@@ -124,49 +127,59 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 				}
 			}
 
+			int numProcessed=0;
 			channel.connect();
 			sftpChannel = (ChannelSftp) channel;
+			boolean workflag=true;
 			for (String fromDir:fromDirs){
 				logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
 				sftpChannel.cd(fromDir);
 				Vector<LsEntry> v = sftpChannel.ls(fileFilter);
-				for (LsEntry entry : v) {
-					if (!entry.getAttrs().isDir()){
-						String srcFile = fromDir + entry.getFilename();
-						String fileNorm = entry.getFilename().replace(",", "_");
-						String destFile = incomingFolder + fileNorm;
-						logger.info(String.format("put file to %s from %s", destFile, srcFile));
-						getRetryCntTemp = 1;// reset the count to 1 for every file
-						while (getRetryCntTemp <= sftpGetRetryCount) {
-							try {
-								fsos = fs.create(new Path(destFile));
-								is = sftpChannel.get(srcFile);
-								IOUtils.copy(is, fsos);
-								break;
-							} catch (Exception e) {
-								logger.error("Exception during transferring the file.", e);
-								if (getRetryCntTemp == sftpGetRetryCount) {
-									logger.info("Copying" + srcFile + "failed Retried for maximum times");
+				if (workflag){
+					for (LsEntry entry : v) {
+						if (!entry.getAttrs().isDir()){
+							String srcFile = fromDir + entry.getFilename();
+							String fileNorm = entry.getFilename().replace(",", "_");
+							String destFile = incomingFolder + fileNorm;
+							logger.info(String.format("put file to %s from %s", destFile, srcFile));
+							getRetryCntTemp = 1;// reset the count to 1 for every file
+							while (getRetryCntTemp <= sftpGetRetryCount) {
+								try {
+									fsos = fs.create(new Path(destFile));
+									is = sftpChannel.get(srcFile);
+									IOUtils.copy(is, fsos);
 									break;
-								}
-								getRetryCntTemp++;
-								logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
-								Thread.sleep(this.sftpGetRetryWait);
-							} finally {
-								if (fsos != null) {
-									fsos.close();
-								}
-								if (is != null) {
-									is.close();
+								} catch (Exception e) {
+									logger.error("Exception during transferring the file.", e);
+									if (getRetryCntTemp == sftpGetRetryCount) {
+										logger.info("Copying" + srcFile + "failed Retried for maximum times");
+										break;
+									}
+									getRetryCntTemp++;
+									logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
+									Thread.sleep(this.sftpGetRetryWait);
+								} finally {
+									if (fsos != null) {
+										fsos.close();
+									}
+									if (is != null) {
+										is.close();
+									}
 								}
 							}
+							// deleting file one by one if sftp.clean is enabled
+							if (sftpClean) {
+								logger.info("Deleting file:" + srcFile);
+								sftpChannel.rm(srcFile);
+							}
+							files.add(destFile);
+							numProcessed++;
+							if (this.fileLimit>0 && numProcessed>=this.fileLimit){
+								logger.info(String.format("file limit %d reached, stop processing.", numProcessed));
+								workflag=false;
+								break;
+							}
 						}
-						// deleting file one by one if sftp.clean is enabled
-						if (sftpClean) {
-							logger.info("Deleting file:" + srcFile);
-							sftpChannel.rm(srcFile);
-						}
-						files.add(destFile);
 					}
 				}
 			}

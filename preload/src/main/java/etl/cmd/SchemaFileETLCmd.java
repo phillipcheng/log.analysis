@@ -16,6 +16,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
+import etl.engine.OutputType;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
@@ -33,6 +34,7 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 	public static final String cfgkey_create_sql="create.sql";
 	public static final String cfgkey_db_type="db.type";
 	public static final String cfgkey_file_table_map="file.table.map";
+	public static final String cfgkey_output_type="output.type";
 	
 	//system variable map
 	public static final String VAR_LOGIC_SCHEMA="logicSchema"; //
@@ -46,6 +48,7 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 	protected String createTablesSqlFileName;
 	protected String strFileTableMap;
 	protected transient CompiledScript expFileTableMap;
+	protected OutputType outputType = OutputType.multiple;
 	
 	private DBType dbtype = DBType.NONE;
 	
@@ -90,6 +93,10 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 		if (strFileTableMap!=null){
 			expFileTableMap = ScriptEngineUtil.compileScript(strFileTableMap);
 			logger.info(String.format("fileTableMapExp:%s", expFileTableMap));
+		}
+		String strOutputType = pc.getString(cfgkey_output_type);
+		if (strOutputType!=null){
+			outputType = OutputType.valueOf(strOutputType);
 		}
 	}
 	//return loginfo
@@ -171,5 +178,13 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 
 	public void setStrFileTableMap(String strFileTableMap) {
 		this.strFileTableMap = strFileTableMap;
+	}
+
+	public OutputType getOutputType() {
+		return outputType;
+	}
+
+	public void setOutputType(OutputType outputType) {
+		this.outputType = outputType;
 	}
 }

@@ -9,9 +9,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
-import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
 import etl.engine.LogType;
+import etl.log.ETLLog;
 
 public class SendLogCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;

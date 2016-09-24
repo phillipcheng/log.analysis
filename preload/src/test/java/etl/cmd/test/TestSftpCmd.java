@@ -303,4 +303,51 @@ public class TestSftpCmd extends TestETLCmd {
 			});
 		}
 	}
+	
+	private void limitFiles() throws Exception {
+		String dfsCfg = "/test/sftpcmd/cfg/";
+		String cfg = "sftp_limit.properties";
+		
+		getFs().delete(new Path(dfsCfg), true);
+		getFs().mkdirs(new Path(dfsCfg));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
+		
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		
+		String dfsIncomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(dfsIncomingFolder), true);
+		getFs().mkdirs(new Path(dfsIncomingFolder));
+		String[] sftpFolders = cmd.getFromDirs();
+		String host = cmd.getHost();
+		int port = cmd.getPort();
+		String user = cmd.getUser();
+		String pass = cmd.getPass();
+		String fileName0 = "RTDB_ACCESS.friday";
+		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
+		String fileName1 = "RTDB_ACCESS.monday";
+		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
+		
+		List<String> ret = cmd.sgProcess();
+		logger.info(ret);
+		
+		//assertion
+		List<String> fl = Util.listDfsFile(getFs(), dfsIncomingFolder);
+		logger.info(fl);
+	}
+	
+	@Test
+	public void testLimitFiles() throws Exception {
+		if (!super.isTestSftp()) return;
+		if (getDefaultFS().contains("127.0.0.1")){
+			limitFiles();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					limitFiles();
+					return null;
+				}
+			});
+		}
+	}
 }

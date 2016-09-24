@@ -142,7 +142,7 @@ public class CsvMergeCmd extends ETLCmd{
 				if (contents[keyIdx]==null){
 					contents[keyIdx]=rv;
 				}else{
-					logger.error(String.format("duplicated key, exist %s, now come:%s", contents[keyIdx], rv));
+					logger.warn(String.format("duplicated key, exist %s, now come:%s", contents[keyIdx], rv));
 				}
 			}else{
 				logger.error(String.format("keyIdx:%d >= srcNum:%d", keyIdx, srcNum));
@@ -165,7 +165,7 @@ public class CsvMergeCmd extends ETLCmd{
 				String ret = ScriptEngineUtil.eval(retValueExp, this.getSystemVariables());
 				retlist.add(new String[]{ret, null, ETLCmd.SINGLE_TABLE});
 			}else{
-				logger.error(String.format("for inner join, data from table %d is empty", emptyIdx));
+				logger.warn(String.format("for inner join, data from table %d is empty", emptyIdx));
 			}
 		}else{
 			logger.error(String.format("join type %s not yet supported", joinType));

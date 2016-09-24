@@ -69,10 +69,12 @@ public class Util {
 	public static PropertiesConfiguration getPropertiesConfigFromDfs(FileSystem fs, String conf){
 		BufferedReader br = null;
 		try {
-			Path ip = new Path(conf);
-	        br=new BufferedReader(new InputStreamReader(fs.open(ip)));
-	        PropertiesConfiguration pc = new PropertiesConfiguration();
-	        pc.load(br);
+			PropertiesConfiguration pc = new PropertiesConfiguration();
+			if (conf!=null){
+				Path ip = new Path(conf);
+		        br=new BufferedReader(new InputStreamReader(fs.open(ip)));
+		        pc.load(br);
+			}
 	        return pc;
 		}catch(Exception e){
 			logger.error("", e);

@@ -1,4 +1,4 @@
-package etl.engine;
+package etl.log;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+
+import etl.engine.ETLCmd;
+import etl.engine.LogType;
+import etl.engine.SafeSimpleDateFormat;
 
 public class ETLLog implements Serializable{
 	private static final long serialVersionUID = 1L;

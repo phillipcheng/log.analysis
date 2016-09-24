@@ -33,6 +33,11 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
+			<prepare>
+                <delete path="/pde/csv/${wf:id()}"/>
+                <delete path="/pde/fix/${wf:id()}"/>
+                <delete path="/pde/ses/${wf:id()}"/>
+            </prepare>
 			<configuration>
 				<property>
 					<name>mapred.mapper.new-api</name>
@@ -74,7 +79,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 					<name>wfid</name>
 					<value>${wf:id()}</value>
 				</property>
-				
 				<property>
 					<name>staticConfigFile</name>
 					<value>/pde/etlcfg/tracefilter.shell.properties</value>
@@ -93,7 +97,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
-            <arg>unused</arg>
+            <arg>${nameNode}</arg>
             <arg>TraceFilter-Info</arg>
             <arg>${hadoop:counters("TraceFilter")["org.apache.hadoop.mapred.Task$Counter"]["MAP_INPUT_RECORDS"]}</arg>
         </java>
@@ -109,6 +113,9 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
+			<prepare>
+                <delete path="/pde/fixcsv/${wf:id()}"/>
+            </prepare>
 			<configuration>
 				<property>
 					<name>mapred.mapper.new-api</name>
@@ -180,6 +187,9 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
         <map-reduce>
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="/pde/transcsv/${wf:id()}"/>
+            </prepare>
             <configuration>
                 <property>
                     <name>mapred.mapper.new-api</name>
@@ -256,7 +266,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
-            <arg>unused</arg>
+            <arg>${nameNode}</arg>
             <arg>CsvTranform-Info</arg>
             <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -269,6 +279,9 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
         <map-reduce>
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="/pde/mergecsv/${wf:id()}"/>
+            </prepare>
             <configuration>
                 <property>
                     <name>mapred.mapper.new-api</name>
@@ -345,7 +358,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/sendlog.properties</arg>
-            <arg>unused</arg>
+            <arg>${nameNode}</arg>
             <arg>CsvTranform-Info</arg>
             <arg>${hadoop:counters("MergeCmd")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
             <arg>${hadoop:counters("MergeCmd")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
@@ -363,6 +376,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/load.csv.properties</arg>
+            <arg>${nameNode}</arg>
             <capture-output/>
         </java>
         <ok to="joining"/>
@@ -373,6 +387,9 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
         <map-reduce>
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="/pde/sescsv/${wf:id()}"/>
+            </prepare>
             <configuration>
                 <property>
                     <name>mapred.mapper.new-api</name>
@@ -385,6 +402,10 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                 <property>
                     <name>mapreduce.job.map.class</name>
                     <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
                 </property>
                 <property>
                     <name>mapreduce.job.inputformat.class</name>
@@ -401,10 +422,6 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
                 <property>
                     <name>mapreduce.job.output.value.class</name>
                     <value>org.apache.hadoop.io.Text</value>
-                </property>
-                <property>
-                    <name>mapreduce.job.reduces</name>
-                    <value>0</value>
                 </property>
                 <property>
                     <name>mapreduce.task.timeout</name>
@@ -448,11 +465,26 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>${wfName}</arg>
             <arg>${wf:id()}</arg>
             <arg>/pde/etlcfg/load.sescsv.properties</arg>
+            <arg>${nameNode}</arg>
             <capture-output/>
         </java>
         <ok to="joining"/>
         <error to="fail"/>
     </action>
-	<join name="joining" to="end"/>
+	<join name="joining" to="cleanup"/>
+	<action name="cleanup">
+         <fs>
+            <delete path='${nameNode}/pde/rawinput/${wf:id()}'/>
+            <delete path='${nameNode}/pde/csv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/transcsv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/fix/${wf:id()}'/>
+            <delete path='${nameNode}/pde/fixcsv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/mergecsv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/ses/${wf:id()}'/>
+            <delete path='${nameNode}/pde/sescsv/${wf:id()}'/>
+         </fs>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
 	<end name="end"/>
 </workflow-app>

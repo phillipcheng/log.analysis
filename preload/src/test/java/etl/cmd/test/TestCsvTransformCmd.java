@@ -311,4 +311,40 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			});
 		}
 	}
+	
+	private void transformToSingleFile() throws Exception {
+		try {
+			String remoteCfgFolder = "/etltest/csvtrans/cfg/";
+			String remoteCsvInputFolder = "/etltest/csvtrans/input/";
+			String remoteCsvOutputFolder = "/etltest/csvtrans/output/";
+			String csvtransProp = "csvtrans.tosinglefile.properties";
+			String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
+			
+			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			logger.info("Output is:"+output);
+			//assert
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			List<String> outputs = Util.listDfsFile(super.getFs(), remoteCsvOutputFolder);
+			logger.info(outputs);
+			assertTrue(outputs.contains("part-r-00000"));
+		} catch (Exception e) {
+			logger.error("", e);
+			assertTrue(false);
+		}
+	}
+	
+	@Test
+	public void testTransformToSingleFile() throws Exception {
+		if (getDefaultFS().contains("127.0.0.1")){
+			transformToSingleFile();
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					transformToSingleFile();
+					return null;
+				}
+			});
+		}
+	}
 }

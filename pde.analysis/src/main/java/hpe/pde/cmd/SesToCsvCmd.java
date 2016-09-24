@@ -25,6 +25,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.util.ScriptEngineUtil;
+import scala.Tuple2;
 
 //key colon value format to csv
 public class SesToCsvCmd extends ETLCmd{
@@ -95,7 +96,7 @@ public class SesToCsvCmd extends ETLCmd{
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
 		String filename = row;
-		List<String> outputList = new ArrayList<String>();
+		List<Tuple2<String, String>> outputList = new ArrayList<Tuple2<String, String>>();
 		Path sesFile = new Path(filename);
 		BufferedReader br = null;
 		try {
@@ -338,7 +339,11 @@ public class SesToCsvCmd extends ETLCmd{
 					if ( COMPLETE_SESSION == 2 ) {
 						GPSWEEK = Integer.parseInt(Incomplete_Session_Week);
 						SESSION_START_TIME = Double.parseDouble(Incomplete_Session_StartTime);
-						SESSION_END_TIME = Double.parseDouble(Incomplete_Session_EndTime);
+						if (Incomplete_Session_EndTime==null){
+							SESSION_END_TIME = SESSION_START_TIME;
+						}else{
+							SESSION_END_TIME = Double.parseDouble(Incomplete_Session_EndTime);
+						}
 						START_TIME = gpsToUTC (GPSWEEK, SESSION_START_TIME );
 						END_TIME = gpsToUTC (GPSWEEK, SESSION_END_TIME);
 						DURATION = SESSION_END_TIME - SESSION_START_TIME;
@@ -372,7 +377,7 @@ public class SesToCsvCmd extends ETLCmd{
 							super.getSystemVariables().put(super.VAR_NAME_FILE_NAME, filename);
 							lineOutput+="," + ScriptEngineUtil.eval(suffixExp, super.getSystemVariables());
 						}
-						outputList.add(lineOutput);
+						outputList.add(new Tuple2<String, String>(lineOutput, filename));
 					}
 
 					ses_record = 0;
@@ -419,10 +424,17 @@ public class SesToCsvCmd extends ETLCmd{
 			}
 		}
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		retMap.put(RESULT_KEY_OUTPUT_LINE, outputList);
+		retMap.put(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2, outputList);
 		List<String> infoList = new ArrayList<String>();
 		infoList.add(outputList.size()+"");
 		retMap.put(RESULT_KEY_LOG, infoList);
 		return retMap;
+	}
+	
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values) throws Exception{
+		List<String[]> ret = new ArrayList<String[]>();
+		ret.add(new String[]{key.toString(), null, ETLCmd.SINGLE_TABLE});
+		return ret;
 	}
 }

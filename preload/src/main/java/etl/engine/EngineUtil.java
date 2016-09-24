@@ -13,6 +13,8 @@ import scala.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import etl.log.ETLLog;
+
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -33,6 +35,8 @@ public class EngineUtil {
 	public static final Logger logger = LogManager.getLogger(EngineUtil.class);
 	
 	public static String config_file="etlengine.properties";
+	
+	public static final String key_defaultfs="defaultFs";
 	public static final String key_bootstrap_servers="kafka.bootstrap.servers";
 	public static final String key_kafka_log_topic="kafka.log.topic";
 	public static final String key_enable_kafka="kafka.enabled";
@@ -40,6 +44,8 @@ public class EngineUtil {
 	private PropertiesConfiguration engineProp = null;
 	
 	private Producer<String, String> producer = null;
+	
+	private String defaultFs;
 	private String logTopicName;
 	private String bootstrapServers;
 	private boolean sendLog=false; //engine level send log flag
@@ -86,6 +92,7 @@ public class EngineUtil {
 			try {
 				engineProp = new PropertiesConfiguration();
 				engineProp.load(input);
+				setDefaultFs(engineProp.getString(key_defaultfs));
 				logTopicName = engineProp.getString(key_kafka_log_topic);
 				sendLog = engineProp.getBoolean(key_enable_kafka, false);
 				bootstrapServers = engineProp.getString(key_bootstrap_servers);
@@ -108,10 +115,10 @@ public class EngineUtil {
 	}
 	
 	public void sendLog(String topicName, ETLLog etllog){
-		sendMsg(topicName, etllog.toString());
+		sendMsg(topicName, etllog.getType().toString(), etllog.toString());
 	}
 	
-	public void sendMsg(String topicName, String msg){
+	public void sendMsg(String topicName, String key, String msg){
 		if (producer!=null){
 			logger.info(String.format("kafka produce msg: %s", msg));
 			producer.send(new ProducerRecord<String,String>(topicName, msg), new Callback(){
@@ -304,5 +311,13 @@ public class EngineUtil {
 
 	public void setEngineProp(PropertiesConfiguration engineProp) {
 		this.engineProp = engineProp;
+	}
+
+	public String getDefaultFs() {
+		return defaultFs;
+	}
+
+	public void setDefaultFs(String defaultFs) {
+		this.defaultFs = defaultFs;
 	}
 }

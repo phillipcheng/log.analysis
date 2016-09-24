@@ -22,6 +22,7 @@
 	                <include name="etlengine.properties"/>
 	                <include name="*.schema"/>
 	                <include name="*mapping.properties"/>
+                    <include name="log4j2.xml"/>
 	            </fileset>
 	        </copy>
 	        <copy todir="${dist}">

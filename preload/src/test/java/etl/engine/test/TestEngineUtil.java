@@ -12,9 +12,9 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.test.TestETLCmd;
-import etl.engine.ETLLog;
 import etl.engine.EngineUtil;
 import etl.engine.LogType;
+import etl.log.ETLLog;
 import etl.util.DateUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.StringUtil;

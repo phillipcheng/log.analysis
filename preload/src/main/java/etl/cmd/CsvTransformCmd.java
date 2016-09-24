@@ -19,7 +19,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import etl.cmd.transform.ColOp;
+import etl.engine.ETLCmd;
 import etl.engine.MRMode;
+import etl.engine.OutputType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
@@ -184,20 +186,23 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
 					((FileSplit) context.getInputSplit()).getPath().getName()));
 		}else{
-			List<Tuple2<String, String>> retList = Arrays.asList(mapToPair(tableName, row));
-			if (retList!=null && retList.size()>=1){
-				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, retList);
-			}
+			Tuple2<String, String> ret = mapToPair(tableName, row);
+			retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
 		}
 		return retMap;
 	}
 	
 	@Override
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
-		List<String[]> ret = new ArrayList<String[]>();
+		List<String[]> ret = new ArrayList<String[]>();	
 		Iterator<Text> it = values.iterator();
 		while (it.hasNext()){
-			ret.add(new String[]{it.next().toString(), null, key.toString()});
+			String v = it.next().toString();
+			if (super.getOutputType()==OutputType.multiple){
+				ret.add(new String[]{v, null, key.toString()});
+			}else{
+				ret.add(new String[]{v, null, ETLCmd.SINGLE_TABLE});
+			}
 		}
 		return ret;
 	}

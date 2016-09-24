@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 
 import etl.engine.ETLCmd;
-import etl.engine.ETLLog;
+import etl.log.ETLLog;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 

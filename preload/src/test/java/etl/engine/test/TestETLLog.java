@@ -12,8 +12,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.BackupCmd;
-import etl.engine.ETLLog;
 import etl.engine.LogType;
+import etl.log.ETLLog;
 
 public class TestETLLog {
 	public static final Logger logger = LogManager.getLogger(TestETLLog.class);

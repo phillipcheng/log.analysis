@@ -3,8 +3,6 @@ package etl.cmd;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
 import javax.script.CompiledScript;
 
 //log4j2
@@ -115,39 +113,6 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 			logInfo.add(rowsAdded+"");
 		}
 		
-		return  logInfo;
-	}
-	
-	public List<String> sgProcess(Map<String, String> tableCsvFileMap) {
-		if (this.getFs()==null) init();
-		List<String> logInfo = new ArrayList<String>();
-		try{
-			for (String tableName:tableCsvFileMap.keySet()){
-				String csvFileName = tableCsvFileMap.get(tableName);
-				//
-				this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
-				String sql = null;
-				if (csLoadSql!=null){
-					sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
-				}else{
-					sql = DBUtil.genCopyHdfsSql(null, logicSchema.getAttrNames(tableName), tableName, 
-							dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype());
-				}
-				logger.info(String.format("sql:%s", sql));
-				copysqls.add(sql);
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}
-		
-		if (super.getDbtype()!=DBType.NONE){
-			try {
-				int rowsAdded = DBUtil.executeSqls(copysqls, pc);
-				logInfo.add(rowsAdded+"");
-			}catch(Exception e){
-				logger.info("", e);
-			}
-		}
 		return  logInfo;
 	}
 

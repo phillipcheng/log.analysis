@@ -59,7 +59,7 @@ public class KafkaMsgGenCmd extends SchemaFileETLCmd{
 			sb.append(v).append(",");
 		}
 		
-		EngineUtil.getInstance().sendMsg(kac.getLogTopicName(), sb.toString());
+		EngineUtil.getInstance().sendMsg(kac.getLogTopicName(), null, sb.toString());
 		return null;
 	}
 	

@@ -8,13 +8,16 @@ oozie job -oozie http://192.85.247.104:11000/oozie/ -config /data/mtccore/sgs.jo
 oozie job -oozie http://192.85.247.104:11000/oozie/ -config /data/mtccore/smsc.job.properties -run
 oozie job -oozie http://192.85.247.104:11000/oozie/ -config /data/mtccore/coordinator.job.properties -run
 
-hdp
-KAFKA_ROOT=/usr/hdp/2.4.2.0-258/kafka
+verizon
+KAFKA_ROOT=/usr/hdp/current/kafka-broker
 $KAFKA_ROOT/bin/kafka-topics.sh --create --zookeeper 192.85.246.17:2181 --replication-factor 1 --partitions 3 --topic log-analysis-topic
-$KAFKA_ROOT/bin/kafka-console-consumer.sh --zookeeper 192.85.246.17:2181 --topic log-analysis-topic --from-beginning
 $KAFKA_ROOT/bin/kafka-console-producer.sh --broker-list 192.85.246.17:6667 --topic log-analysis-topic
 
-oozie job -oozie http://192.85.246.17:11000/oozie/ -config /data/mtccore/sgs.job.properties -run
+KAFKA_ROOT=/usr/hdp/current/kafka-broker
+$KAFKA_ROOT/bin/kafka-console-consumer.sh --zookeeper 10.194.205.137:2181,10.194.205.138:2181,10.194.205.139:2181 --topic log-analysis-topic --from-beginning
+
+
+oozie job -oozie http://10.194.205.137:11000/oozie/ -config /hadoop/pde/pde.job.properties -run
 
 
 mac
