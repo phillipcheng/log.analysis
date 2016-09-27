@@ -96,7 +96,7 @@ public class MtcETLCmd extends TestETLCmd{
 	
 	public void setupETLCfg(final String defaultFs, final String localCfgDir) {
 		try {
-			if (defaultFs.contains("127.0.0.1")){
+			if (defaultFs.contains("127.0.0.1") || defaultFs.contains("localhost")){
 				realSetupEtlCfg(defaultFs, localCfgDir);
 			}else{
 				UserGroupInformation ugi = UserGroupInformation.createProxyUser(super.getOozieUser(), UserGroupInformation.getLoginUser());
@@ -198,7 +198,7 @@ public class MtcETLCmd extends TestETLCmd{
 	
 	@Test
 	public void cleanUp() {
-		cleanUp("hdfs://192.85.247.104:19000");
+		cleanUp(getDefaultFS());
 	}
 	
 	public void realCleanUp(String defaultFs) throws Exception{
