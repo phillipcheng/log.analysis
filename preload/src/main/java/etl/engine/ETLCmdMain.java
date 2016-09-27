@@ -62,59 +62,68 @@ public class ETLCmdMain {
 			if (args.length>mandatoryArgNum+1){//otherArgs
 				otherArgs = Arrays.copyOfRange(args, mandatoryArgNum+1, args.length);
 			}
-			final ETLCmd cmd = EngineUtil.getInstance().getCmd(strCmdClassNames, strStaticCfgs, wfName, wfid, defaultFs, 
+			ETLCmd cmd = EngineUtil.getInstance().getCmd(strCmdClassNames, strStaticCfgs, wfName, wfid, defaultFs, 
 					otherArgs, ProcessMode.SingleProcess);
-			if (cmd!=null){
-				int exeInterval=0;
-				int exeSeconds=0;
-				if (otherArgs!=null){
-					Map<String, String> kvMap = extractValues(otherArgs);
-					String v = kvMap.get(param_exe_interval);
-					if (v!=null){
-						exeInterval = Integer.parseInt(v);
-					}
-					v = kvMap.get(param_exe_time);
-					if (v!=null){
-						exeSeconds = Integer.parseInt(v);
-					}
+			int exeInterval=0;
+			int exeSeconds=0;
+			if (otherArgs!=null){
+				Map<String, String> kvMap = extractValues(otherArgs);
+				String v = kvMap.get(param_exe_interval);
+				if (v!=null){
+					exeInterval = Integer.parseInt(v);
 				}
-				if (exeInterval==0){//one shot
-					try{
-						EngineUtil.getInstance().processJavaCmd(cmd);
-					}catch(Throwable e){
-						logger.error("", e);
-					}
-				}else{//repeated
-					ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-					final ScheduledFuture<?> taskHandler = scheduler.scheduleAtFixedRate(
-							new Runnable(){
-								@Override
-								public void run() {
-									try{
-										EngineUtil.getInstance().processJavaCmd(cmd);
-									}catch(Throwable e){
-										logger.error("", e);
-									}
-								}}, 
-							5, exeInterval, SECONDS);
-					if (exeSeconds>0){
-						scheduler.schedule(new Runnable(){
-							@Override
-							public void run() {
-								taskHandler.cancel(true);
-								cmd.close();
-							}}, exeSeconds, SECONDS);
-					}
-					try {
-						taskHandler.get();
-					}catch(CancellationException ce){
-						logger.info("cancelled.");
-					}catch(Exception e){
-						logger.error("", e);
-					}
-					scheduler.shutdown();
+				v = kvMap.get(param_exe_time);
+				if (v!=null){
+					exeSeconds = Integer.parseInt(v);
 				}
 			}
+			exeCmd(cmd, exeInterval, exeSeconds);
+		}
+	}
+	
+	/*
+	 * exeSeconds = 0 forever
+	 */
+	public static void exeCmd(final ETLCmd cmd, int exeInterval, int exeSeconds){
+		if (cmd!=null){
+			if (exeInterval==0){//one shot
+				try{
+					EngineUtil.getInstance().processJavaCmd(cmd);
+				}catch(Throwable e){
+					logger.error("", e);
+				}
+			}else{//repeated
+				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+				final ScheduledFuture<?> taskHandler = scheduler.scheduleAtFixedRate(
+						new Runnable(){
+							@Override
+							public void run() {
+								try{
+									EngineUtil.getInstance().processJavaCmd(cmd);
+								}catch(Throwable e){
+									logger.error("", e);
+								}
+							}}, 
+						5, exeInterval, SECONDS);
+				if (exeSeconds>0){
+					scheduler.schedule(new Runnable(){
+						@Override
+						public void run() {
+							taskHandler.cancel(true);
+							cmd.close();
+						}}, exeSeconds, SECONDS);
+				}
+				try {
+					taskHandler.get();
+				}catch(CancellationException ce){
+					logger.info("cancelled.");
+				}catch(Exception e){
+					logger.error("", e);
+				}
+				scheduler.shutdown();
+			}
+		}else{
+			logger.error(String.format("cmd can't be null."));
 		}
 	}
 }

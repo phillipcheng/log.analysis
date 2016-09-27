@@ -85,38 +85,47 @@ public class SchemaFromXmlCmd extends SchemaFileETLCmd{
 	
 	
 	public SchemaFromXmlCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		keyWithValue = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_useValues));
-		keySkip = Arrays.asList(pc.getStringArray(cfgkey_TableObjDesc_skipKeys));
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		keyWithValue = Arrays.asList(super.getCfgStringArray(cfgkey_TableObjDesc_useValues));
+		keySkip = Arrays.asList(super.getCfgStringArray(cfgkey_TableObjDesc_skipKeys));
 		//
 		XPathFactory xPathfactory = XPathFactory.newInstance();
 		XPath xpath = xPathfactory.newXPath();
 		try {
-			xpath.compile(pc.getString(cfgkey_FileLvelSystemAttrs_xpath));
-			for (String name: pc.getStringArray(cfgkey_FileLvelSystemAttrs_name)){
+			xpath.compile(super.getCfgString(cfgkey_FileLvelSystemAttrs_xpath, null));
+			for (String name: super.getCfgStringArray(cfgkey_FileLvelSystemAttrs_name)){
 				fileLvlSystemFieldNames.add(name);
 			}
-			for (String type: pc.getStringArray(cfgkey_FileLvelSystemAttrs_type)){
+			for (String type: super.getCfgStringArray(cfgkey_FileLvelSystemAttrs_type)){
 				fileLvlSystemFieldTypes.add(new FieldType(type));
 			}
-			xpathExpTables = xpath.compile(pc.getString(cfgkey_xpath_Tables));
-			xpathExpTableRow0 = xpath.compile(pc.getString(cfgkey_xpath_TableRow0));
-			xpathExpTableObjDesc = xpath.compile(pc.getString(cfgkey_TableObjDesc_xpath));
-			xpathExpTableAttrNames = xpath.compile(pc.getString(cfgkey_xpath_TableAttrNames));
-			xpath.compile(pc.getString(cfgkey_xpath_TableRows));
-			xpathExpTableRowValues = xpath.compile(pc.getString(cfgkey_xpath_TableRowValues));
-			String[] tsxpaths = pc.getStringArray(cfgkey_TableSystemAttrs_xpath);
+			xpathExpTables = xpath.compile(super.getCfgString(cfgkey_xpath_Tables, null));
+			xpathExpTableRow0 = xpath.compile(super.getCfgString(cfgkey_xpath_TableRow0, null));
+			xpathExpTableObjDesc = xpath.compile(super.getCfgString(cfgkey_TableObjDesc_xpath, null));
+			xpathExpTableAttrNames = xpath.compile(super.getCfgString(cfgkey_xpath_TableAttrNames, null));
+			xpath.compile(super.getCfgString(cfgkey_xpath_TableRows, null));
+			xpathExpTableRowValues = xpath.compile(super.getCfgString(cfgkey_xpath_TableRowValues, null));
+			String[] tsxpaths = super.getCfgStringArray(cfgkey_TableSystemAttrs_xpath);
 			xpathExpTableSystemAttrs = new XPathExpression[tsxpaths.length];
 			for (int i=0; i<tsxpaths.length; i++){
 				xpathExpTableSystemAttrs[i]=xpath.compile(tsxpaths[i]);
 			}
-			for (String name: pc.getStringArray(cfgkey_TableSystemAttrs_name)){
+			for (String name: super.getCfgStringArray(cfgkey_TableSystemAttrs_name)){
 				tableLvlSystemFieldNames.add(name);
 			}
-			for (String type: pc.getStringArray(cfgkey_TableSystemAttrs_type)){
+			for (String type: super.getCfgStringArray(cfgkey_TableSystemAttrs_type)){
 				tableLvlSystemFieldTypes.add(new FieldType(type));
 			}
-			String xmlFolderExp = pc.getString(cfgkey_xml_folder);
+			String xmlFolderExp = super.getCfgString(cfgkey_xml_folder, null);
+			if (xmlFolderExp==null){
+				logger.error(String.format("xml folder can't be null."));
+				return;
+			}
 			this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
 		}catch(Exception e){
 			logger.info("", e);

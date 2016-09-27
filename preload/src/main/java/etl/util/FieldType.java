@@ -23,6 +23,7 @@ public class FieldType implements Serializable{
 	
 	public static final String datetimeFormat="yyyyMMddHHmmssSSS";
 	public static final String dateFormat="yyyyMMdd";
+	public static final String hiveDatetimeFormat="yyyy-MM-dd HH:mm:ss.SSS";
 	public static final SafeSimpleDateFormat sdatetimeFormat = new SafeSimpleDateFormat(datetimeFormat);
 	public static final SafeSimpleDateFormat sdateFormat = new SafeSimpleDateFormat(dateFormat);
 	

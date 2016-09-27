@@ -15,15 +15,17 @@ public class SaveDataCmd extends ETLCmd {
 	private String logTmpDir;
 	
 	public SaveDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		logTmpDir = this.getPc().getString(cfg_log_tmp_dir);
 	}
 	
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	@Override
+	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
 		SparkUtil.saveByKey(input, defaultFs, logTmpDir, wfid);
 		return null;
 	}

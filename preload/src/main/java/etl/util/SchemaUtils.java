@@ -1,5 +1,7 @@
-package etl.tools;
+package etl.util;
 
+import java.io.File;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -8,19 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.io.FileUtils;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
 import etl.engine.LogicSchema;
-import etl.util.DBUtil;
-import etl.util.FieldType;
-import etl.util.Util;
-import etl.util.VarType;
 
-public class GenLogicSchema {
-	public static final Logger logger = LogManager.getLogger(GenLogicSchema.class);
+public class SchemaUtils {
+	public static final Logger logger = LogManager.getLogger(SchemaUtils.class);
 	
 	public static FieldType getFieldType(int type, int size, int digits){
 		if (Types.TIMESTAMP == type){
@@ -38,6 +37,31 @@ public class GenLogicSchema {
 		}else{
 			logger.error(String.format("not supported:%d", type));
 			return null;
+		}
+	}
+	
+	public static List<String> genCreateSqlByLogicSchema(LogicSchema ls, String dbSchema, DBType dbtype){
+		List<String> sqls = new ArrayList<String>();
+		for (String tn: ls.getAttrNameMap().keySet()){
+			List<String> attrNames = ls.getAttrNames(tn);
+			List<FieldType> attrTypes = ls.getAttrTypes(tn);
+			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbSchema, dbtype);
+			sqls.add(sql);
+		}
+		return sqls;
+	}
+	
+	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype){
+		try{
+			LogicSchema ls = (LogicSchema) Util.fromLocalJsonFile(schemaFile, LogicSchema.class);
+			List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype);
+			StringBuffer sb = new StringBuffer();
+			for (String sql:sqls){
+				sb.append(sql).append(";").append("\n");
+			}
+			FileUtils.writeStringToFile(new File(outputSql), sb.toString(), Charset.defaultCharset());
+		}catch(Exception e){
+			logger.error("", e);
 		}
 	}
 	

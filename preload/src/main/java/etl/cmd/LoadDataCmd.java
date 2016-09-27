@@ -40,18 +40,23 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 	private transient List<String> copysqls;
 	
 	public LoadDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	public LoadDataCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		
-		this.csvFile = pc.getString(cfgkey_csvfile);
-		this.webhdfsRoot = pc.getString(cfgkey_webhdfs);
-		this.userName = pc.getString(DBUtil.key_db_user);
-		this.loadSql = pc.getString(cfgkey_load_sql, null);
+		this.csvFile = super.getCfgString(cfgkey_csvfile, null);
+		this.webhdfsRoot = super.getCfgString(cfgkey_webhdfs, null);
+		this.userName = super.getCfgString(DBUtil.key_db_user, null);
+		this.loadSql = super.getCfgString(cfgkey_load_sql, null);
 		logger.info(String.format("load sql:%s", loadSql));
-		this.tableNames = pc.getStringArray(cfgkey_table_names);
+		this.tableNames = super.getCfgStringArray(cfgkey_table_names);
 		//
 		this.getSystemVariables().put(VAR_ROOT_WEB_HDFS, this.webhdfsRoot);
 		this.getSystemVariables().put(VAR_USERNAME, this.userName);
@@ -109,7 +114,7 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 		}
 		
 		if (super.getDbtype()!=DBType.NONE){
-			int rowsAdded = DBUtil.executeSqls(copysqls, pc);
+			int rowsAdded = DBUtil.executeSqls(copysqls, super.getPc());
 			logInfo.add(rowsAdded+"");
 		}
 		

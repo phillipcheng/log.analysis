@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.log.ETLLog;
+import etl.log.LogType;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.io.LongWritable;
@@ -40,6 +41,7 @@ public class EngineUtil {
 	public static final String key_bootstrap_servers="kafka.bootstrap.servers";
 	public static final String key_kafka_log_topic="kafka.log.topic";
 	public static final String key_enable_kafka="kafka.enabled";
+	public static final String key_log_interval="log.interval";//seconds
 	
 	private PropertiesConfiguration engineProp = null;
 	
@@ -49,6 +51,7 @@ public class EngineUtil {
 	private String logTopicName;
 	private String bootstrapServers;
 	private boolean sendLog=false; //engine level send log flag
+	private int logInterval=30;
 
 	public static void setConfFile(String file){
 		config_file = file;
@@ -97,9 +100,8 @@ public class EngineUtil {
 				sendLog = engineProp.getBoolean(key_enable_kafka, false);
 				bootstrapServers = engineProp.getString(key_bootstrap_servers);
 				logger.info(String.format("kafka producer bootstrap servers:%s", bootstrapServers));
-				if (sendLog){
-					producer = createProducer(bootstrapServers);
-				}
+				producer = createProducer(bootstrapServers);
+				logInterval = engineProp.getInt(key_log_interval, 30);
 			}catch(Exception e){
 				logger.error("failed to get kafka producer.", e);
 			}
@@ -120,8 +122,8 @@ public class EngineUtil {
 	
 	public void sendMsg(String topicName, String key, String msg){
 		if (producer!=null){
-			logger.info(String.format("kafka produce msg: %s", msg));
-			producer.send(new ProducerRecord<String,String>(topicName, msg), new Callback(){
+			logger.info(String.format("kafka produce msg: key:%s, msg:%s", key, msg));
+			producer.send(new ProducerRecord<String,String>(topicName, key, msg), new Callback(){
 				@Override
 				public void onCompletion(RecordMetadata metadata, Exception e) {
 					if (e!=null){
@@ -130,7 +132,7 @@ public class EngineUtil {
 				}
 			});
 		}else{
-			logger.warn("producer is null.");
+			logger.error("producer is null.");
 		}
 	}
 	
@@ -140,7 +142,7 @@ public class EngineUtil {
 	
 	public void sendCmdLog(ETLCmd cmd, Date startTime, Date endTime, List<String> loginfo){
 		if (cmd.isSendLog()){
-			ETLLog etllog = new ETLLog(LogType.statistics);
+			ETLLog etllog = new ETLLog(LogType.etlstat);
 			etllog.setStart(startTime);
 			etllog.setEnd(endTime);
 			etllog.setWfName(cmd.getWfName());
@@ -319,5 +321,13 @@ public class EngineUtil {
 
 	public void setDefaultFs(String defaultFs) {
 		this.defaultFs = defaultFs;
+	}
+
+	public int getLogInterval() {
+		return logInterval;
+	}
+
+	public void setLogInterval(int logInterval) {
+		this.logInterval = logInterval;
 	}
 }

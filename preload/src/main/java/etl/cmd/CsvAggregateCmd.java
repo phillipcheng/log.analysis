@@ -72,10 +72,10 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		String groupKeyExp = keyPrefix==null? cfgkey_aggr_groupkey_exp:keyPrefix+"."+cfgkey_aggr_groupkey_exp;
 		String groupKeyExpType = keyPrefix==null? cfgkey_aggr_groupkey_exp_type:keyPrefix+"."+cfgkey_aggr_groupkey_exp_type;
 		String groupKeyExpName = keyPrefix==null? cfgkey_aggr_groupkey_exp_name:keyPrefix+"."+cfgkey_aggr_groupkey_exp_name;
-		List<IdxRange> commonGroupKeys = IdxRange.parseString(pc.getString(groupKey));
-		String[] groupKeyExps = pc.getStringArray(groupKeyExp);
-		String[] groupKeyExpTypes = pc.getStringArray(groupKeyExpType);
-		String[] groupKeyExpNames = pc.getStringArray(groupKeyExpName);
+		List<IdxRange> commonGroupKeys = IdxRange.parseString(super.getCfgString(groupKey, null));
+		String[] groupKeyExps = super.getCfgStringArray(groupKeyExp);
+		String[] groupKeyExpTypes = super.getCfgStringArray(groupKeyExpType);
+		String[] groupKeyExpNames = super.getCfgStringArray(groupKeyExpName);
 		CompiledScript[] groupKeyExpScripts = null;
 		if (groupKeyExps!=null){
 			groupKeyExpScripts = new CompiledScript[groupKeyExps.length];
@@ -88,21 +88,26 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		aoMapMap = new HashMap<String, AggrOpMap>();
 		groupKeysMap = new HashMap<String, GroupOp>();
-		if (pc.containsKey(cfgkey_aggr_old_table)){
-			oldTables = pc.getStringArray(cfgkey_aggr_old_table);
+		if (super.cfgContainsKey(cfgkey_aggr_old_table)){
+			oldTables = super.getCfgStringArray(cfgkey_aggr_old_table);
 		}
-		if (pc.containsKey(cfgkey_aggr_new_table)){
-			newTables = pc.getStringArray(cfgkey_aggr_new_table);
+		if (super.cfgContainsKey(cfgkey_aggr_new_table)){
+			newTables = super.getCfgStringArray(cfgkey_aggr_new_table);
 		}
 		if (oldTables==null){//not using schema
-			String[] strAggrOpList = pc.getStringArray(cfgkey_aggr_op);
+			String[] strAggrOpList = super.getCfgStringArray(cfgkey_aggr_op);
 			AggrOpMap aoMap = new AggrOpMap(strAggrOpList);
 			aoMapMap.put(SINGLE_TABLE, aoMap);
 			GroupOp groupOp = getGroupOp(null);
@@ -117,17 +122,17 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 				}
 				AggrOpMap aoMap = null;
 				GroupOp groupOp = null;
-				if (pc.containsKey(tableName+"."+cfgkey_aggr_op)){
-					aoMap = new AggrOpMap(pc.getStringArray(tableName+"."+cfgkey_aggr_op));
+				if (super.cfgContainsKey(tableName+"."+cfgkey_aggr_op)){
+					aoMap = new AggrOpMap(super.getCfgStringArray(tableName+"."+cfgkey_aggr_op));
 					String groupKey = tableName+"."+cfgkey_aggr_groupkey;
 					String groupKeyExp = tableName+"."+cfgkey_aggr_groupkey_exp;
-					if (pc.containsKey(groupKey) || pc.containsKey(groupKeyExp)){
+					if (super.cfgContainsKey(groupKey) || super.cfgContainsKey(groupKeyExp)){
 						groupOp = getGroupOp(tableName);
 					}else{//for merge tables
 						groupOp = getGroupOp(null);
 					}
-				}else if (pc.containsKey(cfgkey_aggr_op)){
-					aoMap = new AggrOpMap(pc.getStringArray(cfgkey_aggr_op));
+				}else if (super.cfgContainsKey(cfgkey_aggr_op)){
+					aoMap = new AggrOpMap(super.getCfgStringArray(cfgkey_aggr_op));
 					groupOp = getGroupOp(null);
 				}else{
 					logger.error(String.format("aggr_op not configured for table %s", tableName));
@@ -468,7 +473,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
 		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override

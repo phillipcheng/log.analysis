@@ -50,10 +50,22 @@ public class CsvFileGenCmd extends SchemaFileETLCmd{
 	}
 	
 	public CsvFileGenCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs) {
-		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		this.tableNames = pc.getStringArray(cfgkey_table_names);
-		this.outputFolder = pc.getString(cfgkey_output_folder);
-		this.fileSize = pc.getInt(cfgkey_file_size);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+	}
+	
+	public CsvFileGenCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs) {
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs) {
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		this.tableNames = super.getCfgStringArray(cfgkey_table_names);
+		this.outputFolder = super.getCfgString(cfgkey_output_folder, null);
+		if (this.outputFolder==null){
+			logger.error(String.format("output folder not specified."));
+		}
+		this.fileSize = super.getCfgInt(cfgkey_file_size, 100);
 	}
 	
 	//for each table generate a file with fileSize and put to the output folder

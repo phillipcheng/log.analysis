@@ -9,8 +9,9 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.junit.Test;
 
 import etl.engine.LogicSchema;
-import etl.tools.GenLogicSchema;
+import etl.util.DBType;
 import etl.util.FieldType;
+import etl.util.SchemaUtils;
 import etl.util.Util;
 
 public class TestGenLogicSchema {
@@ -18,20 +19,18 @@ public class TestGenLogicSchema {
 	//@Test
 	public void testGenSMSCSchemaFromDB(){
 		PropertiesConfiguration pc = Util.getPropertiesConfig("etlengine.properties");
-		boolean ret = GenLogicSchema.genLogicSchemaFromDB(pc, "SMSC", "smsc.schema");
+		boolean ret = SchemaUtils.genLogicSchemaFromDB(pc, "SMSC", "smsc.schema");
 		
 		
 	}
 	
-	@Test
+	//@Test
 	public void testGenSgsiwfSchemaFromDB(){
 		PropertiesConfiguration pc = Util.getPropertiesConfig("etlengine.properties");
-		boolean ret = GenLogicSchema.genLogicSchemaFromDB(pc, "sgsiwf", "sgsiwf.schema");
-		
-		
+		boolean ret = SchemaUtils.genLogicSchemaFromDB(pc, "sgsiwf", "sgsiwf.schema");
 	}
 	
-	@Test
+	//@Test
 	public void testGenSchemaFromMem(){
 		LogicSchema ls = new LogicSchema();
 		String[] attNames = new String[]{"endTime","duration","SubNetwork","ManagedElement","Machine",
@@ -50,6 +49,16 @@ public class TestGenLogicSchema {
 		//ls.addAttributes(tableName1, attNamesList);
 		//ls.addAttrTypes(tableName1, attTypesList);
 		Util.toLocalJsonFile("mycore.schema", ls);	
+	}
+	
+	//@Test
+	public void genVerticaSqlFromSchema(){
+		SchemaUtils.genCreateSqls("src/main/resources/logschema.txt", "sql/vertica/etllog.sql", "etllog", DBType.VERTICA);
+	}
+	
+	//@Test
+	public void genHiveSqlFromSchema(){
+		SchemaUtils.genCreateSqls("src/main/resources/logschema.txt", "sql/hive/etllog.sql", "etllog", DBType.HIVE);
 	}
 
 }

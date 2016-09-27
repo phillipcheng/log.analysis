@@ -54,13 +54,18 @@ public class CsvMergeCmd extends ETLCmd{
 	private int srcNum;
 	
 	public CsvMergeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	public CsvMergeCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
-		String[] srcFiles =pc.getStringArray(cfgkey_src_files);
+		String[] srcFiles =super.getCfgStringArray(cfgkey_src_files);
 		srcNum = srcFiles.length;
 		srcFilesExp = new Pattern[srcNum];
 		for (int i=0; i<srcNum; i++){
@@ -68,19 +73,21 @@ public class CsvMergeCmd extends ETLCmd{
 			String globExp = (String) ScriptEngineUtil.eval(scriptExp, VarType.STRING, super.getSystemVariables());
 			srcFilesExp[i] = Pattern.compile(StringUtil.convertGlobToRegEx(globExp));
 		}
-		String[] srcKeysArr = pc.getStringArray(cfgkey_src_keys);
+		String[] srcKeysArr = super.getCfgStringArray(cfgkey_src_keys);
 		srcKeys = new int[srcNum];
 		for (int i=0; i<srcNum; i++){
 			srcKeys[i] = Integer.parseInt(srcKeysArr[i]);
 		}
-		String[] srcSkipHeaderArr = pc.getStringArray(cfgkey_src_skipHeader);
+		String[] srcSkipHeaderArr = super.getCfgStringArray(cfgkey_src_skipHeader);
 		srcSkipHeader = new boolean[srcNum];
 		for (int i=0; i<srcNum; i++){
 			srcSkipHeader[i] = Boolean.parseBoolean(srcSkipHeaderArr[i]);
 		}
-		joinType = JoinType.valueOf(pc.getString(cfgkey_join_type));
-		String retValueStr = pc.getString(cfgkey_ret_value);
-		retValueExp = ScriptEngineUtil.compileScript(retValueStr);
+		joinType = JoinType.valueOf(super.getCfgString(cfgkey_join_type, JoinType.inner.toString()));
+		String retValueStr = super.getCfgString(cfgkey_ret_value, null);
+		if (retValueStr!=null){
+			retValueExp = ScriptEngineUtil.compileScript(retValueStr);
+		}
 	}
 	
 	/**

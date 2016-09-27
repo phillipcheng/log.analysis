@@ -31,13 +31,22 @@ public class ShellCmd extends ETLCmd{
 	private Map<String, Object> params;
 
 	public ShellCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		command = pc.getString(cfgkey_command);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		command = super.getCfgString(cfgkey_command, null);
+		if (command==null){
+			logger.error(String.format("command can't be null."));
+			return;
+		}
 		params = new HashMap<String, Object>();
-		Iterator<String> keys = pc.getKeys();
+		Iterator<String> keys = super.getCfgKeys();
 		while (keys.hasNext()){
 			String key = keys.next();
-			params.put(key, pc.getProperty(key));
+			params.put(key, super.getCfgProperty(key));
 		}
 	}
 

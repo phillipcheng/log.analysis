@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -189,6 +191,17 @@ public class Util {
 		}finally{
 			if (out!=null)
 				out.close();
+		}
+	}
+	
+	public static Object fromLocalJsonFile(String file, Class clazz){
+		java.nio.file.Path path = java.nio.file.FileSystems.getDefault().getPath(file);
+		try {
+			String contents = new String(Files.readAllBytes(path));
+			return fromJsonString(contents, clazz);
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
 		}
 	}
 	

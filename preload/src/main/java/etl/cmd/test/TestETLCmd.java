@@ -39,7 +39,7 @@ public abstract class TestETLCmd {
 	
 	private static String key_localFolder="localFolder";
 	private static String key_projectFolder="projectFolder";
-	private static String key_defaultFs="defaultFS";
+	private static String key_defaultFs="defaultFs";
 	private static String key_jobTracker="jobTracker";
 	private static String key_test_sftp="test.sftp";
 	private static String key_test_kafka="test.kafka";

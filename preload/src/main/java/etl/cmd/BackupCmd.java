@@ -16,7 +16,8 @@ import java.util.zip.ZipOutputStream;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -27,6 +28,7 @@ import etl.engine.ETLCmd;
 import etl.log.ETLLog;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
+import scala.Tuple2;
 
 public class BackupCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -45,20 +47,25 @@ public class BackupCmd extends ETLCmd{
 	private Map<String, Object> vars = new HashMap<String, Object>();
 	
 	public BackupCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	public BackupCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		vars=super.getSystemVariables();
-		this.dataHistoryFolder = pc.getString(cfgkey_data_history_folder);
-		String[] ffExps = pc.getStringArray(cfgkey_Folder_filter);
+		this.dataHistoryFolder = super.getCfgString(cfgkey_data_history_folder, null);
+		String[] ffExps = super.getCfgStringArray(cfgkey_Folder_filter);
 		fileFolders = new String[ffExps.length];
 		for (int i=0; i<ffExps.length; i++){
 			String ffExp = ffExps[i];
 			fileFolders[i] = (String) ScriptEngineUtil.eval(ffExp, VarType.STRING, super.getSystemVariables());
 		}
-		this.fileFilters = pc.getStringArray(cfgkey_file_filter);
+		this.fileFilters = super.getCfgStringArray(cfgkey_file_filter);
 		this.destZipFile=this.dataHistoryFolder+wfid+".zip";
 	}
 
@@ -180,4 +187,5 @@ public class BackupCmd extends ETLCmd{
 			logger.error(" ", e);
 		}
 	}
+
 }

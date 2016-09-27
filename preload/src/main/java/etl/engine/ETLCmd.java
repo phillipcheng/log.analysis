@@ -2,6 +2,7 @@ package etl.engine;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,9 +46,10 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	protected String staticCfg;
 	protected String defaultFs;
 	protected String[] otherArgs;
+	private String prefix;
 	
 	protected transient FileSystem fs;
-	protected transient PropertiesConfiguration pc;
+	private transient PropertiesConfiguration pc;
 
 	private transient Configuration conf;
 	
@@ -63,17 +65,107 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public ETLCmd(){
 	}
 	
-	public ETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	public ETLCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs) {
+	public ETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+	}
+	
+	public boolean cfgContainsKey(String key){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		return pc.containsKey(realKey);
+	}
+	
+	public Iterator<String> getCfgKeys(){
+		String realPrefix = "";
+		if (prefix!=null){
+			realPrefix = prefix+".";
+		}
+		return pc.getKeys(realPrefix);
+	}
+	
+	public Object getCfgProperty(String key){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getProperty(realKey);
+		}else{
+			return pc.getProperty(key);
+		}
+	}
+	
+	public boolean getCfgBoolean(String key, boolean defaultValue){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getBoolean(realKey, defaultValue);
+		}else{
+			return pc.getBoolean(key, defaultValue);
+		}
+	}
+	
+	public int getCfgInt(String key, int defaultValue){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getInt(realKey, defaultValue);
+		}else{
+			return pc.getInt(key, defaultValue);
+		}
+	}
+	
+	public String getCfgString(String key, String defaultValue){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getString(realKey, defaultValue);
+		}else{
+			return pc.getString(key, defaultValue);
+		}
+	}
+	
+	//return 0 length array if not found
+	public String[] getCfgStringArray(String key){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getStringArray(realKey);
+		}else{
+			return pc.getStringArray(key);
+		}
+	}
+	/**
+	 * 
+	 * @param wfName
+	 * @param wfid
+	 * @param staticCfg
+	 * @param prefix
+	 * @param defaultFs
+	 * @param otherArgs
+	 */
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs) {
 		this.wfName = wfName;
 		this.wfid = wfid;
 		this.staticCfg = staticCfg;
 		this.defaultFs = defaultFs;
 		this.otherArgs = otherArgs;
-		logger.info(String.format("wfName:%s, wfid:%s, cfg:%s, defaultFs:%s", wfName, wfid, staticCfg, defaultFs));
+		this.prefix = prefix;
+		logger.info(String.format("wfName:%s, wfid:%s, cfg:%s, prefix:%s, defaultFs:%s", wfName, wfid, staticCfg, prefix, defaultFs));
 		try {
 			String fs_key = "fs.defaultFS";
 			conf = new Configuration();
@@ -100,12 +192,12 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	public void init(){
 		if (fs==null){
-			init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+			init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		}
 	}
 	
 	public void reinit(){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 	}
 	
 	public Map<String, Object> getSystemVariables(){
@@ -117,7 +209,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	 * @param input
 	 * @return
 	 */
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
 		logger.error("empty spark process impl, should not be invoked.");
 		return null;
 	}
@@ -127,7 +219,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	 * @param input
 	 * @return
 	 */
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input){
 		logger.error("empty spark process impl, should not be invoked.");
 		return null;
 	}

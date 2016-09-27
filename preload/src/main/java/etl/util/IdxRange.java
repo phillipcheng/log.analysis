@@ -40,21 +40,23 @@ public class IdxRange implements Serializable{
 	
 	public static List<IdxRange> parseString(String str){
 		List<IdxRange> irList = new ArrayList<IdxRange>();
-		String[] irs = str.split(SEP);
-		for (String ir:irs){
-			if (ir.contains(TO)){
-				String[] idxes = ir.split(TO);
-				if (idxes.length==2){
-					int start = Integer.parseInt(idxes[0]);
-					int end = Integer.parseInt(idxes[1]);
-					irList.add(new IdxRange(start, end));
+		if (str!=null){
+			String[] irs = str.split(SEP);
+			for (String ir:irs){
+				if (ir.contains(TO)){
+					String[] idxes = ir.split(TO);
+					if (idxes.length==2){
+						int start = Integer.parseInt(idxes[0]);
+						int end = Integer.parseInt(idxes[1]);
+						irList.add(new IdxRange(start, end));
+					}else{
+						int start = Integer.parseInt(idxes[0]);
+						irList.add(new IdxRange(start, -1));
+					}
 				}else{
-					int start = Integer.parseInt(idxes[0]);
-					irList.add(new IdxRange(start, -1));
+					int idx = Integer.parseInt(ir);
+					irList.add(new IdxRange(idx));
 				}
-			}else{
-				int idx = Integer.parseInt(ir);
-				irList.add(new IdxRange(idx));
 			}
 		}
 		return irList;

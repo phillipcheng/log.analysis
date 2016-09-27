@@ -1,13 +1,16 @@
 package etl.cmd;
 
+import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.script.CompiledScript;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -20,6 +23,7 @@ import etl.engine.OutputType;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
+import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
@@ -56,13 +60,17 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 	}
 	
 	public SchemaFileETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		this.schemaFile = pc.getString(cfgkey_schema_file, null);
-		this.dbPrefix = pc.getString(cfgkey_db_prefix, null);
+	public SchemaFileETLCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		this.schemaFile = super.getCfgString(cfgkey_schema_file, null);
+		this.dbPrefix = super.getCfgString(cfgkey_db_prefix, null);
 		this.getSystemVariables().put(VAR_DB_PREFIX, dbPrefix);
 		logger.info(String.format("schemaFile: %s", schemaFile));
 		if (this.schemaFile!=null){
@@ -80,21 +88,21 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 				logger.error("", e);
 			}
 		}
-		String createSqlExp = pc.getString(cfgkey_create_sql, null);
+		String createSqlExp = super.getCfgString(cfgkey_create_sql, null);
 		if (createSqlExp!=null)
 			this.createTablesSqlFileName = (String) ScriptEngineUtil.eval(createSqlExp, VarType.STRING, super.getSystemVariables());
-		String strDbType = pc.getString(cfgkey_db_type, null);
+		String strDbType = super.getCfgString(cfgkey_db_type, null);
 		this.getSystemVariables().put(VAR_DB_TYPE, strDbType);
 		if (strDbType!=null){
 			dbtype = DBType.fromValue(strDbType);
 		}
-		strFileTableMap = pc.getString(cfgkey_file_table_map, null);
+		strFileTableMap = super.getCfgString(cfgkey_file_table_map, null);
 		logger.info(String.format("fileTableMap:%s", strFileTableMap));
 		if (strFileTableMap!=null){
 			expFileTableMap = ScriptEngineUtil.compileScript(strFileTableMap);
 			logger.info(String.format("fileTableMapExp:%s", expFileTableMap));
 		}
-		String strOutputType = pc.getString(cfgkey_output_type);
+		String strOutputType = super.getCfgString(cfgkey_output_type, null);
 		if (strOutputType!=null){
 			outputType = OutputType.valueOf(strOutputType);
 		}
@@ -109,7 +117,7 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 			Util.toDfsJsonFile(fs, this.schemaFile, logicSchema);
 			//execute the sql
 			if (dbtype != DBType.NONE){
-				DBUtil.executeSqls(createTableSqls, pc);
+				DBUtil.executeSqls(createTableSqls, super.getPc());
 			}
 		}
 		//gen report info		
@@ -127,14 +135,7 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 	}
 	
 	public List<String> getCreateSqls(){
-		List<String> sqls = new ArrayList<String>();
-		for (String tn: logicSchema.getAttrNameMap().keySet()){
-			List<String> attrNames = logicSchema.getAttrNames(tn);
-			List<FieldType> attrTypes = logicSchema.getAttrTypes(tn);
-			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbPrefix, dbtype);
-			sqls.add(sql);
-		}
-		return sqls;
+		return SchemaUtils.genCreateSqlByLogicSchema(this.logicSchema, this.dbPrefix, this.dbtype);
 	}
 	
 	public List<String> getDropSqls(){

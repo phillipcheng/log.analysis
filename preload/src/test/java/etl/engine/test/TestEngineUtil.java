@@ -13,8 +13,8 @@ import org.junit.Test;
 
 import etl.cmd.test.TestETLCmd;
 import etl.engine.EngineUtil;
-import etl.engine.LogType;
 import etl.log.ETLLog;
+import etl.log.LogType;
 import etl.util.DateUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.StringUtil;
@@ -23,7 +23,7 @@ import etl.util.VarType;
 public class TestEngineUtil extends TestETLCmd{
 	public static final Logger logger = LogManager.getLogger(TestEngineUtil.class);
 	private ETLLog getETLLog(){
-		ETLLog etllog = new ETLLog(LogType.statistics);
+		ETLLog etllog = new ETLLog(LogType.etlstat);
 		etllog.setActionName("test");
 		etllog.setStart(new Date());
 		etllog.setEnd(new Date());

@@ -67,30 +67,31 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private int fileLimit=0;
 
 	public SftpCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		String incomingFolderExp = pc.getString(cfgkey_incoming_folder, null);
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		String incomingFolderExp = super.getCfgString(cfgkey_incoming_folder, null);
 		if (incomingFolderExp!=null){
 			this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
 		}
-		this.host = pc.getString(cfgkey_sftp_host);
-		this.port = pc.getInt(cfgkey_sftp_port);
-		this.user = pc.getString(cfgkey_sftp_user);
-		this.pass = pc.getString(cfgkey_sftp_pass);
-		this.fromDirs = pc.getStringArray(cfgkey_sftp_folder);
-		String fileFilterExp = pc.getString(cfgkey_file_filter, null);
+		this.host = super.getCfgString(cfgkey_sftp_host, null);
+		this.port = super.getCfgInt(cfgkey_sftp_port, 22);
+		this.user = super.getCfgString(cfgkey_sftp_user, null);
+		this.pass = super.getCfgString(cfgkey_sftp_pass, null);
+		this.fromDirs = super.getCfgStringArray(cfgkey_sftp_folder);
+		String fileFilterExp = super.getCfgString(cfgkey_file_filter, null);
 		if (fileFilterExp!=null){
 			this.fileFilter = (String) ScriptEngineUtil.eval(fileFilterExp, VarType.STRING, super.getSystemVariables());
 		}
-		this.sftpGetRetryCount = pc.getInt(cfgkey_sftp_get_retry);
-		this.sftpGetRetryWait =  pc.getInt(cfgkey_sftp_get_retry_wait, 10000);//
-		this.sftpConnectRetryCount = pc.getInt(cfgkey_sftp_connect_retry);
-		this.sftpConnectRetryWait =  pc.getInt(cfgkey_sftp_connect_retry_wait, 15000);//
-		this.sftpClean = pc.getBoolean(cfgkey_sftp_clean);
-		this.fileLimit = pc.getInt(cfgkey_file_limit, 0);
+		this.sftpGetRetryCount = super.getCfgInt(cfgkey_sftp_get_retry, 3);
+		this.sftpGetRetryWait =  super.getCfgInt(cfgkey_sftp_get_retry_wait, 10000);//
+		this.sftpConnectRetryCount = super.getCfgInt(cfgkey_sftp_connect_retry, 3);
+		this.sftpConnectRetryWait =  super.getCfgInt(cfgkey_sftp_connect_retry_wait, 15000);//
+		this.sftpClean = super.getCfgBoolean(cfgkey_sftp_clean, false);
+		this.fileLimit = super.getCfgInt(cfgkey_file_limit, 0);
 	}
 
 	@Override
@@ -194,21 +195,6 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 			}
 		}
 		return files;
-	}
-	
-	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		if (input!=null){
-			//map over input
-			return null;
-		}else{
-			List<String> files = sparkRecieve();
-			List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
-			for (String file:files){
-				ret.add(new Tuple2<String,String>(wfid, file));
-			}
-			return jsc.parallelize(ret);
-		}
 	}
 	
 	@Override

@@ -12,7 +12,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import etl.cmd.KafkaMsgDecodeCmd;
+import etl.cmd.KafkaMsgGenCmd;
 import etl.cmd.SendLogCmd;
+import etl.engine.ETLCmd;
 import etl.engine.ETLCmdMain;
 
 public class TestSendLogCmd extends TestETLCmd {
@@ -53,6 +56,7 @@ public class TestSendLogCmd extends TestETLCmd {
 		final String dfsFolder = "/test/sendmsg/";
 		final String staticCfgName = "msggen.properties";
 		final String schemaFile = "kafkaTimeTriggerMsg.schema";
+		final String wfName="wfName1";
 		final String wfid = "wf1";
 		final int waitSeconds = 20;
 		
@@ -65,21 +69,15 @@ public class TestSendLogCmd extends TestETLCmd {
 		es.submit(new Runnable(){
 			@Override
 			public void run() {
-				ETLCmdMain.main(new String[]{"etl.cmd.KafkaMsgGenCmd", wfid, dfsFolder+staticCfgName, getDefaultFS(),
-						String.format("%s=%s",ETLCmdMain.param_exe_interval, "4"),
-						String.format("%s=%d",ETLCmdMain.param_exe_time, waitSeconds-2)
-						});
-				
+				ETLCmd cmd = new KafkaMsgGenCmd(wfName, wfid, dfsFolder+staticCfgName, getDefaultFS(), null);
+				ETLCmdMain.exeCmd(cmd, 4, waitSeconds-2);
 			}
 		});
 		es.submit(new Runnable(){
 			@Override
 			public void run() {
-				ETLCmdMain.main(new String[]{"etl.cmd.KafkaMsgDecodeCmd", wfid, dfsFolder+staticCfgName, getDefaultFS(),
-						String.format("%s=%s",ETLCmdMain.param_exe_interval, "4"),
-						String.format("%s=%d",ETLCmdMain.param_exe_time, waitSeconds-2)
-						});
-				
+				ETLCmd cmd = new KafkaMsgDecodeCmd(wfName, wfid, dfsFolder+staticCfgName, getDefaultFS(), null);
+				ETLCmdMain.exeCmd(cmd, 4, waitSeconds-2);
 			}
 		});
 		es.awaitTermination(waitSeconds, TimeUnit.SECONDS);
@@ -107,6 +105,7 @@ public class TestSendLogCmd extends TestETLCmd {
 		final String dfsFolder = "/test/sendmsg/";
 		final String staticCfgName = "msggen.properties";
 		final String schemaFile = "kafkaTimeTriggerMsg.schema";
+		final String wfName = "wfName1";
 		final String wfid = "wf1";
 		final int waitSeconds = 200;
 		
@@ -119,10 +118,8 @@ public class TestSendLogCmd extends TestETLCmd {
 		es.submit(new Runnable(){
 			@Override
 			public void run() {
-				ETLCmdMain.main(new String[]{"etl.cmd.KafkaMsgGenCmd", wfid, dfsFolder+staticCfgName, getDefaultFS(),
-						String.format("%s=%s",ETLCmdMain.param_exe_interval, waitSeconds),
-						String.format("%s=%d",ETLCmdMain.param_exe_time, waitSeconds-2)
-						});
+				ETLCmd cmd = new KafkaMsgGenCmd(wfName, wfid, dfsFolder+staticCfgName, getDefaultFS(), null);
+				ETLCmdMain.exeCmd(cmd, waitSeconds, waitSeconds-2);
 				
 			}
 		});

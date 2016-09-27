@@ -8,7 +8,6 @@ import java.util.TimeZone;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import etl.engine.ETLCmd;
-import etl.engine.LogType;
 import etl.engine.SafeSimpleDateFormat;
 
 public class ETLLog implements Serializable{
@@ -38,7 +37,7 @@ public class ETLLog implements Serializable{
 		this.wfid = wfId;
 		this.actionName = cmdClass;
 		//
-		this.type = LogType.exception;
+		this.type = LogType.etlexception;
 		this.start = new Date();
 		this.end =start;
 		if (exception==null){
@@ -55,7 +54,7 @@ public class ETLLog implements Serializable{
 		this.wfid = cmd.getWfid();
 		this.actionName = cmd.getClass().getName();
 		//
-		this.type = LogType.exception;
+		this.type = LogType.etlexception;
 		this.start = new Date();
 		this.end =start;
 		if (exception==null){
@@ -150,8 +149,8 @@ public class ETLLog implements Serializable{
 				}
 			}
 		}
-		if (LogType.exception==type){
-			return String.format("%s,%s,%s,%s,%s,%s,%s", type.name(), ssdf.format(start), ssdf.format(end), wfName, wfid, actionName, exception);
+		if (LogType.etlexception==type){
+			return String.format("%s,%s,%s,%s,%s,%s", type.name(), ssdf.format(start), wfName, wfid, actionName, exception);
 		}else{
 			return String.format("%s,%s,%s,%s,%s,%s,%s", type.name(), ssdf.format(start), ssdf.format(end), wfName, wfid, actionName, userCounts.toString());
 		}

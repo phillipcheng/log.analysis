@@ -24,13 +24,21 @@ public class KafkaMsgDecodeCmd extends SchemaFileETLCmd{
 	private transient Consumer<String, String> consumer;
 	
 	public KafkaMsgDecodeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		entityName = pc.getString(cfgkey_entity_name);
-		kac = new KafkaAdaptorCmd(pc);
+	public KafkaMsgDecodeCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		entityName = super.getCfgString(cfgkey_entity_name, null);
+		if (entityName==null){
+			logger.error(String.format("entityName can not be null."));
+		}
+		kac = new KafkaAdaptorCmd(super.getPc());
 	}
 	
 	public Map<String, Object> decode(String v){

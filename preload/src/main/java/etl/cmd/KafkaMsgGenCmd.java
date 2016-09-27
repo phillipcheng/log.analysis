@@ -20,27 +20,42 @@ public class KafkaMsgGenCmd extends SchemaFileETLCmd{
 	
 	public static final String cfgkey_entity_name="entity.name";
 	public static final String cfgkey_entity_attr_exp="entity.exp";
-
+	public static final String cfgkey_entity_key="entity.key";
+	
 	private String entityName;
 	
 	private transient KafkaAdaptorCmd kac;
 	private transient Map<String, CompiledScript> expMap;
+	private transient CompiledScript keyCS;
 	
 	public KafkaMsgGenCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		kac = new KafkaAdaptorCmd(pc);
-		entityName = pc.getString(cfgkey_entity_name);
+	public KafkaMsgGenCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		kac = new KafkaAdaptorCmd(super.getPc());
+		entityName = super.getCfgString(cfgkey_entity_name, null);
+		if (entityName==null){
+			logger.error(String.format("entityName can't be null."));
+			return;
+		}
 		expMap = new HashMap<String, CompiledScript>();
 		List<String> attrs = logicSchema.getAttrNameMap().get(entityName);
 		for (String attrName:attrs){
-			String attrExp = pc.getString(cfgkey_entity_attr_exp+"."+attrName, null);
+			String attrExp = super.getCfgString(cfgkey_entity_attr_exp+"."+attrName, null);
 			if (attrExp!=null){
 				expMap.put(attrName, ScriptEngineUtil.compileScript(attrExp));
 			}
+		}
+		String strEntityKey = super.getCfgString(cfgkey_entity_key, null);
+		if (strEntityKey!=null){
+			keyCS = ScriptEngineUtil.compileScript(strEntityKey);
 		}
 	}
 	
@@ -58,8 +73,11 @@ public class KafkaMsgGenCmd extends SchemaFileETLCmd{
 			}
 			sb.append(v).append(",");
 		}
-		
-		EngineUtil.getInstance().sendMsg(kac.getLogTopicName(), null, sb.toString());
+		String key = null;
+		if (keyCS!=null){
+			key = ScriptEngineUtil.eval(keyCS, super.getSystemVariables());
+		}
+		EngineUtil.getInstance().sendMsg(kac.getLogTopicName(), key, sb.toString());
 		return null;
 	}
 	

@@ -44,24 +44,25 @@ public class KcvToCsvCmd extends ETLCmd{
 	private int recordFieldNum = RECORD_FIELDNUM_DEFAULT;
 	
 	public KcvToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.file);
-		String strVal = pc.getString(RECORD_START);
+		String strVal = super.getCfgString(RECORD_START, null);
 		if (strVal!=null){
 			this.recordStart = strVal;
 			recordStartPattern = Pattern.compile(strVal);
 		}
 
-		strVal = pc.getString(RECORD_KCV_VK_REGEXP);
+		strVal = super.getCfgString(RECORD_KCV_VK_REGEXP, null);
 		if (strVal!=null){
 			this.recordVKExp = Pattern.compile(strVal);
 		}
 		
-		strVal = pc.getString(RECORD_FIELDNUM);
+		strVal = super.getCfgString(RECORD_FIELDNUM, null);
 		if (strVal!=null){
 			this.recordFieldNum = Integer.parseInt(strVal);
 		}

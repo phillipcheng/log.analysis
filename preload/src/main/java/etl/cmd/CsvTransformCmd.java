@@ -57,16 +57,21 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	
 	
 	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
-		skipHeader =pc.getBoolean(cfgkey_skip_header, false);
-		rowValidation = pc.getString(cfgkey_row_validation);
-		inputEndWithComma = pc.getBoolean(cfgkey_input_endwithcomma, false);
-		oldTable = pc.getString(cfgkey_old_talbe, null);
+		skipHeader =super.getCfgBoolean(cfgkey_skip_header, false);
+		rowValidation = super.getCfgString(cfgkey_row_validation, null);
+		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
+		oldTable = super.getCfgString(cfgkey_old_talbe, null);
 		addFieldsNames = new ArrayList<String>();
 		addFieldsTypes = new ArrayList<String>();
 		colOpList = new ArrayList<ColOp>();
@@ -83,12 +88,12 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 				}
 			}
 		}
-		String[] colops = pc.getStringArray(cfgkey_col_op);
+		String[] colops = super.getCfgStringArray(cfgkey_col_op);
 		for (String colop:colops){
 			ColOp co = new ColOp(colop, nameIdxMap);
 			colOpList.add(co);
 		}
-		String[] nvs = pc.getStringArray(cfgkey_add_fields);
+		String[] nvs = super.getCfgStringArray(cfgkey_add_fields);
 		if (nvs!=null){
 			for (String nv:nvs){
 				String[] nva = nv.split("\\:",2);
@@ -208,7 +213,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input, JavaSparkContext jsc){
+	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
 		JavaRDD<Tuple2<String, String>> mapret = input.map(new Function<Tuple2<String, String>, Tuple2<String, String>>(){
 			private static final long serialVersionUID = 1L;
 			@Override

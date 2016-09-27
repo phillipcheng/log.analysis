@@ -57,26 +57,27 @@ public class SesToCsvCmd extends ETLCmd{
 	
 	
 	public SesToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.file);
-		SESSION = pc.getString("session");
-		ALMAN_EPH_EVENT = pc.getString("alman_eph_event");
-		ALMAN_EVENT = pc.getString("alman_event");
-		EPH_EVENT = pc.getString("eph_event");
-		EPH = pc.getString("eph");
-		ALMAN = pc.getString("alman");
-		END_SESSION = pc.getString("end_session");
-		EPH_ALMAN_EVENT=pc.getString("eph_alman_event");
-		PRIMARY = pc.getString("primary_complete");
-		PRIMARY_INCOMPLETE = pc.getString("primary_incomplete");
-		INCOMPLETE_RECORD = pc.getString("incomplete_record");
-		INCOMPLETE_RECORD_EVENT = pc.getString("incomplete_record_event");
-		DELTA_INCOMPLETE_RECORD_EVENT = pc.getString("delta_incomplete_record_event");
-		String strSuffixExp = pc.getString(cfgkey_line_suffix, null);
+		SESSION = super.getCfgString("session", null);
+		ALMAN_EPH_EVENT = super.getCfgString("alman_eph_event", null);
+		ALMAN_EVENT = super.getCfgString("alman_event", null);
+		EPH_EVENT = super.getCfgString("eph_event", null);
+		EPH = super.getCfgString("eph", null);
+		ALMAN = super.getCfgString("alman", null);
+		END_SESSION = super.getCfgString("end_session", null);
+		EPH_ALMAN_EVENT=super.getCfgString("eph_alman_event", null);
+		PRIMARY = super.getCfgString("primary_complete", null);
+		PRIMARY_INCOMPLETE = super.getCfgString("primary_incomplete", null);
+		INCOMPLETE_RECORD = super.getCfgString("incomplete_record", null);
+		INCOMPLETE_RECORD_EVENT = super.getCfgString("incomplete_record_event", null);
+		DELTA_INCOMPLETE_RECORD_EVENT = super.getCfgString("delta_incomplete_record_event", null);
+		String strSuffixExp = super.getCfgString(cfgkey_line_suffix, null);
 		if (strSuffixExp!=null){
 			suffixExp = ScriptEngineUtil.compileScript(strSuffixExp);
 		}

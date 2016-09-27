@@ -82,19 +82,19 @@ public class SparkAppDriver implements Serializable{
 						EngineUtil.getInstance().processJavaCmd(schemaFromXmlCmd);
 						
 						XmlToCsvCmd xml2csvCmd = new XmlToCsvCmd(wfName, wfid, remoteCfg+xml2csvProperties, defaultFs, null);
-						JavaRDD<Tuple2<String, String>> csvs = xml2csvCmd.sparkProcess(v1, jsc.sparkContext()).cache();
+						JavaRDD<Tuple2<String, String>> csvs = xml2csvCmd.sparkProcess(v1).cache();
 						
 						SparkUtil.saveByKey(csvs, defaultFs, outputdir, wfid);
 						
 						CsvAggregateCmd aggrCmd = new CsvAggregateCmd(wfName, wfid, remoteCfg+aggrcsvProperties, defaultFs, null);
 						EngineUtil.getInstance().processJavaCmd(aggrCmd);
-						JavaRDD<Tuple2<String, String>> aggrcsvs = aggrCmd.sparkProcessKeyValue(csvs, jsc.sparkContext());
+						JavaRDD<Tuple2<String, String>> aggrcsvs = aggrCmd.sparkProcessKeyValue(csvs);
 						
 						SparkUtil.saveByKey(aggrcsvs, defaultFs, outputdir, wfid);
 						
 						CsvTransformCmd transCmd = new CsvTransformCmd(wfName, wfid, remoteCfg+transcsvProperties, defaultFs, null);
 						EngineUtil.getInstance().processJavaCmd(transCmd);
-						JavaRDD<Tuple2<String, String>> transcsvs = transCmd.sparkProcessKeyValue(aggrcsvs, jsc.sparkContext());
+						JavaRDD<Tuple2<String, String>> transcsvs = transCmd.sparkProcessKeyValue(aggrcsvs);
 						
 						SparkUtil.saveByKey(transcsvs, defaultFs, outputdir, wfid);
 						

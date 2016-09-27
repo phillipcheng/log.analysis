@@ -43,8 +43,7 @@ public class TestExeIntervalCmd extends TestETLCmd{
 			getFs().delete(new Path(cmd.getOutputFolder()), true);
 			getFs().mkdirs(new Path(cmd.getOutputFolder()));
 			
-			ETLCmdMain.main(new String[]{"etl.cmd.CsvFileGenCmd", "wf1", remoteCfgFolder+staticCfg, getDefaultFS(),
-					ETLCmdMain.param_exe_interval + "=" + "10"});
+			ETLCmdMain.exeCmd(cmd, 10, 0);
 			
 		} catch (Exception e) {
 			logger.error("", e);
@@ -73,10 +72,7 @@ public class TestExeIntervalCmd extends TestETLCmd{
 			getFs().delete(new Path(cmd.getOutputFolder()), true);
 			getFs().mkdirs(new Path(cmd.getOutputFolder()));
 			
-			ETLCmdMain.main(new String[]{"etl.cmd.CsvFileGenCmd", "wfName1", "wf1", remoteCfgFolder+staticCfg, getDefaultFS(),
-					String.format("%s=%s",ETLCmdMain.param_exe_interval, "4"),
-					String.format("%s=%s",ETLCmdMain.param_exe_time, "5")
-					});
+			ETLCmdMain.exeCmd(cmd, 4, 5);
 			//assertion
 			List<String> ret = Util.listDfsFile(cmd.getFs(), cmd.getOutputFolder());
 			assertTrue(ret.size()>=1);

@@ -23,7 +23,7 @@
                 <include name="vertica*.jar"/>
             </fileset>
 			<fileset dir="${target}">
-                <include name="preload-0.1.0.jar"/>
+                <include name="preload-0.1.0*.jar"/>
             </fileset>
 		</copy>
 		<copy todir="${dist}">

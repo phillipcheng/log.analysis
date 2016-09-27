@@ -49,25 +49,32 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	private Set<String> missedEvtType = new HashSet<String>();
 	
 	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, defaultFs, otherArgs);
+	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	}
+	
+	@Override
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
-		eventIdx = pc.getInt(EVT_IDX, -1);
-		String[] evtTypes = pc.getStringArray(EVT_TYPE_KEY);
+		eventIdx = super.getCfgInt(EVT_IDX, -1);
+		String[] evtTypes = super.getCfgStringArray(EVT_TYPE_KEY);
 		for (String et:evtTypes){
-			String regexp = pc.getString(et + "." + REGEXP_KEY);
-			Pattern p = Pattern.compile("^" + regexp + "$");
-			evtPtnMap.put(et, p);
-			String[] attrs = pc.getStringArray(et + "." + ATTR_KEY);
-			if (attrs!=null){
-				msgAttrMap.put(et, attrs);
+			String regexp = super.getCfgString(et + "." + REGEXP_KEY, null);
+			if (regexp!=null){
+				Pattern p = Pattern.compile("^" + regexp + "$");
+				evtPtnMap.put(et, p);
+				String[] attrs = super.getCfgStringArray(et + "." + ATTR_KEY);
+				if (attrs!=null){
+					msgAttrMap.put(et, attrs);
+				}
 			}
 		}
-		msgIdx = pc.getInt(MESSAGE_IDX, -1);
-		msgFields = pc.getStringArray(MESSAGE_FIELDS);
+		msgIdx = super.getCfgInt(MESSAGE_IDX, -1);
+		msgFields = super.getCfgStringArray(MESSAGE_FIELDS);
 	}
 	
 	public String getOutputValues(String evtType, String input){

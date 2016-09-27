@@ -10,8 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.EngineUtil;
-import etl.engine.LogType;
 import etl.log.ETLLog;
+import etl.log.LogType;
 
 public class SendLogCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -22,7 +22,7 @@ public class SendLogCmd extends ETLCmd{
 	
 	public SendLogCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
-		kac = new KafkaAdaptorCmd(pc);
+		kac = new KafkaAdaptorCmd(super.getPc());
 	}
 
 	@Override
@@ -32,7 +32,7 @@ public class SendLogCmd extends ETLCmd{
 		if (EngineUtil.getInstance().isSendLog()){
 			return loginfo;
 		}else{
-			ETLLog etllog = new ETLLog(LogType.statistics);
+			ETLLog etllog = new ETLLog(LogType.etlstat);
 			Date curTime = new Date();
 			etllog.setStart(curTime);
 			etllog.setEnd(curTime);
