@@ -140,15 +140,20 @@ public class EngineUtil {
 		sendLog(this.logTopicName, etllog);
 	}
 	
+	public ETLLog getETLLog(ETLCmd cmd, Date startTime, Date endTime, List<String> loginfo){
+		ETLLog etllog = new ETLLog(LogType.etlstat);
+		etllog.setStart(startTime);
+		etllog.setEnd(endTime);
+		etllog.setWfName(cmd.getWfName());
+		etllog.setWfid(cmd.getWfid());
+		etllog.setActionName(cmd.getClass().getName());
+		etllog.setCounts(loginfo);
+		return etllog;
+	}
+	
 	public void sendCmdLog(ETLCmd cmd, Date startTime, Date endTime, List<String> loginfo){
 		if (cmd.isSendLog()){
-			ETLLog etllog = new ETLLog(LogType.etlstat);
-			etllog.setStart(startTime);
-			etllog.setEnd(endTime);
-			etllog.setWfName(cmd.getWfName());
-			etllog.setWfid(cmd.getWfid());
-			etllog.setActionName(cmd.getClass().getName());
-			etllog.setCounts(loginfo);
+			ETLLog etllog = getETLLog(cmd, startTime, endTime, loginfo);
 			sendLog(this.logTopicName, etllog);
 		}
 	}

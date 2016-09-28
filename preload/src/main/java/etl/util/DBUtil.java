@@ -1,5 +1,6 @@
 package etl.util;
 
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -106,22 +107,6 @@ public class DBUtil {
 		return tablesql.toString();
 	}
 
-	public static String genCopyLocalSql(List<String> fieldNameList, String tn, String dbschema, String csvFileName){
-		StringBuffer copysql = new StringBuffer();
-		List<String> fnl = normalizeDBFieldNames(fieldNameList);
-		//gen table sql
-		copysql.append(String.format("copy %s.%s(", dbschema, tn));
-		for (int i=0; i<fnl.size(); i++){
-			String name = fnl.get(i);
-			copysql.append(String.format("%s enclosed by '\"'", name));
-			if (i<fnl.size()-1){
-				copysql.append(",");
-			}
-		}
-		copysql.append(String.format(") from local '%s' delimiter ',' direct;", csvFileName));
-		return copysql.toString();
-	}
-
 	//for external invocation
 	public static String genCopyHdfsSql(String prefix, List<String> fieldNameList, String tn, String dbschema, 
 			String rootWebHdfs, String csvFileName, String username, String dbType){
@@ -149,6 +134,7 @@ public class DBUtil {
 					copysql.append(",");
 				}
 			}
+			
 			copysql.append(String.format(") SOURCE Hdfs(url='%s%s*',username='%s') delimiter ',';", rootWebHdfs, csvFileName, username));
 			return copysql.toString();
 		}

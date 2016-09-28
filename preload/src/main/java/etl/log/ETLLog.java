@@ -5,8 +5,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
+import etl.cmd.SendLogCmd;
 import etl.engine.ETLCmd;
 import etl.engine.SafeSimpleDateFormat;
 
@@ -64,6 +66,14 @@ public class ETLLog implements Serializable{
 		}else{
 			this.exception = String.format("msg:%s, trace:%s", exception, ExceptionUtils.getStackTrace(e));
 		}
+	}
+	
+	public ETLLog(String exception){
+		//
+		this.type = LogType.etlexception;
+		this.start = new Date();
+		this.end =start;
+		this.exception = exception;
 	}
 	
 	public Date getStart() {
@@ -132,9 +142,9 @@ public class ETLLog implements Serializable{
 		this.exception = exception;
 	}
 
-	public String toString(){
+	public String getCsv(List<String> counts, int maxCount){
 		StringBuffer userCounts = new StringBuffer();
-		for (int i=0; i<UserCountsNum; i++){
+		for (int i=0; i<maxCount; i++){
 			if (counts!=null && i<counts.size()){
 				if (i==0){
 					userCounts.append(counts.get(i));
@@ -149,10 +159,21 @@ public class ETLLog implements Serializable{
 				}
 			}
 		}
+		return userCounts.toString();
+	}
+	
+	public String toString(){
 		if (LogType.etlexception==type){
-			return String.format("%s,%s,%s,%s,%s,%s", type.name(), ssdf.format(start), wfName, wfid, actionName, exception);
+			return String.format("%s,%s,%s,%s,%s", ssdf.format(start), wfName, wfid, actionName, StringEscapeUtils.escapeCsv(exception));
 		}else{
-			return String.format("%s,%s,%s,%s,%s,%s,%s", type.name(), ssdf.format(start), ssdf.format(end), wfName, wfid, actionName, userCounts.toString());
+			String userCounts;
+			if (actionName.contains(SendLogCmd.class.getName())){
+				userCounts = getCsv(counts, UserCountsNum+1); //for SendLogCmd, the actionName will be passed in via counts
+				return String.format("%s,%s,%s,%s,%s", ssdf.format(start), ssdf.format(end), wfName, wfid, userCounts.toString());
+			}else{
+				userCounts = getCsv(counts, UserCountsNum);
+				return String.format("%s,%s,%s,%s,%s,%s", ssdf.format(start), ssdf.format(end), wfName, wfid, actionName, userCounts.toString());
+			}
 		}
 	}
 }
