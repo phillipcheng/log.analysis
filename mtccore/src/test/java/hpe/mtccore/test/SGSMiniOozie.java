@@ -28,8 +28,8 @@ public class SGSMiniOozie extends MiniOozieTestCase {
     protected void setUp() throws Exception {
         System.setProperty("oozie.test.metastore.server", "false");
         System.setProperty(XLogService.LOG4J_FILE, "oozie-log4j.properties");
-        /* System.setProperty(TEST_OOZIE_USER_PROP, "player");
-        System.setProperty(TEST_USER1_PROP, "player");
+        /* System.setProperty(TEST_OOZIE_USER_PROP, "oozie");
+        System.setProperty(TEST_USER1_PROP, "oozie");
         System.setProperty(TEST_GROUP_PROP, "supergroup");
         System.setProperty("oozie.test.hadoop.minicluster", "false");
         System.setProperty(OOZIE_TEST_NAME_NODE, "hdfs://127.0.0.1:19000");

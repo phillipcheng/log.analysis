@@ -159,9 +159,7 @@
 		          <source>1.8</source>
 		          <target>1.8</target>
 		          <debug>true</debug>
-                  <debuglevel>lines,vars,source</debuglevel> 
-                  <fork>true</fork>
-                  <executable>C:\Program Files\Java\bin\javac.exe</executable>
+                  <debuglevel>lines,vars,source</debuglevel>
 		        </configuration>
 	        </plugin>
 		<plugin>
@@ -176,8 +174,8 @@
 			  	<skipTests>true</skipTests>
 				<systemPropertyVariables>
 		            <oozie.test.hadoop.minicluster>false</oozie.test.hadoop.minicluster>
-		            <oozie.test.user.oozie>player</oozie.test.user.oozie>
-		            <oozie.test.user.test>player</oozie.test.user.test>
+		            <oozie.test.user.oozie>oozie</oozie.test.user.oozie>
+		            <oozie.test.user.test>oozie</oozie.test.user.test>
 		            <oozie.test.group>supergroup</oozie.test.group>
 		            <oozie.test.name.node>hdfs://127.0.0.1:19000</oozie.test.name.node>
 		            <oozie.test.job.tracker>localhost:8032</oozie.test.job.tracker>
