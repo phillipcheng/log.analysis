@@ -26,18 +26,36 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <arg>/pde/etlcfg/sftp.properties</arg>
             <arg>${nameNode}</arg>
         </java>
-        <ok to="TraceFilter"/>
+        <ok to="beforeTraceFilter"/>
         <error to="fail"/>
     </action>
+  <action name="beforeTraceFilter">
+  	<fs>
+	  	<delete path="${nameNode}/pde/csv/${wf:id()}"/>
+	    <mkdir path="${nameNode}/pde/csv/${wf:id()}"/>
+	    <chmod path='${nameNode}/pde/csv/${wf:id()}' permissions='777' dir-files='true'>
+	    	<recursive/>
+	    </chmod>
+	    
+	    <delete path="${nameNode}/pde/fix/${wf:id()}"/>
+	    <mkdir path="${nameNode}/pde/fix/${wf:id()}"/>
+	    <chmod path='${nameNode}/pde/fix/${wf:id()}' permissions='777' dir-files='true'>
+	    	<recursive/>
+	    </chmod>
+	    
+	    <delete path="${nameNode}/pde/ses/${wf:id()}"/>
+	    <mkdir path="${nameNode}/pde/ses/${wf:id()}"/>
+	    <chmod path='${nameNode}/pde/ses/${wf:id()}' permissions='777' dir-files='true'>
+	    	<recursive/>
+	    </chmod>
+     </fs>
+     <ok to="TraceFilter"/>
+     <error to="fail"/>
+  </action>
 	<action name="TraceFilter">
 		<map-reduce>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
-			<prepare>
-                <delete path="/pde/csv/${wf:id()}"/>
-                <delete path="/pde/fix/${wf:id()}"/>
-                <delete path="/pde/ses/${wf:id()}"/>
-            </prepare>
 			<configuration>
 				<property>
 					<name>mapred.mapper.new-api</name>
@@ -53,7 +71,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 				</property>
 				<property>
                     <name>mapreduce.job.inputformat.class</name>
-                    <value>etl.util.FilenameInputFormat</value>
+                    <value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
                 </property>
 				<property>
 					<name>mapreduce.job.outputformat.class</name>
@@ -114,8 +132,8 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<prepare>
-                <delete path="/pde/fixcsv/${wf:id()}"/>
-            </prepare>
+      	<delete path="${nameNode}/pde/fixcsv/${wf:id()}"/>
+      </prepare>
 			<configuration>
 				<property>
 					<name>mapred.mapper.new-api</name>
@@ -188,7 +206,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <prepare>
-                <delete path="/pde/transcsv/${wf:id()}"/>
+            	<delete path="${nameNode}/pde/trancvs/${wf:id()}"/>      
             </prepare>
             <configuration>
                 <property>
@@ -280,8 +298,8 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <prepare>
-                <delete path="/pde/mergecsv/${wf:id()}"/>
-            </prepare>
+	            <delete path="${nameNode}/pde/mergecsv/${wf:id()}"/>
+	      		</prepare>
             <configuration>
                 <property>
                     <name>mapred.mapper.new-api</name>
@@ -388,8 +406,8 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <prepare>
-                <delete path="/pde/sescsv/${wf:id()}"/>
-            </prepare>
+            	<delete path="${nameNode}/pde/sescsv/${wf:id()}"/>
+      			</prepare>
             <configuration>
                 <property>
                     <name>mapred.mapper.new-api</name>
@@ -476,7 +494,7 @@ C:\Java\oozie\ssh-action-0.2.xsd" name="pde">
          <fs>
             <delete path='${nameNode}/pde/rawinput/${wf:id()}'/>
             <delete path='${nameNode}/pde/csv/${wf:id()}'/>
-            <delete path='${nameNode}/pde/transcsv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/transcvs/${wf:id()}'/>
             <delete path='${nameNode}/pde/fix/${wf:id()}'/>
             <delete path='${nameNode}/pde/fixcsv/${wf:id()}'/>
             <delete path='${nameNode}/pde/mergecsv/${wf:id()}'/>

@@ -14,6 +14,14 @@ public class SaveDataCmd extends ETLCmd {
 	
 	private String logTmpDir;
 	
+	public String getLogTmpDir() {
+		return logTmpDir;
+	}
+
+	public void setLogTmpDir(String logTmpDir) {
+		this.logTmpDir = logTmpDir;
+	}
+
 	public SaveDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}

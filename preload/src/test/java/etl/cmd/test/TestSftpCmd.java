@@ -350,4 +350,40 @@ public class TestSftpCmd extends TestETLCmd {
 			});
 		}
 	}
+	
+	//you need to manually mkdir cmd.getFromDirs
+	@Test
+	public void fileNamesOnly() throws Exception {
+		String dfsCfg = "/test/sftpcmd/cfg/";
+		String cfg = "sftp_filenames.properties";
+		
+		getFs().delete(new Path(dfsCfg), true);
+		getFs().mkdirs(new Path(dfsCfg));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
+		String wfid = "wf1";
+		SftpCmd cmd = new SftpCmd("wf1", wfid, dfsCfg + cfg, getDefaultFS(), null);
+		
+		String dfsIncomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(dfsIncomingFolder), true);
+		getFs().mkdirs(new Path(dfsIncomingFolder));
+		String host = cmd.getHost();
+		int port = cmd.getPort();
+		String user = cmd.getUser();
+		String pass = cmd.getPass();
+		String[] fileNames = new String[]{"RTDB_ACCESS.friday", "RTDB_ACCESS.monday"};
+		for (String fileName: fileNames){
+			Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, cmd.getFromDirs()[0] + fileName);
+		}
+
+		//assertion
+		List<String> ret = cmd.sgProcess();
+		logger.info(ret);
+		
+		List<String> fl = Util.listDfsFile(cmd.getFs(), dfsIncomingFolder);
+		String file = fl.get(0);
+		logger.info(fl);
+		
+		List<String> contents = Util.stringsFromDfsFile(cmd.getFs(), dfsIncomingFolder+file);
+		logger.info(contents);
+	}
 }

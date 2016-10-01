@@ -1,0 +1,2 @@
+sftp.host=192.85.247.104,sftp.user=dbadmin,src.file=/data/test/sftp/recieved/RTDB_ACCESS.monday,
+sftp.host=192.85.247.104,sftp.user=dbadmin,src.file=/data/test/sftp/recieved/RTDB_ACCESS.friday,

@@ -20,6 +20,7 @@
 				<include name="scala-library-*.jar"/>
 				<include name="log4j-core-*.jar"/>
 				<include name="log4j-api-*.jar"/>
+				<include name="spark-streaming-kafka-0-10_2.11-2.0.0.jar"/>
 		    </fileset>
 			<fileset dir="lib/">
                 <include name="vertica*.jar"/>
@@ -49,10 +50,12 @@
             <fileset dir="sql">
             </fileset>
         </copy>
+		<!--
 		<jar destfile="${dist}/lib/preload-0.1.0-all.jar">
 		    <zipgroupfileset dir="${dist}/lib" includes="preload-0.1.0-jar-with-dependencies.jar" />
             <zipgroupfileset dir="${src}/lib" includes="vertica-jdbc-7.0.1-0.jar" />
 		</jar>
+		-->
 	</target>
 	
 	<target name="clean">

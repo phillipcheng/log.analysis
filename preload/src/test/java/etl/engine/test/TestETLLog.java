@@ -104,7 +104,7 @@ public class TestETLLog extends TestETLCmd {
 		final String msggenWfName = "msggenWf";
 		final String msggenWfId = "msggenWfId";
 		final int exeInterval = 2;
-		final int totalExeTime = 200;
+		final int totalExeTime = 10;
 		
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + msggneCfgName), new Path(msggenCfgFolder + msggneCfgName));
 		getFs().copyFromLocalFile(false, true, new Path("src/main/resources/logschema.txt"), 

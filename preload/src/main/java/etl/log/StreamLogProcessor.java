@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.LogManager;
@@ -22,6 +21,7 @@ import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 
+import etl.cmd.HdfsCmd;
 import etl.cmd.LoadDataCmd;
 import etl.cmd.SaveDataCmd;
 import etl.engine.EngineUtil;
@@ -85,7 +85,12 @@ public class StreamLogProcessor {
 						
 						LoadDataCmd loadDataCmd = new LoadDataCmd(wfName, batchid, null, "log", defaultFs, null);
 						loadDataCmd.setSendLog(false);
-						EngineUtil.getInstance().processJavaCmd(loadDataCmd);
+						loadDataCmd.sgProcess();
+						
+						HdfsCmd hdfsCmd = new HdfsCmd(wfName, batchid, null, defaultFs, null);
+						String folderName = String.format("%s%s%s/", defaultFs, saveDataCmd.getLogTmpDir(), batchid);
+						hdfsCmd.setRmFolders(new String[]{folderName});
+						hdfsCmd.sgProcess();
 					}
 				}
 			});

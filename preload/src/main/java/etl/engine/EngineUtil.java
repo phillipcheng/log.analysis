@@ -152,7 +152,7 @@ public class EngineUtil {
 	}
 	
 	public void sendCmdLog(ETLCmd cmd, Date startTime, Date endTime, List<String> loginfo){
-		if (cmd.isSendLog()){
+		if (cmd.isSendLog() && this.isSendLog()){
 			ETLLog etllog = getETLLog(cmd, startTime, endTime, loginfo);
 			sendLog(this.logTopicName, etllog);
 		}

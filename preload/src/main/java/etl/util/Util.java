@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -119,15 +120,17 @@ public class Util {
 		return cmdpc;
 	}
 	
+	public static final String kvSep = "=";
+	public static final String paramSep = ",";
 	//k1=v1,k2=v2 =>{{k1,v1},{k2,v2}}
 	public static TreeMap<String, String> parseMapParams(String params){
 		TreeMap<String, String> paramsMap = new TreeMap<String, String>();
 		if (params==null){
 			return paramsMap;
 		}
-		String[] strParams = params.split(",");
+		String[] strParams = params.split(paramSep);
 		for (String strParam:strParams){
-			String[] kv = strParam.split("=");
+			String[] kv = strParam.split(kvSep);
 			if (kv.length<2){
 				logger.error(String.format("wrong param format: %s", params));
 			}else{
@@ -135,6 +138,27 @@ public class Util {
 			}
 		}
 		return paramsMap;
+	}
+	
+	public static String makeMapParams(Map<String, String> params){
+		StringBuffer sb = new StringBuffer();
+		for (String key: params.keySet()){
+			String value = params.get(key);
+			sb.append(key).append(kvSep).append(value);
+			sb.append(paramSep);
+		}
+		return sb.toString();
+	}
+	
+	public static String makeMapParams(String[] keys, String[] values){
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<keys.length; i++){
+			String key = keys[i];
+			String value = values[i];
+			sb.append(key).append(kvSep).append(value);
+			sb.append(paramSep);
+		}
+		return sb.toString();
 	}
 	
 	public static String getCsv(List<String> csv, boolean newline){
@@ -397,12 +421,13 @@ public class Util {
 		            	sftpChannel.cd( folder );
 		            }
 		            catch ( SftpException e ) {
+		            	logger.info(String.format("mkdir %s", folder));
 		            	sftpChannel.mkdir( folder );
 		            	sftpChannel.cd( folder );
 		            }
 		        }
 		    }
-		   // sftpChannel.mkdir(remotePath);
+		    //sftpChannel.mkdir(remotePath);
 			sftpChannel.put(localFile, remoteFile, ChannelSftp.OVERWRITE);
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);

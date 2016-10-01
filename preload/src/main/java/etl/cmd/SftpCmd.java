@@ -16,9 +16,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -31,7 +28,6 @@ import etl.spark.SparkReciever;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
-import scala.Tuple2;
 
 public class SftpCmd extends ETLCmd implements SparkReciever{
 	private static final long serialVersionUID = 1L;
@@ -51,6 +47,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public static final String cfgkey_sftp_connect_retry_wait = "sftp.connectRetryWait";
 	public static final String cfgkey_sftp_clean = "sftp.clean";
 	public static final String cfgkey_file_limit ="file.limit";
+	public static final String cfgkey_names_only="sftp.names.only";
+	public static final String paramkey_src_file="src.file";
+	
 
 	private String incomingFolder;
 	private String host;
@@ -65,6 +64,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private int sftpConnectRetryWait;
 	private boolean sftpClean;
 	private int fileLimit=0;
+	private boolean sftpNamesOnly = false;
 
 	public SftpCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
@@ -92,10 +92,10 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		this.sftpConnectRetryWait =  super.getCfgInt(cfgkey_sftp_connect_retry_wait, 15000);//
 		this.sftpClean = super.getCfgBoolean(cfgkey_sftp_clean, false);
 		this.fileLimit = super.getCfgInt(cfgkey_file_limit, 0);
+		this.sftpNamesOnly = super.getCfgBoolean(cfgkey_names_only, false);
 	}
 
-	@Override
-	public List<String> sparkRecieve() {
+	public List<String> process(long mapKey){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
@@ -142,38 +142,43 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 							String srcFile = fromDir + entry.getFilename();
 							String fileNorm = entry.getFilename().replace(",", "_");
 							String destFile = incomingFolder + fileNorm;
-							logger.info(String.format("put file to %s from %s", destFile, srcFile));
-							getRetryCntTemp = 1;// reset the count to 1 for every file
-							while (getRetryCntTemp <= sftpGetRetryCount) {
-								try {
-									fsos = fs.create(new Path(destFile));
-									is = sftpChannel.get(srcFile);
-									IOUtils.copy(is, fsos);
-									break;
-								} catch (Exception e) {
-									logger.error("Exception during transferring the file.", e);
-									if (getRetryCntTemp == sftpGetRetryCount) {
-										logger.info("Copying" + srcFile + "failed Retried for maximum times");
+							if (this.sftpNamesOnly){
+								logger.info(String.format("find file %s", srcFile));
+								files.add(srcFile);
+							}else{
+								logger.info(String.format("put file to %s from %s", destFile, srcFile));
+								getRetryCntTemp = 1;// reset the count to 1 for every file
+								while (getRetryCntTemp <= sftpGetRetryCount) {
+									try {
+										fsos = fs.create(new Path(destFile));
+										is = sftpChannel.get(srcFile);
+										IOUtils.copy(is, fsos);
 										break;
-									}
-									getRetryCntTemp++;
-									logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
-									Thread.sleep(this.sftpGetRetryWait);
-								} finally {
-									if (fsos != null) {
-										fsos.close();
-									}
-									if (is != null) {
-										is.close();
+									} catch (Exception e) {
+										logger.error("Exception during transferring the file.", e);
+										if (getRetryCntTemp == sftpGetRetryCount) {
+											logger.info("Copying" + srcFile + "failed Retried for maximum times");
+											break;
+										}
+										getRetryCntTemp++;
+										logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
+										Thread.sleep(this.sftpGetRetryWait);
+									} finally {
+										if (fsos != null) {
+											fsos.close();
+										}
+										if (is != null) {
+											is.close();
+										}
 									}
 								}
+								// deleting file one by one if sftp.clean is enabled
+								if (sftpClean) {
+									logger.info("Deleting file:" + srcFile);
+									sftpChannel.rm(srcFile);
+								}
+								files.add(destFile);
 							}
-							// deleting file one by one if sftp.clean is enabled
-							if (sftpClean) {
-								logger.info("Deleting file:" + srcFile);
-								sftpChannel.rm(srcFile);
-							}
-							files.add(destFile);
 							numProcessed++;
 							if (this.fileLimit>0 && numProcessed>=this.fileLimit){
 								logger.info(String.format("file limit %d reached, stop processing.", numProcessed));
@@ -194,12 +199,26 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 				session.disconnect();
 			}
 		}
+		if (this.sftpNamesOnly){//write out the output file containing sftpserver, sftp user name and file name
+			List<String> outputList = new ArrayList<String>();
+			String[] argNames = new String[]{cfgkey_sftp_host, cfgkey_sftp_user, paramkey_src_file};
+			for (String srcFile: files){
+				String[] argValues = new String[]{this.host, this.user, srcFile};
+				outputList.add(Util.makeMapParams(argNames, argValues));
+			}
+			Util.writeDfsFile(getFs(), String.format("%s%s", this.getIncomingFolder(), String.valueOf(mapKey)), outputList);
+		}
 		return files;
 	}
 	
 	@Override
+	public List<String> sparkRecieve() {
+		return process(0);
+	}
+	
+	@Override
 	public List<String> sgProcess(){
-		List<String> ret = sparkRecieve();
+		List<String> ret = process(0);
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");
@@ -249,7 +268,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		}
 		
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		List<String> logInfo = sgProcess();
+		List<String> logInfo = process(offset);
 		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
 		
 		return retMap;

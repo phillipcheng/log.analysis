@@ -14,8 +14,6 @@ import etl.cmd.test.TestETLCmd;
 
 public class PdeETLCmd extends TestETLCmd{
 	public static final Logger logger = Logger.getLogger(PdeETLCmd.class);
-	String pdeCsvProp = "preload.pde.csv.properties";
-	String pdeFixProp = "preload.pde.fix.properties";
 	
 	@Override
 	public String getResourceSubFolder() {
@@ -37,15 +35,17 @@ public class PdeETLCmd extends TestETLCmd{
     	if (fs.exists(remoteLibPath)){
     		fs.delete(remoteLibPath, true);
     	}
-    	//
-    	String workflow = localCfgDir + File.separator + "workflow.xml";
-		String remoteWorkflow = remoteLibFolder + File.separator + "workflow.xml";
-		fs.delete(new Path(remoteWorkflow), true);
-		fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
-		
+    	//copy wf
+    	String[] wfs = new String[]{"workflow.xml", "testworkflow.xml"};
+    	for (String wf: wfs){
+	    	String workflow = localCfgDir + File.separator + wf;
+			String remoteWorkflow = remoteLibFolder + File.separator + wf;
+			fs.delete(new Path(remoteWorkflow), true);
+			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+    	}
 		//copy libs
 		String localTargetFolder = super.getProjectFolder()+File.separator+ "pde.analysis" +File.separator+"target"+File.separator;
-		String libName = "pde-0.1.0-jar-with-dependencies.jar";
+		String libName = "pde-0.1.0.jar";
 		fs.copyFromLocalFile(new Path(localTargetFolder + libName), new Path(remoteLibFolder + "/lib/" +libName));
 		
 		String localLibFolder = super.getProjectFolder()+File.separator+ "pde.analysis" +File.separator+"lib"+File.separator;
