@@ -28,10 +28,25 @@
         <name>dfs.namenode.kerberos.principal</name>
         <value>hdfs/_HOST@LOCALREALM</value>
     </property>
-
+    
+    <property>
+    	<name>mapred.remote.os</name>
+    	<value>Linux</value>
+    </property>
+    
+    <property>
+    	<name>mapreduce.app-submission.cross-platform</name>
+    	<value>true</value>
+    </property>
+    
     <property>
         <name>mapreduce.framework.name</name>
         <value>yarn</value>
+    </property>
+    
+    <property>
+        <name>mapreduce.jobhistory.address</name>
+        <value>127.0.0.1:10020</value>
     </property>
 
 </configuration>

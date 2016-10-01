@@ -52,7 +52,7 @@ public class SparkAppDriver implements Serializable{
 			SparkConf conf = new SparkConf().setAppName("mtccore").setMaster("local[3]");
 			
 			final JavaStreamingContext jsc = new JavaStreamingContext(conf, Durations.seconds(10));
-			String wfName  = "sgsiwf";
+			final String wfName  = "sgsiwf";
 			String recieverClassName = "etl.cmd.SftpCmd";
 			/*
 			String groupId = "testgid";
@@ -70,7 +70,6 @@ public class SparkAppDriver implements Serializable{
 					remoteCfg+sftpProperties, defaultFs, 6000));
 			ds.cache().foreachRDD(new VoidFunction2<JavaRDD<String>, Time>(){
 				private static final long serialVersionUID = 1L;
-				@Override
 				public void call(JavaRDD<String> v1, Time v2) throws Exception {
 					if (!v1.isEmpty() && v1.count()>0){
 						

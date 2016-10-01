@@ -28,6 +28,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XLog;
+
 import org.apache.oozie.service.HadoopAccessorException;
 import org.apache.oozie.service.HadoopAccessorService;
 
@@ -65,7 +66,6 @@ public abstract class XFsTestCase extends XTestCase {
         conf.set("oozie.service.HadoopAccessorService.keytab.file", getKeytabFile());
         conf.set("oozie.service.HadoopAccessorService.kerberos.principal", getOoziePrincipal());
         conf.set("local.realm", getRealm());
-
 
         conf.set("oozie.service.HadoopAccessorService.hadoop.configurations", "*=hadoop-conf");
         conf.set("oozie.service.HadoopAccessorService.action.configurations", "*=action-conf");
@@ -169,8 +169,8 @@ public abstract class XFsTestCase extends XTestCase {
      */
     protected JobClient createJobClient() throws HadoopAccessorException {
         JobConf conf = has.createJobConf(getJobTrackerUri());
-        conf.set("mapred.job.tracker", getJobTrackerUri());
-        conf.set("fs.default.name", getNameNodeUri());
+        conf.set("mapreduce.jobtracker.address", getJobTrackerUri());
+        conf.set("fs.defaultFS", getNameNodeUri());
 
         return has.createJobClient(getTestUser(), conf);
     }

@@ -18,6 +18,10 @@
   limitations under the License.
 -->
 <configuration>
+	<property>
+		<name>oozie.service.WorkflowAppService.system.libpath</name>
+		<value>${oozie.test.name.node}/user/${oozie.test.user.oozie}/share/lib</value>
+	</property>
     <property>
         <name>oozie.service.JPAService.jdbc.driver</name>
         <value>org.hsqldb.jdbcDriver</value>

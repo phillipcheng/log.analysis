@@ -34,10 +34,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.Query;
-
 import junit.framework.TestCase;
 import org.apache.commons.io.FilenameUtils;
 
@@ -48,38 +44,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRClientCluster;
 import org.apache.hadoop.mapred.MiniMRClientClusterFactory;
 import org.apache.hadoop.security.authorize.ProxyUsers;
-import org.apache.hadoop.util.Shell;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
-import org.apache.oozie.BundleActionBean;
-import org.apache.oozie.BundleJobBean;
-import org.apache.oozie.CoordinatorActionBean;
-import org.apache.oozie.CoordinatorJobBean;
-import org.apache.oozie.SLAEventBean;
-import org.apache.oozie.WorkflowActionBean;
-import org.apache.oozie.WorkflowJobBean;
-import org.apache.oozie.dependency.FSURIHandler;
-import org.apache.oozie.dependency.HCatURIHandler;
 import org.apache.oozie.service.ConfigurationService;
-import org.apache.oozie.service.HCatAccessorService;
 import org.apache.oozie.service.HadoopAccessorService;
-import org.apache.oozie.service.JMSAccessorService;
 import org.apache.oozie.service.JPAService;
-import org.apache.oozie.service.PartitionDependencyManagerService;
-import org.apache.oozie.service.ServiceException;
 import org.apache.oozie.service.Services;
-import org.apache.oozie.service.StoreService;
-import org.apache.oozie.service.URIHandlerService;
-import org.apache.oozie.sla.SLARegistrationBean;
-import org.apache.oozie.sla.SLASummaryBean;
-import org.apache.oozie.store.StoreException;
-import hpe.mtccore.test.MiniHCatServer.RUNMODE;
-import hpe.mtccore.test.hive.MiniHS2;
 import org.apache.oozie.util.IOUtils;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XConfiguration;
@@ -185,45 +159,12 @@ public abstract class XTestCase extends TestCase {
     public static final String TEST_MINICLUSTER_MONITOR_SHUTDOWN_WAIT = "oozie.test.minicluster.monitor.shutdown.wait";
 
     /**
-     * Name of the shell command
-     */
-    protected static final String SHELL_COMMAND_NAME = (Shell.WINDOWS)? "cmd": "bash";
-
-    /**
-     * Extension for shell script files
-     */
-    protected static final String SHELL_COMMAND_SCRIPTFILE_EXTENSION = (Shell.WINDOWS)? "cmd": "sh";
-
-    /**
-     * Option for shell command to pass script files
-     */
-    protected static final String SHELL_COMMAND_SCRIPTFILE_OPTION = (Shell.WINDOWS) ? "/c" : "-c";
-
-    /**
-     * Minimal set of require Services for cleaning up the database ({@link JPAService} and {@link StoreService})
-     */
-    private static final String MINIMAL_SERVICES_FOR_DB_CLEANUP = JPAService.class.getName() + "," + StoreService.class.getName();
-
-    /**
      * Initialize the test working directory. <p> If it does not exist it creates it, if it already exists it deletes
-     * all its contents. <p> The test working directory it is not deleted after the test runs. <p> It will also cleanup the
-     * database tables. <p>
+     * all its contents. <p> The test working directory it is not deleted after the test runs.
      *
-     * @throws Exception if the test workflow working directory could not be created or there was a problem cleaning the database
+     * @throws Exception if the test workflow working directory could not be created
      */
-    @Override
     protected void setUp() throws Exception {
-        setUp(true);
-    }
-
-    /**
-     * Like {@link #setUp()} but allows skipping cleaning up the database tables.  Most tests should use the other method, unless
-     * they specifically don't want to (or can't) clean up the database tables.
-     *
-     * @param cleanUpDBTables true if should cleanup the database tables, false if not
-     * @throws Exception if the test workflow working directory could not be created or there was a problem cleaning the database
-     */
-    protected  void setUp(boolean cleanUpDBTables) throws Exception {
         RUNNING_TESTCASES.incrementAndGet();
         super.setUp();
         String baseDir = System.getProperty(OOZIE_TEST_DIR, new File("target/test-data").getAbsolutePath());
@@ -291,7 +232,8 @@ public abstract class XTestCase extends TestCase {
         String classes = configuration.get(Services.CONF_SERVICE_CLASSES);
         // Disable sharelib service as it cannot find the sharelib jars
         // as maven has target/classes in classpath and not the jar because test phase is before package phase
-        oozieSiteConf.set(Services.CONF_SERVICE_CLASSES, classes.replaceAll("org.apache.oozie.service.ShareLibService,",""));
+        // if (System.getProperty("oozie.test.hadoop.minicluster", "true").equals("true"))
+        	oozieSiteConf.set(Services.CONF_SERVICE_CLASSES, classes.replaceAll("org.apache.oozie.service.ShareLibService,",""));
         // Make sure to create the Oozie DB during unit tests
         oozieSiteConf.set(JPAService.CONF_CREATE_DB_SCHEMA, "true");
         File target = new File(testCaseConfDir, "oozie-site.xml");
@@ -332,26 +274,12 @@ public abstract class XTestCase extends TestCase {
             conf.writeXml(os);
             os.close();
         }
-
-        if (System.getProperty("oozie.test.metastore.server", "true").equals("true")) {
-            setupHCatalogServer();
-        }
-
-        // Cleanup any leftover database data to make sure we start each test with an empty database
-        if (cleanUpDBTables) {
-            cleanUpDBTables();
-        }
     }
 
     /**
      * Clean up the test case.
      */
-    @Override
     protected void tearDown() throws Exception {
-        if (hiveserver2 != null && hiveserver2.isStarted()) {
-            hiveserver2.stop();
-            hiveserver2 = null;
-        }
         resetSystemProperties();
         sysProps = null;
         testCaseDir = null;
@@ -615,18 +543,18 @@ public abstract class XTestCase extends TestCase {
         long lastEcho = 0;
         try {
             long waiting = mustEnd - System.currentTimeMillis();
-            log.info("Waiting up to [{0}] msec", waiting);
+            log.debug("Waiting up to [{0}] msec", waiting);
             boolean eval;
             while (!(eval = predicate.evaluate()) && System.currentTimeMillis() < mustEnd) {
                 if ((System.currentTimeMillis() - lastEcho) > 1000) {
                     waiting = mustEnd - System.currentTimeMillis();
-                    log.info("Waiting up to [{0}] msec", waiting);
+                    log.debug("Waiting up to [{0}] msec", waiting);
                     lastEcho = System.currentTimeMillis();
                 }
                 Thread.sleep(1000);
             }
             if (!eval) {
-                log.info("Waiting timed out after [{0}] msec", timeout);
+                log.debug("Waiting timed out after [{0}] msec", timeout);
             }
             return System.currentTimeMillis() - started;
         }
@@ -692,135 +620,15 @@ public abstract class XTestCase extends TestCase {
                                   getOozieUser() + "/localhost") + "@" + getRealm();
     }
 
-    protected MiniHCatServer getHCatalogServer() {
-        return hcatServer;
-    }
-
-    /**
-     * Cleans up all database tables.  Tests won't typically need to call this directly because {@link #setUp()} will automatically
-     * call it before each test.
-     *
-     * @throws Exception
-     */
-    protected final void cleanUpDBTables() throws Exception {
-        // If the Services are already loaded, then a test is likely calling this for something specific and we shouldn't mess with
-        // the Services; so just cleanup the database
-        if (Services.get() != null) {
-            cleanUpDBTablesInternal();
-        }
-        else {
-            // Otherwise, this is probably being called during setup() and we should just load the minimal set of required Services
-            // needed to cleanup the database and shut them down when done; the test will likely start its own Services later and
-            // we don't want to interfere
-            try {
-                Services services = new Services();
-                services.getConf().set(Services.CONF_SERVICE_CLASSES, MINIMAL_SERVICES_FOR_DB_CLEANUP);
-                services.init();
-                cleanUpDBTablesInternal();
-            }
-            finally {
-                if (Services.get() != null) {
-                    Services.get().destroy();
-                }
-            }
-        }
-    }
-
-    private void cleanUpDBTablesInternal() throws StoreException {
-        EntityManager entityManager = Services.get().get(JPAService.class).getEntityManager();
-        entityManager.setFlushMode(FlushModeType.COMMIT);
-        entityManager.getTransaction().begin();
-
-        Query q = entityManager.createNamedQuery("GET_WORKFLOWS");
-        List<WorkflowJobBean> wfjBeans = q.getResultList();
-        int wfjSize = wfjBeans.size();
-        for (WorkflowJobBean w : wfjBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createNamedQuery("GET_ACTIONS");
-        List<WorkflowActionBean> wfaBeans = q.getResultList();
-        int wfaSize = wfaBeans.size();
-        for (WorkflowActionBean w : wfaBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createNamedQuery("GET_COORD_JOBS");
-        List<CoordinatorJobBean> cojBeans = q.getResultList();
-        int cojSize = cojBeans.size();
-        for (CoordinatorJobBean w : cojBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createNamedQuery("GET_COORD_ACTIONS");
-        List<CoordinatorActionBean> coaBeans = q.getResultList();
-        int coaSize = coaBeans.size();
-        for (CoordinatorActionBean w : coaBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createNamedQuery("GET_BUNDLE_JOBS");
-        List<BundleJobBean> bjBeans = q.getResultList();
-        int bjSize = bjBeans.size();
-        for (BundleJobBean w : bjBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createNamedQuery("GET_BUNDLE_ACTIONS");
-        List<BundleActionBean> baBeans = q.getResultList();
-        int baSize = baBeans.size();
-        for (BundleActionBean w : baBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createNamedQuery("GET_SLA_EVENTS");
-        List<SLAEventBean> slaBeans = q.getResultList();
-        int slaSize = slaBeans.size();
-        for (SLAEventBean w : slaBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createQuery("select OBJECT(w) from SLARegistrationBean w");
-        List<SLARegistrationBean> slaRegBeans = q.getResultList();
-        int slaRegSize = slaRegBeans.size();
-        for (SLARegistrationBean w : slaRegBeans) {
-            entityManager.remove(w);
-        }
-
-        q = entityManager.createQuery("select OBJECT(w) from SLASummaryBean w");
-        List<SLASummaryBean> sdBeans = q.getResultList();
-        int ssSize = sdBeans.size();
-        for (SLASummaryBean w : sdBeans) {
-            entityManager.remove(w);
-        }
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        log.info(wfjSize + " entries in WF_JOBS removed from DB!");
-        log.info(wfaSize + " entries in WF_ACTIONS removed from DB!");
-        log.info(cojSize + " entries in COORD_JOBS removed from DB!");
-        log.info(coaSize + " entries in COORD_ACTIONS removed from DB!");
-        log.info(bjSize + " entries in BUNDLE_JOBS removed from DB!");
-        log.info(baSize + " entries in BUNDLE_ACTIONS removed from DB!");
-        log.info(slaSize + " entries in SLA_EVENTS removed from DB!");
-        log.info(slaRegSize + " entries in SLA_REGISTRATION removed from DB!");
-        log.info(ssSize + " entries in SLA_SUMMARY removed from DB!");
-
-    }
-
     private static MiniDFSCluster dfsCluster = null;
     private static MiniDFSCluster dfsCluster2 = null;
     private static MiniMRClientCluster mrCluster = null;
-    private static MiniHCatServer hcatServer = null;
-    private static MiniHS2 hiveserver2 = null;
 
     private void setUpEmbeddedHadoop(String testCaseDir) throws Exception {
         if (dfsCluster == null && mrCluster == null) {
 			if (System.getProperty("hadoop.log.dir") == null) {
 				System.setProperty("hadoop.log.dir", testCaseDir);
 			}
-            int taskTrackers = 2;
-            int dataNodes = 2;
             String oozieUser = getOozieUser();
             JobConf conf = createDFSConfig();
             String[] userGroups = new String[] { getTestGroup(), getTestGroup2() };
@@ -844,20 +652,16 @@ public abstract class XTestCase extends TestCase {
                 fileSystem.setPermission(new Path("/user"), FsPermission.valueOf("-rwxrwxrwx"));
                 fileSystem.setPermission(new Path("/tmp"), FsPermission.valueOf("-rwxrwxrwx"));
                 fileSystem.setPermission(new Path("/hadoop/mapred/system"), FsPermission.valueOf("-rwx------"));
-                String nnURI = fileSystem.getUri().toString();
-                int numDirs = 1;
-                String[] racks = null;
-                String[] hosts = null;
 
                 mrCluster = MiniMRClientClusterFactory.create(this.getClass(), 1, conf);
                 Configuration jobConf = mrCluster.getConfig();
-                System.setProperty(OOZIE_TEST_JOB_TRACKER, jobConf.get("mapred.job.tracker"));
+                System.setProperty(OOZIE_TEST_JOB_TRACKER, jobConf.get("mapreduce.jobtracker.address"));
                 String rmAddress = jobConf.get("yarn.resourcemanager.address");
                 log.info("Job tracker: " + rmAddress);
                 if (rmAddress != null) {
                     System.setProperty(OOZIE_TEST_JOB_TRACKER, rmAddress);
                 }
-                System.setProperty(OOZIE_TEST_NAME_NODE, jobConf.get("fs.default.name"));
+                System.setProperty(OOZIE_TEST_NAME_NODE, jobConf.get("fs.defaultFS"));
                 ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
             }
             catch (Exception ex) {
@@ -875,7 +679,8 @@ public abstract class XTestCase extends TestCase {
             try {
                 System.setProperty("test.build.data", FilenameUtils.concat(testBuildDataSaved, "2"));
                 // Only DFS cluster is created based upon current need
-                dfsCluster2 = new MiniDFSCluster(createDFSConfig(), 2, true, null);
+            	MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(createDFSConfig());
+                dfsCluster2 = builder.build();
                 FileSystem fileSystem = dfsCluster2.getFileSystem();
                 fileSystem.mkdirs(new Path("target/test-data"));
                 fileSystem.mkdirs(new Path("/user"));
@@ -883,7 +688,7 @@ public abstract class XTestCase extends TestCase {
                 fileSystem.setPermission(new Path("target/test-data"), FsPermission.valueOf("-rwxrwxrwx"));
                 fileSystem.setPermission(new Path("/user"), FsPermission.valueOf("-rwxrwxrwx"));
                 fileSystem.setPermission(new Path("/tmp"), FsPermission.valueOf("-rwxrwxrwx"));
-                System.setProperty(OOZIE_TEST_NAME_NODE2, fileSystem.getConf().get("fs.default.name"));
+                System.setProperty(OOZIE_TEST_NAME_NODE2, fileSystem.getConf().get("fs.defaultFS"));
             }
             catch (Exception ex) {
                 shutdownMiniCluster2();
@@ -924,36 +729,6 @@ public abstract class XTestCase extends TestCase {
       // Required to prevent deadlocks with YARN CapacityScheduler
       conf.set("yarn.scheduler.capacity.maximum-am-resource-percent", "0.5");
       return conf;
-    }
-
-    private void setupHCatalogServer() throws Exception {
-        if (hcatServer == null) {
-            hcatServer = new MiniHCatServer(RUNMODE.SERVER, createJobConf());
-            hcatServer.start();
-            log.info("Metastore server started at " + hcatServer.getMetastoreURI());
-        }
-    }
-
-    protected void setupHiveServer2() throws Exception {
-        if (hiveserver2 == null) {
-            setSystemProperty("test.tmp.dir", getTestCaseDir());
-            // Make HS2 use our Mini cluster by copying all configs to HiveConf; also had to hack MiniHS2
-            HiveConf hconf = new HiveConf();
-            Configuration jobConf = createJobConf();
-            for (Map.Entry<String, String> pair: jobConf) {
-                hconf.set(pair.getKey(), pair.getValue());
-            }
-            hiveserver2 = new MiniHS2(hconf, dfsCluster.getFileSystem());
-            hiveserver2.start(new HashMap<String, String>());
-        }
-    }
-
-    protected String getHiveServer2JdbcURL() {
-        return hiveserver2.getJdbcURL();
-    }
-
-    protected String getHiveServer2JdbcURL(String dbName) {
-        return hiveserver2.getJdbcURL(dbName);
     }
 
     private static void shutdownMiniCluster() {
@@ -1021,8 +796,8 @@ public abstract class XTestCase extends TestCase {
      */
     protected JobConf createJobConf() throws IOException {
         JobConf jobConf = new JobConf();
-        jobConf.set("mapred.job.tracker", getJobTrackerUri());
-        jobConf.set("fs.default.name", getNameNodeUri());
+        jobConf.set("mapreduce.jobtracker.address", getJobTrackerUri());
+        jobConf.set("fs.defaultFS", getNameNodeUri());
         return jobConf;
     }
 
@@ -1055,33 +830,6 @@ public abstract class XTestCase extends TestCase {
         if (ex != null) {
             throw new RuntimeException(ex);
         }
-    }
-
-    protected Services setupServicesForHCatalog() throws ServiceException {
-        Services services = new Services();
-        setupServicesForHCataLogImpl(services);
-        return services;
-    }
-
-    private void setupServicesForHCataLogImpl(Services services) {
-        Configuration conf = services.getConf();
-        conf.set(Services.CONF_SERVICE_EXT_CLASSES,
-                JMSAccessorService.class.getName() + "," +
-                PartitionDependencyManagerService.class.getName() + "," +
-                HCatAccessorService.class.getName());
-        conf.set(HCatAccessorService.JMS_CONNECTIONS_PROPERTIES,
-                "default=java.naming.factory.initial#" + ActiveMQConnFactory + ";" +
-                "java.naming.provider.url#" + localActiveMQBroker +
-                "connectionFactoryNames#"+ "ConnectionFactory");
-        conf.set(URIHandlerService.URI_HANDLERS,
-                FSURIHandler.class.getName() + "," + HCatURIHandler.class.getName());
-        setSystemProperty("java.naming.factory.initial", "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
-        setSystemProperty("java.naming.provider.url", "vm://localhost?broker.persistent=false");
-    }
-
-    protected Services setupServicesForHCatalog(Services services) throws ServiceException {
-        setupServicesForHCataLogImpl(services);
-        return services;
     }
 
     protected class TestLogAppender extends AppenderSkeleton {

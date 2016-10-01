@@ -6,6 +6,7 @@ import org.apache.oozie.service.XLogService;
 import org.junit.Test;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.WorkflowAction;
+import org.apache.oozie.client.WorkflowAction.Status;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.local.LocalOozie;
 import org.apache.hadoop.fs.FileSystem;
@@ -24,11 +25,15 @@ import java.util.List;
 import java.util.Properties;
 
 public class SGSMiniOozie extends MiniOozieTestCase {
-
     protected void setUp() throws Exception {
         System.setProperty("oozie.test.metastore.server", "false");
         System.setProperty(XLogService.LOG4J_FILE, "oozie-log4j.properties");
+        /* System.setProperty(TEST_OOZIE_USER_PROP, "player");
         System.setProperty(TEST_USER1_PROP, "player");
+        System.setProperty(TEST_GROUP_PROP, "supergroup");
+        System.setProperty("oozie.test.hadoop.minicluster", "false");
+        System.setProperty(OOZIE_TEST_NAME_NODE, "hdfs://127.0.0.1:19000");
+        System.setProperty(OOZIE_TEST_JOB_TRACKER, "localhost:8032"); */
         super.setUp();
     }
 
@@ -85,7 +90,6 @@ public class SGSMiniOozie extends MiniOozieTestCase {
         wf = wc.getJobInfo(jobId);
         assertNotNull(wf);
         assertEquals(WorkflowJob.Status.SUCCEEDED, wf.getStatus());
-
     }
 
 	@Test
@@ -101,19 +105,19 @@ public class SGSMiniOozie extends MiniOozieTestCase {
         writer.close();
         reader.close();
 
-        Path path = getFsTestCaseDir();
-
         final OozieClient wc = LocalOozie.getClient();
-
+        
         Properties conf = wc.createConfiguration();
-        conf.setProperty(OozieClient.APP_PATH, new Path(appPath, "sgs.workflow.xml").toString());
+        conf.setProperty(OozieClient.APP_PATH, "${nameNode}/user/${user.name}/mtccore/sgs.workflow.xml");
         conf.setProperty(OozieClient.USER_NAME, getTestUser());
-        // conf.setProperty("oozie.libpath", "${nameNode}/user/${user.name}/share/lib/preload/lib/");
+        conf.setProperty(OozieClient.LIBPATH, "${nameNode}/user/${user.name}/share/lib,${nameNode}/user/${user.name}/share/lib/preload/lib/");
         conf.setProperty("jobTracker", getJobTrackerUri());
         conf.setProperty("nameNode", getNameNodeUri());
         conf.setProperty("queueName", "default");
-        conf.setProperty("nnbase", path.toString());
-        conf.setProperty("base", path.toUri().getPath());
+        
+        // Path path = getFsTestCaseDir();
+        // conf.setProperty("nnbase", path.toString());
+        // conf.setProperty("base", path.toUri().getPath());
         
         MtcETLCmd setupMTC = new MtcETLCmd();
         setupMTC.setOozieUser(getOozieUser());
@@ -130,11 +134,21 @@ public class SGSMiniOozie extends MiniOozieTestCase {
         wc.start(jobId);
 
         waitFor(6000 * 1000, new Predicate() {
+        	private String lastActionId = null;
+			private Status lastActionStatus = null;
             public boolean evaluate() throws Exception {
                 WorkflowJob wf = wc.getJobInfo(jobId);
                 List<WorkflowAction> actions = wf.getActions();
-                for (WorkflowAction a: actions)
-	                log.info(a.getName() + ":" + a.getStatus() + ":" + a.getErrorMessage());
+                /* Print last action */
+                if (actions.size() > 0) {
+                	WorkflowAction a = actions.get(actions.size() - 1);
+                	if (lastActionId == null || a.getId() != lastActionId || a.getStatus() != lastActionStatus) {
+		                log.info(a.getName() + ":" + a.getStatus() + ":" + (a.getErrorMessage() != null ? a.getErrorMessage() : "") +
+		                		":EndTime=" + (a.getEndTime() != null ? a.getEndTime() : "") + ":" + a.getConsoleUrl());
+		                lastActionId = a.getId();
+		                lastActionStatus = a.getStatus();
+                	}
+                }
                 return wf.getStatus() != WorkflowJob.Status.RUNNING;
             }
         });
@@ -143,7 +157,6 @@ public class SGSMiniOozie extends MiniOozieTestCase {
         
         assertNotNull(wf);
         assertEquals(WorkflowJob.Status.SUCCEEDED, wf.getStatus());
-
     }
 
     /**

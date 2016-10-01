@@ -18,4 +18,11 @@
 <!-- Dummy file for Pig not to fail during tests with minicluster -->
 <!-- because there is no hadoop-site.xml nor core-site.xml        -->
 
-<configuration/>
+<configuration>
+
+    <property>
+        <name>fs.defaultFS</name>
+        <value>${oozie.test.name.node}</value>
+    </property>
+    
+</configuration>

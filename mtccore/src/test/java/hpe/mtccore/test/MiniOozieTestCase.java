@@ -18,6 +18,8 @@
 
 package hpe.mtccore.test;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.local.LocalOozie;
 
@@ -58,6 +60,12 @@ public abstract class MiniOozieTestCase extends XFsTestCase {
     protected void setUp() throws Exception {
         System.setProperty("hadoop20", "true");
         super.setUp();
+        
+        FileSystem fs = getFileSystem();
+        String remoteShareLibFolder = "/user/" + getOozieUser() + "/share/lib";
+        fs.delete(new Path(remoteShareLibFolder), true);
+        fs.mkdirs(new Path(remoteShareLibFolder));
+        
         LocalOozie.start();
     }
 
