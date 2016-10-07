@@ -25,10 +25,11 @@ public class MtccoreUtils {
 		List<String> attrs = ls.getAttrNames(tableName);
 		if (tableName.endsWith("_merge")){
 			return DBUtil.genCopyHdfsSql(null, attrs, tableName, dbPrefix, rootWebHdfs, csvFileName, username, dbType);
-		}else{
+		}else{//all org tables: site, epochSchedTime, epochActualTime, duration, machine, other measures 
+			attrs.remove("site");
 			attrs.remove("SchedTime");
 			attrs.remove("ActualTime");
-			String prefix = "epochT1 FILLER VARCHAR(15),epochT2 FILLER VARCHAR(15),SchedTime AS TO_TIMESTAMP(epochT1),ActualTime AS TO_TIMESTAMP(epochT2),";
+			String prefix = "site, epochT1 FILLER VARCHAR(15),epochT2 FILLER VARCHAR(15),SchedTime AS TO_TIMESTAMP(epochT1),ActualTime AS TO_TIMESTAMP(epochT2),";
 			return DBUtil.genCopyHdfsSql(prefix, attrs, tableName, dbPrefix, rootWebHdfs, csvFileName, username, dbType);
 		}
 	}

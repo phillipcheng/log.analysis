@@ -156,6 +156,12 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 		}
 		return tableName;
 	}
+	
+	public String getPathName(Mapper<LongWritable, Text, Text, Text>.Context context){
+		String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+		return pathName;
+	}
 
 	public LogicSchema getLogicSchema() {
 		return logicSchema;

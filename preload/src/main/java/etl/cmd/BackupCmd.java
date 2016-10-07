@@ -16,8 +16,6 @@ import java.util.zip.ZipOutputStream;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -28,7 +26,6 @@ import etl.engine.ETLCmd;
 import etl.log.ETLLog;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
-import scala.Tuple2;
 
 public class BackupCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;

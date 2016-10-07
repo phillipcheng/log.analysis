@@ -20,8 +20,6 @@ public class TestGenLogicSchema {
 	public void testGenSMSCSchemaFromDB(){
 		PropertiesConfiguration pc = Util.getPropertiesConfig("etlengine.properties");
 		boolean ret = SchemaUtils.genLogicSchemaFromDB(pc, "SMSC", "smsc.schema");
-		
-		
 	}
 	
 	//@Test

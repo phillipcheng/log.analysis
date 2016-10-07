@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workflow-app xmlns:ns2="uri:oozie:workflow:0.5">
+    <ns2:start to="sftp"/>
+    <ns2:kill name="fail">
+        <ns2:message>failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</ns2:message>
+    </ns2:kill>
+    <ns2:action name="sftp">
+        <ns2:java/>
+        <ns2:ok to="traceFilter"/>
+        <ns2:error to="fail"/>
+    </ns2:action>
+    <ns2:action name="traceFilter">
+        <ns2:map-reduce/>
+        <ns2:ok to="traceFilter_fork"/>
+    </ns2:action>
+    <ns2:fork name="traceFilter_fork">
+        <ns2:path start="csvTrans"/>
+        <ns2:path start="fix2csv"/>
+        <ns2:path start="ses2csv"/>
+    </ns2:fork>
+    <ns2:action name="ses2csv">
+        <ns2:map-reduce/>
+        <ns2:ok to="loadSes"/>
+        <ns2:error to="fail"/>
+    </ns2:action>
+    <ns2:action name="fix2csv">
+        <ns2:map-reduce/>
+        <ns2:ok to="merge_join"/>
+        <ns2:error to="fail"/>
+    </ns2:action>
+    <ns2:join name="merge_join" to="merge"/>
+    <ns2:action name="csvTrans">
+        <ns2:map-reduce/>
+        <ns2:ok to="merge_join"/>
+        <ns2:error to="fail"/>
+    </ns2:action>
+    <ns2:action name="loadSes">
+        <ns2:java/>
+        <ns2:ok to="end_join"/>
+        <ns2:error to="fail"/>
+    </ns2:action>
+    <ns2:join name="end_join" to="end"/>
+    <ns2:action name="merge">
+        <ns2:map-reduce/>
+        <ns2:ok to="loadMerged"/>
+        <ns2:error to="fail"/>
+    </ns2:action>
+    <ns2:action name="loadMerged">
+        <ns2:java/>
+        <ns2:ok to="end_join"/>
+        <ns2:error to="fail"/>
+    </ns2:action>
+    <ns2:end name="end"/>
+</workflow-app>

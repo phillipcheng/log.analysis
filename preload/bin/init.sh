@@ -1,7 +1,11 @@
+winodows:
+c:\dev\hadoop-2.7.1\bin>mapred --config ..\etc\hadoop historyserver
+c:\dev\hadoop-2.7.1\sbin>start-all.cmd
+
 local
 --create --zookeeper 127.0.0.1:2181 --replication-factor 1 --partitions 3 --topic log-analysis-topic
 
-apache
+lab
 KAFKA_ROOT=/data/kafka_2.11-0.10.0.0
 $KAFKA_ROOT/bin/kafka-console-consumer.sh --zookeeper 192.85.247.104:2181,192.85.247.105:2181,192.85.247.106:2181 --topic log-analysis-topic --from-beginning
 $KAFKA_ROOT/bin/kafka-console-producer.sh --broker-list 192.85.247.104:9092 --topic log-analysis-topic

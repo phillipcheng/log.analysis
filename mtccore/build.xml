@@ -10,6 +10,8 @@
 		<copy todir="${dist}/etlcfg/">
 			<fileset dir="${src.resources}">
 		    	<include name="*.properties"/>
+				<exclude name="etlengine.properties"/>
+				<exclude name="*.job.properties"/>
 				<exclude name="log4j.properties"/>
                 <exclude name="*mapping.properties"/>
 		    </fileset>
@@ -35,7 +37,7 @@
         </copy>
 		<copy todir="${dist}/sql">
             <fileset dir="sql">
-                <include name="*.sql"/>
+                <include name="**/*.sql"/>
             </fileset>
         </copy>
 	</target>

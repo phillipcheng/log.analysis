@@ -1,5 +1,6 @@
 package etl.util;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -108,5 +109,8 @@ public class GroupFun {
 		return mapping;
 	}
 	
-
+	public static String getParentFolderName(String path){
+	    String rootToParent = path.substring(0, path.lastIndexOf('/', path.length() - 1));
+	    return rootToParent.substring(rootToParent.lastIndexOf('/', rootToParent.length() - 1) + 1);
+	}
 }

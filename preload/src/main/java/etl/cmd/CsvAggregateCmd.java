@@ -24,7 +24,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 
@@ -296,7 +295,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 
 	//tableKey.aggrKeys,aggrValues
-	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value){
 		super.init();
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
@@ -309,11 +308,11 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 				if (oldTables==null){
 					groupKeys = groupKeysMap.get(SINGLE_TABLE);
 				}else{
-					if (groupKeysMap.containsKey(key)){
-						tableKey = key;
-						groupKeys = groupKeysMap.get(key);
+					if (groupKeysMap.containsKey(tableName)){
+						tableKey = tableName;
+						groupKeys = groupKeysMap.get(tableName);
 					}else{
-						logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), key));
+						logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), tableName));
 						break;
 					}
 				}
@@ -428,6 +427,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			while (its.hasNext()){
 				try {
 					String s = its.next().toString();
+					logger.debug(String.format("aggr: key:%s, one value:%s", key, s));
 					int firstComma =s.indexOf(KEY_SEP);
 					String tableName = s.substring(0, firstComma);
 					String vs = s.substring(firstComma+1);

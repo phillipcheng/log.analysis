@@ -5,6 +5,7 @@ import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -14,11 +15,25 @@ import org.junit.Test;
 
 import etl.cmd.SftpCmd;
 import etl.cmd.test.TestETLCmd;
+import etl.util.SchemaUtils;
+import etl.util.Util;
 
 public class MtcETLCmd extends TestETLCmd{
 	
 	public static final Logger logger = Logger.getLogger(MtcETLCmd.class);
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+	
+	@Test
+	public void testGenSMSCSchemaFromDB(){
+		PropertiesConfiguration pc = Util.getPropertiesConfig("etlengine.properties");
+		boolean ret = SchemaUtils.genLogicSchemaFromDB(pc, "SMSC", "smsc.schema");
+	}
+	
+	//@Test
+	public void testGenSgsiwfSchemaFromDB(){
+		PropertiesConfiguration pc = Util.getPropertiesConfig("etlengine.properties");
+		boolean ret = SchemaUtils.genLogicSchemaFromDB(pc, "sgsiwf", "sgsiwf.schema");
+	}
 	
 	@Test
 	public void setupLabETLCfg() {
@@ -45,20 +60,21 @@ public class MtcETLCmd extends TestETLCmd{
 		fs.mkdirs(new Path(xmldir));
 		fs.mkdirs(new Path(schemadir));
 		fs.mkdirs(new Path(schemaHistoryDir));
-		
-		//copy etlengine.properties
-		String etlengineProp= "etlengine.properties";
 		String localCfgDir = projectFolder + File.separator + "mtccore" + File.separator + "src" + 
 				File.separator + "main" + File.separator + "resources";
-		fs.copyFromLocalFile(new Path(localCfgDir + File.separator + etlengineProp), new Path("/user/" + super.getOozieUser() + "/mtccore/lib/"+etlengineProp));
 		
+		//copy etlengine.properties
+		String[] propertyFiles = new String[]{"etlengine.properties", "smsc_file_table_mapping.properties"};
+		for (String properties: propertyFiles){	
+			fs.copyFromLocalFile(false, true, new Path(localCfgDir + File.separator + properties), new Path("/user/" + super.getOozieUser() + "/mtccore/lib/"+properties));
+		}
 		//copy config
 		File localDir = new File(localCfgDir);
 		String[] cfgs = localDir.list();
 		for (String cfg:cfgs){
 			String lcfg = localCfgDir + File.separator + cfg;
 			String rcfg = remoteEtlcfg + "/" + cfg;
-			fs.copyFromLocalFile(new Path(lcfg), new Path(rcfg));
+			fs.copyFromLocalFile(false, true, new Path(lcfg), new Path(rcfg));
 		}
 		
 		//copy schema
@@ -66,32 +82,32 @@ public class MtcETLCmd extends TestETLCmd{
 		for (String schema: schemas){
 			String workflow = localCfgDir + File.separator + schema;
 			String remoteWorkflow = schemadir + "/" + schema;
-			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+			fs.copyFromLocalFile(false, true, new Path(workflow), new Path(remoteWorkflow));
 		}
 		
 		//copy workflow
-		String[] workflows = new String[]{"sgs.workflow.xml","smsc.workflow.xml", "sgs.coordinator.xml", "smsc.coordinator.xml"};
+		String[] workflows = new String[]{"sgs.prd.workflow.xml","smsc.prd.workflow.xml", "sgs.lab.workflow.xml","smsc.lab.workflow.xml", 
+				"sgs.coordinator.xml", "smsc.coordinator.xml"};
 		for (String wf: workflows){
 			String workflow = localCfgDir + File.separator + wf;
 			String remoteWorkflow = "/user/" + super.getOozieUser() + "/mtccore/" + wf;
-			fs.copyFromLocalFile(new Path(workflow), new Path(remoteWorkflow));
+			fs.copyFromLocalFile(false, true, new Path(workflow), new Path(remoteWorkflow));
 		}
 		
 		//copy lib
 		String mtcLocalTargetFolder = projectFolder + File.separator + "mtccore" + File.separator + "target" + File.separator;
-		String[] libNames = new String[]{"mtccore-0.1.0-test-jar-with-dependencies.jar"};
-		//String[] libNames = new String[]{"mtccore-0.1.0.jar", "mtccore-0.1.0-jar-with-dependencies.jar"};
+		String[] libNames = new String[]{"mtccore-0.1.0.jar"};
+		//String[] libNames = new String[]{"mtccore-0.1.0.jar", "mtccore-0.1.0-jar-with-dependencies.jar", "mtccore-0.1.0-test-jar-with-dependencies.jar"};
 		String remoteLibFolder="/user/" + super.getOozieUser() + "/mtccore/lib/";
 		for (String libName:libNames){
-			fs.delete(new Path(remoteLibFolder+libName), true);
-			fs.copyFromLocalFile(new Path(mtcLocalTargetFolder + libName), new Path(remoteLibFolder+libName));
+			fs.copyFromLocalFile(false, true, new Path(mtcLocalTargetFolder + libName), new Path(remoteLibFolder+libName));
 		}
 		
 		String preloadLocalTargetFolder = projectFolder + File.separator + "preload" + File.separator + "target" + File.separator;
 		String remoteShareLibFolder="/user/" + super.getOozieUser() + "/share/lib/preload/lib/";
 		String libName = "preload-0.1.0.jar";
 		fs.delete(new Path(remoteShareLibFolder + libName), true);
-		fs.copyFromLocalFile(new Path(preloadLocalTargetFolder + libName), new Path(remoteShareLibFolder+libName));
+		fs.copyFromLocalFile(false, true, new Path(preloadLocalTargetFolder + libName), new Path(remoteShareLibFolder+libName));
 	}
 	
 	public void setupETLCfg(final String defaultFs, final String localCfgDir) {
