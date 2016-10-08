@@ -16,18 +16,15 @@ public class HdfsCmd extends ETLCmd{
 
 	public static final Logger logger = LogManager.getLogger(HdfsCmd.class);
 	
+	//cfgkey
 	public static final String cfg_key_rm_folders = "rm.folders";
 	
 	private String[] rmFolders;
 	
-	public String[] getRmFolders() {
-		return rmFolders;
+	public HdfsCmd(){
+		super();
 	}
-
-	public void setRmFolders(String[] rmFolders) {
-		this.rmFolders = rmFolders;
-	}
-
+	
 	public HdfsCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
@@ -56,5 +53,14 @@ public class HdfsCmd extends ETLCmd{
 			logger.error("", e);
 		}
 		return Arrays.asList(new String[]{String.valueOf(rmFolders.length)});
+	}
+	
+
+	public String[] getRmFolders() {
+		return rmFolders;
+	}
+
+	public void setRmFolders(String[] rmFolders) {
+		this.rmFolders = rmFolders;
 	}
 }

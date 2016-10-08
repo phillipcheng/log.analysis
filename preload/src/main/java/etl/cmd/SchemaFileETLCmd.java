@@ -1,16 +1,13 @@
 package etl.cmd;
 
-import java.io.File;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.script.CompiledScript;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -22,22 +19,22 @@ import etl.engine.LogicSchema;
 import etl.engine.OutputType;
 import etl.util.DBType;
 import etl.util.DBUtil;
-import etl.util.FieldType;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
+import etl.util.VarDef;
 import etl.util.VarType;
 
 public abstract class SchemaFileETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
-
 	public static final Logger logger = LogManager.getLogger(SchemaFileETLCmd.class);
 
+	//cfgkey
 	public static final String cfgkey_schema_file="schema.file";
-	public static final String cfgkey_db_prefix="db.prefix"; //db schema
-	public static final String cfgkey_create_sql="create.sql";
-	public static final String cfgkey_db_type="db.type";
 	public static final String cfgkey_file_table_map="file.table.map";
+	public static final String cfgkey_create_sql="create.sql";
+	public static final String cfgkey_db_prefix="db.prefix"; //db schema
+	public static final String cfgkey_db_type="db.type";
 	public static final String cfgkey_output_type="output.type";
 	
 	//system variable map
@@ -67,6 +64,7 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 	}
 	
+	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.schemaFile = super.getCfgString(cfgkey_schema_file, null);
@@ -107,6 +105,17 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 			outputType = OutputType.valueOf(strOutputType);
 		}
 	}
+	
+	@Override
+	public VarDef[] getCfgVar(){
+		return (VarDef[]) ArrayUtils.addAll(super.getCfgVar(), new VarDef[]{});
+	}
+	
+	@Override
+	public VarDef[] getSysVar(){
+		return (VarDef[]) ArrayUtils.addAll(super.getSysVar(), new VarDef[]{});
+	}
+	
 	//return loginfo
 	public List<String> updateDynSchema(List<String> createTableSqls){
 		if (createTableSqls.size()>0){
@@ -163,6 +172,7 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 		return pathName;
 	}
 
+	//
 	public LogicSchema getLogicSchema() {
 		return logicSchema;
 	}

@@ -5,9 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -32,6 +30,7 @@ public class BackupCmd extends ETLCmd{
 
 	public static final Logger logger = LogManager.getLogger(BackupCmd.class);
 
+	//cfgkey
 	public static final String cfgkey_data_history_folder="data-history-folder";
 	public static final String cfgkey_Folder_filter="file.folder";
 	public static final String cfgkey_file_filter="file.filter";
@@ -41,7 +40,10 @@ public class BackupCmd extends ETLCmd{
 	private String[] fileFilters;
 	private String destZipFile;
 	private ZipOutputStream zos;
-	private Map<String, Object> vars = new HashMap<String, Object>();
+	
+	public BackupCmd(){
+		super();
+	}
 	
 	public BackupCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
@@ -54,7 +56,6 @@ public class BackupCmd extends ETLCmd{
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
-		vars=super.getSystemVariables();
 		this.dataHistoryFolder = super.getCfgString(cfgkey_data_history_folder, null);
 		String[] ffExps = super.getCfgStringArray(cfgkey_Folder_filter);
 		fileFolders = new String[ffExps.length];
@@ -102,7 +103,7 @@ public class BackupCmd extends ETLCmd{
 		try {	
 			List<String> fileNames = new ArrayList<String>();
 			String exp=fileFilter;
-			Object output =ScriptEngineUtil.eval(exp, VarType.OBJECT, vars);
+			Object output =ScriptEngineUtil.eval(exp, VarType.OBJECT, super.getSystemVariables());
 			if(output instanceof ArrayList){  
 				ArrayList<String> out=(ArrayList<String>)output;
 				fileNames.addAll(out); 

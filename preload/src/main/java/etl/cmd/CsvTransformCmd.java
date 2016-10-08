@@ -34,6 +34,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 
 	public static final Logger logger = LogManager.getLogger(CsvTransformCmd.class);
 	
+	//cfgkey
 	public static final String cfgkey_skip_header="skip.header";
 	public static final String cfgkey_row_validation="row.validation";
 	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
@@ -54,6 +55,9 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	private transient List<String> tableAttrs = null;
 	private transient Map<String, Integer> nameIdxMap = null;
 	
+	public CsvTransformCmd(){
+		super();
+	}
 	
 	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);

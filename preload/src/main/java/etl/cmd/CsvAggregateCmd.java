@@ -48,18 +48,17 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public static final String AGGR_OP_SUM="sum";
 	public static final String AGGR_OPERATOR_SEP="\\|";
 	
+	//cfgkey
 	public static final String cfgkey_aggr_op="aggr.op";
 	public static final String cfgkey_aggr_groupkey="aggr.groupkey";
 	public static final String cfgkey_aggr_groupkey_exp="aggr.groupkey.exp";
 	public static final String cfgkey_aggr_groupkey_exp_type="aggr.groupkey.exp.type";
 	public static final String cfgkey_aggr_groupkey_exp_name="aggr.groupkey.exp.name";
-	
 	public static final String cfgkey_aggr_old_table="old.table";
 	public static final String cfgkey_aggr_new_table="new.table";
 	
 	private String[] oldTables = null;
 	private String[] newTables = null;
-	
 	private transient Map<String, String> oldnewTableMap;
 	private transient Map<String, AggrOpMap> aoMapMap; //table name to AggrOpMap
 	private transient Map<String, GroupOp> groupKeysMap; //table name to 
@@ -84,6 +83,10 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			}
 		}
 		return new GroupOp(groupKeyExpNames, groupKeyExpTypes, groupKeyExps, groupKeyExpScripts, commonGroupKeys);
+	}
+	
+	public CsvAggregateCmd(){
+		super();
 	}
 	
 	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){

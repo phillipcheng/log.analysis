@@ -12,6 +12,7 @@ public class KafkaAdaptorCmd{
 
 	public static final Logger logger = LogManager.getLogger(KafkaAdaptorCmd.class);
 	
+	//
 	public static final String cfgkey_topic = "kafka.log.topic";
 	public static final String cfgkey_bootstrap_servers = "kafka.bootstrap.servers";
 	

@@ -52,6 +52,10 @@ public class TestShellCmd extends TestETLCmd {
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteCfgFolder+inputFile));
+			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
+			File sourceDir = new File(pc.getString("srcfolder"));
+			File destDir = new File(pc.getString("destfolder"));
+			FileUtils.cleanDirectory(destDir); 
 			//run job  
 			FileUtils.copyFileToDirectory(new File(getLocalFolder()+executableFile), new File(executableDir));
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.ShellCmd");
@@ -68,16 +72,10 @@ public class TestShellCmd extends TestETLCmd {
 			job.waitForCompletion(true);
 
 			//check results
-			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
-			File sourceDir = new File(pc.getString("srcfolder"));
-			assertTrue(sourceDir.exists());
-
-			File destDir = new File(pc.getString("destfolder"));
-			assertTrue(destDir.exists());
 
 			File[] srcFiles= sourceDir.listFiles();
-			File[] destFiles= sourceDir.listFiles();
-			assert(srcFiles.length==destFiles.length);
+			File[] destFiles= destDir.listFiles();
+			assertTrue(srcFiles.length==destFiles.length);
 
 			boolean result=true;
 			for (int i = 0; i < srcFiles.length; i++) {
@@ -108,6 +106,10 @@ public class TestShellCmd extends TestETLCmd {
 				executableFile = "copyfile.sh";
 				executableDir = "/tmp";
 			}
+			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
+			File sourceDir = new File(pc.getString("srcfolder"));
+			File destDir = new File(pc.getString("destfolder"));
+			FileUtils.cleanDirectory(destDir); 
 			
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));
@@ -128,16 +130,13 @@ public class TestShellCmd extends TestETLCmd {
 			job.waitForCompletion(true);
 
 			//check results
-			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
-			File sourceDir = new File(pc.getString("srcfolder"));
 			assertTrue(sourceDir.exists());
 
-			File destDir = new File(pc.getString("destfolder"));
 			assertTrue(destDir.exists());
 
 			File[] srcFiles= sourceDir.listFiles();
 			File[] destFiles= sourceDir.listFiles();
-			assert(srcFiles.length==destFiles.length);
+			assertTrue(srcFiles.length==destFiles.length);
 
 			boolean result=true;
 			for (int i = 0; i < srcFiles.length; i++) {

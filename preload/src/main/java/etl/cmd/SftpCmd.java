@@ -34,6 +34,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 
 	public static final Logger logger = LogManager.getLogger(SftpCmd.class);
 
+	//cfgkey
 	public static final String cfgkey_incoming_folder = "incoming.folder";
 	public static final String cfgkey_sftp_host = "sftp.host";
 	public static final String cfgkey_sftp_port = "sftp.port";
@@ -66,6 +67,10 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private int fileLimit=0;
 	private boolean sftpNamesOnly = false;
 
+	public SftpCmd(){
+		super();
+	}
+	
 	public SftpCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
@@ -320,5 +325,11 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 
 	public void setPass(String pass) {
 		this.pass = pass;
+	}
+	
+
+	@Override
+	public boolean hasReduce(){
+		return false;
 	}
 }

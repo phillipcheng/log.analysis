@@ -3,6 +3,12 @@ package etl.util;
 public enum VarType {
 
     STRING("string"),
+    //extends string
+    JAVASCRIPT("javascript"),
+    REGEXP("regexp"),
+    GLOBEXP("glob"),
+    STRINGLIST("stringlist"),
+    
 	TIMESTAMP("timestamp"),
 	DATE("date"),
     NUMERIC("numeric"),

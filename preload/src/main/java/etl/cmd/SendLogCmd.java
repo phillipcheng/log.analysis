@@ -20,6 +20,10 @@ public class SendLogCmd extends ETLCmd{
 	
 	private transient KafkaAdaptorCmd kac;
 	
+	public SendLogCmd(){
+		super();
+	}
+	
 	public SendLogCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		kac = new KafkaAdaptorCmd(super.getPc());

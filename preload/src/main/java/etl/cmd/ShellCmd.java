@@ -23,6 +23,7 @@ public class ShellCmd extends ETLCmd{
 
 	public static final Logger logger = LogManager.getLogger(ShellCmd.class);
 	
+	//cfgkey
 	public static final String cfgkey_param_key="key"; //the special key name for mapreduce mode, each key is a line of input
 	public static final String cfgkey_command="command";
 	
@@ -30,6 +31,10 @@ public class ShellCmd extends ETLCmd{
 	private String command;
 	private Map<String, Object> params;
 
+	public ShellCmd(){
+		super();
+	}
+	
 	public ShellCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
@@ -75,5 +80,11 @@ public class ShellCmd extends ETLCmd{
 		}
 		sgProcess();
 		return null;
+	}
+	
+
+	@Override
+	public boolean hasReduce(){
+		return false;
 	}
 }

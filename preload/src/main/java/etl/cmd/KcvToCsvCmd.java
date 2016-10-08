@@ -29,12 +29,10 @@ public class KcvToCsvCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(KcvToCsvCmd.class);
 	
 	//record format overall specification
-	public static final String RECORD_START="record.start";
+	public static final String cfgkey_record_start="record.start";
 		public static final String RECORD_SINGLELINE="^"; //single line
-
-	public static final String RECORD_KCV_VK_REGEXP="record.vkexp";
-		
-	public static final String RECORD_FIELDNUM="record.fieldnum";
+	public static final String cfgkey_record_vkexp="record.vkexp";
+	public static final String cfgkey_record_fieldnum="record.fieldnum";
 		public static final int RECORD_FIELDNUM_DEFAULT=-1; //extract all fields recognized
 
 	//record format definition
@@ -42,6 +40,10 @@ public class KcvToCsvCmd extends ETLCmd{
 	private Pattern recordStartPattern = null;
 	private Pattern recordVKExp = null;
 	private int recordFieldNum = RECORD_FIELDNUM_DEFAULT;
+	
+	public KcvToCsvCmd(){
+		super();
+	}
 	
 	public KcvToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
@@ -51,18 +53,18 @@ public class KcvToCsvCmd extends ETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.file);
-		String strVal = super.getCfgString(RECORD_START, null);
+		String strVal = super.getCfgString(cfgkey_record_start, null);
 		if (strVal!=null){
 			this.recordStart = strVal;
 			recordStartPattern = Pattern.compile(strVal);
 		}
 
-		strVal = super.getCfgString(RECORD_KCV_VK_REGEXP, null);
+		strVal = super.getCfgString(cfgkey_record_vkexp, null);
 		if (strVal!=null){
 			this.recordVKExp = Pattern.compile(strVal);
 		}
 		
-		strVal = super.getCfgString(RECORD_FIELDNUM, null);
+		strVal = super.getCfgString(cfgkey_record_fieldnum, null);
 		if (strVal!=null){
 			this.recordFieldNum = Integer.parseInt(strVal);
 		}
@@ -171,5 +173,10 @@ public class KcvToCsvCmd extends ETLCmd{
 		logInfo.add(outputList.size()+"");
 		retMap.put(RESULT_KEY_LOG, logInfo);
 		return retMap;
+	}
+	
+	@Override
+	public boolean hasReduce(){
+		return false;
 	}
 }

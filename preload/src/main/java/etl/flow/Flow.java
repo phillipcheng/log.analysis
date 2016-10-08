@@ -3,6 +3,7 @@ package etl.flow;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class Flow extends Node{
 	private StartNode start;
 	private EndNode end;
 	
-	private Map<String, String> properties;
+	private Map<String, String> properties = new LinkedHashMap<String, String>();
 	
 	private Map<String, Node> nodes;
 
@@ -27,11 +28,16 @@ public class Flow extends Node{
 	private Map<String, Data> dataMap;
 	
 	//cached structure
-	private Map<String, Set<Link>> nodeLinkMap;
+	private Map<String, Set<Link>> nodeOutLinkMap;
+	private Map<String, Set<Link>> nodeInLinkMap;
 	private Map<String, Set<Node>> linkNodeMap;
 	
-	public Set<Link> getNextLinks(String nodeName){
-		return nodeLinkMap.get(nodeName);
+	public Set<Link> getInLinks(String nodeName){
+		return nodeInLinkMap.get(nodeName);
+	}
+	
+	public Set<Link> getOutLinks(String nodeName){
+		return nodeOutLinkMap.get(nodeName);
 	}
 	
 	public Set<Node> getNextNodes(Link lnk){
@@ -42,13 +48,26 @@ public class Flow extends Node{
 		return nodes.get(name);
 	}
 	
+	public Data getDataDef(String dsName){
+		return dataMap.get(dsName);
+	}
+	
 	public void init(){
-		nodeLinkMap = new HashMap<String, Set<Link>>();
+		nodeOutLinkMap = new HashMap<String, Set<Link>>();
 		for (Link lnk: links){
-			Set<Link> ll = nodeLinkMap.get(lnk.getFromNodeName());
+			Set<Link> ll = nodeOutLinkMap.get(lnk.getFromNodeName());
 			if (ll == null){
 				ll = new HashSet<Link>();
-				nodeLinkMap.put(lnk.getFromNodeName(), ll);
+				nodeOutLinkMap.put(lnk.getFromNodeName(), ll);
+			}
+			ll.add(lnk);
+		}
+		nodeInLinkMap = new HashMap<String, Set<Link>>();
+		for (Link lnk: links){
+			Set<Link> ll = nodeInLinkMap.get(lnk.getToNodeName());
+			if (ll == null){
+				ll = new HashSet<Link>();
+				nodeInLinkMap.put(lnk.getToNodeName(), ll);
 			}
 			ll.add(lnk);
 		}
@@ -82,6 +101,10 @@ public class Flow extends Node{
 
 	public Map<String, String> getProperties() {
 		return properties;
+	}
+	
+	public void put(String key, String value){
+		properties.put(key, value);
 	}
 
 	public void setProperties(Map<String, String> properties) {

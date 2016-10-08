@@ -17,7 +17,7 @@ import etl.util.ScriptEngineUtil;
 public class KafkaMsgGenCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(KafkaMsgGenCmd.class);
-	
+	//cfgkey
 	public static final String cfgkey_entity_name="entity.name";
 	public static final String cfgkey_entity_attr_exp="entity.exp";
 	public static final String cfgkey_entity_key="entity.key";
@@ -27,6 +27,10 @@ public class KafkaMsgGenCmd extends SchemaFileETLCmd{
 	private transient KafkaAdaptorCmd kac;
 	private transient Map<String, CompiledScript> expMap;
 	private transient CompiledScript keyCS;
+	
+	public KafkaMsgGenCmd(){
+		super();
+	}
 	
 	public KafkaMsgGenCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
