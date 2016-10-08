@@ -18,7 +18,7 @@ public class Conversion {
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
 				String propFileString = String.format("%s%s%s_%s.properties", dir, File.separator, flow.getName(), an.getName());
-				Util.writePropertyFile(propFileString, an.getProperties());
+				Util.writePropertyFile(propFileString, an.getUserProperties());
 			}
 		}
 	}
