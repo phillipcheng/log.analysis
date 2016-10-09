@@ -20,6 +20,7 @@ public class ColOp {
 	public static final String UPDATE_OP="u";
 	public static final String REMOVE_OP="r";
 	public static final String SPLIT_OP="s";
+	public static final String INSERT_OP="i";
 
 	public static final String VAR_NAME_FIELDS="fields"; //array of field values
 	public static final String VAR_NAME_FIELD_MAP="fieldMap"; //field name to string value map
@@ -52,6 +53,8 @@ public class ColOp {
 				type = ColOpType.remove;
 			}else if (SPLIT_OP.equals(op)){
 				type = ColOpType.split;
+			}else if (INSERT_OP.equals(op)){
+				type = ColOpType.insert;
 			}else{
 				logger.error(String.format("wrong col op type:%s", op));
 			}
@@ -59,7 +62,7 @@ public class ColOp {
 			String[] ies = idxexp.split("\\:", 2);
 			if (ies.length==2){
 				exp = ies[1];
-				if (type == ColOpType.update){
+				if (type == ColOpType.update || type == ColOpType.insert){
 					expCS = ScriptEngineUtil.compileScript(exp);
 				}
 			}
@@ -106,6 +109,13 @@ public class ColOp {
 			String[] newItem = item.split(Pattern.quote(exp), -1);
 			items.remove(targetIdx);
 			items.addAll(targetIdx, Arrays.asList(newItem));
+		}else if (type == ColOpType.insert){
+			String val = ScriptEngineUtil.eval(expCS, vars);
+			if (val!=null){
+				items.add(targetIdx, val);
+			}else{
+				items.add(targetIdx, "");
+			}
 		}
 		return items;
 	}

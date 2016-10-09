@@ -20,6 +20,10 @@ public class SendLogCmd extends ETLCmd{
 	
 	private transient KafkaAdaptorCmd kac;
 	
+	public SendLogCmd(){
+		super();
+	}
+	
 	public SendLogCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		kac = new KafkaAdaptorCmd(super.getPc());
@@ -28,21 +32,29 @@ public class SendLogCmd extends ETLCmd{
 	@Override
 	public List<String> sgProcess() {
 		logger.info(String.format("use engine config: %b", EngineUtil.getInstance().isSendLog()));
-		List<String> loginfo = Arrays.asList(this.otherArgs);
 		if (EngineUtil.getInstance().isSendLog()){
-			return loginfo;
+			return Arrays.asList(this.otherArgs);
 		}else{
-			ETLLog etllog = new ETLLog(LogType.etlstat);
-			Date curTime = new Date();
-			etllog.setStart(curTime);
-			etllog.setEnd(curTime);
-			if (wfid!=null) {
-				etllog.setWfid(wfid);
-			}
-			etllog.setActionName(getClass().getName());
-			etllog.setCounts(loginfo);
+			ETLLog etllog = getEtllog();
 			EngineUtil.getInstance().sendLog(kac.getLogTopicName(), etllog);
 			return null;
 		}
+	}
+	
+	public ETLLog getEtllog(){
+		List<String> loginfo = Arrays.asList(this.otherArgs);
+		ETLLog etllog = new ETLLog(LogType.etlstat);
+		Date curTime = new Date();
+		etllog.setStart(curTime);
+		etllog.setEnd(curTime);
+		if (super.getWfName()!=null){
+			etllog.setWfName(super.getWfName());
+		}
+		if (wfid!=null) {
+			etllog.setWfid(wfid);
+		}
+		etllog.setActionName(getClass().getName());
+		etllog.setCounts(loginfo);
+		return etllog;
 	}
 }

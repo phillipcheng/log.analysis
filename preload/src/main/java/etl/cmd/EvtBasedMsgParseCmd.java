@@ -25,19 +25,15 @@ import etl.engine.MRMode;
 public class EvtBasedMsgParseCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(EvtBasedMsgParseCmd.class);
 	//record type specification
-	public static final String EVT_IDX="event.idx";
-	public static final String EVT_TYPE_KEY="event.types";
+	public static final String cfgkey_evt_idx="event.idx";
+	public static final String cfgkey_evt_types="event.types";
 	
 	//main message specification
-	public static final String MESSAGE_IDX="message.idx";
-	public static final String MESSAGE_FIELDS="message.fields";
+	public static final String cfgkey_msg_idx="message.idx";
+	public static final String cfgkey_msg_fields="message.fields";
 	public static final String REGEXP_KEY="regexp";
 	public static final String ATTR_KEY="attr";
 	public static final String DEFAULT_EVENT_TYPE="default";
-
-	public static final String EM_PRE="*";
-	public static final String EM_POST=" IMSI:";
-	public static final String EM_POST2=":";
 
 	//event
 	private int eventIdx=-1;
@@ -47,6 +43,10 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	private String[] msgFields;
 	private Map<String, String[]> msgAttrMap = new HashMap<String, String[]>();//attr map
 	private Set<String> missedEvtType = new HashSet<String>();
+	
+	public EvtBasedMsgParseCmd(){
+		super();
+	}
 	
 	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
@@ -60,8 +60,8 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
-		eventIdx = super.getCfgInt(EVT_IDX, -1);
-		String[] evtTypes = super.getCfgStringArray(EVT_TYPE_KEY);
+		eventIdx = super.getCfgInt(cfgkey_evt_idx, -1);
+		String[] evtTypes = super.getCfgStringArray(cfgkey_evt_types);
 		for (String et:evtTypes){
 			String regexp = super.getCfgString(et + "." + REGEXP_KEY, null);
 			if (regexp!=null){
@@ -73,8 +73,8 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 				}
 			}
 		}
-		msgIdx = super.getCfgInt(MESSAGE_IDX, -1);
-		msgFields = super.getCfgStringArray(MESSAGE_FIELDS);
+		msgIdx = super.getCfgInt(cfgkey_msg_idx, -1);
+		msgFields = super.getCfgStringArray(cfgkey_msg_fields);
 	}
 	
 	public String getOutputValues(String evtType, String input){
@@ -155,5 +155,10 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 		Map<String, Object> retMap = new HashMap<String, Object>();
 		retMap.put(RESULT_KEY_OUTPUT_LINE, Arrays.asList(new String[]{output}));
 		return retMap;
+	}
+	
+	@Override
+	public boolean hasReduce(){
+		return false;
 	}
 }

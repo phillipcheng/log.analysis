@@ -72,7 +72,7 @@ public class TestExeIntervalCmd extends TestETLCmd{
 			getFs().delete(new Path(cmd.getOutputFolder()), true);
 			getFs().mkdirs(new Path(cmd.getOutputFolder()));
 			
-			ETLCmdMain.exeCmd(cmd, 4, 5);
+			ETLCmdMain.exeCmd(cmd, 4, 10);
 			//assertion
 			List<String> ret = Util.listDfsFile(cmd.getFs(), cmd.getOutputFolder());
 			assertTrue(ret.size()>=1);

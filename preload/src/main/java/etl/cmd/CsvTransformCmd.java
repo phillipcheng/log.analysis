@@ -16,7 +16,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
@@ -35,6 +34,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 
 	public static final Logger logger = LogManager.getLogger(CsvTransformCmd.class);
 	
+	//cfgkey
 	public static final String cfgkey_skip_header="skip.header";
 	public static final String cfgkey_row_validation="row.validation";
 	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
@@ -55,6 +55,9 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	private transient List<String> tableAttrs = null;
 	private transient Map<String, Integer> nameIdxMap = null;
 	
+	public CsvTransformCmd(){
+		super();
+	}
 	
 	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
@@ -131,7 +134,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 
 	public Tuple2<String, String> mapToPair(String key, String value){
 		super.init();
-		String fileName = key;
+		String tableName = key;
 		String row = value;
 		String output="";
 		
@@ -168,14 +171,14 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		
 		//process operation
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
-		super.getSystemVariables().put(VAR_NAME_FILE_NAME, fileName);
+		super.getSystemVariables().put(VAR_NAME_TABLE_NAME, tableName);
 		for (ColOp co: colOpList){
 			items = co.process(super.getSystemVariables());
 			super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
 		}
 		output = Util.getCsv(items, false);
 		logger.debug("output:" + output);
-		return new Tuple2<String, String>(fileName, output);
+		return new Tuple2<String, String>(tableName, output);
 	}
 	
 	@Override
@@ -186,6 +189,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			logger.info("skip header:" + row);
 			return null;
 		}
+		getPathName(context);//set path name in the system variables
 		String tableName = getTableName(context);
 		if (tableName==null || "".equals(tableName.trim())){
 			logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 

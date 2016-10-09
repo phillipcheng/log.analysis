@@ -15,15 +15,14 @@ import etl.util.ScriptEngineUtil;
 
 public class LoadDataCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
-
 	public static final Logger logger = LogManager.getLogger(LoadDataCmd.class);
-	
+	//cfgkey
 	public static final String cfgkey_webhdfs="hdfs.webhdfs.root";
 	public static final String cfgkey_csvfile = "csv.file";
 	public static final String cfgkey_load_sql = "load.sql";
 	public static final String cfgkey_table_names="table.names";
 	public static final String cfgkey_csv_suffix ="csv.suffix";
-	
+	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
 	public static final String VAR_USERNAME="userName";
 	public static final String VAR_CSV_FILE="csvFileName";
@@ -38,6 +37,10 @@ public class LoadDataCmd extends SchemaFileETLCmd{
 	private transient CompiledScript csCsvFile;
 	private transient CompiledScript csLoadSql;
 	private transient List<String> copysqls;
+	
+	public LoadDataCmd(){
+		super();
+	}
 	
 	public LoadDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);

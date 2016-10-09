@@ -146,4 +146,8 @@ public class StringUtil {
 	    }
 	    return sb.toString();
 	}
+	
+	public static String replaceSpaces(String v){
+		return v.replaceAll("\\s","");
+	}
 }

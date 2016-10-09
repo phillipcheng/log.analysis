@@ -16,6 +16,7 @@ import etl.engine.EngineUtil;
 import etl.log.ETLLog;
 import etl.log.LogType;
 import etl.util.DateUtil;
+import etl.util.GroupFun;
 import etl.util.ScriptEngineUtil;
 import etl.util.StringUtil;
 import etl.util.VarType;
@@ -99,6 +100,11 @@ public class TestEngineUtil extends TestETLCmd{
 	@Override
 	public String getResourceSubFolder() {
 		return "engineutil/";
+	}
+	
+	@Test
+	public void testGetParentFolderName(){
+		assertTrue("site1".equals(GroupFun.getParentFolderName("hdfs://127.0.0.1/pde/ssxxxxx-xx/csv/site1/xxxx.bin")));
 	}
 	
 	

@@ -30,4 +30,3 @@ log.tmp.dir= /preload/etllog/
 log.csv.file='/preload/etllog/' + WFID + '/' + tableName
 log.schema.file=/preload/schema/logschema.txt
 log.db.prefix=etllog
-log.interval=10

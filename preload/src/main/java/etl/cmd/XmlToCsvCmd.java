@@ -6,9 +6,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,13 +21,12 @@ import javax.xml.xpath.XPathFactory;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -33,8 +34,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import etl.spark.CmdReciever;
+import etl.util.DBUtil;
+import etl.util.FieldType;
+import etl.util.ScriptEngineUtil;
 import etl.util.Util;
-
+import etl.util.VarType;
 import scala.Tuple2;
 
 public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
@@ -42,6 +46,8 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 
 	public static final Logger logger = LogManager.getLogger(XmlToCsvCmd.class);
 	
+	//cfgkey
+	public static final String cfgkey_xml_folder="xml-folder";//for schema only
 	
 	public static final String cfgkey_FileLvelSystemAttrs_xpath="FileSystemAttrs.xpath";
 	public static final String cfgkey_FileLvelSystemAttrs_name="FileSystemAttrs.name";
@@ -62,12 +68,12 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	public static final String cfgkey_TableSystemAttrs_type="TableSystemAttrs.type";
 	
 	//used to generate table name
-	private transient List<String> keyWithValue = new ArrayList<String>();
-	private transient List<String> keySkip = new ArrayList<String>();
-	private transient List<String> fileLvlSystemFieldNames = new ArrayList<String>();
-	private transient List<String> fileLvlSystemFieldTypes = new ArrayList<String>();
-	private transient List<String> tableLvlSystemFieldNames = new ArrayList<String>();
-	private transient List<String> tableLvlSystemFieldTypes = new ArrayList<String>();
+	private transient List<String> keyWithValue = null;
+	private transient List<String> keySkip = null;
+	private transient List<String> fileLvlSystemFieldNames = null;
+	private transient List<FieldType> fileLvlSystemFieldTypes = null;
+	private transient List<String> tableLvlSystemFieldNames = null;
+	private transient List<FieldType> tableLvlSystemFieldTypes = null;
 	
 	//
 	private transient XPathExpression FileLvlSystemAttrsXpath;//file level
@@ -79,6 +85,10 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	private transient XPathExpression[] xpathExpTableSystemAttrs;//table level
 	private transient XPathExpression xpathExpTableRowValues;
 
+	public XmlToCsvCmd(){
+		super();
+	}
+	
 	public XmlToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
@@ -86,13 +96,11 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
-		keyWithValue = new ArrayList<String>();
-		keySkip = new ArrayList<String>();
+
 		fileLvlSystemFieldNames = new ArrayList<String>();
-		fileLvlSystemFieldTypes = new ArrayList<String>();
+		fileLvlSystemFieldTypes = new ArrayList<FieldType>();
 		tableLvlSystemFieldNames = new ArrayList<String>();
-		tableLvlSystemFieldTypes = new ArrayList<String>();
-		
+		tableLvlSystemFieldTypes = new ArrayList<FieldType>();
 		keyWithValue = Arrays.asList(super.getCfgStringArray(cfgkey_TableObjDesc_useValues));
 		keySkip = Arrays.asList(super.getCfgStringArray(cfgkey_TableObjDesc_skipKeys));
 		
@@ -106,7 +114,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 				fileLvlSystemFieldNames.add(name);
 			}
 			for (String type: super.getCfgStringArray(cfgkey_FileLvelSystemAttrs_type)){
-				fileLvlSystemFieldTypes.add(type);
+				fileLvlSystemFieldTypes.add(new FieldType(type));
 			}
 			xpathExpTables = xpath.compile(super.getCfgString(cfgkey_xpath_Tables, null));
 			xpathExpTableRow0 = xpath.compile(super.getCfgString(cfgkey_xpath_TableRow0, null));
@@ -123,11 +131,19 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 				tableLvlSystemFieldNames.add(name);
 			}
 			for (String type: super.getCfgStringArray(cfgkey_TableSystemAttrs_type)){
-				tableLvlSystemFieldTypes.add(type);
+				tableLvlSystemFieldTypes.add(new FieldType(type));
 			}
+			//for schema only
+			String xmlFolderExp = super.getCfgString(cfgkey_xml_folder, null);
+			if (xmlFolderExp==null){
+				logger.error(String.format("xml folder can't be null."));
+				return;
+			}
+			this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
 		}catch(Exception e){
 			logger.info("", e);
 		}
+		
 	}
 	
 	private Document getDocument(Path inputXml){
@@ -301,5 +317,159 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 			rets.add(ret);
 		}
 		return rets;
+	}
+	
+	//
+	private String xmlFolder;
+	private Map<String, List<String>> schemaAttrNameUpdates = new HashMap<String, List<String>>();//store updated/new tables' attribute parts' name (compared with the org schema)
+	private Map<String, List<FieldType>> schemaAttrTypeUpdates = new HashMap<String, List<FieldType>>();//store updated/new tables' attribute parts' type (compared with the org schema)
+	private Map<String, List<String>> newTableObjNamesAdded = new HashMap<String, List<String>>();//store new tables' obj name
+	private Map<String, List<FieldType>> newTableObjTypesAdded = new HashMap<String, List<FieldType>>();//store new tables' obj type
+	private Set<String> tablesUsed = new HashSet<String>(); //the tables this batch of data used
+	
+	private boolean checkSchemaUpdate(FileStatus[] inputFileNames){
+		boolean schemaUpdated=false;
+		try {
+			for (FileStatus inputFile: inputFileNames){
+				logger.debug(String.format("process %s", inputFile));
+				Document mf = getDocument(inputFile.getPath());
+				NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
+				for (int i=0; i<ml.getLength(); i++){
+					Node mi = getNode(ml, i);
+					Node mv0 = (Node)xpathExpTableRow0.evaluate(mi, XPathConstants.NODE);
+					String moldn = (String) xpathExpTableObjDesc.evaluate(mv0, XPathConstants.STRING);
+					TreeMap<String, String> moldParams = Util.parseMapParams(moldn);
+					String tableName = generateTableName(moldParams);
+					tablesUsed.add(tableName);
+					NodeList mv0vs = (NodeList) xpathExpTableRowValues.evaluate(mv0, XPathConstants.NODESET);
+					List<String> orgSchemaAttributes = null;
+					if (logicSchema.hasTable(tableName)){
+						orgSchemaAttributes = new ArrayList<String>();
+						List<String> allAttributes = logicSchema.getAttrNames(tableName);
+						allAttributes.removeAll(fileLvlSystemFieldNames);
+						allAttributes.removeAll(tableLvlSystemFieldNames);
+						allAttributes.removeAll(moldParams.keySet());
+						orgSchemaAttributes.addAll(allAttributes);
+					}
+					{//merge the origin and newUpdates
+						List<String> newSchemaAttributes = schemaAttrNameUpdates.get(tableName);
+						if (newSchemaAttributes!=null){
+							if (orgSchemaAttributes == null)
+								orgSchemaAttributes = newSchemaAttributes;
+							else{
+								orgSchemaAttributes.addAll(newSchemaAttributes);
+							}
+						}
+					}
+					List<String> tableAttrNamesList = new ArrayList<String>();//table attr name list
+					NodeList mts = (NodeList) xpathExpTableAttrNames.evaluate(mi, XPathConstants.NODESET);
+					for (int j=0; j<mts.getLength(); j++){
+						Node mt = getNode(mts, j);
+						tableAttrNamesList.add(mt.getTextContent());
+					}
+					if (orgSchemaAttributes!=null){
+						//check new attribute
+						List<String> newAttrNames = new ArrayList<String>();
+						List<FieldType> newAttrTypes = new ArrayList<FieldType>();
+						for (int j=0; j<tableAttrNamesList.size(); j++){
+							String mtc = tableAttrNamesList.get(j);
+							if (!orgSchemaAttributes.contains(mtc)){
+								newAttrNames.add(mtc);
+								Node mv0vj = getNode(mv0vs, j);
+								newAttrTypes.add(DBUtil.guessDBType(mv0vj.getTextContent()));
+							}
+						}
+						if (newAttrNames.size()>0){
+							if (schemaAttrNameUpdates.containsKey(tableName)){
+								newAttrNames.addAll(0, schemaAttrNameUpdates.get(tableName));
+								newAttrTypes.addAll(0, schemaAttrTypeUpdates.get(tableName));
+							}
+							schemaAttrNameUpdates.put(tableName, newAttrNames);
+							schemaAttrTypeUpdates.put(tableName, newAttrTypes);
+							schemaUpdated=true;
+						}
+					}else{
+						//new table needed
+						List<FieldType> onlyAttrTypesList = new ArrayList<FieldType>();
+						for (int j=0; j<mv0vs.getLength(); j++){
+							Node mv0vj = getNode(mv0vs, j);
+							onlyAttrTypesList.add(DBUtil.guessDBType(mv0vj.getTextContent()));
+						}
+						schemaAttrNameUpdates.put(tableName, tableAttrNamesList);
+						schemaAttrTypeUpdates.put(tableName, onlyAttrTypesList);
+						//
+						List<String> objNameList = new ArrayList<String>();
+						List<FieldType> objTypeList = new ArrayList<FieldType>();
+						for (String key: moldParams.keySet()){
+							objNameList.add(key);
+							objTypeList.add(DBUtil.guessDBType(moldParams.get(key)));
+						}
+						newTableObjNamesAdded.put(tableName, objNameList);
+						newTableObjTypesAdded.put(tableName, objTypeList);
+						schemaUpdated=true;
+					}
+				}
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		return schemaUpdated;
+	}
+	/*
+	 * output: schema, createsql
+	*/
+	@Override
+	public List<String> sgProcess() {
+		List<String> logInfo = new ArrayList<String>();
+		try {
+			FileStatus[] inputFileNames = fs.listStatus(new Path(xmlFolder));
+			logInfo.add(inputFileNames.length + "");//number of input files
+			boolean schemaUpdated = checkSchemaUpdate(inputFileNames);
+			if (schemaUpdated){//updated
+				List<String> createTableSqls = new ArrayList<String>();
+				List<String> sysAttrNames = new ArrayList<String>();
+				//set sys attr names into logic schema
+				sysAttrNames.addAll(tableLvlSystemFieldNames);
+				sysAttrNames.addAll(fileLvlSystemFieldNames);
+				//
+				for(String tn:schemaAttrNameUpdates.keySet()){
+					List<String> fieldNameList = new ArrayList<String>(); 
+					List<FieldType> fieldTypeList = new ArrayList<FieldType>();
+					if (logicSchema.getAttrNames(tn)!=null){//update table
+						fieldNameList.addAll(schemaAttrNameUpdates.get(tn));
+						fieldTypeList.addAll(schemaAttrTypeUpdates.get(tn));
+						//update schema
+						logicSchema.addAttributes(tn, schemaAttrNameUpdates.get(tn));
+						logicSchema.addAttrTypes(tn, schemaAttrTypeUpdates.get(tn));
+						//gen update sql
+						createTableSqls.addAll(DBUtil.genUpdateTableSql(fieldNameList, fieldTypeList, tn, 
+								dbPrefix, super.getDbtype()));
+					}else{//new table
+						//gen create sql
+						fieldNameList.addAll(tableLvlSystemFieldNames);
+						fieldNameList.addAll(fileLvlSystemFieldNames);
+						fieldTypeList.addAll(tableLvlSystemFieldTypes);
+						fieldTypeList.addAll(fileLvlSystemFieldTypes);
+						fieldNameList.addAll(newTableObjNamesAdded.get(tn));
+						fieldTypeList.addAll(newTableObjTypesAdded.get(tn));
+						fieldNameList.addAll(schemaAttrNameUpdates.get(tn));
+						fieldTypeList.addAll(schemaAttrTypeUpdates.get(tn));
+						//update to logic schema
+						logicSchema.updateTableAttrs(tn, fieldNameList);
+						logicSchema.updateTableAttrTypes(tn, fieldTypeList);
+						//
+						createTableSqls.add(DBUtil.genCreateTableSql(fieldNameList, fieldTypeList, tn, 
+								dbPrefix, super.getDbtype()));
+					}
+					//gen copys.sql for reference
+					List<String> attrs = new ArrayList<String>();
+					attrs.addAll(logicSchema.getAttrNames(tn));
+				}
+				logInfo.addAll(super.updateDynSchema(createTableSqls));
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		return logInfo;
 	}
 }

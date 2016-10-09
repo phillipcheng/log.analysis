@@ -18,10 +18,16 @@ import etl.util.FieldType;
 public class KafkaMsgDecodeCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(KafkaMsgDecodeCmd.class);
+	//cfgkey
 	public static final String cfgkey_entity_name="entity.name";
+	
 	private String entityName;
 	private transient KafkaAdaptorCmd kac;
 	private transient Consumer<String, String> consumer;
+	
+	public KafkaMsgDecodeCmd(){
+		super();
+	}
 	
 	public KafkaMsgDecodeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);

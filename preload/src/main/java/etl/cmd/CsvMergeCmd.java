@@ -36,22 +36,28 @@ public class CsvMergeCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(CsvMergeCmd.class);
 	
 	public static final String KEY_HEADER_SEP="----";
-	public static final String KEY_SYSTEM_VAR_TABLE="table";
-	public static final String KEY_SYSTEM_VAR_CSV="csv";
 	
+	//cfgkey
 	public static final String cfgkey_src_files="src.files";
 	public static final String cfgkey_src_keys="src.keys";
 	public static final String cfgkey_src_skipHeader="src.skipHeader";
 	public static final String cfgkey_join_type="join.type";
 	public static final String cfgkey_ret_value="ret.value";
+	//system varaibles
+	public static final String KEY_SYSTEM_VAR_TABLE="table";
+	public static final String KEY_SYSTEM_VAR_CSV="csv";
 	
-	
+	//
 	private Pattern[] srcFilesExp;
 	private int[] srcKeys;
 	private boolean[] srcSkipHeader;
 	private JoinType joinType;
 	private transient CompiledScript retValueExp;
 	private int srcNum;
+	
+	public CsvMergeCmd(){
+		super();
+	}
 	
 	public CsvMergeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);

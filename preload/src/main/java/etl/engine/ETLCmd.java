@@ -1,6 +1,7 @@
 package etl.engine;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -18,11 +19,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-
 import etl.spark.SparkProcessor;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
+import etl.util.VarDef;
 import etl.util.VarType;
 import scala.Tuple2;
 
@@ -35,10 +35,15 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public static final String RESULT_KEY_OUTPUT_LINE="lineoutput";
 	public static final String RESULT_KEY_OUTPUT_TUPLE2="mapoutput";
 	
-	public static final String KEY_VARS="vars";
+	//cfgkey
+	public static final String cfgkey_vars="vars";
+	
+	//system variables
+	public static final String VAR_NAME_TABLE_NAME="tablename";
 	public static final String VAR_NAME_FILE_NAME="filename";
+	public static final String VAR_NAME_PATH_NAME="pathname";//including filename
+	
 	public static final String KEY_SEP=",";
-
 	public static final String SINGLE_TABLE="single.table";
 	
 	private String wfName;//wf template name
@@ -82,11 +87,12 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	public Iterator<String> getCfgKeys(){
-		String realPrefix = "";
 		if (prefix!=null){
-			realPrefix = prefix+".";
+			String realPrefix = prefix+".";
+			return pc.getKeys(realPrefix);
+		}else{
+			return pc.getKeys();
 		}
-		return pc.getKeys(realPrefix);
 	}
 	
 	public Object getCfgProperty(String key){
@@ -179,7 +185,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		pc = Util.getMergedPCFromDfs(fs, staticCfg);
 		systemVariables = new HashMap<String, Object>();
 		systemVariables.put(VAR_WFID, wfid);
-		String[] varnames = pc.getStringArray(KEY_VARS);
+		String[] varnames = pc.getStringArray(cfgkey_vars);
 		if (varnames!=null){
 			for (String varname: varnames){
 				String exp = pc.getString(varname);
@@ -205,7 +211,6 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	/**
-	 * 
 	 * @param input
 	 * @return
 	 */
@@ -215,7 +220,6 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	/**
-	 * 
 	 * @param input
 	 * @return
 	 */
@@ -259,6 +263,23 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	//for long running command
 	public void close(){
+	}
+	
+	//in MapReduce Mode, do I have the reduce phase?
+	public boolean hasReduce(){
+		return true;
+	}
+	
+	public VarDef[] getCfgVar(){
+		return new VarDef[]{new VarDef(cfgkey_vars, VarType.STRINGLIST)};
+	}
+	
+	
+	public VarDef[] getSysVar(){
+		return new VarDef[]{
+				new VarDef(VAR_NAME_TABLE_NAME, VarType.STRING), 
+				new VarDef(VAR_NAME_FILE_NAME, VarType.STRING), 
+				new VarDef(VAR_NAME_PATH_NAME, VarType.STRING)};
 	}
 	
 	///

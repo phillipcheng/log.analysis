@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import etl.cmd.BackupCmd;
 import etl.cmd.KafkaMsgGenCmd;
+import etl.cmd.SendLogCmd;
 import etl.cmd.test.TestETLCmd;
 import etl.engine.ETLCmd;
 import etl.engine.ETLCmdMain;
@@ -31,6 +32,35 @@ import etl.log.StreamLogProcessor;
 public class TestETLLog extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestETLLog.class);
 	
+	@Test
+	public void testSendLog1(){
+		try {
+			SendLogCmd cmd = (SendLogCmd) Class.forName("etl.cmd.SendLogCmd").getConstructor(String.class, String.class, String.class, 
+				String.class, String[].class).newInstance("wfname", "wfid", null, null, new String[]{"aggr", "12","0"});
+			EngineUtil.getInstance().setSendLog(false);
+			ETLLog etllog = cmd.getEtllog();
+			String msg = etllog.toString();
+			logger.info(String.format("etllog:%s", msg));
+			assertTrue(msg.endsWith("0,,"));
+		}catch(Exception e){
+			logger.error("", e);
+		}
+	}
+	@Test
+	public void testSendLog(){
+		try {
+			SendLogCmd cmd = (SendLogCmd) Class.forName("etl.cmd.SendLogCmd").getConstructor(String.class, String.class, String.class, 
+				String.class, String[].class).newInstance("wfname", "wfid", null, null, new String[]{"aggr", "12","0"});
+			EngineUtil.getInstance().setSendLog(true);
+			List<String> info = cmd.sgProcess();
+			ETLLog etllog = EngineUtil.getInstance().getETLLog(cmd, new Date(), new Date(), info);
+			String msg = etllog.toString();
+			logger.info(String.format("etllog:%s", msg));
+			assertTrue(msg.endsWith("0,,"));
+		}catch(Exception e){
+			logger.error("", e);
+		}
+	}
 	@Test
 	public void test1() throws Exception {
 		ETLLog etllog = new ETLLog(LogType.etlstat);
@@ -45,7 +75,7 @@ public class TestETLLog extends TestETLCmd {
 		logInfo.add("122");
 		etllog.setCounts(logInfo);
 		String str = etllog.toString();
-		String expected = "statistics,2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,123,122,,";
+		String expected = "2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,123,122,,";
 		logger.info(str);
 		assertTrue(expected.equals(str));
 	}
@@ -60,7 +90,7 @@ public class TestETLLog extends TestETLCmd {
 		etllog.setEnd(ETLLog.ssdf.parse(endDate));
 		etllog.setActionName(BackupCmd.class.getName());
 		String str = etllog.toString();
-		String expected = "statistics,2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,,,,";
+		String expected = "2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,,,,";
 		logger.info(str);
 		assertTrue(expected.equals(str));
 	}
@@ -74,7 +104,7 @@ public class TestETLLog extends TestETLCmd {
 		final String msggenWfName = "msggenWf";
 		final String msggenWfId = "msggenWfId";
 		final int exeInterval = 2;
-		final int totalExeTime = 200;
+		final int totalExeTime = 10;
 		
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + msggneCfgName), new Path(msggenCfgFolder + msggneCfgName));
 		getFs().copyFromLocalFile(false, true, new Path("src/main/resources/logschema.txt"), 

@@ -24,6 +24,7 @@ public class CsvFileGenCmd extends SchemaFileETLCmd{
 	public static final String TS_FORMAT="yyyy-MM-dd HH:mm:ss.SSS";
 	public static final SimpleDateFormat tsSdf = new SimpleDateFormat(TS_FORMAT);
 	
+	//cfgkey
 	public static final String cfgkey_table_names="table.names";
 	public static final String cfgkey_output_folder="output.folder";
 	public static final String cfgkey_file_size="file.size";
@@ -47,6 +48,10 @@ public class CsvFileGenCmd extends SchemaFileETLCmd{
 			logger.error(String.format("type:%s not supported by genString", ft));
 			return null;
 		}
+	}
+	
+	public CsvFileGenCmd(){
+		super();
 	}
 	
 	public CsvFileGenCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs) {

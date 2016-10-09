@@ -1,6 +1,5 @@
 package etl.cmd;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +16,14 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
 import etl.util.StringUtil;
+import etl.util.Util;
 
 public class ShellCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(ShellCmd.class);
 	
+	//cfgkey
 	public static final String cfgkey_param_key="key"; //the special key name for mapreduce mode, each key is a line of input
 	public static final String cfgkey_command="command";
 	
@@ -30,6 +31,10 @@ public class ShellCmd extends ETLCmd{
 	private String command;
 	private Map<String, Object> params;
 
+	public ShellCmd(){
+		super();
+	}
+	
 	public ShellCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
@@ -42,7 +47,7 @@ public class ShellCmd extends ETLCmd{
 			logger.error(String.format("command can't be null."));
 			return;
 		}
-		params = new HashMap<String, Object>();
+		params = this.getSystemVariables();
 		Iterator<String> keys = super.getCfgKeys();
 		while (keys.hasNext()){
 			String key = keys.next();
@@ -54,8 +59,6 @@ public class ShellCmd extends ETLCmd{
 	public List<String> sgProcess() {
 		try {
 			String cmd = StringUtil.fillParams(command, params, "$", "");
-			//pass wfid as the last parameter to the shell script
-			cmd += " " + this.wfid;
 			logger.info(String.format("mr command is %s", cmd));
 			CommandLine cmdLine = CommandLine.parse(cmd);
 			DefaultExecutor executor = new DefaultExecutor();
@@ -69,8 +72,19 @@ public class ShellCmd extends ETLCmd{
 	
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
-		params.put(cfgkey_param_key, row);//param passed
+		if (row.contains(Util.kvSep)){
+			Map<String, String> keyValueMap = Util.parseMapParams(row);
+			params.putAll(keyValueMap);
+		}else{
+			params.put(cfgkey_param_key, row);
+		}
 		sgProcess();
 		return null;
+	}
+	
+
+	@Override
+	public boolean hasReduce(){
+		return false;
 	}
 }

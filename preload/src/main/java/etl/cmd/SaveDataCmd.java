@@ -9,10 +9,14 @@ import scala.Tuple2;
 
 public class SaveDataCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
-	
+	//cfgkey
 	public static final String cfg_log_tmp_dir="log.tmp.dir";
 	
 	private String logTmpDir;
+
+	public SaveDataCmd(){
+		super();
+	}
 	
 	public SaveDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
@@ -28,5 +32,13 @@ public class SaveDataCmd extends ETLCmd {
 	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
 		SparkUtil.saveByKey(input, defaultFs, logTmpDir, wfid);
 		return null;
+	}
+	
+	public String getLogTmpDir() {
+		return logTmpDir;
+	}
+
+	public void setLogTmpDir(String logTmpDir) {
+		this.logTmpDir = logTmpDir;
 	}
 }

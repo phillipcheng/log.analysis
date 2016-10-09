@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
-import etl.cmd.SchemaFromXmlCmd;
+import etl.cmd.XmlToCsvCmd;
 import etl.util.Util;
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -58,7 +58,7 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			
 			//run cmd
-			SchemaFromXmlCmd cmd = new SchemaFromXmlCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			XmlToCsvCmd cmd = new XmlToCsvCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
 			List<String> info = cmd.sgProcess();
 			int numFiles = Integer.parseInt(info.get(0));
 			logger.info(info);

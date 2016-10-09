@@ -24,7 +24,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 
@@ -49,18 +48,17 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public static final String AGGR_OP_SUM="sum";
 	public static final String AGGR_OPERATOR_SEP="\\|";
 	
+	//cfgkey
 	public static final String cfgkey_aggr_op="aggr.op";
 	public static final String cfgkey_aggr_groupkey="aggr.groupkey";
 	public static final String cfgkey_aggr_groupkey_exp="aggr.groupkey.exp";
 	public static final String cfgkey_aggr_groupkey_exp_type="aggr.groupkey.exp.type";
 	public static final String cfgkey_aggr_groupkey_exp_name="aggr.groupkey.exp.name";
-	
 	public static final String cfgkey_aggr_old_table="old.table";
 	public static final String cfgkey_aggr_new_table="new.table";
 	
 	private String[] oldTables = null;
 	private String[] newTables = null;
-	
 	private transient Map<String, String> oldnewTableMap;
 	private transient Map<String, AggrOpMap> aoMapMap; //table name to AggrOpMap
 	private transient Map<String, GroupOp> groupKeysMap; //table name to 
@@ -85,6 +83,10 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			}
 		}
 		return new GroupOp(groupKeyExpNames, groupKeyExpTypes, groupKeyExps, groupKeyExpScripts, commonGroupKeys);
+	}
+	
+	public CsvAggregateCmd(){
+		super();
 	}
 	
 	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
@@ -296,7 +298,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 
 	//tableKey.aggrKeys,aggrValues
-	public List<Tuple2<String, String>> flatMapToPair(String key, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value){
 		super.init();
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
@@ -309,11 +311,11 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 				if (oldTables==null){
 					groupKeys = groupKeysMap.get(SINGLE_TABLE);
 				}else{
-					if (groupKeysMap.containsKey(key)){
-						tableKey = key;
-						groupKeys = groupKeysMap.get(key);
+					if (groupKeysMap.containsKey(tableName)){
+						tableKey = tableName;
+						groupKeys = groupKeysMap.get(tableName);
 					}else{
-						logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), key));
+						logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), tableName));
 						break;
 					}
 				}
@@ -428,6 +430,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			while (its.hasNext()){
 				try {
 					String s = its.next().toString();
+					logger.debug(String.format("aggr: key:%s, one value:%s", key, s));
 					int firstComma =s.indexOf(KEY_SEP);
 					String tableName = s.substring(0, firstComma);
 					String vs = s.substring(firstComma+1);

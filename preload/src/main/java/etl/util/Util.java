@@ -11,11 +11,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -51,6 +55,20 @@ import etl.engine.EngineUtil;
 public class Util {
 	public static final Logger logger = LogManager.getLogger(Util.class);
 	
+	//using linkedhashmap to keep the insertion order
+	public static void writePropertyFile(String filestring, Map<String, String> props){
+		List<String> lines = new ArrayList<String>();
+		for (String key: props.keySet()){
+			String str = String.format("%s=%s", key, props.get(key));
+			lines.add(str);
+		}
+		java.nio.file.Path file = Paths.get(filestring);
+		try {
+			Files.write(file, lines, Charset.forName("UTF-8"));
+		} catch (IOException e) {
+			logger.error("", e);
+		}
+	}
 	
 	public static PropertiesConfiguration getPropertiesConfig(String conf){
 		PropertiesConfiguration pc = null;
@@ -119,15 +137,17 @@ public class Util {
 		return cmdpc;
 	}
 	
+	public static final String kvSep = "=";
+	public static final String paramSep = ",";
 	//k1=v1,k2=v2 =>{{k1,v1},{k2,v2}}
 	public static TreeMap<String, String> parseMapParams(String params){
 		TreeMap<String, String> paramsMap = new TreeMap<String, String>();
 		if (params==null){
 			return paramsMap;
 		}
-		String[] strParams = params.split(",");
+		String[] strParams = params.split(paramSep);
 		for (String strParam:strParams){
-			String[] kv = strParam.split("=");
+			String[] kv = strParam.split(kvSep);
 			if (kv.length<2){
 				logger.error(String.format("wrong param format: %s", params));
 			}else{
@@ -135,6 +155,27 @@ public class Util {
 			}
 		}
 		return paramsMap;
+	}
+	
+	public static String makeMapParams(Map<String, String> params){
+		StringBuffer sb = new StringBuffer();
+		for (String key: params.keySet()){
+			String value = params.get(key);
+			sb.append(key).append(kvSep).append(value);
+			sb.append(paramSep);
+		}
+		return sb.toString();
+	}
+	
+	public static String makeMapParams(String[] keys, String[] values){
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<keys.length; i++){
+			String key = keys[i];
+			String value = values[i];
+			sb.append(key).append(kvSep).append(value);
+			sb.append(paramSep);
+		}
+		return sb.toString();
 	}
 	
 	public static String getCsv(List<String> csv, boolean newline){
@@ -397,12 +438,13 @@ public class Util {
 		            	sftpChannel.cd( folder );
 		            }
 		            catch ( SftpException e ) {
+		            	logger.info(String.format("mkdir %s", folder));
 		            	sftpChannel.mkdir( folder );
 		            	sftpChannel.cd( folder );
 		            }
 		        }
 		    }
-		   // sftpChannel.mkdir(remotePath);
+		    //sftpChannel.mkdir(remotePath);
 			sftpChannel.put(localFile, remoteFile, ChannelSftp.OVERWRITE);
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);
