@@ -217,26 +217,20 @@
 		         </archive>
 		       </configuration>
 		     </plugin>
-		     <!-- 
 		     <plugin>
 	            <artifactId>maven-assembly-plugin</artifactId>
 	            <version>2.6</version>
-	            <configuration>
-	              <descriptorRefs>
-	                <descriptorRef>jar-with-dependencies</descriptorRef>
-	              </descriptorRefs>
-	            </configuration>
 	            <executions>
-	                  <execution>
-	                      <id>make-my-jar-with-dependencies</id>
-	                      <phase>package</phase>
-	                      <goals>
-	                          <goal>single</goal>
-	                      </goals>
-	                  </execution>
-	              </executions>
+                  <execution>
+                      <id>make-my-test-jar-with-dependencies</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>single</goal>
+                      </goals>
+                      <configuration><descriptor>src/test/assembly/test-jar-with-dependencies.xml</descriptor></configuration>
+                  </execution>
+	            </executions>
 	        </plugin>
-	         -->
 		</plugins>
 	</build>
 </project>
