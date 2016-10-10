@@ -24,7 +24,7 @@ public class TestCsvSplitCmd extends TestETLCmd {
 		return "csvsplit/";
 	}
 	
-	private void testFileNameRowValidationSkipHeaderFun() throws Exception {
+	private void testCsvSplit() throws Exception {
 		try {
 			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvsplitinput/";
@@ -61,12 +61,12 @@ public class TestCsvSplitCmd extends TestETLCmd {
 	@Test
 	public void testFileNameRowValidationSkipHeader() throws Exception {
 		if (getDefaultFS().contains("127.0.0.1")){
-			testFileNameRowValidationSkipHeaderFun();
+			testCsvSplit();
 		}else{
 			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
-					testFileNameRowValidationSkipHeaderFun();
+					testCsvSplit();
 					return null;
 				}
 			});
