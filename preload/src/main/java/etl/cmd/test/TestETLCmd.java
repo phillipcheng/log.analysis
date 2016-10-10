@@ -41,6 +41,7 @@ public abstract class TestETLCmd {
 	private static String key_projectFolder="projectFolder";
 	private static String key_defaultFs="defaultFs";
 	private static String key_jobTracker="jobTracker";
+	private static String key_jobHistoryAddress="jobHistoryAddress";
 	private static String key_test_sftp="test.sftp";
 	private static String key_test_kafka="test.kafka";
 	private static String key_oozie_user="oozie.user";
@@ -79,6 +80,9 @@ public abstract class TestETLCmd {
 				conf.set("yarn.resourcemanager.hostname", host);
 				conf.set("mapreduce.framework.name", "yarn");
 				conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
+				conf.set("mapred.remote.os", "Linux");
+				conf.set("mapreduce.app-submission.cross-platform", "true");
+				conf.set("mapreduce.jobhistory.address", pc.getString(key_jobHistoryAddress));
 			}
 			defaultFS = pc.getString(key_defaultFs);
 			conf.set("fs.defaultFS", defaultFS);
@@ -127,6 +131,7 @@ public abstract class TestETLCmd {
 			FileInputFormat.setInputDirRecursive(job, true);
 			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
+			job.setJar(getLocalFolder() + "../../../../target/preload-0.1.0-test-jar-with-dependencies.jar");
 			job.waitForCompletion(true);
 
 			// assertion
@@ -138,15 +143,17 @@ public abstract class TestETLCmd {
 		return null;
 	}
 	
-	public List<String> mrTest(String remoteCfgFolder, List<Tuple2<String, String[]>>remoteFolderInputFiles, String remoteOutputFolder,
+	public List<String> mrTest(String remoteCfgFolder, List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
 			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
 		try {
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
-				getFs().delete(new Path(rfifs._1), true);
-				getFs().mkdirs(new Path(rfifs._1));
+				if (rfifs._2.length > 0) {
+					getFs().delete(new Path(rfifs._1), true);
+					getFs().mkdirs(new Path(rfifs._1));
+				}
 				for (String csvFile : rfifs._2) {
 					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
 				}
@@ -174,6 +181,7 @@ public abstract class TestETLCmd {
 			}
 			
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
+			job.setJar(getLocalFolder() + "../../../../target/preload-0.1.0-test-jar-with-dependencies.jar");
 			job.waitForCompletion(true);
 
 			// assertion
