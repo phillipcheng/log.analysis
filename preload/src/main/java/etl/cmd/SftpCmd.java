@@ -25,6 +25,8 @@ import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
 import etl.spark.SparkReciever;
+import etl.util.HdfsUtil;
+import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
@@ -209,9 +211,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 			String[] argNames = new String[]{cfgkey_sftp_host, cfgkey_sftp_user, paramkey_src_file};
 			for (String srcFile: files){
 				String[] argValues = new String[]{this.host, this.user, srcFile};
-				outputList.add(Util.makeMapParams(argNames, argValues));
+				outputList.add(ParamUtil.makeMapParams(argNames, argValues));
 			}
-			Util.writeDfsFile(getFs(), String.format("%s%s", this.getIncomingFolder(), String.valueOf(mapKey)), outputList);
+			HdfsUtil.writeDfsFile(getFs(), String.format("%s%s", this.getIncomingFolder(), String.valueOf(mapKey)), outputList);
 		}
 		return files;
 	}
@@ -234,7 +236,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		//override param
 		logger.info(String.format("param: %s", row));
-		Map<String, String> pm = Util.parseMapParams(row);
+		Map<String, String> pm = ParamUtil.parseMapParams(row);
 		if (pm.containsKey(cfgkey_sftp_host)){
 			this.host = pm.get(cfgkey_sftp_host);
 		}

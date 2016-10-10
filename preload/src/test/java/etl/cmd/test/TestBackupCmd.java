@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 import etl.cmd.BackupCmd;
+import etl.util.HdfsUtil;
 import etl.util.Util;
 
 //log4j2
@@ -61,11 +62,11 @@ public class TestBackupCmd extends TestETLCmd{
 			//check results
 			List<String> flist;
 			//allFolder should be empty
-			flist = Util.listDfsFile(getFs(), allFolder);
+			flist = HdfsUtil.listDfsFile(getFs(), allFolder);
 			assertTrue(flist.size()==0);
 			//check the zip file
 			String ZipFileName=wfid+".zip";
-			flist = Util.listDfsFile(getFs(), historyFolder);
+			flist = HdfsUtil.listDfsFile(getFs(), historyFolder);
 			assertTrue(flist.contains(ZipFileName));
 			//Check the number of files in Zip
 			int filecount=Util.getZipFileCount(getFs(),historyFolder+ZipFileName);

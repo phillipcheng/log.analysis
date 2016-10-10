@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
+import etl.util.HdfsUtil;
 import etl.util.Util;
 
 //log4j2
@@ -48,7 +49,7 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 			
 			//check results
 			//outputFolder should have the csv file
-			List<String> files = Util.listDfsFile(getFs(), outputFolder);
+			List<String> files = HdfsUtil.listDfsFile(getFs(), outputFolder);
 			logger.info(files);
 			String csvFileName = String.format("%s-r-00000", "MyCore_");
 			assertTrue(files.contains(csvFileName));

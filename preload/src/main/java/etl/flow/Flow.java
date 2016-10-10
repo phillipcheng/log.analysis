@@ -1,6 +1,5 @@
 package etl.flow;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -11,48 +10,42 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Flow extends Node{
 	public static final Logger logger = LogManager.getLogger(Flow.class);
 	public static final String key_defaultFs="defaultFs";
 	public static final String key_wfName="wfName";
 	
-	private StartNode start;
-	private EndNode end;
-	
 	private Map<String, String> properties = new LinkedHashMap<String, String>();
 	
-	private Map<String, Node> nodes;
+	private List<Node> nodes;
 
 	private List<Link> links; //from action to action
 	
-	private Map<String, Data> dataMap;
+	private List<Data> data;
 	
 	//cached structure
-	private Map<String, Set<Link>> nodeOutLinkMap;
-	private Map<String, Set<Link>> nodeInLinkMap;
-	private Map<String, Set<Node>> linkNodeMap;
+	private transient Map<String, Node> nodeMap;
+	private transient Map<String, Data> dataMap;
+	private transient Map<String, Set<Link>> nodeOutLinkMap;
+	private transient Map<String, Set<Link>> nodeInLinkMap;
+	private transient Map<String, Set<Node>> linkNodeMap;
 	
-	public Set<Link> getInLinks(String nodeName){
-		return nodeInLinkMap.get(nodeName);
-	}
-	
-	public Set<Link> getOutLinks(String nodeName){
-		return nodeOutLinkMap.get(nodeName);
-	}
-	
-	public Set<Node> getNextNodes(Link lnk){
-		return linkNodeMap.get(lnk.getName());
-	}
-	
-	public Node getNode(String name){
-		return nodes.get(name);
-	}
-	
-	public Data getDataDef(String dsName){
-		return dataMap.get(dsName);
+	public Flow(){
 	}
 	
 	public void init(){
+		nodeMap = new HashMap<String, Node>();
+		for (Node n: nodes){
+			nodeMap.put(n.getName(), n);
+		}
+		dataMap = new HashMap<String, Data>();
+		for (Data d: data){
+			dataMap.put(d.getName(), d);
+		}
 		nodeOutLinkMap = new HashMap<String, Set<Link>>();
 		for (Link lnk: links){
 			Set<Link> ll = nodeOutLinkMap.get(lnk.getFromNodeName());
@@ -73,37 +66,76 @@ public class Flow extends Node{
 		}
 		linkNodeMap = new HashMap<String, Set<Node>>();
 		for (Link lnk: links){
-			Set<Node> nl = linkNodeMap.get(lnk.getName());
+			String lnkName = lnk.toString();
+			Set<Node> nl = linkNodeMap.get(lnkName);
 			if (nl == null){
 				nl = new HashSet<Node>();
-				linkNodeMap.put(lnk.getName(), nl);
+				linkNodeMap.put(lnkName, nl);
 			}
-			if (nodes.containsKey(lnk.getToNodeName())){
-				nl.add(nodes.get(lnk.getToNodeName()));
+			if (nodeMap.containsKey(lnk.getToNodeName())){
+				nl.add(nodeMap.get(lnk.getToNodeName()));
 			}else{
 				logger.error(String.format("lnk %s's target node does not exist.", lnk));
 			}
 		}
 	}
 	
+	@Override
+	public boolean equals(Object that){
+		if (!(that instanceof Flow)){
+			return false;
+		}
+		Flow tf = (Flow)that;
+		if (!tf.getProperties().equals(this.getProperties())){
+			return false;
+		}
+		if (!tf.getNodes().equals(this.getNodes())){
+			return false;
+		}
+		if (!tf.getLinks().equals(this.getLinks())){
+			return false;
+		}
+		if (!tf.getData().equals(this.getData())){
+			return false;
+		}
+		return true;
+	}
+	
+	public Set<Link> getInLinks(String nodeName){
+		return nodeInLinkMap.get(nodeName);
+	}
+	
+	public Set<Link> getOutLinks(String nodeName){
+		return nodeOutLinkMap.get(nodeName);
+	}
+	
+	public Set<Node> getNextNodes(Link lnk){
+		return linkNodeMap.get(lnk.toString());
+	}
+	
+	public Node getNode(String name){
+		return nodeMap.get(name);
+	}
+	
+	public Data getDataDef(String dsName){
+		return dataMap.get(dsName);
+	}
+	
 	public Flow(String name) {
 		super(name, 0, 0);
 	}
 	
-	
+	@JsonIgnore
 	public StartNode getStart() {
-		return start;
+		return (StartNode) nodeMap.get(StartNode.start_node_name);
 	}
-
-	public void setStart(StartNode start) {
-		this.start = start;
-	}
-
+	
+	@JsonAnyGetter
 	public Map<String, String> getProperties() {
 		return properties;
 	}
-	
-	public void put(String key, String value){
+	@JsonAnySetter
+	public void putProperty(String key, String value){
 		properties.put(key, value);
 	}
 
@@ -111,11 +143,11 @@ public class Flow extends Node{
 		this.properties = properties;
 	}
 
-	public Map<String, Node> getNodes() {
+	public List<Node> getNodes() {
 		return nodes;
 	}
 
-	public void setNodes(Map<String, Node> nodes) {
+	public void setNodes(List<Node> nodes) {
 		this.nodes = nodes;
 	}
 	
@@ -127,19 +159,12 @@ public class Flow extends Node{
 		this.links = links;
 	}
 
-	public Map<String, Data> getDataMap() {
-		return dataMap;
+	public List<Data> getData() {
+		return data;
 	}
 
-	public void setDataMap(Map<String, Data> dataMap) {
-		this.dataMap = dataMap;
+	public void setData(List<Data> data) {
+		this.data = data;
 	}
 
-	public EndNode getEnd() {
-		return end;
-	}
-
-	public void setEnd(EndNode end) {
-		this.end = end;
-	}
 }

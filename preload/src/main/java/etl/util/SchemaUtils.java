@@ -53,7 +53,7 @@ public class SchemaUtils {
 	
 	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype){
 		try{
-			LogicSchema ls = (LogicSchema) Util.fromLocalJsonFile(schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) JsonUtil.fromLocalJsonFile(schemaFile, LogicSchema.class);
 			List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype);
 			StringBuffer sb = new StringBuffer();
 			for (String sql:sqls){
@@ -99,7 +99,7 @@ public class SchemaUtils {
 		        ls.addAttrTypes(tableName, attrTypes);
 			}
 			tableResults.close();
-			Util.toLocalJsonFile(localLogicSchemaOutputFile, ls);
+			JsonUtil.toLocalJsonFile(localLogicSchemaOutputFile, ls);
 		}catch(Exception e){
 			logger.error("", e);
 		}finally{

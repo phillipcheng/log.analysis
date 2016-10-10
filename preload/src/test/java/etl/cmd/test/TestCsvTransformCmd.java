@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import etl.util.HdfsUtil;
 import etl.util.Util;
 
 public class TestCsvTransformCmd extends TestETLCmd {
@@ -233,11 +234,11 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			logger.info("Output is:"+output);
 			//assert
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			List<String> outputs = Util.listDfsFile(super.getFs(), remoteCsvOutputFolder);
+			List<String> outputs = HdfsUtil.listDfsFile(super.getFs(), remoteCsvOutputFolder);
 			for (String csvFile: csvFiles){
 				String outputCsv = csvFile + "-r-00000";
 				assertTrue(outputs.contains(outputCsv));
-				List<String> contents = Util.stringsFromDfsFile(super.getFs(), remoteCsvOutputFolder+outputCsv);
+				List<String> contents = HdfsUtil.stringsFromDfsFile(super.getFs(), remoteCsvOutputFolder+outputCsv);
 				String content = contents.get(0);
 				String[] fields = content.split(",", -1);
 				Date d = sdf.parse(fields[0]);
@@ -275,17 +276,17 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			//assert
-			List<String> input = Util.stringsFromDfsFile(super.getFs(), remoteCsvInputFolder+csvFiles[0]);
+			List<String> input = HdfsUtil.stringsFromDfsFile(super.getFs(), remoteCsvInputFolder+csvFiles[0]);
 			int fn = 0;
 			for (String in:input){
 				fn = in.split(",", -1).length;
 				logger.info(fn);
 			}
-			List<String> outputs = Util.listDfsFile(super.getFs(), remoteCsvOutputFolder);
+			List<String> outputs = HdfsUtil.listDfsFile(super.getFs(), remoteCsvOutputFolder);
 			for (String csvFile: csvFiles){
 				String outputCsv = csvFile + "-r-00000";
 				assertTrue(outputs.contains(outputCsv));
-				List<String> contents = Util.stringsFromDfsFile(super.getFs(), remoteCsvOutputFolder+outputCsv);
+				List<String> contents = HdfsUtil.stringsFromDfsFile(super.getFs(), remoteCsvOutputFolder+outputCsv);
 				for (String content:contents){
 					String[] fields = content.split(",", -1);
 					assertTrue(fn==fields.length);
@@ -324,7 +325,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			logger.info("Output is:"+output);
 			//assert
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			List<String> outputs = Util.listDfsFile(super.getFs(), remoteCsvOutputFolder);
+			List<String> outputs = HdfsUtil.listDfsFile(super.getFs(), remoteCsvOutputFolder);
 			logger.info(outputs);
 			assertTrue(outputs.contains("part-r-00000"));
 		} catch (Exception e) {

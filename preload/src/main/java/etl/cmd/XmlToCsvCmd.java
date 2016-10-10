@@ -36,6 +36,7 @@ import org.xml.sax.InputSource;
 import etl.spark.CmdReciever;
 import etl.util.DBUtil;
 import etl.util.FieldType;
+import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.Util;
 import etl.util.VarType;
@@ -213,7 +214,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 			}
 			//object values
 			String moldn = (String) xpathExpTableObjDesc.evaluate(mv, XPathConstants.STRING);
-			TreeMap<String, String> kvs = Util.parseMapParams(moldn);
+			TreeMap<String, String> kvs = ParamUtil.parseMapParams(moldn);
 			for (String v:kvs.values()){
 				fieldValues.add(v);
 			}
@@ -240,14 +241,14 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 			String row = value.toString();
 			//logger.info(String.format("process %s", row));
 			Document mf = getDocument(new Path(row));
-			Map<String, String> localDnMap = Util.parseMapParams((String)FileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
+			Map<String, String> localDnMap = ParamUtil.parseMapParams((String)FileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
 			NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
 			List<Tuple2<String, String>> retList  = new ArrayList<Tuple2<String, String>>();
 			for (int i=0; i<ml.getLength(); i++){
 				Node mi = getNode(ml, i);
 				Node mv0 = (Node)xpathExpTableRow0.evaluate(mi, XPathConstants.NODE);
 				String moldn = (String) xpathExpTableObjDesc.evaluate(mv0, XPathConstants.STRING);
-				TreeMap<String, String> moldParams = Util.parseMapParams(moldn);
+				TreeMap<String, String> moldParams = ParamUtil.parseMapParams(moldn);
 				String tableName = generateTableName(moldParams);
 				List<String> orgSchemaAttributes = null;
 				if (logicSchema.hasTable(tableName)){
@@ -338,7 +339,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 					Node mi = getNode(ml, i);
 					Node mv0 = (Node)xpathExpTableRow0.evaluate(mi, XPathConstants.NODE);
 					String moldn = (String) xpathExpTableObjDesc.evaluate(mv0, XPathConstants.STRING);
-					TreeMap<String, String> moldParams = Util.parseMapParams(moldn);
+					TreeMap<String, String> moldParams = ParamUtil.parseMapParams(moldn);
 					String tableName = generateTableName(moldParams);
 					tablesUsed.add(tableName);
 					NodeList mv0vs = (NodeList) xpathExpTableRowValues.evaluate(mv0, XPathConstants.NODESET);

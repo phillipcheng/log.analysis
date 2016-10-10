@@ -9,7 +9,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFunction;
-import etl.util.Util;
+
+import etl.util.HdfsUtil;
 import scala.Tuple2;
 
 public class SparkUtil {
@@ -31,8 +32,8 @@ public class SparkUtil {
 			Iterable<String> vs = data._2;
 			String fileName = String.format("%s%s%s/%s", defaultFs, dir, wfid, key);
 			logger.info(String.format("going to save as hadoop file:%s with count %d", fileName, input.count()));
-			FileSystem fs = Util.getHadoopFs(defaultFs);
-			Util.writeDfsFile(fs, fileName, vs);
+			FileSystem fs = HdfsUtil.getHadoopFs(defaultFs);
+			HdfsUtil.writeDfsFile(fs, fileName, vs);
 		}
 	}
 }

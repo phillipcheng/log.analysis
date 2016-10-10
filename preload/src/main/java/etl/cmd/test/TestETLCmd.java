@@ -25,6 +25,8 @@ import org.junit.Before;
 
 import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
+import etl.util.HdfsUtil;
+import etl.util.PropertiesUtil;
 import etl.util.Util;
 import scala.Tuple2;
 
@@ -65,7 +67,7 @@ public abstract class TestETLCmd {
 	@Before
     public void setUp() {
 		try{
-			pc = Util.getPropertiesConfig(cfgProperties);
+			pc = PropertiesUtil.getPropertiesConfig(cfgProperties);
 			localFolder = pc.getString(key_localFolder);
 			projectFolder = pc.getString(key_projectFolder);
 			oozieUser = pc.getString(key_oozie_user);
@@ -130,7 +132,7 @@ public abstract class TestETLCmd {
 			job.waitForCompletion(true);
 
 			// assertion
-			List<String> output = Util.getMROutput(getFs(), remoteOutputFolder);
+			List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
 			return output;
 		} catch (Exception e) {
 			logger.error("", e);
@@ -177,7 +179,7 @@ public abstract class TestETLCmd {
 			job.waitForCompletion(true);
 
 			// assertion
-			List<String> output = Util.getMROutput(getFs(), remoteOutputFolder);
+			List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
 			return output;
 		} catch (Exception e) {
 			logger.error("", e);

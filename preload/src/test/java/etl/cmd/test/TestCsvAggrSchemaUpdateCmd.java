@@ -15,6 +15,8 @@ import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
+import etl.util.HdfsUtil;
+import etl.util.JsonUtil;
 import etl.util.Util;
 
 public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
@@ -51,13 +53,13 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			
 			//check the schema updated
-			LogicSchema ls = (LogicSchema) Util.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) JsonUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
 			String newTableName = "MyCore_aggr";
 			assertTrue(ls.hasTable(newTableName));
 			List<String> attrs = ls.getAttrNames(newTableName);
 			assertTrue(attrs.size()==8);
 			//check the create-sql
-			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
 			String expectedSqlVertica="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
 					+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
 					+ "MyCore numeric(15,5),VS_avePerCoreCpuUsage numeric(15,5),VS_peakPerCoreCpuUsage numeric(15,5))";
@@ -118,7 +120,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			
 			//check the schema updated
-			LogicSchema ls = (LogicSchema) Util.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) JsonUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
 			String newTableName = "MyCore_aggr";
 			assertTrue(ls.hasTable(newTableName));
 			List<String> attrs = ls.getAttrNames(newTableName);
@@ -131,7 +133,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 					+ "SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
 					+ "MyCore decimal(15,5),VS_avePerCoreCpuUsage decimal(15,5),VS_peakPerCoreCpuUsage decimal(15,5)) "
 					+ "ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"";
-			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
 			logger.info(sqls);
 			if (cmd.getDbtype()==DBType.HIVE){
 				assertTrue(sqls.contains(expectedSqlHive));
@@ -185,7 +187,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			
 			//check the schema updated
-			LogicSchema ls = (LogicSchema) Util.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) JsonUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
 			String newTableName = "MyCore_aggr";
 			String newTableName1 = "MyCore1_aggr";
 			assertTrue(ls.hasTable(newTableName));
@@ -197,7 +199,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			logger.info(String.format("attrs %s for table %s", attrs, newTableName1));
 			assertTrue(attrs.size()==7);
 			//check the create-sql generated
-			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
 			String expectedSql1Vertica="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
 					+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),"
 					+ "VS_avePerCoreCpuUsage numeric(15,5),VS_peakPerCoreCpuUsage numeric(15,5))";
@@ -269,7 +271,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			
 			//check the schema updated
-			LogicSchema ls = (LogicSchema) Util.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) JsonUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
 			String newTableName = "MyCoreMerge_";
 			assertTrue(ls.hasTable(newTableName));
 			List<String> attrs = ls.getAttrNames(newTableName);
@@ -286,7 +288,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 					+ "MyCore1__VS_peakPerCoreCpuUsage decimal(15,5),MyCore__VS_avePerCoreCpuUsage decimal(15,5),"
 					+ "MyCore__VS_peakPerCoreCpuUsage decimal(15,5)) "
 					+ "ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"";
-			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
 			logger.info(sqls);
 			if (cmd.getDbtype()==DBType.HIVE){
 				assertTrue(sqls.contains(sqlHive));

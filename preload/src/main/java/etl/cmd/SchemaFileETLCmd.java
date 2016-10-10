@@ -19,9 +19,10 @@ import etl.engine.LogicSchema;
 import etl.engine.OutputType;
 import etl.util.DBType;
 import etl.util.DBUtil;
+import etl.util.HdfsUtil;
+import etl.util.JsonUtil;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
-import etl.util.Util;
 import etl.util.VarDef;
 import etl.util.VarType;
 
@@ -76,7 +77,7 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 				Path schemaFilePath = new Path(schemaFile);
 				if (fs.exists(schemaFilePath)){
 					schemaFileName = schemaFilePath.getName();
-					this.logicSchema = (LogicSchema) Util.fromDfsJsonFile(fs, schemaFile, LogicSchema.class);
+					this.logicSchema = (LogicSchema) JsonUtil.fromDfsJsonFile(fs, schemaFile, LogicSchema.class);
 				}else{
 					this.logicSchema = new LogicSchema();
 					logger.warn(String.format("schema file %s not exists.", schemaFile));
@@ -121,9 +122,9 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 		if (createTableSqls.size()>0){
 			//update/create create-table-sql
 			logger.info(String.format("create/update table sqls are:%s", createTableSqls));
-			Util.appendDfsFile(fs, this.createTablesSqlFileName, createTableSqls);
+			HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, createTableSqls);
 			//update logic schema file
-			Util.toDfsJsonFile(fs, this.schemaFile, logicSchema);
+			JsonUtil.toDfsJsonFile(fs, this.schemaFile, logicSchema);
 			//execute the sql
 			if (dbtype != DBType.NONE){
 				DBUtil.executeSqls(createTableSqls, super.getPc());

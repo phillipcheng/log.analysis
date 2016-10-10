@@ -13,6 +13,7 @@ import org.junit.Test;
 import etl.cmd.CsvFileGenCmd;
 import etl.cmd.test.TestETLCmd;
 import etl.engine.ETLCmdMain;
+import etl.util.HdfsUtil;
 import etl.util.Util;
 
 public class TestExeIntervalCmd extends TestETLCmd{
@@ -74,7 +75,7 @@ public class TestExeIntervalCmd extends TestETLCmd{
 			
 			ETLCmdMain.exeCmd(cmd, 4, 10);
 			//assertion
-			List<String> ret = Util.listDfsFile(cmd.getFs(), cmd.getOutputFolder());
+			List<String> ret = HdfsUtil.listDfsFile(cmd.getFs(), cmd.getOutputFolder());
 			assertTrue(ret.size()>=1);
 		} catch (Exception e) {
 			logger.error("", e);

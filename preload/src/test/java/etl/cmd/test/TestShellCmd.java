@@ -21,6 +21,7 @@ import org.junit.Test;
 import etl.cmd.ShellCmd;
 import etl.engine.InvokeMapper;
 import etl.util.OSType;
+import etl.util.PropertiesUtil;
 import etl.util.SystemUtil;
 import etl.util.Util;
 
@@ -52,7 +53,7 @@ public class TestShellCmd extends TestETLCmd {
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteCfgFolder+inputFile));
-			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
+			PropertiesConfiguration pc = PropertiesUtil.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
 			FileUtils.cleanDirectory(destDir); 
@@ -106,7 +107,7 @@ public class TestShellCmd extends TestETLCmd {
 				executableFile = "copyfile.sh";
 				executableDir = "/tmp";
 			}
-			PropertiesConfiguration pc = Util.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
+			PropertiesConfiguration pc = PropertiesUtil.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
 			FileUtils.cleanDirectory(destDir); 

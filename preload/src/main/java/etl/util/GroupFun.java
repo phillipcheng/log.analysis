@@ -97,7 +97,7 @@ public class GroupFun {
 	
 	public static Map<String, String> getMap(String mappingFile, String keyKey, String valueKey){
 		logger.info(String.format("mapping file:%s", mappingFile));
-		PropertiesConfiguration pc = Util.getPropertiesConfig(mappingFile);
+		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(mappingFile);
 		String[] keys = pc.getStringArray(keyKey);
 		String[] values = pc.getStringArray(valueKey);
 		logger.info(String.format("keys:%s", Arrays.asList(keys)));

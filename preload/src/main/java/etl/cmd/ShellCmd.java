@@ -15,6 +15,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
+import etl.util.ParamUtil;
 import etl.util.StringUtil;
 import etl.util.Util;
 
@@ -72,8 +73,8 @@ public class ShellCmd extends ETLCmd{
 	
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
-		if (row.contains(Util.kvSep)){
-			Map<String, String> keyValueMap = Util.parseMapParams(row);
+		if (row.contains(ParamUtil.kvSep)){
+			Map<String, String> keyValueMap = ParamUtil.parseMapParams(row);
 			params.putAll(keyValueMap);
 		}else{
 			params.put(cfgkey_param_key, row);

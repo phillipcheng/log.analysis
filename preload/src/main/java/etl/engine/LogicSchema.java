@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +26,21 @@ public class LogicSchema implements Serializable{
 	public LogicSchema(){
 		attrNameMap = new HashMap<String, List<String>>();
 		attrTypeMap = new HashMap<String, List<FieldType>>();
+	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if (!(obj instanceof LogicSchema)){
+			return false;
+		}
+		LogicSchema that = (LogicSchema) obj;
+		if (!Objects.equals(attrNameMap, that.getAttrNameMap())){
+			return false;
+		}
+		if (!Objects.equals(attrTypeMap, that.getAttrTypeMap())){
+			return false;
+		}
+		return true;
 	}
 	
 	public boolean hasTable(String tableName){
