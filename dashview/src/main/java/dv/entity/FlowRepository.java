@@ -1,4 +1,4 @@
-package dv.entity.flow;
+package dv.entity;
 
 import java.util.Optional;
 

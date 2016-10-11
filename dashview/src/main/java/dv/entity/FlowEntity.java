@@ -1,11 +1,18 @@
-package dv.entity.flow;
+package dv.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
 public class FlowEntity {
+	public FlowEntity(){
+	}
 	
+	public FlowEntity(String name, String owner, String jsonContent){
+		this.name = name;
+		this.owner = owner;
+		this.jsonContent= jsonContent;
+	}
 	@Id
 	private String name;
 	
