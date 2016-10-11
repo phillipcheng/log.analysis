@@ -1,4 +1,4 @@
-package dv.mgr.flow;
+package dv.mgr;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import dv.app.UserNotFoundException;
+import dv.UserNotFoundException;
 import dv.entity.AccountEntity;
 import dv.entity.AccountRepository;
 import dv.entity.FlowEntity;

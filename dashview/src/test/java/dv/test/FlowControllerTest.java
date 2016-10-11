@@ -19,7 +19,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import dv.app.Application;
+import dv.Application;
 import dv.entity.AccountEntity;
 import dv.entity.AccountRepository;
 import dv.entity.FlowRepository;
@@ -70,7 +70,7 @@ public class FlowControllerTest {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
 
         this.accountRepository.deleteAllInBatch();
-        this.accountRepository.deleteAllInBatch();
+        this.flowRepository.deleteAllInBatch();
 
         this.account = accountRepository.save(new AccountEntity(userName, "password"));
     }

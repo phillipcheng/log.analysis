@@ -1,4 +1,4 @@
-package dv.app;
+package dv;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;

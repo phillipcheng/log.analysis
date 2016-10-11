@@ -1,7 +1,6 @@
 package etl.engine;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.apache.spark.api.java.JavaRDD;
 import etl.spark.SparkProcessor;
 import etl.util.PropertiesUtil;
 import etl.util.ScriptEngineUtil;
-import etl.util.Util;
 import etl.util.VarDef;
 import etl.util.VarType;
 import scala.Tuple2;

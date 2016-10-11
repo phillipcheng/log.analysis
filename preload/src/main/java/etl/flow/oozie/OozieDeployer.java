@@ -11,8 +11,8 @@ import org.apache.logging.log4j.Logger;
 
 import etl.flow.Flow;
 import etl.flow.convert.Conversion;
+import etl.flow.convert.FlowJaxbUtil;
 import etl.flow.oozie.wf.WORKFLOWAPP;
-import etl.util.JaxbUtil;
 
 public class OozieDeployer {
 	
@@ -29,7 +29,7 @@ public class OozieDeployer {
 		//gen workflow.xml
 		WORKFLOWAPP wfa = OozieGenerator.genWfXml(flow);
 		String pdeflowFile = dir + File.separator + "pde.workflow.xml";
-		JaxbUtil.marshal(wfa, pdeflowFile);
+		FlowJaxbUtil.marshal(wfa, pdeflowFile);
 		//gen action.properties
 		Conversion.genProperties(flow, dir);
 		//gen job.properties
