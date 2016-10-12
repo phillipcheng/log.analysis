@@ -27,7 +27,6 @@ import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
 import etl.util.HdfsUtil;
 import etl.util.PropertiesUtil;
-import etl.util.Util;
 import scala.Tuple2;
 
 public abstract class TestETLCmd {
@@ -140,15 +139,17 @@ public abstract class TestETLCmd {
 		return null;
 	}
 	
-	public List<String> mrTest(String remoteCfgFolder, List<Tuple2<String, String[]>>remoteFolderInputFiles, String remoteOutputFolder,
+	public List<String> mrTest(String remoteCfgFolder, List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
 			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
 		try {
 			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().mkdirs(new Path(remoteCfgFolder));
 			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
-				getFs().delete(new Path(rfifs._1), true);
-				getFs().mkdirs(new Path(rfifs._1));
+				if (rfifs._2.length > 0) {
+					getFs().delete(new Path(rfifs._1), true);
+					getFs().mkdirs(new Path(rfifs._1));
+				}
 				for (String csvFile : rfifs._2) {
 					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
 				}

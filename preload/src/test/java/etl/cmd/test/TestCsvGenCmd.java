@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.CsvFileGenCmd;
+import etl.util.HdfsUtil;
 import etl.util.Util;
 
 
@@ -50,10 +51,10 @@ public class TestCsvGenCmd extends TestETLCmd {
 			//assertion
 			String outputFolder = cmd.getOutputFolder();
 			int fileSize = cmd.getFileSize();
-			List<String> files = Util.listDfsFile(super.getFs(), outputFolder);
+			List<String> files = HdfsUtil.listDfsFile(super.getFs(), outputFolder);
 			assertTrue(files.size()>=1);
 			String fileName = files.get(0);
-			List<String> contents = Util.stringsFromDfsFile(super.getFs(), outputFolder + fileName);
+			List<String> contents = HdfsUtil.stringsFromDfsFile(super.getFs(), outputFolder + fileName);
 			assertTrue(contents.size()==fileSize);
 			
 		} catch (Exception e) {

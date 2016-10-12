@@ -16,6 +16,7 @@ import etl.cmd.CsvTransformCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
+import etl.util.HdfsUtil;
 import etl.util.Util;
 
 public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
@@ -56,7 +57,7 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			assertTrue(ls.hasTable(tableName));
 			List<String> attrs = ls.getAttrNames(tableName);
 			assertTrue(attrs.contains("aveActiveSubsNum"));
-			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
 			logger.info("sqls:" + String.join("\n", sqls));
 			String expectedSqlVertica = String.format(
 					"alter table sgsiwf.%s add column aveActiveSubsNum numeric(15,5)", tableName);
@@ -109,7 +110,7 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 			CsvTransformCmd cmd = new CsvTransformCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
-			List<String> sqls = Util.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
 			logger.info(sqls);
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());

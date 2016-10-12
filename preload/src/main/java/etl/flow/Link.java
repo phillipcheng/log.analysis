@@ -1,8 +1,9 @@
 package etl.flow;
 
+import java.util.Objects;
+
 public class Link {
-	
-	private String name;
+
 	private String fromNodeName;
 	private String toNodeName;
 	private String dataName = null;
@@ -11,17 +12,15 @@ public class Link {
 	private LinkType linkType = LinkType.success;
 
 	public String toString(){
-		return String.format("Link:%s", name);
+		return String.format("%s_%s_%d_%d_%s", this.fromNodeName, this.toNodeName, this.fromActionDataOutletIdx, this.toActionDataInletIdx, this.dataName);
 	}
-	
-	private String genName(){
-		return String.format("%s_%s_%d_%d", this.fromNodeName, this.toNodeName, this.fromActionDataOutletIdx, this.toActionDataInletIdx);
+
+	public Link(){
 	}
 	
 	public Link(String fromNN, String toNN){
 		this.fromNodeName = fromNN;
 		this.toNodeName = toNN;
-		this.setName(genName());
 	}
 	
 	public Link(String fromNN, String toNN, LinkType linkType, String dataN, int fromIdx, int toIdx){
@@ -34,16 +33,29 @@ public class Link {
 	
 	@Override
 	public boolean equals(Object obj){
-		if (obj instanceof Link){
-			Link that = (Link) obj;
-			if (name.equals(that.getName())){
-				return true;
-			}else{
-				return false;
-			}
-		}else{
+		if (!(obj instanceof Link)){
 			return false;
 		}
+		Link that = (Link) obj;
+		if (!Objects.equals(fromNodeName, that.getFromNodeName())){
+			return false;
+		}
+		if (!Objects.equals(toNodeName, that.getToNodeName())){
+			return false;
+		}
+		if (!Objects.equals(dataName, that.getDataName())){
+			return false;
+		}
+		if (!Objects.equals(linkType, that.getLinkType())){
+			return false;
+		}
+		if (fromActionDataOutletIdx!=that.getFromActionDataOutletIdx()){
+			return false;
+		}
+		if (toActionDataInletIdx!=that.getToActionDataInletIdx()){
+			return false;
+		}
+		return true;
 	}
 
 	public String getFromNodeName() {
@@ -92,13 +104,5 @@ public class Link {
 
 	public void setLinkType(LinkType linkType) {
 		this.linkType = linkType;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 }

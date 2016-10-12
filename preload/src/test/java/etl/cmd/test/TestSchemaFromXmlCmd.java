@@ -10,6 +10,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
 import etl.cmd.XmlToCsvCmd;
+import etl.util.HdfsUtil;
 import etl.util.Util;
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -65,13 +66,13 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 			
 			List<String> files = null;
 			//schemaFolder should have the schema file
-			files = Util.listDfsFile(getFs(), schemaFolder);
+			files = HdfsUtil.listDfsFile(getFs(), schemaFolder);
 			String schemaFileName = "schemas.txt";
 			assertTrue(files.size()==1);
 			assertTrue(files.contains(schemaFileName));
 			
 			//schemaHistoryFolder should have the sql files
-			List<String> sqlContent = Util.stringsFromDfsFile(getFs(), schemaHistoryFolder + sqlFileName);
+			List<String> sqlContent = HdfsUtil.stringsFromDfsFile(getFs(), schemaHistoryFolder + sqlFileName);
 			logger.info(sqlContent);
 		} catch (Exception e) {
 			logger.error("Exception occured ", e);

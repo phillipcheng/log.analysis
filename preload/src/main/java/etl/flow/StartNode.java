@@ -6,6 +6,9 @@ public class StartNode extends Node{
 
 	private int duration=30;//in seconds
 	
+	public StartNode(){	
+	}
+	
 	public StartNode(int duration, int inlet, int outlet) {
 		super(start_node_name, inlet, outlet);
 		this.duration = duration;

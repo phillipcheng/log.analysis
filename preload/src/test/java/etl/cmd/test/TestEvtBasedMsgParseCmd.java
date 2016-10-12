@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
   
 import etl.engine.InvokeMapper;
+import etl.util.HdfsUtil;
 import etl.util.Util;
   
 public class TestEvtBasedMsgParseCmd extends TestETLCmd{
@@ -69,7 +70,7 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
  			}
  			br.close();
  			//Get data from the output parsed file
- 			List<String> output = Util.getMROutput(getFs(), remoteCsvOutputFolder);
+ 			List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteCsvOutputFolder);
 
  			//check the results match the expected output
  			assertTrue(output.size()==expectedData.size());

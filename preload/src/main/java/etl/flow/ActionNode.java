@@ -1,10 +1,13 @@
 package etl.flow;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ActionNode extends Node{
 	
@@ -16,11 +19,30 @@ public class ActionNode extends Node{
 	
 	private Map<String, String> properties = new LinkedHashMap<String, String>();//preserving the insertion order
 	
+	@JsonIgnore
 	private ExeType exeType;
+	
+	public ActionNode(){
+	}
 	
 	public ActionNode(String name, ExeType exeType, int inletNum, int outletNum){
 		super(name, inletNum, outletNum);
 		this.exeType = exeType;
+	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if (!super.equals(obj)){
+			return false;
+		}
+		if (!(obj instanceof ActionNode)){
+			return false;
+		}
+		ActionNode that = (ActionNode)obj;
+		if (!that.getProperties().equals(getProperties())){
+			return false;
+		}
+		return true;
 	}
 	
 	public static List<String> getSysProperties(){
@@ -30,6 +52,7 @@ public class ActionNode extends Node{
 		return sysProperties;
 	}
 	
+	@JsonIgnore
 	public Map<String, String> getUserProperties(){
 		Map<String, String> userProperties = new LinkedHashMap<String, String>();
 		for (String key: properties.keySet()){
@@ -43,11 +66,11 @@ public class ActionNode extends Node{
 	public String getProperty(String key){
 		return properties.get(key);
 	}
-	
-	public void put(String key, String value){
+	@JsonAnySetter
+	public void putProperty(String key, String value){
 		properties.put(key, value);
 	}
-	
+	@JsonAnyGetter
 	public Map<String, String> getProperties() {
 		return properties;
 	}
@@ -56,10 +79,12 @@ public class ActionNode extends Node{
 		this.properties = properties;
 	}
 
+	@JsonIgnore
 	public ExeType getExeType() {
 		return exeType;
 	}
 
+	@JsonIgnore
 	public void setExeType(ExeType exeType) {
 		this.exeType = exeType;
 	}

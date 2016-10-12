@@ -15,6 +15,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import etl.cmd.SftpCmd;
+import etl.util.HdfsUtil;
+import etl.util.SftpUtil;
 import etl.util.Util;
 
 public class TestSftpCmd extends TestETLCmd {
@@ -43,15 +45,15 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().mkdirs(new Path(incomingFolder));
 		
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
+		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true,incoming.folder='%s'", host, ftpFolder,incomingFolder), null);
 		// check incoming fodler
-		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertTrue(fl.contains(fileName));
 		// check remote dir
-		fl = Util.sftpList(host, port, user, pass, ftpFolder);
+		fl = SftpUtil.sftpList(host, port, user, pass, ftpFolder);
 		assertFalse(fl.contains(fileName));
 	}
 	
@@ -93,7 +95,7 @@ public class TestSftpCmd extends TestETLCmd {
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
 
 		// check incoming fodler
-		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertFalse(fl.contains(fileName));
 	}
 	
@@ -132,13 +134,13 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().mkdirs(new Path(incomingFolder));
 		
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
+		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsFolder + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.port=%s", host, ftpFolder, port),
 				null);
 
 		// check incoming fodler
-		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertFalse(fl.contains(fileName));
 	}
 	
@@ -180,16 +182,16 @@ public class TestSftpCmd extends TestETLCmd {
 		getFs().mkdirs(new Path(dfsCfg));
 		
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
+		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
 		//
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=%s,incoming.folder='%s'", host, ftpFolder, sftpClean,incomingFolder),
 				null);
 		// check incoming fodler
-		List<String> fl = Util.listDfsFile(getFs(), incomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertTrue(fl.contains(fileName));
 		// check remote dir
-		fl = Util.sftpList(host, port, user, pass, ftpFolder);
+		fl = SftpUtil.sftpList(host, port, user, pass, ftpFolder);
 		assertTrue(fl.contains(fileName));
 	}
 
@@ -228,13 +230,13 @@ public class TestSftpCmd extends TestETLCmd {
 		
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		for (String fileName: fileNames){
-			Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, sftpFolder + fileName);
+			SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, sftpFolder + fileName);
 		}
 		
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		cmd.mapProcess(0, null, null);
 		// check incoming fodler
-		List<String> fl = Util.listDfsFile(getFs(), dfsIncomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), dfsIncomingFolder);
 		assertFalse(fl.contains("RTDB_ACCESS.friday"));
 		assertTrue(fl.contains("RTDB_ACCESS.monday"));
 	}
@@ -274,15 +276,15 @@ public class TestSftpCmd extends TestETLCmd {
 		String user = cmd.getUser();
 		String pass = cmd.getPass();
 		String fileName0 = "RTDB_ACCESS.friday";
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
+		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
 		String fileName1 = "RTDB_ACCESS.monday";
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
+		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
 		
 		List<String> ret = cmd.sgProcess();
 		logger.info(ret);
 		
 		//assertion
-		List<String> fl = Util.listDfsFile(getFs(), dfsIncomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), dfsIncomingFolder);
 		logger.info(fl);
 		assertTrue(fl.contains(fileName0));
 		assertTrue(fl.contains(fileName1));
@@ -323,15 +325,15 @@ public class TestSftpCmd extends TestETLCmd {
 		String user = cmd.getUser();
 		String pass = cmd.getPass();
 		String fileName0 = "RTDB_ACCESS.friday";
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
+		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
 		String fileName1 = "RTDB_ACCESS.monday";
-		Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
+		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
 		
 		List<String> ret = cmd.sgProcess();
 		logger.info(ret);
 		
 		//assertion
-		List<String> fl = Util.listDfsFile(getFs(), dfsIncomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), dfsIncomingFolder);
 		logger.info(fl);
 	}
 	
@@ -372,18 +374,18 @@ public class TestSftpCmd extends TestETLCmd {
 		String pass = cmd.getPass();
 		String[] fileNames = new String[]{"RTDB_ACCESS.friday", "RTDB_ACCESS.monday"};
 		for (String fileName: fileNames){
-			Util.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, cmd.getFromDirs()[0] + fileName);
+			SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, cmd.getFromDirs()[0] + fileName);
 		}
 
 		//assertion
 		List<String> ret = cmd.sgProcess();
 		logger.info(ret);
 		
-		List<String> fl = Util.listDfsFile(cmd.getFs(), dfsIncomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(cmd.getFs(), dfsIncomingFolder);
 		String file = fl.get(0);
 		logger.info(fl);
 		
-		List<String> contents = Util.stringsFromDfsFile(cmd.getFs(), dfsIncomingFolder+file);
+		List<String> contents = HdfsUtil.stringsFromDfsFile(cmd.getFs(), dfsIncomingFolder+file);
 		logger.info(contents);
 	}
 }
