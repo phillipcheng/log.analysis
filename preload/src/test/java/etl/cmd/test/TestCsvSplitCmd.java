@@ -3,7 +3,6 @@ package etl.cmd.test;
 import static org.junit.Assert.*;
 
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.security.UserGroupInformation;
@@ -12,13 +11,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import scala.Tuple2;
-
 public class TestCsvSplitCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvSplitCmd.class);
-	public static final String testTransformCmdClass="etl.cmd.CsvTransformCmd";
-	public static final String testSplitCmdClass="etl.cmd.CsvSplitCmd";
-	private static final String[] EMPTY_STRINGS = new String[0];
+	public static final String testCmdClass="etl.cmd.CsvSplitCmd";
 
 	public String getResourceSubFolder(){
 		return "csvsplit/";
@@ -28,12 +23,11 @@ public class TestCsvSplitCmd extends TestETLCmd {
 		try {
 			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvsplitinput/";
-			String remoteCsvOutputFolder = "/etltest/csvsplit/";
-			String csvtransProp = "csvtrans.properties";
-			String[] csvFiles = new String[] {"A20160409.0000-20160409.0100_H_000000000_262227201_7CF85400035D_13.csv"};
-
-			// 1. Transform
-			List<String> output = mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testTransformCmdClass, false);
+			String remoteCsvOutputFolder = "/etltest/csvsplitoutput/";
+			String csvtransProp = "csvsplit.properties";
+			String[] csvFiles = new String[] {"part-r-00000.csv"};
+			
+			List<String> output = mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			
 			// assertion
@@ -43,23 +37,13 @@ public class TestCsvSplitCmd extends TestETLCmd {
 			int mergedColumn = 2;
 			logger.info("Last element:"+csvs[csvs.length - 1]+" "+ csvs[mergedColumn] + " "+csvs[mergedColumn-1]+ " " +csvs[mergedColumn+1]);
 			
-			remoteCsvFolder = remoteCsvOutputFolder;
-			remoteCsvOutputFolder = "/etltest/csvsplitoutput/";
-			List<Tuple2<String, String[]>> remoteFolderInputfiles = new ArrayList<Tuple2<String, String[]>>();
-			remoteFolderInputfiles.add(new Tuple2<String, String[]>(remoteCsvFolder, EMPTY_STRINGS));
-			
-			String csvsplitProp = "csvsplit.properties";
-			// 2. Split
-			output = mrTest(remoteCfgFolder, remoteFolderInputfiles, remoteCsvOutputFolder, csvsplitProp, testSplitCmdClass, false);
-			logger.info("Output is:"+output);
-			
 		} catch (Exception e) {
 			logger.error("", e);
 		}
 	}
 	
 	@Test
-	public void testFileNameRowValidationSkipHeader() throws Exception {
+	public void testCsvSplitEntry() throws Exception {
 		if (getDefaultFS().contains("127.0.0.1")){
 			testCsvSplit();
 		}else{
