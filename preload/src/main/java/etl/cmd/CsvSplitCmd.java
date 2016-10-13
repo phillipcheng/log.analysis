@@ -10,6 +10,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -62,6 +63,7 @@ public class CsvSplitCmd extends ETLCmd {
 		List<String> keys = new ArrayList<String>();
 		StringBuilder buffer = new StringBuilder();
 		CSVPrinter printer = null;
+		String keysName;
 
 		try {
 			int i;
@@ -84,7 +86,9 @@ public class CsvSplitCmd extends ETLCmd {
 				printer.close();
 		}
 		
-		return new Tuple2<String, String>(keys.toString(), buffer.toString());
+		keysName = StringUtils.join(keys, "-");
+		
+		return new Tuple2<String, String>(keysName, buffer.toString());
 	}
 
 	private boolean isSplitKey(List<IdxRange> splitKeys, int recordValues, int i) {

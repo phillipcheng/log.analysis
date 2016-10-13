@@ -11,6 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import etl.util.HdfsUtil;
+
 public class TestCsvSplitCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvSplitCmd.class);
 	public static final String testCmdClass="etl.cmd.CsvSplitCmd";
@@ -24,18 +26,19 @@ public class TestCsvSplitCmd extends TestETLCmd {
 			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvsplitinput/";
 			String remoteCsvOutputFolder = "/etltest/csvsplitoutput/";
-			String csvtransProp = "csvsplit.properties";
+			String csvsplitProp = "csvsplit.properties";
 			String[] csvFiles = new String[] {"part-r-00000.csv"};
 			
-			List<String> output = mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-			logger.info("Output is:"+output);
+			List<String> output = mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvsplitProp, csvFiles, testCmdClass, false);
+			logger.info("Output is: {}", output);
 			
 			// assertion
 			assertTrue(output.size() > 0);
-			String sampleOutput = output.get(0);
-			String[] csvs = sampleOutput.split(",", -1);
-			int mergedColumn = 2;
-			logger.info("Last element:"+csvs[csvs.length - 1]+" "+ csvs[mergedColumn] + " "+csvs[mergedColumn-1]+ " " +csvs[mergedColumn+1]);
+			
+			List<String> files = HdfsUtil.listDfsFile(getFs(), remoteCsvOutputFolder);
+			logger.info("Output files: {}", files);
+			assertEquals(files.size(), 17);
+			assertTrue(output.contains("H,262227201,20160409.0000,20160409.0100,7CF85400035D,1233,1,262227201,0,0,0,0,0"));
 			
 		} catch (Exception e) {
 			logger.error("", e);
