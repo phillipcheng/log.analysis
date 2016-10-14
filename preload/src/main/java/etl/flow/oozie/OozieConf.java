@@ -1,7 +1,9 @@
 package etl.flow.oozie;
 
+import etl.flow.mgr.FlowServerConf;
+
 //this is needed to generate job.properties and deployment
-public class OozieConf {
+public class OozieConf implements FlowServerConf {
 	
 	private String jobTracker;
 	private String nameNode;

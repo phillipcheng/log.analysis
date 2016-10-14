@@ -1,4 +1,4 @@
-package etl.flow.convert;
+package etl.flow.oozie;
 
 import java.io.File;
 
