@@ -10,15 +10,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.flow.Flow;
-import etl.flow.convert.Conversion;
-import etl.flow.convert.FlowJaxbUtil;
+import etl.flow.mgr.FlowMgr;
+import etl.flow.mgr.FlowServerConf;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 
-public class OozieDeployer {
+public class OozieFlowMgr extends FlowMgr{
 	
-	public static final Logger logger = LogManager.getLogger(OozieDeployer.class);
-	
-	public static void deploy(Flow flow){
+	public static final Logger logger = LogManager.getLogger(OozieFlowMgr.class);
+
+	@Override
+	public boolean deploy(Flow flow, FlowServerConf fsconf) {
+		OozieConf oc = (OozieConf)fsconf;
 		String dir = "pdegen";
 		Path path = Paths.get(dir);
 		try {
@@ -31,9 +33,17 @@ public class OozieDeployer {
 		String pdeflowFile = dir + File.separator + "pde.workflow.xml";
 		FlowJaxbUtil.marshal(wfa, pdeflowFile);
 		//gen action.properties
-		Conversion.genProperties(flow, dir);
+		genProperties(flow, dir);
 		//gen job.properties
+		
 		//deploy
+		return true;
+	}
+
+	@Override
+	public boolean execute(String flowName, String wfid, String startNode) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }
