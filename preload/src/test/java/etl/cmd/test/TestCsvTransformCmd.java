@@ -159,7 +159,6 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			String row4 = output.get(3);
 			String[] row4fields = row4.split(",",-1);
 			assertTrue("1".equals(row4fields[4]));
-			assertTrue("240-449".equals(row4fields[5]));
 		} catch (Exception e) {
 			logger.error("", e);
 		}

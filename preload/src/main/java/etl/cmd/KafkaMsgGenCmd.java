@@ -58,6 +58,7 @@ public class KafkaMsgGenCmd extends SchemaFileETLCmd{
 			}
 		}
 		String strEntityKey = super.getCfgString(cfgkey_entity_key, null);
+		logger.info(String.format("entity key is %s.", strEntityKey));
 		if (strEntityKey!=null){
 			keyCS = ScriptEngineUtil.compileScript(strEntityKey);
 		}
@@ -81,6 +82,7 @@ public class KafkaMsgGenCmd extends SchemaFileETLCmd{
 		if (keyCS!=null){
 			key = ScriptEngineUtil.eval(keyCS, super.getSystemVariables());
 		}
+		logger.info(String.format("kafka-msg-gen-cmd:%s,%s", key, sb.toString()));
 		EngineUtil.getInstance().sendMsg(kac.getLogTopicName(), key, sb.toString());
 		return null;
 	}

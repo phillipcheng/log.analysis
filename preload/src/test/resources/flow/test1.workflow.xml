@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow-app xmlns:ssh="uri:oozie:ssh-action:0.2" xmlns:shell="uri:oozie:shell-action:0.3" xmlns="uri:oozie:workflow:0.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="pde">
+    <start to="SftpGetRawFiles"/>
+	<kill name="fail">
+        <message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <action name="SftpGetRawFiles">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>etl.engine.InvokeMapper</value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.input.lineinputformat.linespermap</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.task.timeout</name>
+					<value>0</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>/flow/test1/sftpcfg</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.SftpCmd</value>
+				</property>
+				<property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>test1.sftp.properties</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="GenCsv"/>
+		<error to="fail"/>
+	</action>
+  <action name="beforeTraceFilter">
+  	<fs>
+	  	<delete path="${nameNode}/pde/csv/${wf:id()}"/>
+	    <mkdir path="${nameNode}/pde/csv/${wf:id()}"/>
+	    <chmod path='${nameNode}/pde/csv/${wf:id()}' permissions='777' dir-files='true'>
+	    	<recursive/>
+	    </chmod>
+	    
+	    <delete path="${nameNode}/pde/fix/${wf:id()}"/>
+	    <mkdir path="${nameNode}/pde/fix/${wf:id()}"/>
+	    <chmod path='${nameNode}/pde/fix/${wf:id()}' permissions='777' dir-files='true'>
+	    	<recursive/>
+	    </chmod>
+	    
+	    <delete path="${nameNode}/pde/ses/${wf:id()}"/>
+	    <mkdir path="${nameNode}/pde/ses/${wf:id()}"/>
+	    <chmod path='${nameNode}/pde/ses/${wf:id()}' permissions='777' dir-files='true'>
+	    	<recursive/>
+	    </chmod>
+     </fs>
+     <ok to="TraceFilter"/>
+     <error to="fail"/>
+  </action>
+	<action name="TraceFilter">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>etl.engine.InvokeMapper</value>
+				</property>
+				<property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
+                </property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>/pde/rawinput/${wf:id()}</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.ShellCmd</value>
+				</property>
+				<property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>/pde/etlcfg/tracefilter.shell.properties</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="LogTraceFilter"/>
+		<error to="fail"/>
+	</action>
+	<action name="LogTraceFilter">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/sendlog.properties</arg>
+            <arg>${nameNode}</arg>
+            <arg>TraceFilter-Info</arg>
+            <arg>${hadoop:counters("TraceFilter")["org.apache.hadoop.mapred.Task$Counter"]["MAP_INPUT_RECORDS"]}</arg>
+        </java>
+        <ok to="forking"/>
+        <error to="fail"/>
+    </action>
+	<fork name="forking">
+        <path start="KcvToCsv"/>
+        <path start="SesToCsv"/>
+    </fork>
+	
+	<action name="KcvToCsv">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+			     <delete path="${nameNode}/pde/fixcsv/${wf:id()}"/>
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>etl.engine.InvokeMapper</value>
+				</property>
+                <property>
+                    <name>mapreduce.job.reduces</name>
+                    <value>0</value>
+                </property>
+				<property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>etl.util.FilenameInputFormat</value>
+                </property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>/pde/fix/${wf:id()}</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>/pde/fixcsv/${wf:id()}</value>
+				</property>
+				<property>
+					<name>cmdClassName</name>
+					<value>etl.cmd.KcvToCsvCmd</value>
+				</property>
+				<property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+				<property>
+					<name>wfid</name>
+					<value>${wf:id()}</value>
+				</property>
+				<property>
+					<name>staticConfigFile</name>
+					<value>/pde/etlcfg/fix.kcv2csv.properties</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="CsvTransform"/>
+		<error to="fail"/>
+	</action>
+	
+    <action name="CsvTransform">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+            	<delete path="${nameNode}/pde/trancvs/${wf:id()}"/>      
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.outputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.value.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/pde/csv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/pde/transcvs/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>etl.cmd.CsvTransformCmd</value>
+                </property>
+                <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/pde/etlcfg/csv.csvtrans.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="LogCsvTransform"/>
+        <error to="fail"/>
+    </action>
+    
+    <action name="LogCsvTransform">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/sendlog.properties</arg>
+            <arg>${nameNode}</arg>
+            <arg>CsvTranform-Info</arg>
+            <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("CsvTransform")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
+        <ok to="MergeCmd"/>
+        <error to="fail"/>
+    </action>
+    
+    <action name="MergeCmd">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+	            <delete path="${nameNode}/pde/mergecsv/${wf:id()}"/>
+	      		</prepare>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.outputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.value.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/pde/transcvs/${wf:id()},/pde/fixcsv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/pde/mergecsv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>etl.cmd.CsvMergeCmd</value>
+                </property>
+                <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/pde/etlcfg/csv.fix.merge.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="LogMergeCmd"/>
+        <error to="fail"/>
+    </action>
+    
+    <action name="LogMergeCmd">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.SendLogCmd</arg>
+            <arg>${wfName}</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/sendlog.properties</arg>
+            <arg>${nameNode}</arg>
+            <arg>CsvTranform-Info</arg>
+            <arg>${hadoop:counters("MergeCmd")["org.apache.hadoop.mapred.Task$Counter"]["MAP_OUTPUT_RECORDS"]}</arg>
+            <arg>${hadoop:counters("MergeCmd")["org.apache.hadoop.mapred.Task$Counter"]["REDUCE_OUTPUT_RECORDS"]}</arg>
+        </java>
+        <ok to="loadCsvCmd"/>
+        <error to="fail"/>
+    </action>
+    
+	<action name="loadCsvCmd">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.LoadDataCmd</arg>
+            <arg>${wfName}</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/load.csv.properties</arg>
+            <arg>${nameNode}</arg>
+            <capture-output/>
+        </java>
+        <ok to="joining"/>
+        <error to="fail"/>
+    </action>
+	
+    <action name="SesToCsv">
+        <map-reduce>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+            	<delete path="${nameNode}/pde/sescsv/${wf:id()}"/>
+      			</prepare>
+            <configuration>
+                <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>etl.util.FilenameInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.outputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.value.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/pde/ses/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/pde/sescsv/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>hpe.pde.cmd.SesToCsvCmd</value>
+                </property>
+                <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>/pde/etlcfg/ses2csv.properties</value>
+                </property>
+            </configuration>
+        </map-reduce>
+        <ok to="LoadSesCsvCmd"/>
+        <error to="fail"/>
+    </action>
+    <action name="LoadSesCsvCmd">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>etl.engine.ETLCmdMain</main-class>
+            <arg>etl.cmd.LoadDataCmd</arg>
+            <arg>${wfName}</arg>
+            <arg>${wf:id()}</arg>
+            <arg>/pde/etlcfg/load.sescsv.properties</arg>
+            <arg>${nameNode}</arg>
+            <capture-output/>
+        </java>
+        <ok to="joining"/>
+        <error to="fail"/>
+    </action>
+	<join name="joining" to="cleanup"/>
+	<action name="cleanup">
+         <fs>
+            <delete path='${nameNode}/pde/rawinput/${wf:id()}'/>
+            <delete path='${nameNode}/pde/csv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/transcvs/${wf:id()}'/>
+            <delete path='${nameNode}/pde/fix/${wf:id()}'/>
+            <delete path='${nameNode}/pde/fixcsv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/mergecsv/${wf:id()}'/>
+            <delete path='${nameNode}/pde/ses/${wf:id()}'/>
+            <delete path='${nameNode}/pde/sescsv/${wf:id()}'/>
+         </fs>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+	<end name="end"/>
+</workflow-app>

@@ -24,8 +24,10 @@ public class NanpaCode {
 		try {
 			br = new BufferedReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(fileName)));
 			while ((line = br.readLine()) != null) {
-			    String[] vals = line.split("\t");
-			    ccSet.add(vals[1]);
+				if (!line.startsWith("#")){
+					String[] vals = line.split("\t");
+					ccSet.add(vals[1]);
+				}
 			}
 		}catch (Exception e){
 			logger.error("", e);

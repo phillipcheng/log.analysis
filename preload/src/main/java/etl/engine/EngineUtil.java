@@ -65,7 +65,6 @@ public class EngineUtil {
 	private Producer<String, String> createProducer(String bootstrapServers){
 		Properties props = new Properties();
 		props.put("bootstrap.servers", bootstrapServers);
-		props.put("request.required.acks", "1");
 		props.put("retries", 0);
 		props.put("batch.size", 16384);
 		props.put("linger.ms", 1);

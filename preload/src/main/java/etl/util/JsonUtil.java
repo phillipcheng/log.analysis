@@ -20,9 +20,16 @@ public class JsonUtil {
 	public static final Logger logger = LogManager.getLogger(JsonUtil.class);
 	//json serialization
 	public static final String charset="utf8";
+	
 	public static Object fromJsonString(String json, Class clazz){
+		return fromJsonString(json, clazz, false);
+	}
+	
+	public static Object fromJsonString(String json, Class clazz, boolean useDefaultTyping){
 		ObjectMapper mapper = new ObjectMapper();
-		//mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		if (useDefaultTyping){
+			mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		}
 		try {
 			Object t = mapper.readValue(json, clazz);
 			return t;
@@ -33,8 +40,14 @@ public class JsonUtil {
 	}
 
 	public static String toJsonString(Object ls){
+		return toJsonString(ls, false);
+	}
+	
+	public static String toJsonString(Object ls, boolean useDefaultTyping){
 		ObjectMapper om = new ObjectMapper();
-		//om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		if (useDefaultTyping){
+			om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		}
 		ObjectWriter ow = om.writer().withDefaultPrettyPrinter();
 		try {
 			String json = ow.writeValueAsString(ls);
@@ -42,6 +55,24 @@ public class JsonUtil {
 		} catch (JsonProcessingException e) {
 			logger.error("",e );
 			return null;
+		}
+	}
+	
+	//from use default typing to not using default typing
+	public static void migrateJson(String infile, String outfile, Class clazz){
+		java.nio.file.Path path = java.nio.file.FileSystems.getDefault().getPath(infile);
+		java.nio.file.Path outpath = java.nio.file.FileSystems.getDefault().getPath(outfile);
+		try {
+			String contents = new String(Files.readAllBytes(path));
+			Object obj = fromJsonString(contents, clazz, true);
+			if (obj!=null){
+				String newContents = toJsonString(obj, false);
+				Files.write(outpath, newContents.getBytes());
+			}else{
+				logger.error(String.format("error reading infile:%s", infile));
+			}
+		}catch(Exception e){
+			logger.error("", e);
 		}
 	}
 	
