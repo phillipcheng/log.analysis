@@ -1,0 +1,2 @@
+tabcmd publish "C:\Users\Administrator\Documents\preload\report\etllog.twb" -o --project "platform" -n "etllog" --db-username "dbadmin" --db-password "pde@analytics" --save-db-password -s http://10.194.205.136:8000/ -u tableauadmin -p pdetableau123 --tabbed
+
