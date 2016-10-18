@@ -12,6 +12,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -24,12 +25,16 @@ public class JsonUtil {
 	public static Object fromJsonString(String json, Class clazz){
 		return fromJsonString(json, clazz, false);
 	}
+	public static String toJsonString(Object ls){
+		return toJsonString(ls, false);
+	}
 	
 	public static Object fromJsonString(String json, Class clazz, boolean useDefaultTyping){
 		ObjectMapper mapper = new ObjectMapper();
 		if (useDefaultTyping){
 			mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 		}
+		mapper.setSerializationInclusion(Include.NON_NULL);
 		try {
 			Object t = mapper.readValue(json, clazz);
 			return t;
@@ -38,17 +43,14 @@ public class JsonUtil {
 			return null;
 		}
 	}
-
-	public static String toJsonString(Object ls){
-		return toJsonString(ls, false);
-	}
 	
 	public static String toJsonString(Object ls, boolean useDefaultTyping){
-		ObjectMapper om = new ObjectMapper();
+		ObjectMapper mapper = new ObjectMapper();
 		if (useDefaultTyping){
-			om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+			mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 		}
-		ObjectWriter ow = om.writer().withDefaultPrettyPrinter();
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
 		try {
 			String json = ow.writeValueAsString(ls);
 			return json;

@@ -36,6 +36,23 @@ public class GroupFun {
 		return dateSdf.format(d);
 	}
 	
+	public static String dtStandardize(String input, String inputFormat){
+		SafeSimpleDateFormat sdf = null;
+		if (dtMap.containsKey(inputFormat)){
+			sdf = dtMap.get(inputFormat);
+		}else{
+			sdf = new SafeSimpleDateFormat(inputFormat);
+			dtMap.put(inputFormat, sdf);
+		}
+		try {
+			Date d = sdf.parse(input);
+			return FieldType.sdatetimeFormat.format(d);
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
 	public static String hour(String input, String dtFormat){
 		SafeSimpleDateFormat sdf = null;
 		if (dtMap.containsKey(dtFormat)){

@@ -21,9 +21,8 @@ public class FieldType implements Serializable{
 	public static final String TYPE_INT="int";
 	public static final String TYPE_DATE="date";
 	
-	public static final String datetimeFormat="yyyyMMddHHmmssSSS";
-	public static final String dateFormat="yyyyMMdd";
-	public static final String hiveDatetimeFormat="yyyy-MM-dd HH:mm:ss.SSS";
+	public static final String dateFormat="yyyy-MM-dd";
+	public static final String datetimeFormat="yyyy-MM-dd HH:mm:ss.SSS";//standard timestamp format, please convert to this before loading
 	public static final SafeSimpleDateFormat sdatetimeFormat = new SafeSimpleDateFormat(datetimeFormat);
 	public static final SafeSimpleDateFormat sdateFormat = new SafeSimpleDateFormat(dateFormat);
 	
@@ -175,5 +174,4 @@ public class FieldType implements Serializable{
 			return this.type.value();
 		}
 	}
-
 }
