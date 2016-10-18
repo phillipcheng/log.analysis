@@ -1,5 +1,6 @@
 package etl.cmd;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -28,7 +29,6 @@ import etl.spark.SparkReciever;
 import etl.util.HdfsUtil;
 import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
-import etl.util.Util;
 import etl.util.VarType;
 
 public class SftpCmd extends ETLCmd implements SparkReciever{
@@ -121,16 +121,17 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 			// retry for session connect
 			while (sftConnectRetryCntTemp <= sftpConnectRetryCount) {
 				try {
+					session.setTimeout(this.sftpConnectRetryWait);
 					session.connect();
 					channel = session.openChannel("sftp");
 					break;
 				} catch (Exception e) {
 					if (sftConnectRetryCntTemp == sftpConnectRetryCount) {
 						logger.error("Reached maximum number of times for connecting session.");
-						throw new SftpException(0, "Session not connected");
+						throw new SftpException(0, 
+								String.format("Reached maximum number of times for connecting sftp session to %s", this.host));
 					}
-					logger.error("Session is not connected. retrying..." + sftConnectRetryCntTemp);
-					Thread.sleep(this.sftpConnectRetryWait);
+					logger.error("Session connection failed. retrying..." + sftConnectRetryCntTemp);
 					sftConnectRetryCntTemp++;
 				}
 			}
@@ -140,6 +141,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 			sftpChannel = (ChannelSftp) channel;
 			boolean workflag=true;
 			for (String fromDir:fromDirs){
+				if (!fromDir.endsWith(File.separator)){
+					fromDir += File.separator;
+				}
 				logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
 				sftpChannel.cd(fromDir);
 				Vector<LsEntry> v = sftpChannel.ls(fileFilter);
@@ -333,5 +337,53 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	@Override
 	public boolean hasReduce(){
 		return false;
+	}
+
+	public int getSftpGetRetryCount() {
+		return sftpGetRetryCount;
+	}
+
+	public void setSftpGetRetryCount(int sftpGetRetryCount) {
+		this.sftpGetRetryCount = sftpGetRetryCount;
+	}
+
+	public int getSftpGetRetryWait() {
+		return sftpGetRetryWait;
+	}
+
+	public void setSftpGetRetryWait(int sftpGetRetryWait) {
+		this.sftpGetRetryWait = sftpGetRetryWait;
+	}
+
+	public int getSftpConnectRetryCount() {
+		return sftpConnectRetryCount;
+	}
+
+	public void setSftpConnectRetryCount(int sftpConnectRetryCount) {
+		this.sftpConnectRetryCount = sftpConnectRetryCount;
+	}
+
+	public int getSftpConnectRetryWait() {
+		return sftpConnectRetryWait;
+	}
+
+	public void setSftpConnectRetryWait(int sftpConnectRetryWait) {
+		this.sftpConnectRetryWait = sftpConnectRetryWait;
+	}
+
+	public boolean isSftpClean() {
+		return sftpClean;
+	}
+
+	public void setSftpClean(boolean sftpClean) {
+		this.sftpClean = sftpClean;
+	}
+
+	public int getFileLimit() {
+		return fileLimit;
+	}
+
+	public void setFileLimit(int fileLimit) {
+		this.fileLimit = fileLimit;
 	}
 }

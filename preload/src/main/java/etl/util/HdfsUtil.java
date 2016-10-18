@@ -133,12 +133,16 @@ public class HdfsUtil {
 			FileStatus[] fsts = fs.listStatus(new Path(folder));
 			if (fsts!=null){
 				for (FileStatus fst:fsts){
-					BufferedReader in = new BufferedReader(new InputStreamReader(fs.open(fst.getPath())));
-					String line = null;
-					while ((line=in.readLine())!=null){
-						output.add(line);
+					if (fst.isFile()){
+						BufferedReader in = new BufferedReader(new InputStreamReader(fs.open(fst.getPath())));
+						String line = null;
+						while ((line=in.readLine())!=null){
+							output.add(line);
+						}
+						in.close();
+					}else{
+						output.addAll(stringsFromDfsFolder(fs, fst.getPath().toString()));
 					}
-					in.close();
 				}
 			}
 		}catch(Exception e){

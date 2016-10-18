@@ -28,6 +28,7 @@ import etl.engine.EngineUtil;
 import etl.log.ETLLog;
 import etl.log.LogType;
 import etl.log.StreamLogProcessor;
+import etl.util.HdfsUtil;
 
 public class TestETLLog extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestETLLog.class);
@@ -62,13 +63,18 @@ public class TestETLLog extends TestETLCmd {
 		}
 	}
 	@Test
-	public void test1() throws Exception {
+	public void test1() {
 		ETLLog etllog = new ETLLog(LogType.etlstat);
 		//"yyyy-MM-ddTHH:mm:ss.SSS"
-		String startDate = "2016-05-16T12:10:15.123";
-		etllog.setStart(ETLLog.ssdf.parse(startDate));
-		String endDate = "2016-05-16T12:11:15.123";
-		etllog.setEnd(ETLLog.ssdf.parse(endDate));
+		try{
+			String startDate = "2016-05-16T12:10:15.123";
+			etllog.setStart(ETLLog.ssdf.parse(startDate));
+			String endDate = "2016-05-16T12:11:15.123";
+			etllog.setEnd(ETLLog.ssdf.parse(endDate));
+		}catch(Exception e){
+			logger.error("", e);
+		}
+			
 		etllog.setActionName(BackupCmd.class.getName());
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add("123");
@@ -81,13 +87,16 @@ public class TestETLLog extends TestETLCmd {
 	}
 	
 	@Test
-	public void test2() throws Exception {
+	public void test2() {
 		ETLLog etllog = new ETLLog(LogType.etlstat);
-		//"yyyy-MM-ddTHH:mm:ss.SSS"
-		String startDate = "2016-05-16T12:10:15.123";
-		etllog.setStart(ETLLog.ssdf.parse(startDate));
-		String endDate = "2016-05-16T12:11:15.123";
-		etllog.setEnd(ETLLog.ssdf.parse(endDate));
+		try{
+			String startDate = "2016-05-16T12:10:15.123";
+			etllog.setStart(ETLLog.ssdf.parse(startDate));
+			String endDate = "2016-05-16T12:11:15.123";
+			etllog.setEnd(ETLLog.ssdf.parse(endDate));
+		}catch(Exception e){
+			logger.error("", e);
+		}
 		etllog.setActionName(BackupCmd.class.getName());
 		String str = etllog.toString();
 		String expected = "2016-05-16T12:10:15.123,2016-05-16T12:11:15.123,,,etl.cmd.BackupCmd,,,,";
@@ -96,40 +105,54 @@ public class TestETLLog extends TestETLCmd {
 	}
 	
 	@Test
-	public void genLog() throws Exception{
-		
-		final String msggenCfgFolder= "/test/sendmsg/";
-		final String msggneCfgName = "msggen.properties";
-		
-		final String msggenWfName = "msggenWf";
-		final String msggenWfId = "msggenWfId";
-		final int exeInterval = 2;
-		final int totalExeTime = 10;
-		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + msggneCfgName), new Path(msggenCfgFolder + msggneCfgName));
-		getFs().copyFromLocalFile(false, true, new Path("src/main/resources/logschema.txt"), 
-				new Path(EngineUtil.getInstance().getEngineProp().getString("log.schema.file")));
-		
-		ExecutorService es = Executors.newFixedThreadPool(5);
-		es.submit(new Runnable(){
-			@Override
-			public void run() {
-				ETLCmd cmd = new KafkaMsgGenCmd(msggenWfName, msggenWfId, msggenCfgFolder+msggneCfgName, getDefaultFS(), null);
-				cmd.setSendLog(false);
-				ETLCmdMain.exeCmd(cmd, exeInterval, totalExeTime-2);
-			}
-		});
-		
-		es.submit(new Runnable(){
-			@Override
-			public void run() {
-				SparkConf conf = new SparkConf().setAppName("mtccore").setMaster("local[3]");
-				final JavaStreamingContext jsc = new JavaStreamingContext(conf, Durations.seconds(10));
-				StreamLogProcessor.sparkProcess(jsc);
-			}
-		});
-		
-		es.awaitTermination(totalExeTime, TimeUnit.SECONDS);
+	public void genLog() {
+		org.junit.Assume.assumeTrue(super.isTestKafka());
+		try{
+			final String msggenCfgFolder= "/test/sendmsg/";
+			final String msggneCfgName = "msggen.properties";
+			
+			final String msggenWfName = "msggenWf";
+			final String msggenWfId = "msggenWfId";
+			final int exeInterval = 4;
+			final int totalExeTime = exeInterval*4;
+			
+			String logDir = EngineUtil.getInstance().getEngineProp().getString("log.tmp.dir");
+			getFs().delete(new Path(logDir), true);
+			
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + msggneCfgName), new Path(msggenCfgFolder + msggneCfgName));
+			getFs().copyFromLocalFile(false, true, new Path("src/main/resources/logschema.txt"), 
+					new Path(EngineUtil.getInstance().getEngineProp().getString("log.schema.file")));
+			
+			ExecutorService es = Executors.newFixedThreadPool(5);
+			
+			es.submit(new Runnable(){
+				@Override
+				public void run() {
+					SparkConf conf = new SparkConf().setAppName("mtccore").setMaster("local[3]");
+					final JavaStreamingContext jsc = new JavaStreamingContext(conf, Durations.seconds(exeInterval));
+					StreamLogProcessor.sparkProcess(jsc);
+				}
+			});
+			
+			es.submit(new Runnable(){
+				@Override
+				public void run() {
+					ETLCmd cmd = new KafkaMsgGenCmd(msggenWfName, msggenWfId, msggenCfgFolder+msggneCfgName, getDefaultFS(), null);
+					//cmd.setSendLog(false);
+					ETLCmdMain.exeCmd(cmd, exeInterval, totalExeTime);
+				}
+			});
+			
+			es.awaitTermination(totalExeTime, TimeUnit.SECONDS);
+			
+			List<String> logs = HdfsUtil.stringsFromDfsFolder(getFs(), logDir);
+			logger.info(String.format("logs gathered:%s", logs));
+			int logGenerated = totalExeTime/exeInterval;
+			assertTrue(logs.size()>=logGenerated-1);
+		}catch(Exception e){
+			logger.error("", e);
+			assertTrue(false);
+		}
 	}
 
 	@Override

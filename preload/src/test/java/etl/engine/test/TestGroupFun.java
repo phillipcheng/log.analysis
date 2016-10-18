@@ -24,5 +24,12 @@ public class TestGroupFun {
 		logger.info(String.format("day:%s, hour:%s", dayOutput, hourOutput));
 		
 	}
+	
+	@Test
+	public void testDtStandardize(){
+		String input = "20160409.1412";
+		String output = GroupFun.dtStandardize(input, "yyyyMMdd.HHmm");
+		logger.info(output);
+	}
 
 }

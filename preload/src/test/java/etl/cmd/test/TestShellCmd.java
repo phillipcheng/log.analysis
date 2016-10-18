@@ -23,7 +23,6 @@ import etl.engine.InvokeMapper;
 import etl.util.OSType;
 import etl.util.PropertiesUtil;
 import etl.util.SystemUtil;
-import etl.util.Util;
 
 public class TestShellCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(ShellCmd.class);
@@ -56,7 +55,8 @@ public class TestShellCmd extends TestETLCmd {
 			PropertiesConfiguration pc = PropertiesUtil.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
-			FileUtils.cleanDirectory(destDir); 
+			FileUtils.deleteDirectory(destDir); 
+			FileUtils.forceMkdir(destDir);
 			//run job  
 			FileUtils.copyFileToDirectory(new File(getLocalFolder()+executableFile), new File(executableDir));
 			getConf().set(InvokeMapper.cfgkey_cmdclassname, "etl.cmd.ShellCmd");
@@ -110,7 +110,8 @@ public class TestShellCmd extends TestETLCmd {
 			PropertiesConfiguration pc = PropertiesUtil.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
-			FileUtils.cleanDirectory(destDir); 
+			FileUtils.deleteDirectory(destDir); 
+			FileUtils.forceMkdir(destDir);
 			
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));

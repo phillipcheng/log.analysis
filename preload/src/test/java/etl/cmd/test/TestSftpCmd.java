@@ -4,330 +4,177 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 
 import etl.cmd.SftpCmd;
+import etl.engine.EngineUtil;
 import etl.util.HdfsUtil;
 import etl.util.SftpUtil;
-import etl.util.Util;
+import etl.util.StringUtil;
+import serp.util.Strings;
 
 public class TestSftpCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestSftpCmd.class);
 
+	@Before
+	public void beforeMethod() {
+		org.junit.Assume.assumeTrue(super.isTestSftp());
+	}
+	
 	public String getResourceSubFolder(){
 		return "sftp"+File.separator;
 	}
 	
-	private void testFun1() throws Exception {
+	@Test
+	public void test1() throws Exception {
 		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		// values in the static cfg
-		String incomingFolder = "/test/sftp/incoming/";
-		String ftpFolder = "/data/mtccore/sftptest/";
-		String host = "192.85.247.104";
-		int port = 22;
-		String user = "dbadmin";
-		String pass = "password";
 		String fileName = "backup_test1_data";
 		
-		getFs().delete(new Path(dfsCfg), true);
-		getFs().delete(new Path(incomingFolder), true);
-		
-		getFs().mkdirs(new Path(dfsCfg));
-		getFs().mkdirs(new Path(incomingFolder));
-		
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-		
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
-		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true,incoming.folder='%s'", host, ftpFolder,incomingFolder), null);
+		String ftpFolder = cmd.getFromDirs()[0];
+		String incomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(incomingFolder), true);
+		getFs().mkdirs(new Path(incomingFolder));
+		FileUtils.deleteDirectory(new File(ftpFolder));
+		FileUtils.copyDirectory(new File(super.getLocalFolder()+"data"), new File(ftpFolder));
+		
+		cmd.sgProcess();
 		// check incoming fodler
 		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertTrue(fl.contains(fileName));
 		// check remote dir
-		fl = SftpUtil.sftpList(host, port, user, pass, ftpFolder);
+		String sftpHost = EngineUtil.getInstance().getEngineProp().getString("sftp.host");
+		String sftpUser = EngineUtil.getInstance().getEngineProp().getString("sftp.user");
+		int sftpPort = EngineUtil.getInstance().getEngineProp().getInt("sftp.port");
+		String sftpPass = EngineUtil.getInstance().getEngineProp().getString("sftp.pass");
+		fl = SftpUtil.sftpList(sftpHost, sftpPort, sftpUser, sftpPass, ftpFolder);
 		assertFalse(fl.contains(fileName));
 	}
-	
-	@Test
-	public void test1() throws Exception {
-		if (!super.isTestSftp()) return;
-		if (getDefaultFS().contains("127.0.0.1")){
-			testFun1();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testFun1();
-					return null;
-				}
-			});
-		}
-	}
 
-	private void testCommonFailureFun() throws Exception {
+	public void testSftpSessionConnectionFailure() throws Exception {
 		logger.info("Testing sftpcmd common failure test case");
-		String ftpFolder = "/data/mtccore/source1/";
-		String incomingFolder = "/data/mtccore/test/";
-		String host = "192.85.247.104";
 		String fileName = "backup_test1_data";
 		String dfsFolder = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		
-		
-		getFs().delete(new Path(dfsFolder), true);
-		getFs().delete(new Path(incomingFolder), true);
-
-		getFs().mkdirs(new Path(dfsFolder));
-		getFs().mkdirs(new Path(incomingFolder));
-		
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
-		
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsFolder + cfg, getDefaultFS(), null);
-		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=true", host, ftpFolder), null);
-
+		cmd.setHost("192.168.12.13");
+		cmd.setSftpConnectRetryWait(5*1000);
+		cmd.setSftpConnectRetryCount(2);
+		String incomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(incomingFolder), true);
+		getFs().mkdirs(new Path(incomingFolder));
+		cmd.sgProcess();
 		// check incoming fodler
 		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertFalse(fl.contains(fileName));
 	}
 	
 	@Test
-	public void testCommonFailure() throws Exception {
-		if (!super.isTestSftp()) return;
-		if (getDefaultFS().contains("127.0.0.1")){
-			testCommonFailureFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testCommonFailureFun();
-					return null;
-				}
-			});
-		}
-	}
-
-	private void testConnectionFailureFun() throws Exception{
-		logger.info("Testing sftpcmd connection failure with wrong sftp port number:25");
-		String ftpFolder = "/data/mtccore/source/";
-		String incomingFolder = "/data/mtccore/test/";
-		String host = "192.85.247.104";
-		int port = 25;
-		String user = "dbadmin";
-		String pass = "password";
-		String fileName = "backup_test1_data";
-		String dfsFolder = "/test/sftpcmd/cfg/";
-		String cfg = "sftp_test.properties";
-		//
-		getFs().delete(new Path(dfsFolder), true);
-		getFs().delete(new Path(incomingFolder), true);
-		
-		getFs().mkdirs(new Path(dfsFolder));
-		getFs().mkdirs(new Path(incomingFolder));
-		
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
-		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsFolder + cfg, getDefaultFS(), null);
-		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.port=%s", host, ftpFolder, port),
-				null);
-
-		// check incoming fodler
-		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
-		assertFalse(fl.contains(fileName));
-	}
-	
-	@Test
-	public void testConnectionFailure() throws Exception {
-		if (!super.isTestSftp()) return;
-		if (getDefaultFS().contains("127.0.0.1")){
-			testConnectionFailureFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testConnectionFailureFun();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void testDeleteFileNotEnabledFun() throws Exception{
+	public void testDeleteFileNotEnabledFun() throws Exception{
 		logger.info("Testing sftpcmd delete not enabled test case");
 
 		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		// values in the static cfg
-		String incomingFolder = "/test/sftp/incoming/";
-		String ftpFolder = "/data/mtccore/sftptest/";
-		String host = "192.85.247.104";
-		int port = 22;
-		String user = "dbadmin";
-		String pass = "password";
-		String sftpClean = "false";
 		String fileName = "backup_test1_data";
-		//
-		getFs().delete(new Path(incomingFolder), true);
-		getFs().delete(new Path(dfsCfg), true);
 		
-		getFs().mkdirs(new Path(incomingFolder));
-		getFs().mkdirs(new Path(dfsCfg));
-		
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, ftpFolder + fileName);
-		//
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
-		cmd.mapProcess(0, String.format("sftp.host=%s, sftp.folder=%s, sftp.clean=%s,incoming.folder='%s'", host, ftpFolder, sftpClean,incomingFolder),
-				null);
-		// check incoming fodler
+		String ftpFolder = cmd.getFromDirs()[0];
+		String incomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(incomingFolder), true);
+		getFs().mkdirs(new Path(incomingFolder));
+		
+		FileUtils.deleteDirectory(new File(ftpFolder));
+		FileUtils.copyDirectory(new File(super.getLocalFolder()+"data"), new File(ftpFolder));
+		cmd.setSftpClean(false);
+		cmd.sgProcess();
+		//
+		// check incoming folder
 		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertTrue(fl.contains(fileName));
 		// check remote dir
-		fl = SftpUtil.sftpList(host, port, user, pass, ftpFolder);
+		String sftpHost = EngineUtil.getInstance().getEngineProp().getString("sftp.host");
+		String sftpUser = EngineUtil.getInstance().getEngineProp().getString("sftp.user");
+		int sftpPort = EngineUtil.getInstance().getEngineProp().getInt("sftp.port");
+		String sftpPass = EngineUtil.getInstance().getEngineProp().getString("sftp.pass");
+		fl = SftpUtil.sftpList(sftpHost, sftpPort, sftpUser, sftpPass, ftpFolder);
 		assertTrue(fl.contains(fileName));
 	}
-
-	@Test
-	public void testDeleteFileNotEnabled() throws Exception {
-		if (!super.isTestSftp()) return;
-		if (getDefaultFS().contains("127.0.0.1")){
-			testDeleteFileNotEnabledFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testDeleteFileNotEnabledFun();
-					return null;
-				}
-			});
-		}
-	}
 	
-	private void selectFileFun() throws Exception {
+	@Test
+	public void testFileFilter() throws Exception {
 		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_selectfile.properties";
-		String[] fileNames = new String[]{"RTDB_ACCESS.friday","RTDB_ACCESS.monday"};
-		String dfsIncomingFolder = "/test/sftp/incoming/";
-		String sftpFolder = "/data/mtccore/sftptest/";
-		String host = "192.85.247.104";
-		int port = 22;
-		String user = "dbadmin";
-		String pass = "password";
 		
-		getFs().delete(new Path(dfsCfg), true);
-		getFs().delete(new Path(dfsIncomingFolder), true);
-		
-		getFs().mkdirs(new Path(dfsCfg));
-		getFs().mkdirs(new Path(dfsIncomingFolder));
-		
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		for (String fileName: fileNames){
-			SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, sftpFolder + fileName);
-		}
-		
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
-		cmd.mapProcess(0, null, null);
+		String ftpFolder = cmd.getFromDirs()[0];
+		String incomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(incomingFolder), true);
+		getFs().mkdirs(new Path(incomingFolder));
+		FileUtils.deleteDirectory(new File(ftpFolder));
+		FileUtils.copyDirectory(new File(super.getLocalFolder()+"data"), new File(ftpFolder));
+		cmd.sgProcess();
+		
 		// check incoming fodler
-		List<String> fl = HdfsUtil.listDfsFile(getFs(), dfsIncomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		assertFalse(fl.contains("RTDB_ACCESS.friday"));
 		assertTrue(fl.contains("RTDB_ACCESS.monday"));
 	}
 	
 	@Test
-	public void testSelectFile() throws Exception {
-		if (!super.isTestSftp()) return;
-		if (getDefaultFS().contains("127.0.0.1")){
-			selectFileFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					selectFileFun();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void multipleFolders() throws Exception {
+	public void testMultiFolders() throws Exception {
 		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_multiple_dirs.properties";
-		
-		getFs().delete(new Path(dfsCfg), true);
-		getFs().mkdirs(new Path(dfsCfg));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
-		
-		String dfsIncomingFolder = cmd.getIncomingFolder();
-		getFs().delete(new Path(dfsIncomingFolder), true);
-		getFs().mkdirs(new Path(dfsIncomingFolder));
-		String[] sftpFolders = cmd.getFromDirs();
-		String host = cmd.getHost();
-		int port = cmd.getPort();
-		String user = cmd.getUser();
-		String pass = cmd.getPass();
 		String fileName0 = "RTDB_ACCESS.friday";
-		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
 		String fileName1 = "RTDB_ACCESS.monday";
-		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
 		
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		String ftpFolder = StringUtil.commonPath(cmd.getFromDirs());
+		String incomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(incomingFolder), true);
+		getFs().mkdirs(new Path(incomingFolder));
+		FileUtils.deleteDirectory(new File(ftpFolder));
+		FileUtils.copyDirectory(new File(super.getLocalFolder()+"data"), new File(ftpFolder));
 		List<String> ret = cmd.sgProcess();
 		logger.info(ret);
 		
 		//assertion
-		List<String> fl = HdfsUtil.listDfsFile(getFs(), dfsIncomingFolder);
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		logger.info(fl);
 		assertTrue(fl.contains(fileName0));
 		assertTrue(fl.contains(fileName1));
 	}
 	
 	@Test
-	public void testMultipleFolders() throws Exception {
-		if (!super.isTestSftp()) return;
-		if (getDefaultFS().contains("127.0.0.1")){
-			multipleFolders();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					multipleFolders();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void limitFiles() throws Exception {
+	public void testLimitFiles() throws Exception {
 		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_limit.properties";
 		
-		getFs().delete(new Path(dfsCfg), true);
-		getFs().mkdirs(new Path(dfsCfg));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
 		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		
 		String dfsIncomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(dfsIncomingFolder), true);
 		getFs().mkdirs(new Path(dfsIncomingFolder));
-		String[] sftpFolders = cmd.getFromDirs();
-		String host = cmd.getHost();
-		int port = cmd.getPort();
-		String user = cmd.getUser();
-		String pass = cmd.getPass();
-		String fileName0 = "RTDB_ACCESS.friday";
-		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName0, sftpFolders[0] + fileName0);
-		String fileName1 = "RTDB_ACCESS.monday";
-		SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName1, sftpFolders[1] + fileName1);
+		String ftpFolder = cmd.getFromDirs()[0];
+		FileUtils.deleteDirectory(new File(ftpFolder));
+		FileUtils.copyDirectory(new File(super.getLocalFolder()+"data"), new File(ftpFolder));
 		
 		List<String> ret = cmd.sgProcess();
 		logger.info(ret);
@@ -335,57 +182,37 @@ public class TestSftpCmd extends TestETLCmd {
 		//assertion
 		List<String> fl = HdfsUtil.listDfsFile(getFs(), dfsIncomingFolder);
 		logger.info(fl);
-	}
-	
-	@Test
-	public void testLimitFiles() throws Exception {
-		if (!super.isTestSftp()) return;
-		if (getDefaultFS().contains("127.0.0.1")){
-			limitFiles();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					limitFiles();
-					return null;
-				}
-			});
-		}
+		assertTrue(fl.size()==1);
 	}
 	
 	//you need to manually mkdir cmd.getFromDirs
 	@Test
 	public void fileNamesOnly() throws Exception {
+		if (!super.isTestSftp()) return;
 		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_filenames.properties";
 		
-		getFs().delete(new Path(dfsCfg), true);
-		getFs().mkdirs(new Path(dfsCfg));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		String wfid = "wf1";
-		SftpCmd cmd = new SftpCmd("wf1", wfid, dfsCfg + cfg, getDefaultFS(), null);
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
+		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
 		
 		String dfsIncomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(dfsIncomingFolder), true);
 		getFs().mkdirs(new Path(dfsIncomingFolder));
-		String host = cmd.getHost();
-		int port = cmd.getPort();
-		String user = cmd.getUser();
-		String pass = cmd.getPass();
-		String[] fileNames = new String[]{"RTDB_ACCESS.friday", "RTDB_ACCESS.monday"};
-		for (String fileName: fileNames){
-			SftpUtil.sftpFromLocal(host, port, user, pass, getLocalFolder() + fileName, cmd.getFromDirs()[0] + fileName);
-		}
-
-		//assertion
+		String ftpFolder = cmd.getFromDirs()[0];
+		FileUtils.deleteDirectory(new File(ftpFolder));
+		FileUtils.copyDirectory(new File(super.getLocalFolder()+"data"), new File(ftpFolder));
 		List<String> ret = cmd.sgProcess();
 		logger.info(ret);
 		
+		//assertion
 		List<String> fl = HdfsUtil.listDfsFile(cmd.getFs(), dfsIncomingFolder);
-		String file = fl.get(0);
+		String file = fl.get(0);//file name is map key
 		logger.info(fl);
+		assertTrue(fl.size()==1);
+		assertTrue(fl.get(0).equals("0"));
 		
 		List<String> contents = HdfsUtil.stringsFromDfsFile(cmd.getFs(), dfsIncomingFolder+file);
-		logger.info(contents);
+		logger.info(Strings.join(contents.toArray(new String[]{}),"\n"));
+		assertTrue(contents.size()==3);
 	}
 }

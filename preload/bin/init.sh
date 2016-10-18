@@ -32,6 +32,7 @@ KAFKA_ROOT=/Applications/kafka_2.11-0.10.0.1/
 $KAFKA_ROOT/bin/kafka-console-consumer.sh --zookeeper 127.0.0.1:2181 --topic log-analysis-topic --from-beginning
 $KAFKA_ROOT/bin/kafka-console-producer.sh --broker-list 127.0.0.1:9092 --topic log-analysis-topic
 $KAFKA_ROOT/bin/kafka-topics.sh --create --zookeeper 127.0.0.1:2181 --replication-factor 1 --partitions 3 --topic log-analysis-topic
+$KAFKA_ROOT/bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --list
 
 oozie job -oozie http://127.0.0.1:11000/oozie/ -config sgs.job.properties -run
 oozie job -oozie http://127.0.0.1:11000/oozie/ -config smsc.job.properties -run
