@@ -27,12 +27,12 @@ public abstract class FlowMgr {
 	/**
 	 * 1. generate the workflows, the properties required by the actions, other assistance files
 	 * 2. put these files in a engine dependent structure on the hdfs
+	 * @param project
 	 * @param flow
 	 * @param fsconf
-	 * @param startNode
 	 * @return
 	 */
-	public abstract boolean deploy(Flow flow, FlowServerConf fsconf);
+	public abstract boolean deploy(String project, Flow flow, FlowServerConf fsconf);
 	
 	/**
 	 * @param flow:

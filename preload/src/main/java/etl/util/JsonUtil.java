@@ -22,22 +22,22 @@ public class JsonUtil {
 	//json serialization
 	public static final String charset="utf8";
 	
-	public static Object fromJsonString(String json, Class clazz){
+	public static <T> T fromJsonString(String json, Class<T> clazz){
 		return fromJsonString(json, clazz, false);
 	}
+	
 	public static String toJsonString(Object ls){
 		return toJsonString(ls, false);
 	}
 	
-	public static Object fromJsonString(String json, Class clazz, boolean useDefaultTyping){
+	public static <T> T fromJsonString(String json, Class<T> clazz, boolean useDefaultTyping){
 		ObjectMapper mapper = new ObjectMapper();
 		if (useDefaultTyping){
 			mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 		}
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		try {
-			Object t = mapper.readValue(json, clazz);
-			return t;
+			return mapper.readValue(json, clazz);
 		} catch (Exception e) {
 			logger.error("", e);
 			return null;

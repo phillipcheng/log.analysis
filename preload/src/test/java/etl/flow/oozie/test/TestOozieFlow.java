@@ -12,11 +12,12 @@ public class TestOozieFlow extends TestETLCmd{
 	
 	@Test
 	public void testFlow1(){
+		String projectName = "project1";
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		OozieConf oc = new OozieConf();
 		String flowFile = super.getLocalFolder()+"flow1.json";
 		Flow flow = (Flow) JsonUtil.fromLocalJsonFile(flowFile, Flow.class);
-		ofm.deploy(flow, oc);
+		ofm.deploy(projectName, flow, oc);
 		
 	}
 
