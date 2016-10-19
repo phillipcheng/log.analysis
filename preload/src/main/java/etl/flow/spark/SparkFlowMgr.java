@@ -7,7 +7,7 @@ import etl.flow.mgr.FlowServerConf;
 public class SparkFlowMgr extends FlowMgr{
 
 	@Override
-	public boolean deploy(Flow flow, FlowServerConf fsconf) {
+	public boolean deploy(String project, Flow flow, FlowServerConf fsconf) {
 		// TODO Auto-generated method stub
 		return false;
 	}
