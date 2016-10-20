@@ -24,18 +24,8 @@ import org.springframework.web.client.RestTemplate;
  *
  */
 public class RequestUtil {
-	private static String proxyHost;
-	private static String proxyPort;
-
-	static {
-		if (StringUtils.isEmpty(proxyHost)) {
-			Map configMap = ConfigManager.getProperties();
-			proxyHost = (String)configMap.get("proxyHost");
-			proxyPort = (String)configMap.get("proxyPort");
-		}
-	}
-
-	private static RestTemplate getRestTemplate() {
+	
+	private static RestTemplate getRestTemplate(String proxyHost, String proxyPort) {
 		RestTemplate restTemplate = new RestTemplate();
 		if (StringUtils.isNotEmpty(proxyHost)) {
 			// set proxy for request
@@ -48,7 +38,7 @@ public class RequestUtil {
 		return restTemplate;
 	}
 
-	public static String post(String url, Map<String, String> headMap,
+	public static String post(String url,String proxyHost, String proxyPort, Map<String, String> headMap,
 			String body) {
 		HttpHeaders headers = new HttpHeaders();
 		MediaType type = MediaType.parseMediaType("application/xml; charset=UTF-8");
@@ -59,14 +49,14 @@ public class RequestUtil {
 				headers.add(key, headMap.get(key));
 			}
 		}
-		RestTemplate restTemplate = getRestTemplate();
+		RestTemplate restTemplate = getRestTemplate(proxyHost,  proxyPort);
 		HttpEntity<String> formEntity = new HttpEntity<String>(body, headers);
 		String result = restTemplate.postForObject(url, formEntity,
 				String.class);
 		return result;
 	}
 
-	public static String get(String url, Map<String, String> headMap) {
+	public static String get(String url, String proxyHost, String proxyPort, Map<String, String> headMap) {
 		HttpHeaders headers = new HttpHeaders();
 		if (headMap != null) {
 			for (String key : headMap.keySet()) {
@@ -74,7 +64,7 @@ public class RequestUtil {
 			}
 		}
 		HttpEntity<String> request = new HttpEntity<String>(headers);
-		RestTemplate restTemplate = getRestTemplate();
+		RestTemplate restTemplate = getRestTemplate(proxyHost, proxyPort);
 
 		ResponseEntity<String> response = restTemplate.exchange(url,
 				HttpMethod.GET, request, String.class);
@@ -82,7 +72,7 @@ public class RequestUtil {
 		return result;
 	}
 
-	public static String put(String url, Map<String, String> headMap,
+	public static String put(String url, String proxyHost, String proxyPort, Map<String, String> headMap,
 			String body) {
 		HttpHeaders headers = new HttpHeaders();
 		MediaType type = MediaType
@@ -95,12 +85,12 @@ public class RequestUtil {
 			}
 		}
 		HttpEntity<String> formEntity = new HttpEntity<String>(body, headers);
-		RestTemplate restTemplate = getRestTemplate();
+		RestTemplate restTemplate = getRestTemplate(proxyHost, proxyPort);
 		restTemplate.put(url, formEntity);
 		return "";
 	}
 
-	public static String delete(String url, Map<String, String> headMap,
+	public static String delete(String url, String proxyHost, String proxyPort, Map<String, String> headMap,
 			String body) {
 		HttpHeaders headers = new HttpHeaders();
 		MediaType type = MediaType
@@ -113,7 +103,7 @@ public class RequestUtil {
 			}
 		}
 		HttpEntity<String> formEntity = new HttpEntity<String>(body, headers);
-		RestTemplate restTemplate = getRestTemplate();
+		RestTemplate restTemplate = getRestTemplate(proxyHost, proxyPort);
 		restTemplate.delete(url);
 		return "";
 	}
