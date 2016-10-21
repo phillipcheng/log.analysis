@@ -26,7 +26,8 @@ import org.junit.Before;
 import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
 import etl.util.HdfsUtil;
-import etl.util.PropertiesUtil;
+import etl.util.LocalPropertiesUtil;
+import etl.util.DfsPropertiesUtil;
 import etl.util.Util;
 import scala.Tuple2;
 
@@ -67,7 +68,7 @@ public abstract class TestETLCmd {
 	@Before
     public void setUp() {
 		try{
-			pc = PropertiesUtil.getPropertiesConfig(cfgProperties);
+			pc = LocalPropertiesUtil.getPropertiesConfig(cfgProperties);
 			localFolder = pc.getString(key_localFolder);
 			projectFolder = pc.getString(key_projectFolder);
 			oozieUser = pc.getString(key_oozie_user);

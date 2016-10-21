@@ -19,7 +19,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import org.apache.spark.api.java.JavaRDD;
 import etl.spark.SparkProcessor;
-import etl.util.PropertiesUtil;
+import etl.util.DfsPropertiesUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
@@ -181,7 +181,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		pc = PropertiesUtil.getMergedPCFromDfs(fs, staticCfg);
+		pc = DfsPropertiesUtil.getMergedPCFromDfs(fs, staticCfg);
 		systemVariables = new HashMap<String, Object>();
 		systemVariables.put(VAR_WFID, wfid);
 		String[] varnames = pc.getStringArray(cfgkey_vars);

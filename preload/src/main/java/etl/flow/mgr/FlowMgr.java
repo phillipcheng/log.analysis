@@ -8,7 +8,8 @@ import org.apache.logging.log4j.Logger;
 import etl.flow.ActionNode;
 import etl.flow.Flow;
 import etl.flow.Node;
-import etl.util.PropertiesUtil;
+import etl.util.DfsPropertiesUtil;
+import etl.util.LocalPropertiesUtil;
 
 public abstract class FlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
@@ -19,7 +20,7 @@ public abstract class FlowMgr {
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
 				String propFileString = String.format("%s%s%s_%s.properties", dir, File.separator, flow.getName(), an.getName());
-				PropertiesUtil.writePropertyFile(propFileString, an.getUserProperties());
+				LocalPropertiesUtil.writePropertyFile(propFileString, an.getUserProperties());
 			}
 		}
 	}
