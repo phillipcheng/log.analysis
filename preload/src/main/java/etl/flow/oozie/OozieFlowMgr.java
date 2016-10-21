@@ -15,7 +15,7 @@ import etl.flow.Flow;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.oozie.wf.WORKFLOWAPP;
-import etl.util.PropertiesUtil;
+import etl.util.LocalPropertiesUtil;
 
 public class OozieFlowMgr extends FlowMgr{
 	
@@ -45,7 +45,7 @@ public class OozieFlowMgr extends FlowMgr{
 		propertyMap.put(OozieConf.key_oozieLibPath, oc.getOozieLibPath());
 		propertyMap.put(OozieConf.key_oozieWfAppPath, 
 				String.format("${nameNode}/user/${user.name}/%s/%s.workflow.xml", projectName, flow.getName()));
-		PropertiesUtil.writePropertyFile(String.format("%s%s%s_job.properties", dir, File.separator, flow.getName()), propertyMap);
+		LocalPropertiesUtil.writePropertyFile(String.format("%s%s%s_job.properties", dir, File.separator, flow.getName()), propertyMap);
 		return true;
 	}
 
