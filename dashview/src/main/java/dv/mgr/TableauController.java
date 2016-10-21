@@ -15,18 +15,19 @@ import dv.tableau.rest.TsResponse;
 @RestController
 @RequestMapping("/tableau/rest")
 public class TableauController {
+	private String conf = "config/config.properties";
 	private  String username="admin";
 	private  String password="admin123";
 	
 	@RequestMapping(value = "/signin",method = RequestMethod.GET)
 	TsResponse signin(){
-		TsResponse response = new TableauBLImpl().signin(username, password);
+		TsResponse response = new TableauBLImpl(conf).signin(username, password);
 		return response;
 	}
 	
 	@RequestMapping(value = "/allProjects",method = RequestMethod.GET)
 	TsResponse allProjects(){
-		TsResponse response = new TableauBLImpl().getProjects(username, password);
+		TsResponse response = new TableauBLImpl(conf).getProjects(username, password);
 		return response;
 	}
 

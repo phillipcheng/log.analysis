@@ -1,15 +1,9 @@
 package dv.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.lang.StringUtils;
-import org.dom4j.DocumentException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,12 +19,12 @@ import org.springframework.web.client.RestTemplate;
  */
 public class RequestUtil {
 	
-	private static RestTemplate getRestTemplate(String proxyHost, String proxyPort) {
+	private static RestTemplate getRestTemplate(String proxyHost, int proxyPort) {
 		RestTemplate restTemplate = new RestTemplate();
 		if (StringUtils.isNotEmpty(proxyHost)) {
 			// set proxy for request
 			SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-			InetSocketAddress address = new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort));
+			InetSocketAddress address = new InetSocketAddress(proxyHost, proxyPort);
 			Proxy proxy = new Proxy(Proxy.Type.HTTP, address);
 			factory.setProxy(proxy);
 			restTemplate.setRequestFactory(factory);
@@ -38,7 +32,7 @@ public class RequestUtil {
 		return restTemplate;
 	}
 
-	public static String post(String url,String proxyHost, String proxyPort, Map<String, String> headMap,
+	public static String post(String url,String proxyHost, int proxyPort, Map<String, String> headMap,
 			String body) {
 		HttpHeaders headers = new HttpHeaders();
 		MediaType type = MediaType.parseMediaType("application/xml; charset=UTF-8");
@@ -56,7 +50,7 @@ public class RequestUtil {
 		return result;
 	}
 
-	public static String get(String url, String proxyHost, String proxyPort, Map<String, String> headMap) {
+	public static String get(String url, String proxyHost, int proxyPort, Map<String, String> headMap) {
 		HttpHeaders headers = new HttpHeaders();
 		if (headMap != null) {
 			for (String key : headMap.keySet()) {
@@ -72,7 +66,7 @@ public class RequestUtil {
 		return result;
 	}
 
-	public static String put(String url, String proxyHost, String proxyPort, Map<String, String> headMap,
+	public static String put(String url, String proxyHost, int proxyPort, Map<String, String> headMap,
 			String body) {
 		HttpHeaders headers = new HttpHeaders();
 		MediaType type = MediaType
@@ -90,7 +84,7 @@ public class RequestUtil {
 		return "";
 	}
 
-	public static String delete(String url, String proxyHost, String proxyPort, Map<String, String> headMap,
+	public static String delete(String url, String proxyHost, int proxyPort, Map<String, String> headMap,
 			String body) {
 		HttpHeaders headers = new HttpHeaders();
 		MediaType type = MediaType

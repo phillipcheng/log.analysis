@@ -3,33 +3,40 @@ package dv.tableau.bl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dv.tableau.rest.TsResponse;
-import dv.util.ConfigManager;
 import dv.util.RequestUtil;
 import dv.util.XmlUtil;
+import etl.util.LocalPropertiesUtil;
 
-public class TableauBLImpl implements TableanBL {
+public class TableauBLImpl implements TableauBL {
 	public static final Logger logger = LogManager.getLogger(TableauBLImpl.class);
 	
-	private static String tableauip;
-	private static String proxyHost;
-	private static String proxyPort;
-	static {
-		if (StringUtils.isEmpty(tableauip)) {
-			Map configMap = ConfigManager.getProperties();
-			tableauip = (String)configMap.get("tableauip");
-			proxyHost = (String)configMap.get("proxyHost");
-			proxyPort = (String)configMap.get("proxyPort");
-		}
+	public static final String cfgkey_proxy_host="proxy.host";
+	public static final String cfgkey_proxy_port="proxy.port";
+	public static final String cfgkey_tableau_server_ip="tableau.server.ip";
+	public static final String cfgkey_tableau_server_port="tableau.server.port";
+	
+	private String tableauServerIp;
+	private int tableauServerPort;
+	private String proxyHost;
+	private int proxyPort;
+	
+	public TableauBLImpl(String config){
+		PropertiesConfiguration pc = LocalPropertiesUtil.getPropertiesConfig(config);
+		tableauServerIp = pc.getString(cfgkey_tableau_server_ip, null);
+		tableauServerPort = pc.getInt(cfgkey_tableau_server_port, 80);
+		proxyHost = pc.getString(cfgkey_proxy_host, null);
+		proxyPort = pc.getInt(cfgkey_proxy_port);
 	}
+	
 	@Override
 	public TsResponse signin(String username, String password) {
-		String url = "http://%s/api/2.0/auth/signin";
-		url = String.format(url, tableauip);
+		String url = String.format("http://%s:%d/api/2.0/auth/signin", tableauServerIp, tableauServerPort);
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("<?xml version='1.0' encoding='UTF-8' ?>");
 		buffer.append("<tsRequest xmlns='http://tableausoftware.com/api'>");
@@ -49,8 +56,7 @@ public class TableauBLImpl implements TableanBL {
 	@Override
 	public TsResponse getProjects(String username, String password) {
 		TsResponse tr = signin(username, password);
-		String url = "http://%s/api/2.0/sites/%s/projects";
-		url = String.format(url, tableauip, tr.getCredentials().getSite().getId());
+		String url = String.format("http://%s:%d/api/2.0/sites/%s/projects", tableauServerIp, tableauServerPort, tr.getCredentials().getSite().getId());
 		Map<String, String> headMap = new HashMap<String, String>();
 		headMap.put("X-Tableau-Auth", tr.getCredentials().getToken());
 		String response = RequestUtil.get(url, proxyHost, proxyPort, headMap);
