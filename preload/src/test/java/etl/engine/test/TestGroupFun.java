@@ -3,6 +3,7 @@ package etl.engine.test;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 import org.junit.Test;
 
 import etl.util.GroupFun;
@@ -27,9 +28,14 @@ public class TestGroupFun {
 	
 	@Test
 	public void testDtStandardize(){
-		String input = "20160409.1412";
+		String input = " 20160409.1412 ";
 		String output = GroupFun.dtStandardize(input, "yyyyMMdd.HHmm");
 		logger.info(output);
+		Assert.assertEquals(output, "2016-04-09 14:12:00.000");
+		
+		output = GroupFun.dtStandardize("", "yyyyMMdd.HHmm");
+		logger.info(output);
+		Assert.assertEquals(output, "");
 	}
 
 }
