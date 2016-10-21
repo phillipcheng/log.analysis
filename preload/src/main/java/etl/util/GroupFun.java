@@ -1,6 +1,5 @@
 package etl.util;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,18 +37,26 @@ public class GroupFun {
 	
 	public static String dtStandardize(String input, String inputFormat){
 		SafeSimpleDateFormat sdf = null;
-		if (dtMap.containsKey(inputFormat)){
-			sdf = dtMap.get(inputFormat);
-		}else{
-			sdf = new SafeSimpleDateFormat(inputFormat);
-			dtMap.put(inputFormat, sdf);
-		}
-		try {
-			Date d = sdf.parse(input);
-			return FieldType.sdatetimeFormat.format(d);
-		}catch(Exception e){
-			logger.error("", e);
-			return null;
+		
+		if (input != null)
+			input = input.trim();
+		
+		if (input == null || input.length() == 0)
+			return input;
+		else {
+			if (dtMap.containsKey(inputFormat)){
+				sdf = dtMap.get(inputFormat);
+			}else{
+				sdf = new SafeSimpleDateFormat(inputFormat);
+				dtMap.put(inputFormat, sdf);
+			}
+			try {
+				Date d = sdf.parse(input);
+				return FieldType.sdatetimeFormat.format(d);
+			}catch(Exception e){
+				logger.error("", e);
+				return null;
+			}
 		}
 	}
 	
