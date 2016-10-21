@@ -4,14 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dv.tableau.rest.TsResponse;
 import dv.util.RequestUtil;
-import dv.util.XmlUtil;
 import etl.util.LocalPropertiesUtil;
+import etl.util.XmlUtil;
 
 public class TableauBLImpl implements TableauBL {
 	public static final Logger logger = LogManager.getLogger(TableauBLImpl.class);
@@ -49,7 +48,7 @@ public class TableauBLImpl implements TableauBL {
 		logger.info(xml);
 		String response = RequestUtil.post(url, proxyHost, proxyPort, null, xml);
 		logger.info(response);
-		TsResponse returnTr = (TsResponse)XmlUtil.XMLStringToBean(response, TsResponse.class);
+		TsResponse returnTr = XmlUtil.xmlToBean(response, TsResponse.class);
 		return returnTr;
 	}
 
@@ -61,7 +60,7 @@ public class TableauBLImpl implements TableauBL {
 		headMap.put("X-Tableau-Auth", tr.getCredentials().getToken());
 		String response = RequestUtil.get(url, proxyHost, proxyPort, headMap);
 		logger.info(response);
-		TsResponse returnTr = (TsResponse)XmlUtil.XMLStringToBean(response, TsResponse.class);
+		TsResponse returnTr = XmlUtil.xmlToBean(response, TsResponse.class);
 		return returnTr;
 	}
 	
