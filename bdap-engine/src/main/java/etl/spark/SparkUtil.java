@@ -10,7 +10,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFunction;
 
-import etl.util.HdfsUtil;
+import bdap.util.HdfsUtil;
 import scala.Tuple2;
 
 public class SparkUtil {

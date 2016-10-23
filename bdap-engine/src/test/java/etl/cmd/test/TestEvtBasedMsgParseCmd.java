@@ -23,8 +23,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import bdap.util.EngineConf;
+import bdap.util.HdfsUtil;
 import etl.engine.InvokeMapper;
-import etl.util.HdfsUtil;
 import etl.util.Util;
   
 public class TestEvtBasedMsgParseCmd extends TestETLCmd{

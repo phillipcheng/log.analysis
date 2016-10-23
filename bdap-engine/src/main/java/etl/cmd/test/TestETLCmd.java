@@ -24,10 +24,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
 
 import bdap.util.EngineConf;
+import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
 import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
-import etl.util.HdfsUtil;
 import scala.Tuple2;
 
 public abstract class TestETLCmd {

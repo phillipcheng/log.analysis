@@ -69,4 +69,8 @@ public class EngineConf {
 			logger.error("", e);
 		}
 	}
+	
+	public String getDefaultFs(){
+		return conf.getString(cfgkey_defaultFs);
+	}
 }

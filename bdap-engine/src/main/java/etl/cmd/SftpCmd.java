@@ -20,13 +20,15 @@ import org.apache.hadoop.mapreduce.Mapper;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
+
+import bdap.util.HdfsUtil;
+
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
 import etl.spark.SparkReciever;
-import etl.util.HdfsUtil;
 import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;

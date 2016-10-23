@@ -38,6 +38,7 @@ import etl.flow.oozie.wf.JAVA;
 import etl.flow.oozie.wf.JOIN;
 import etl.flow.oozie.wf.KILL;
 import etl.flow.oozie.wf.MAPREDUCE;
+import etl.flow.oozie.wf.PARAMETERS;
 import etl.flow.oozie.wf.PREPARE;
 import etl.flow.oozie.wf.START;
 import etl.flow.oozie.wf.WORKFLOWAPP;
@@ -72,6 +73,8 @@ public class OozieGenerator {
 	private static String killMessage = "failed, error message[${wf:errorMessage(wf:lastErrorNode())}]";
 	private static ACTIONTRANSITION errorTransition = new ACTIONTRANSITION();
 	public static final String wfid = "${wf:id()}";
+	public static final String wfid_param_name="wfid";
+	public static final String wfid_param_exp= "${wfid}";
 	
 	private static String getInputFormat(InputFormatType ift){
 		if (InputFormatType.line == ift){
@@ -91,7 +94,7 @@ public class OozieGenerator {
 		return CmdDefMgr.getInstance().getCmdDef(cmdClazz);
 	}
 	
-	private static MAPREDUCE genMRAction(Flow flow, ActionNode an){
+	private static MAPREDUCE genMRAction(Flow flow, ActionNode an, boolean hasInstanceId){
 		MAPREDUCE mr = new MAPREDUCE();
 		mr.setJobTracker(jobTrackValue);
 		mr.setNameNode(nameNodeValue);
@@ -192,7 +195,11 @@ public class OozieGenerator {
 		pl.add(wfNameCp);
 		CONFIGURATION.Property wfIdCp = new CONFIGURATION.Property();
 		wfIdCp.setName(EngineConf.cfgkey_wfid);
-		wfIdCp.setValue(wfid);
+		if (!hasInstanceId){
+			wfIdCp.setValue(wfid);
+		}else{
+			wfIdCp.setValue(wfid_param_exp);
+		}
 		pl.add(wfIdCp);
 		CONFIGURATION.Property cfgPropertiesCp = new CONFIGURATION.Property();
 		cfgPropertiesCp.setName(EngineConf.cfgkey_staticconfigfile);
@@ -202,14 +209,18 @@ public class OozieGenerator {
 		return mr;
 	}
 	
-	private static JAVA genJavaAction(Flow flow, ActionNode an){
+	private static JAVA genJavaAction(Flow flow, ActionNode an, boolean hasInstanceId){
 		JAVA ja = new JAVA();
 		ja.setJobTracker(jobTrackValue);
 		ja.setNameNode(nameNodeValue);
 		ja.setMainClass(EngineConf.etlcmd_main_class);
 		ja.getArg().add(an.getProperty(ActionNode.key_cmd_class));
 		ja.getArg().add(flow.getName());
-		ja.getArg().add(wfid);
+		if (!hasInstanceId){
+			ja.getArg().add(wfid);	
+		}else{
+			ja.getArg().add(wfid_param_exp);
+		}
 		ja.getArg().add(String.format("%s_%s.properties", flow.getName(), an.getName()));
 		ja.getArg().add(nameNodeValue);
 		return ja;
@@ -329,6 +340,11 @@ public class OozieGenerator {
 		errorTransition.setTo(killName);
 		//gen flow
 		WORKFLOWAPP wfa = new WORKFLOWAPP();
+		if (hasInstanceId){
+			PARAMETERS.Property wfIdProperty = new PARAMETERS.Property();
+			wfIdProperty.setName(wfid_param_name);
+			wfa.getParameters().getProperty().add(wfIdProperty);
+		}
 		wfa.setName(flow.getName());
 		StartNode start = flow.getStart();
 		if (start==null){
@@ -373,9 +389,9 @@ public class OozieGenerator {
 				if (node instanceof ActionNode){
 					ActionNode an = (ActionNode)node;
 					if (an.getExeType()==ExeType.mr){
-						act.setMapReduce(genMRAction(flow, an));
+						act.setMapReduce(genMRAction(flow, an, hasInstanceId));
 					}else if (an.getExeType()==ExeType.java){
-						act.setJava(genJavaAction(flow, an));
+						act.setJava(genJavaAction(flow, an, hasInstanceId));
 					}
 					wfa.getDecisionOrForkOrJoin().add(act);
 				}else if (node instanceof EndNode){
