@@ -1,0 +1,7 @@
+#proxy
+proxy.host=16.85.88.10
+proxy.port=8080
+
+#tablea 
+tableau.server.ip=192.238.57.4
+tableau.server.port=80
