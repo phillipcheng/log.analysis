@@ -27,6 +27,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-client</artifactId>
+			<version>2.5.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
             <version>2.6.5</version>
@@ -36,7 +42,6 @@
             <artifactId>jackson-core</artifactId>
             <version>2.6.5</version>
         </dependency>
-        
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-web</artifactId>
@@ -142,14 +147,6 @@
 			   <configuration>
 			     	<skipTests>true</skipTests>
 			   </configuration>
-			</plugin>
-			<plugin>
-			  <artifactId>maven-jar-plugin</artifactId>
-			  <configuration>
-			    <archive>
-			      <addMavenDescriptor>false</addMavenDescriptor>
-			    </archive>
-			  </configuration>
 			</plugin>
 			<plugin>
 			    <groupId>org.springframework.boot</groupId>

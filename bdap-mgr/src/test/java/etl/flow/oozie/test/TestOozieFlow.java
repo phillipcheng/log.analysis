@@ -28,7 +28,7 @@ public class TestOozieFlow {
 		String flowFile = getResourceSubFolder()+"flow1.json";
 		Flow flow = (Flow) JsonUtil.fromLocalJsonFile(flowFile, Flow.class);
 		EngineConf ec = new EngineConf(getResourceSubFolder()+ EngineConf.file_name);
-		ofm.deploy("tmp", projectName, flow, getOC(), null, ec);
+		ofm.deploy(projectName, flow, getOC(), ec);
 	}
 
 	public String getResourceSubFolder() {

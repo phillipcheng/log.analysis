@@ -11,11 +11,13 @@ public class OozieConf implements FlowServerConf {
 	public static final String key_oozieLibPath="oozie.libpath";
 	public static final String key_oozieWfAppPath="oozie.wf.application.path";
 	public static final String key_oozieCoordinateAppPath="oozie.coord.application.path";
+	public static final String key_user_name="user.name";
 	
 	private String jobTracker;
 	private String nameNode;
 	private String queueName = "default";
 	private String oozieLibPath;
+	private String userName;
 	
 	public String getOozieLibPath() {
 		return oozieLibPath;
@@ -40,6 +42,12 @@ public class OozieConf implements FlowServerConf {
 	}
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 	
 }

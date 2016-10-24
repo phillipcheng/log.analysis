@@ -1,6 +1,7 @@
 package etl.flow.mgr;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,20 +18,42 @@ public abstract class FlowMgr {
 	
 	
 	//generate the properties files for all the cmd to initiate
-	public void genProperties(Flow flow, String dir){
+	public List<InMemFile> genProperties(Flow flow){
+		List<InMemFile> propertyFiles = new ArrayList<InMemFile>();
 		for (Node n: flow.getNodes()){
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
-				String propFileString = String.format("%s%s%s_action_%s.properties", dir, File.separator, flow.getName(), an.getName());
-				PropertiesUtil.writePropertyFile(propFileString, an.getUserProperties());
+				String propFileName = String.format("%s_action_%s.properties", flow.getName(), an.getName());
+				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getUserProperties());
+				propertyFiles.add(new InMemFile(FileType.actionProperty, propFileName, bytes));
 			}
 		}
+		return propertyFiles;
 	}
 	
 	/**
-	 * 1. generate the workflows, the properties required by the actions, other assistance files
-	 * 2. put these files in a engine dependent structure on the hdfs
-	 * @param refRoot: the reference root directory for all file related operations
+	 * update helper jars
+	 * @param files
+	 * @param fsconf
+	 * @param ec
+	 * @return
+	 */
+	public abstract boolean uploadJars(InMemFile[] files, FlowServerConf fsconf, EngineConf ec);
+	
+	/**
+	 * instance level execution, used more in testing the process before production deployment
+	 * @param projectName
+	 * @param flowName
+	 * @param wfid
+	 * @param startNode
+	 * @return the wf instanceid
+	 */
+	public abstract String execute(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec, String startNode, String instanceId);
+	
+	/**
+	 * deploy the process, it will be executed/instantiated by the start conditions
+	 * for oozie, a cooridator is deployed
+	 * for spark, a spark-application is submitted
 	 * @param projectName
 	 * @param flow
 	 * @param fsconf: flow server conf
@@ -38,15 +61,5 @@ public abstract class FlowMgr {
 	 * @param ec: the engine configuration like kafka server, db server, hdfs etc
 	 * @return success or failure
 	 */
-	public abstract boolean deploy(String refRoot, String projectName, Flow flow, FlowServerConf fsconf, List<String> thirdPartyJars, EngineConf ec);
-	
-	/**
-	 * @param projectName
-	 * @param flowName
-	 * @param wfid
-	 * @param startNode
-	 * @return
-	 */
-	public abstract boolean execute(String projectName, String flowName, String wfid, String startNode);
-	
+	public abstract boolean deploy(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec);
 }

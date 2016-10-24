@@ -53,8 +53,8 @@ public class ActionNode extends Node{
 	}
 	
 	@JsonIgnore
-	public Map<String, String> getUserProperties(){
-		Map<String, String> userProperties = new LinkedHashMap<String, String>();
+	public LinkedHashMap<String, String> getUserProperties(){
+		LinkedHashMap<String, String> userProperties = new LinkedHashMap<String, String>();
 		for (String key: properties.keySet()){
 			if (!getSysProperties().contains(key)){
 				userProperties.put(key, properties.get(key));

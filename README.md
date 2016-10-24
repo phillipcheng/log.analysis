@@ -1,17 +1,17 @@
 Big Data Analysis Platform
 ============
 # Unified Flow Definition Engine
-![Flow Definiton](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/flow-definition.png)
+![Flow Definiton](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/flow-definition.png)
 ## Support Batch Execution on Oozie
-![Oozie Execution](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/batch-ex.png)
+![Oozie Execution](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/batch-ex.png)
 ## Support Stream Execution on Spark
-![Spark Execution](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/stream-ex.png)
+![Spark Execution](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/stream-ex.png)
 ## Workflow Monitoring
-![ETL Log](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/etllog.png)
+![ETL Log](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/etllog.png)
 # Reusable, Extensible Cmd Library
-![Component Library](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/cmd-library.png)
+![Component Library](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/cmd-library.png)
 ## 1. CSV Transformation Cmd
-![Csv Transform Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/csvtransform.png)
+![Csv Transform Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/csvtransform.png)
 
 User can specify following column operations (Update, Split, Remove) on the fields for each line of the csv file.
 ###  Columns Update
@@ -68,10 +68,10 @@ row.validation=fields.length>10
 ```
     For this Cmd, the system varaible "fields" (an array of fields for each line) is passed.
 ## 2. Csv Aggregation Cmd
-![Csv Aggregate Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/csvaggregate.png)
+![Csv Aggregate Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/csvaggregate.png)
 
 ## 3. SFTP fetch files Cmd
-![Csv Aggregate Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/sftpcmd.png)
+![Csv Aggregate Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/sftpcmd.png)
 
 
 copy files to hdfs from sftp servers
@@ -188,7 +188,7 @@ VS_peakPerCoreCpuUsage numeric(15,5));
 
 
 ## 6. Backup Cmd
-![Backup Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/backupcmd.png)
+![Backup Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/backupcmd.png)
 
 zip all the raw files and intermediate files and backup to data lake
 
@@ -228,7 +228,7 @@ sample output:
 3. record.fieldnum specify the number of fields to extract for each record
 
 ## 8. Load Database Cmd
-![LoadDataCmd Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/loaddatacmd.png)
+![LoadDataCmd Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/loaddatacmd.png)
 
 load the csv files from dfs to database.
 
@@ -253,7 +253,7 @@ db.loginTimeout=35
 ```
 
 ## 9. Shell Cmd
-![LoadDataCmd Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/preload/pic/shellcmd.png)
+![LoadDataCmd Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/shellcmd.png)
 
 Example 1:
 ```

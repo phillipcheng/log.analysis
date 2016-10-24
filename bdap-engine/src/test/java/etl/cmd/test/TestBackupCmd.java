@@ -7,8 +7,9 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
+
+import bdap.util.HdfsUtil;
 import etl.cmd.BackupCmd;
-import etl.util.HdfsUtil;
 import etl.util.Util;
 
 //log4j2

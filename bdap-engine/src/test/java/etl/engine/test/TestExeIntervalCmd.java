@@ -10,10 +10,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import bdap.util.HdfsUtil;
 import etl.cmd.CsvFileGenCmd;
 import etl.cmd.test.TestETLCmd;
 import etl.engine.ETLCmdMain;
-import etl.util.HdfsUtil;
 import etl.util.Util;
 
 public class TestExeIntervalCmd extends TestETLCmd{

@@ -8,7 +8,7 @@ import javax.script.CompiledScript;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import bdap.util.JsonUtil;
+import bdap.util.HdfsUtil;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.fs.Path;
@@ -22,7 +22,6 @@ import etl.engine.LogicSchema;
 import etl.engine.OutputType;
 import etl.util.DBType;
 import etl.util.DBUtil;
-import etl.util.HdfsUtil;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;

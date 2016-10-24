@@ -1,4 +1,4 @@
-package etl.util;
+package bdap.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,15 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import bdap.util.JsonUtil;
 
 public class HdfsUtil {
 	
@@ -38,8 +36,6 @@ public class HdfsUtil {
 			return null;
 		}
 	}
-	
-	
 	
 	public static int writeDfsFile(FileSystem fs, String fileName, Iterable<String> contents){
 		BufferedWriter osw = null;

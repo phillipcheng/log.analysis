@@ -18,6 +18,7 @@ import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.junit.Test;
 
+import bdap.util.HdfsUtil;
 import etl.cmd.BackupCmd;
 import etl.cmd.KafkaMsgGenCmd;
 import etl.cmd.SendLogCmd;
@@ -28,7 +29,6 @@ import etl.engine.EngineUtil;
 import etl.log.ETLLog;
 import etl.log.LogType;
 import etl.log.StreamLogProcessor;
-import etl.util.HdfsUtil;
 
 public class TestETLLog extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestETLLog.class);
