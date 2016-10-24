@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.net.UnknownHostException;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,9 @@ import org.apache.hadoop.mapred.MiniMRClientClusterFactory;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.oozie.ErrorCode;
 import org.apache.oozie.service.ConfigurationService;
+import org.apache.oozie.service.HadoopAccessorException;
 import org.apache.oozie.service.HadoopAccessorService;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
@@ -632,36 +635,65 @@ public abstract class XTestCase extends TestCase {
             String oozieUser = getOozieUser();
             JobConf conf = createDFSConfig();
             String[] userGroups = new String[] { getTestGroup(), getTestGroup2() };
-            UserGroupInformation.createUserForTesting(oozieUser, userGroups);
-            UserGroupInformation.createUserForTesting(getTestUser(), userGroups);
+            UserGroupInformation ugi = UserGroupInformation.createUserForTesting(getTestUser(), userGroups);
             UserGroupInformation.createUserForTesting(getTestUser2(), userGroups);
             UserGroupInformation.createUserForTesting(getTestUser3(), new String[] { "users" } );
+            UserGroupInformation.createUserForTesting(oozieUser, userGroups);
+            UserGroupInformation.setLoginUser(ugi);
 
             try {
-            	MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf);
-                dfsCluster = builder.build();
-                FileSystem fileSystem = dfsCluster.getFileSystem();
-                fileSystem.mkdirs(new Path("target/test-data"));
-                fileSystem.mkdirs(new Path("target/test-data"+"/minicluster/mapred"));
-                fileSystem.mkdirs(new Path("/user"));
-                fileSystem.mkdirs(new Path("/tmp"));
-                fileSystem.mkdirs(new Path("/hadoop/mapred/system"));
-                fileSystem.setPermission(new Path("target/test-data"), FsPermission.valueOf("-rwxrwxrwx"));
-                fileSystem.setPermission(new Path("target/test-data"+"/minicluster"), FsPermission.valueOf("-rwxrwxrwx"));
-                fileSystem.setPermission(new Path("target/test-data"+"/minicluster/mapred"), FsPermission.valueOf("-rwxrwxrwx"));
-                fileSystem.setPermission(new Path("/user"), FsPermission.valueOf("-rwxrwxrwx"));
-                fileSystem.setPermission(new Path("/tmp"), FsPermission.valueOf("-rwxrwxrwx"));
-                fileSystem.setPermission(new Path("/hadoop/mapred/system"), FsPermission.valueOf("-rwx------"));
+            	if (System.getProperty(OOZIE_TEST_NAME_NODE) == null ||
+            			System.getProperty(OOZIE_TEST_NAME_NODE).length() == 0) {
+	            	MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf);
+	                dfsCluster = builder.build();
+	                FileSystem fileSystem = dfsCluster.getFileSystem();
+	                fileSystem.mkdirs(new Path("target/test-data"));
+	                fileSystem.mkdirs(new Path("target/test-data"+"/minicluster/mapred"));
+	                fileSystem.mkdirs(new Path("/user"));
+	                fileSystem.mkdirs(new Path("/tmp"));
+	                fileSystem.mkdirs(new Path("/hadoop/mapred/system"));
+	                fileSystem.setPermission(new Path("target/test-data"), FsPermission.valueOf("-rwxrwxrwx"));
+	                fileSystem.setPermission(new Path("target/test-data"+"/minicluster"), FsPermission.valueOf("-rwxrwxrwx"));
+	                fileSystem.setPermission(new Path("target/test-data"+"/minicluster/mapred"), FsPermission.valueOf("-rwxrwxrwx"));
+	                fileSystem.setPermission(new Path("/user"), FsPermission.valueOf("-rwxrwxrwx"));
+	                fileSystem.setPermission(new Path("/tmp"), FsPermission.valueOf("-rwxrwxrwx"));
+	                fileSystem.setPermission(new Path("/hadoop/mapred/system"), FsPermission.valueOf("-rwx------"));
+            	} else {
+            		conf.set("fs.defaultFS", System.getProperty(OOZIE_TEST_NAME_NODE));
+            	}
+            	
+            	if (System.getProperty(OOZIE_TEST_JOB_TRACKER) == null ||
+            			System.getProperty(OOZIE_TEST_JOB_TRACKER).length() == 0) {
+            		mrCluster = new XMiniMRClientCluster(conf);
+            		/* Clean up the dir */
+                	delete(new File("target/test-data/minicluster/mapred"));
+            		
+            	} else {
+            		try {
+                        XTestCase parentObject = this;
+                        mrCluster = ugi.doAs(new PrivilegedExceptionAction<MiniMRClientCluster>() {
+                            public MiniMRClientCluster run() throws Exception {
+                                return MiniMRClientClusterFactory.create(parentObject.getClass(), 1, conf);
+                            }
+                        });
+                    }
+                    catch (InterruptedException ex) {
+                        throw new HadoopAccessorException(ErrorCode.E0902, ex.getMessage(), ex);
+                    }
+                    catch (IOException ex) {
+                        throw new HadoopAccessorException(ErrorCode.E0902, ex.getMessage(), ex);
+                    }
 
-                mrCluster = MiniMRClientClusterFactory.create(this.getClass(), 1, conf);
-                Configuration jobConf = mrCluster.getConfig();
-                System.setProperty(OOZIE_TEST_JOB_TRACKER, jobConf.get("mapreduce.jobtracker.address"));
-                String rmAddress = jobConf.get("yarn.resourcemanager.address");
-                log.info("Job tracker: " + rmAddress);
-                if (rmAddress != null) {
-                    System.setProperty(OOZIE_TEST_JOB_TRACKER, rmAddress);
-                }
-                System.setProperty(OOZIE_TEST_NAME_NODE, jobConf.get("fs.defaultFS"));
+                    Configuration jobConf = mrCluster.getConfig();
+                    System.setProperty(OOZIE_TEST_JOB_TRACKER, jobConf.get("mapreduce.jobtracker.address"));
+                    String rmAddress = jobConf.get("yarn.resourcemanager.address");
+                    log.info("Job tracker: " + rmAddress);
+                    if (rmAddress != null) {
+                        System.setProperty(OOZIE_TEST_JOB_TRACKER, rmAddress);
+                    }
+                    System.setProperty(OOZIE_TEST_NAME_NODE, jobConf.get("fs.defaultFS"));
+            	}
+            	
                 ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
             }
             catch (Exception ex) {
@@ -720,6 +752,12 @@ public abstract class XTestCase extends TestCase {
       conf.set("hadoop.proxyuser." + getOozieUser() + ".groups", getTestGroup());
       conf.set("mapred.tasktracker.map.tasks.maximum", "4");
       conf.set("mapred.tasktracker.reduce.tasks.maximum", "4");
+      
+      if (System.getProperty(OOZIE_TEST_JOB_TRACKER) == null ||
+  			System.getProperty(OOZIE_TEST_JOB_TRACKER).length() == 0) {
+    	  /* In case of the remote job tracker is not set, use the local MapReduce */
+    	  conf.set("mapreduce.framework.name", "xlocal");
+      }
 
       conf.set("hadoop.tmp.dir", "target/test-data"+"/minicluster");
 

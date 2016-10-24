@@ -1,6 +1,5 @@
 package etl.cmd;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -54,6 +53,8 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public static final String cfgkey_file_limit ="file.limit";
 	public static final String cfgkey_names_only="sftp.names.only";
 	public static final String paramkey_src_file="src.file";
+
+	public static final String separator = "/";
 	
 
 	private String incomingFolder;
@@ -143,8 +144,8 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 			sftpChannel = (ChannelSftp) channel;
 			boolean workflag=true;
 			for (String fromDir:fromDirs){
-				if (!fromDir.endsWith(File.separator)){
-					fromDir += File.separator;
+				if (!fromDir.endsWith(separator)){
+					fromDir += separator;
 				}
 				logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
 				sftpChannel.cd(fromDir);
