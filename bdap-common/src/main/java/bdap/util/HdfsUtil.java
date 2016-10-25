@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -37,6 +38,25 @@ public class HdfsUtil {
 		}
 	}
 	
+	public static boolean writeDfsFile(FileSystem fs, String path, byte[] content){
+		FSDataOutputStream out = null;
+		try {
+			out = fs.create(new Path(path), true);
+			out.write(content);
+		}catch(Exception e){
+			logger.error("",e);
+			return false;
+		}finally{
+			if (out!=null){
+				try {
+					out.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
+		}
+		return true;
+	}
 	public static int writeDfsFile(FileSystem fs, String fileName, Iterable<String> contents){
 		BufferedWriter osw = null;
 		try {

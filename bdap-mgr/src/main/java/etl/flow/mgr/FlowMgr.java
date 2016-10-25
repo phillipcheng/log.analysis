@@ -31,6 +31,9 @@ public abstract class FlowMgr {
 		return propertyFiles;
 	}
 	
+	public InMemFile genEnginePropertyFile(EngineConf ec){
+		return new InMemFile(FileType.engineProperty, EngineConf.file_name, ec.getContent());
+	}
 	/**
 	 * update helper jars
 	 * @param files

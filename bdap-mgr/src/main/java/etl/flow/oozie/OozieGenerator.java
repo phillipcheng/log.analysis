@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 import bdap.util.CmdDef;
 import bdap.util.CmdDefMgr;
 import bdap.util.EngineConf;
-
+import bdap.util.XmlUtil;
 import etl.flow.ActionNode;
 import etl.flow.Data;
 import etl.flow.EndNode;
@@ -287,12 +287,12 @@ public class OozieGenerator {
 		}
 		boolean useFork = false;
 		ACTION fromAction=null;
-		FORK fromFork=null;
+		FORK forkNode=null;
 		if (fromNode.getOutletNum()>1){
 			useFork=true;
 			String forkName = getForkNodeName(ln.getFromNodeName());
-			fromFork = getForkNode(wfa, forkName);
-			if (fromFork == null){
+			forkNode = getForkNode(wfa, forkName);
+			if (forkNode == null){
 				logger.error(String.format("fork node:%s not found.", forkName));
 				return false;
 			}
@@ -321,7 +321,7 @@ public class OozieGenerator {
 		if (useFork){
 			FORKTRANSITION ft = new FORKTRANSITION();
 			ft.setStart(nextNodeName);
-			fromFork.getPath().add(ft);
+			forkNode.getPath().add(ft);
 		}else{
 			ACTIONTRANSITION at = new ACTIONTRANSITION();
 			at.setTo(nextNodeName);
@@ -380,11 +380,15 @@ public class OozieGenerator {
 		
 		Set<Node> curNodes = new HashSet<Node>();
 		curNodes.add(startToNode);
+		Set<String> visited = new HashSet<String>();
 		while(curNodes!=null && curNodes.size()>0){
 			Set<Node> nextNodes = new HashSet<Node>();
+			logger.info(String.format("cur nodes:%s", curNodes));
 			for (Node node: curNodes){
+				logger.error(String.format("visit node:%s", node));
 				ACTION act = new ACTION();
 				act.setName(node.getName());
+				visited.add(node.getName());
 				//gen node
 				if (node instanceof ActionNode){
 					ActionNode an = (ActionNode)node;
@@ -411,12 +415,17 @@ public class OozieGenerator {
 						ACTIONTRANSITION at = new ACTIONTRANSITION();
 						at.setTo(forkNodeName);
 						act.setOk(at);
+						act.setError(errorTransition);
 					}
 					//
 					for (Link ln:nls){
 						//gen link
 						genLink(wfa, flow, ln);
-						nextNodes.add(flow.getNode(ln.getToNodeName()));
+						
+						if (!visited.contains(ln.getToNodeName()) && !curNodes.contains(flow.getNode(ln.getToNodeName()))){
+							logger.info(String.format("visited:%s, add toNode:%s", visited, ln.getToNodeName()));
+							nextNodes.add(flow.getNode(ln.getToNodeName()));
+						}
 					}
 				}
 			}

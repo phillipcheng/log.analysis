@@ -16,7 +16,7 @@ public class TestFileNameUpdateCmd extends TestETLCmd{
 	
 	private static final String cmdClassName = "etl.cmd.FileNameUpdateCmd";
 
-	//@Test
+	@Test
 	public void testsgProcess() {
 		String staticCfgName = "conf.properties";
 		String wfid="wfid1";

@@ -28,6 +28,10 @@ public class Node{
 		this.outletNum = outletNum;
 	}
 	
+	public String toString(){
+		return String.format("%s,%d,%d", name, inletNum, outletNum);
+	}
+	
 	@Override
 	public boolean equals(Object obj){
 		if (!(obj instanceof Node)){

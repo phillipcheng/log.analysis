@@ -4,20 +4,20 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * 
- * @author ximing
- *
- */
+
 public class RequestUtil {
+	public static final Logger logger = LogManager.getLogger(RequestUtil.class);
 	
 	private static RestTemplate getRestTemplate(String proxyHost, int proxyPort) {
 		RestTemplate restTemplate = new RestTemplate();
@@ -32,6 +32,10 @@ public class RequestUtil {
 		return restTemplate;
 	}
 
+	public static String post(String url, Map<String, String> headMap, String body) {
+		return post(url, null, 0, headMap, body);
+	}
+	
 	public static String post(String url,String proxyHost, int proxyPort, Map<String, String> headMap,
 			String body) {
 		HttpHeaders headers = new HttpHeaders();
@@ -45,9 +49,14 @@ public class RequestUtil {
 		}
 		RestTemplate restTemplate = getRestTemplate(proxyHost,  proxyPort);
 		HttpEntity<String> formEntity = new HttpEntity<String>(body, headers);
-		String result = restTemplate.postForObject(url, formEntity,
-				String.class);
-		return result;
+		try {
+			String result = restTemplate.postForObject(url, formEntity,
+					String.class);
+			return result;
+		}catch(RestClientException e){
+			logger.error(String.format("url:%s\n, header:%s\n, body:%s", url, headMap, body), e);
+			return null;
+		}
 	}
 
 	public static String get(String url, String proxyHost, int proxyPort, Map<String, String> headMap) {

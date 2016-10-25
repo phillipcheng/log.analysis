@@ -75,4 +75,13 @@ public class XmlUtil {
 			return null;
 		}
 	}
+	
+	public static <T> String marshalToString(T object, String qname){
+		byte[] content = marshalToBytes(object, qname);
+		if (content!=null){
+			return new String(content);
+		}else{
+			return null;
+		}
+	}
 }
