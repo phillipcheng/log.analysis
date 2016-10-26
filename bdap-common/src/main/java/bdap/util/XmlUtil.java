@@ -1,6 +1,8 @@
 package bdap.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -55,6 +57,31 @@ public class XmlUtil {
 			jaxbMarshaller.marshal(root, file);
 		} catch (JAXBException e) {
 			logger.error("", e);
+		}
+	}
+	
+	public static <T> byte[] marshalToBytes(T object, String qname){
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance(object.getClass());
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			QName qName = new QName(qname);
+		    JAXBElement<T> root = new JAXBElement<T>(qName, (Class<T>) object.getClass(), object);
+		    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			jaxbMarshaller.marshal(root, outputStream);
+			return outputStream.toByteArray();
+		} catch (JAXBException e) {
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	public static <T> String marshalToString(T object, String qname){
+		byte[] content = marshalToBytes(object, qname);
+		if (content!=null){
+			return new String(content);
+		}else{
+			return null;
 		}
 	}
 }

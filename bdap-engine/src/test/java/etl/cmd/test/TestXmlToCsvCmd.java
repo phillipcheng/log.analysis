@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
-import etl.util.HdfsUtil;
+import bdap.util.HdfsUtil;
 import etl.util.Util;
 
 //log4j2

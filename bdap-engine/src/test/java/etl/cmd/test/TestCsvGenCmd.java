@@ -12,8 +12,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import bdap.util.HdfsUtil;
 import etl.cmd.CsvFileGenCmd;
-import etl.util.HdfsUtil;
 import etl.util.Util;
 
 

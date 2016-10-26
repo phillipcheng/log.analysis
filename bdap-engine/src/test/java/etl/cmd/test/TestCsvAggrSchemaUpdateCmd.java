@@ -11,12 +11,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
-import etl.util.HdfsUtil;
 import etl.util.Util;
 
 public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {

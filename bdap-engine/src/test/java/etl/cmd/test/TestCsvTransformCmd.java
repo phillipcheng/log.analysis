@@ -14,7 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import etl.util.HdfsUtil;
+import bdap.util.HdfsUtil;
 import etl.util.Util;
 
 public class TestCsvTransformCmd extends TestETLCmd {

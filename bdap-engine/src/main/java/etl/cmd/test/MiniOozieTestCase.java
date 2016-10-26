@@ -53,6 +53,14 @@ import org.apache.oozie.local.LocalOozie;
  * <code>
  * WorkflowJob wf = wc.getJobInfo(jobId);<p> assertNotNull(wf);<p> assertEquals(WorkflowJob.Status.PREP, wf.getStatus());
  * </code>
+ * 
+ * A typical system properties setup for running the case with remote HDFS and local MapReduce:
+ * 	oozie.test.hadoop.minicluster: true
+ *	oozie.test.user.oozie: dbadmin
+ *	oozie.test.user.test: dbadmin
+ *	oozie.test.group: supergroup
+ *	oozie.test.name.node: hdfs://127.0.0.1:19000
+ *	oozie.test.job.tracker: <-- Not set this or set to empty string
  */
 public abstract class MiniOozieTestCase extends XFsTestCase {
 
