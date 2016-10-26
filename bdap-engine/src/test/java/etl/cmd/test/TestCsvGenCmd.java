@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvFileGenCmd;
-import etl.util.Util;
 
 
 public class TestCsvGenCmd extends TestETLCmd {
@@ -28,20 +27,13 @@ public class TestCsvGenCmd extends TestETLCmd {
 	private void test1Fun() throws Exception {
 		try {
 			//
-			String remoteCfgFolder = "/test/csvgen/cfg/";
 			String remoteSchemaFolder = "/test/csvgen/schema/";
 			String staticCfg = "csvgen1.properties";
 			String schemaFile = "schema1.txt";
 			
-			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + schemaFile), new Path(remoteSchemaFolder + schemaFile));
 			
-			getFs().delete(new Path(remoteSchemaFolder), true);
-			getFs().mkdirs(new Path(remoteSchemaFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteSchemaFolder + schemaFile));
-			
-			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvFileGenCmd cmd = new CsvFileGenCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
 			
 			getFs().delete(new Path(cmd.getOutputFolder()), true);
 			getFs().mkdirs(new Path(cmd.getOutputFolder()));
@@ -59,6 +51,7 @@ public class TestCsvGenCmd extends TestETLCmd {
 			
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	

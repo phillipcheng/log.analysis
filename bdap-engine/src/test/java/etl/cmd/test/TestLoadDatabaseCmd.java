@@ -32,26 +32,20 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			String csvFileName = "MyCore_.csv";
 
 			String inputFolder = "/test/loadcsv/input/";
-			String dfsCfgFolder = "/test/loadcsv/cfg/";
-
 			String schemaFolder="/test/loadcsv/schema/";
 			
 			//generate all the data files
 			getFs().delete(new Path(inputFolder), true);
-			getFs().delete(new Path(dfsCfgFolder), true);
 			getFs().delete(new Path(schemaFolder), true);
 			//
 			getFs().mkdirs(new Path(inputFolder));
-			getFs().mkdirs(new Path(dfsCfgFolder));
 			getFs().mkdirs(new Path(schemaFolder));
-			//copy static cfg
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			//copy schema file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
 			//copy csv file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(inputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
 			//run cmd
-			LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
 			
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
@@ -75,6 +69,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			
 		} catch (Exception e) {
 			logger.error("Exception occured due to invalid data-history path", e);
+			assertTrue(false);
 		}
 	}
 
@@ -102,20 +97,14 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			String[] csvFileNames = new String[]{"MyCore_.csv", "MyCore1_.csv"};
 
 			String inputFolder = "/test/loadcsv/input/";
-			String dfsCfgFolder = "/test/loadcsv/cfg/";
-
 			String schemaFolder="/test/loadcsv/schema/";
 			
 			//generate all the data files
 			getFs().delete(new Path(inputFolder), true);
-			getFs().delete(new Path(dfsCfgFolder), true);
 			getFs().delete(new Path(schemaFolder), true);
 			//
 			getFs().mkdirs(new Path(inputFolder));
-			getFs().mkdirs(new Path(dfsCfgFolder));
 			getFs().mkdirs(new Path(schemaFolder));
-			//copy static cfg
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			//copy schema file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
 			//copy csv file
@@ -123,7 +112,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(inputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
 			}
 			//run cmd
-			LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> sqls = cmd.getCopysqls();
@@ -156,6 +145,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 			
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 

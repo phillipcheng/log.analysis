@@ -25,15 +25,15 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		return "csvtrans/";
 	}
 	
-	private void testFileNameRowValidationSkipHeaderFun() throws Exception {
+	@Test
+	public void testFileNameRowValidationSkipHeaderFun() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvtransform/";
 			String remoteCsvOutputFolder = "/etltest/csvtransformout/";
 			String csvtransProp = "csvtrans.properties";
 			String[] csvFiles = new String[] {"PJ24002A_BBG2.csv"};
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			
 			// assertion
@@ -51,30 +51,14 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testFileNameRowValidationSkipHeader() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			testFileNameRowValidationSkipHeaderFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testFileNameRowValidationSkipHeaderFun();
-					return null;
-				}
-			});
-		}
-	}
-	
-
-	private void testSplitColFun() throws Exception {
+	public void testSplitCol() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvtransform/";
 			String remoteCsvOutputFolder = "/etltest/csvtransformout/";
 			String csvtransProp = "csvtrans3.properties";
 			String csvFile = "csvtrans2.csv";
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+			List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
 					testCmdClass, false);
 			logger.info("Output is:"+output);
 			assertTrue(output.size() > 0);
@@ -87,30 +71,16 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			logger.error("", e);
 		}
 	}
-	@Test
-	public void testSplitCol() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			testSplitColFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testSplitColFun();
-					return null;
-				}
-			});
-		}
-	}
 	
-	private void testUpdateColFun() throws Exception {
+	@Test
+	public void testUpdateCol() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvtransform/";
 			String remoteCsvOutputFolder = "/etltest/csvtransformout/";
 			String csvtransProp = "csvtrans2.properties";
 			String csvFile = "csvtrans2.csv";
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+			List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
 					testCmdClass, false);
 			logger.info("Output is:"+output);
 			assertTrue(output.size() > 0);
@@ -128,29 +98,14 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testUpdateCol() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			testUpdateColFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testUpdateColFun();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void testJsCallJavaFun() throws Exception {
+	public void testJsCallJava() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvtransform/";
 			String remoteCsvOutputFolder = "/etltest/csvtransformout/";
 			String csvtransProp = "csvtrans.telecom.properties";
 			String csvFile = "telecom.csv";
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+			List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
 					testCmdClass, false);
 			logger.info("Output is:"+output);
 			String row1 = output.get(0);
@@ -165,23 +120,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testJsCallJava() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			testJsCallJavaFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testJsCallJavaFun();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void testDynTransFun() throws Exception {
+	public void testDynTrans() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/csvdyntrans/cfg/";
 			String remoteCsvFolder = "/etltest/csvdyntrans/input/";
 			String remoteCsvOutputFolder = "/etltest/csvdyntrans/output/";
 			String csvtransProp = "csvtransdyn1.properties";
@@ -195,7 +135,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 			getFs().mkdirs(new Path(schemaFolder));
 			getFs().copyFromLocalFile(new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 			
-			List<String> output = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+			List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
 					testCmdClass, false);
 			logger.info("Output is:"+output);
 			String row1 = output.get(0);
@@ -207,29 +147,14 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testDynTrans() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			testDynTransFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testDynTransFun();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void transformMultipleFiles() throws Exception {
+	public void transformMultipleFiles() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/csvtrans/cfg/";
 			String remoteCsvInputFolder = "/etltest/csvtrans/input/";
 			String remoteCsvOutputFolder = "/etltest/csvtrans/output/";
 			String csvtransProp = "csvtrans.multiplefiles.properties";
 			String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
 			
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mrTest(remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			//assert
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -250,29 +175,14 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testTransformMultipleFiles() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			transformMultipleFiles();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					transformMultipleFiles();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void emptyEndings() throws Exception {
+	public void emptyEndings() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/csvtrans/cfg/";
 			String remoteCsvInputFolder = "/etltest/csvtrans/input/";
 			String remoteCsvOutputFolder = "/etltest/csvtrans/output/";
 			String csvtransProp = "csvtrans.multiplefiles.properties";
 			String[] csvFiles = new String[]{"MME_PoolType_vlr_"};
 			
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mrTest(remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			//assert
 			List<String> input = HdfsUtil.stringsFromDfsFile(super.getFs(), remoteCsvInputFolder+csvFiles[0]);
@@ -298,29 +208,14 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testEmptyEndings() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			emptyEndings();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					emptyEndings();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void transformToSingleFile() throws Exception {
+	public void transformToSingleFile() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/csvtrans/cfg/";
 			String remoteCsvInputFolder = "/etltest/csvtrans/input/";
 			String remoteCsvOutputFolder = "/etltest/csvtrans/output/";
 			String csvtransProp = "csvtrans.tosinglefile.properties";
 			String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
 			
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mrTest(remoteCsvInputFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			//assert
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -330,21 +225,6 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		} catch (Exception e) {
 			logger.error("", e);
 			assertTrue(false);
-		}
-	}
-	
-	@Test
-	public void testTransformToSingleFile() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			transformToSingleFile();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					transformToSingleFile();
-					return null;
-				}
-			});
 		}
 	}
 }

@@ -35,13 +35,11 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void test1() throws Exception {
-		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		// values in the static cfg
 		String fileName = "backup_test1_data";
 		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
 		String ftpFolder = cmd.getFromDirs()[0];
 		String incomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(incomingFolder), true);
@@ -65,11 +63,9 @@ public class TestSftpCmd extends TestETLCmd {
 	public void testSftpSessionConnectionFailure() throws Exception {
 		logger.info("Testing sftpcmd common failure test case");
 		String fileName = "backup_test1_data";
-		String dfsFolder = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsFolder + cfg));
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsFolder + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
 		cmd.setHost("192.168.12.13");
 		cmd.setSftpConnectRetryWait(5*1000);
 		cmd.setSftpConnectRetryCount(2);
@@ -86,13 +82,11 @@ public class TestSftpCmd extends TestETLCmd {
 	public void testDeleteFileNotEnabledFun() throws Exception{
 		logger.info("Testing sftpcmd delete not enabled test case");
 
-		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_test.properties";
 		// values in the static cfg
 		String fileName = "backup_test1_data";
 		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
 		String ftpFolder = cmd.getFromDirs()[0];
 		String incomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(incomingFolder), true);
@@ -117,11 +111,9 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void testFileFilter() throws Exception {
-		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_selectfile.properties";
 		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
 		String ftpFolder = cmd.getFromDirs()[0];
 		String incomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(incomingFolder), true);
@@ -138,13 +130,11 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void testMultiFolders() throws Exception {
-		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_multiple_dirs.properties";
 		String fileName0 = "RTDB_ACCESS.friday";
 		String fileName1 = "RTDB_ACCESS.monday";
 		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
 		String ftpFolder = StringUtil.commonPath(cmd.getFromDirs());
 		String incomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(incomingFolder), true);
@@ -163,11 +153,9 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Test
 	public void testLimitFiles() throws Exception {
-		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_limit.properties";
 		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
 		
 		String dfsIncomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(dfsIncomingFolder), true);
@@ -188,12 +176,9 @@ public class TestSftpCmd extends TestETLCmd {
 	//you need to manually mkdir cmd.getFromDirs
 	@Test
 	public void fileNamesOnly() throws Exception {
-		if (!super.isTestSftp()) return;
-		String dfsCfg = "/test/sftpcmd/cfg/";
 		String cfg = "sftp_filenames.properties";
 		
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + cfg), new Path(dfsCfg + cfg));
-		SftpCmd cmd = new SftpCmd("wf1", null, dfsCfg + cfg, getDefaultFS(), null);
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
 		
 		String dfsIncomingFolder = cmd.getIncomingFolder();
 		getFs().delete(new Path(dfsIncomingFolder), true);

@@ -21,14 +21,8 @@ public class TestHdfsCmd extends TestETLCmd{
 		String wfName = "wfName";
 		String wfId = "wfid";
 		String cfg = "hdfscmd1.properties";
-		String dfsCfgFolder = "/test/hdfscmd/cfg/";
 		
-
-		getFs().delete(new Path(dfsCfgFolder), true);
-		getFs().mkdirs(new Path(dfsCfgFolder));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfgFolder + cfg));
-		
-		HdfsCmd cmd = new HdfsCmd(wfName, wfId, dfsCfgFolder + cfg, null, super.getDefaultFS(), null);
+		HdfsCmd cmd = new HdfsCmd(wfName, wfId, this.getResourceSubFolder() + cfg, null, super.getDefaultFS(), null);
 		String[] folders = cmd.getRmFolders();
 		for (String f:folders){
 			super.getFs().mkdirs(new Path(f));

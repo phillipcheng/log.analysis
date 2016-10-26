@@ -45,6 +45,7 @@ public class TestETLLog extends TestETLCmd {
 			assertTrue(msg.endsWith("0,,"));
 		}catch(Exception e){
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	@Test
@@ -60,6 +61,7 @@ public class TestETLLog extends TestETLCmd {
 			assertTrue(msg.endsWith("0,,"));
 		}catch(Exception e){
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	@Test
@@ -73,6 +75,7 @@ public class TestETLLog extends TestETLCmd {
 			etllog.setEnd(ETLLog.ssdf.parse(endDate));
 		}catch(Exception e){
 			logger.error("", e);
+			assertTrue(false);
 		}
 			
 		etllog.setActionName(BackupCmd.class.getName());
@@ -96,6 +99,7 @@ public class TestETLLog extends TestETLCmd {
 			etllog.setEnd(ETLLog.ssdf.parse(endDate));
 		}catch(Exception e){
 			logger.error("", e);
+			assertTrue(false);
 		}
 		etllog.setActionName(BackupCmd.class.getName());
 		String str = etllog.toString();

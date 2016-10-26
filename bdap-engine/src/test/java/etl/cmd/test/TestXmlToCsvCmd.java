@@ -26,12 +26,12 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 		return "xmltocsv/";
 	}
 	
-	private void test1Fun() throws Exception{
+	@Test
+	public void test1() throws Exception{
 		try {
 			//
 			String inputFolder = "/test/xml2csv/input/";
 			String outputFolder = "/test/xml2csv/output/";
-			String dfsCfgFolder = "/test/xml2csv/cfg/";
 			String schemaFolder="/test/xml2csv/schema/";
 			
 			String staticCfgName = "xml2csv1.properties";
@@ -45,7 +45,7 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
 			
 			//run cmd
-			super.mrTest(dfsCfgFolder, inputFolder, outputFolder, staticCfgName, inputFiles, cmdClassName, true);
+			super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles, cmdClassName, true);
 			
 			//check results
 			//outputFolder should have the csv file
@@ -56,21 +56,5 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 		} catch (Exception e) {
 			logger.error("Exception occured ", e);
 		}
-	}
-	
-	@Test
-	public void test1() throws Exception{
-		if (getDefaultFS().contains("127.0.0.1")){
-			test1Fun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					test1Fun();
-					return null;
-				}
-			});
-		}
-		
 	}
 }

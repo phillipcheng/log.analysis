@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +15,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.security.UserGroupInformation;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,25 +22,21 @@ import org.junit.Test;
 
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
-import etl.engine.InvokeMapper;
-import etl.util.Util;
   
 public class TestEvtBasedMsgParseCmd extends TestETLCmd{
  	public static final Logger logger = LogManager.getLogger(TestEvtBasedMsgParseCmd.class);
  	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
  	
- 	private void test1Fun() throws IOException, InterruptedException{
+ 	@Test
+ 	public void test1() throws IOException, InterruptedException{
  		try{
- 			String remoteCfgFolder = "/etltest/cfg/";
  			String remoteCsvFolder = "/etltest/msgparse/";
  			String remoteCsvOutputFolder = "/etltest/msgparseout/";
  			String csvtransProp = "hlr.msgparse.singlecmd.properties";
  			String localExpectedFile = "expected_parsed_file";
  			String[] csvFiles = new String[]{"input.hlr1.txt"};
- 			getFs().mkdirs(new Path(remoteCfgFolder));
  			getFs().mkdirs(new Path(remoteCsvFolder));
  			getFs().delete(new Path(remoteCsvFolder), true);
- 			getFs().copyFromLocalFile(new Path(getLocalFolder()+csvtransProp), new Path(remoteCfgFolder+csvtransProp));
  			for (String csvFile:csvFiles){
  				getFs().copyFromLocalFile(new Path(getLocalFolder()+csvFile), new Path(remoteCsvFolder+csvFile));
  			}
@@ -50,7 +44,7 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
  			//run job
  			getConf().set(EngineConf.cfgkey_cmdclassname, "etl.cmd.EvtBasedMsgParseCmd");
  			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
- 			getConf().set(EngineConf.cfgkey_staticconfigfile, remoteCfgFolder+csvtransProp);
+ 			getConf().set(EngineConf.cfgkey_staticconfigfile, this.getResourceSubFolder()+csvtransProp);
  			Job job = Job.getInstance(getConf(), "testCsvTransformCmd");
  			job.setMapperClass(etl.engine.InvokeMapper.class);
  			job.setNumReduceTasks(0);//no reducer
@@ -80,22 +74,7 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
 		} catch (Exception e) {
  			logger.error("", e);
  		}
-	}
- 		
-	@Test
-	public void test1() throws Exception{
-		if (getDefaultFS().contains("127.0.0.1")){
-			test1Fun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					test1Fun();
-					return null;
-				}
-			});
-		}
-	}
+ 	}
 
 	@Override
 	public String getResourceSubFolder() {

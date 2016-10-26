@@ -2,10 +2,8 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
@@ -24,12 +22,12 @@ public class TestBackupCmd extends TestETLCmd{
 		return "backup/";
 	}
 	
-	private void test1Fun() throws Exception{
+	@Test
+	public void test1() throws Exception{
 		try {
 			String allFolder = "/test/BackupCmd/data/allFolder1/";
 			String wfidFolder = "/test/BackupCmd/data/wfidFolder1/";
 
-			String dfsCfgFolder = "/test/BackupCmd/cfg/";
 			String staticCfgName = "backup_test1_staticCfg.properties";
 			String wfName="wfid1";
 			String wfid="wfid1";
@@ -38,8 +36,6 @@ public class TestBackupCmd extends TestETLCmd{
 			String[] wfidFiles = new String[]{wfid+"/a", wfid+"/b", "a", wfid+"abcd"};
 
 			String localFile = "backup_test1_data";
-			//values should be in the configuration file
-			String dynKey = "dynFiles";
 			String historyFolder = "/test/datahistory/";
 			//generate all the data files
 			getFs().delete(new Path(allFolder), true);
@@ -51,11 +47,8 @@ public class TestBackupCmd extends TestETLCmd{
 			for (String wfidFile: wfidFiles){
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(wfidFolder + wfidFile));
 			}
-			//add the local conf file to dfs
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));			
-		
 			//run cmd
-			BackupCmd cmd = new BackupCmd(wfName, wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			BackupCmd cmd = new BackupCmd(wfName, wfid, getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
 			List<String> info = cmd.sgProcess();
 			int numFiles = Integer.parseInt(info.get(0));
 			logger.info(String.format("%d files backedup", numFiles));
@@ -74,21 +67,6 @@ public class TestBackupCmd extends TestETLCmd{
 			assertTrue(filecount==3);
 			} catch (Exception e) {
 			logger.error("Exception occured ", e);
-		}
-	}
-
-	@Test
-	public void test1() throws Exception{
-		if (getDefaultFS().contains("127.0.0.1")){
-			test1Fun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					test1Fun();
-					return null;
-				}
-			});
 		}
 	}
 }

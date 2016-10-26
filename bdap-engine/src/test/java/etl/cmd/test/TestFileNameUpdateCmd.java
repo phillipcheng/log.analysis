@@ -17,24 +17,17 @@ public class TestFileNameUpdateCmd extends TestETLCmd{
 	private static final String cmdClassName = "etl.cmd.FileNameUpdateCmd";
 
 	@Test
-	public void testsgProcess() {
+	public void testSgProcess() {
 		String staticCfgName = "conf.properties";
 		String wfid="wfid1";
-		String dfsCfgFolder = "/test/filenameupdate/cfg/";
 		String inputFolder = "/test/filenameupdate/input/";
 		String csvFileName1 = "BBTPNJ33-FDB-01-2_eFemto_MAPPING_FILE_SAMSUNG.csv";
 		String csvFileName2 = "BBTPNJ33-FDB-01-3_eFemto_MAPPING_FILE_SAMSUNG.csv";
 		
 		try {
 			
-			getFs().delete(new Path(dfsCfgFolder), true);
 			getFs().delete(new Path(inputFolder), true);
-			
-			getFs().mkdirs(new Path(dfsCfgFolder));
 			getFs().mkdirs(new Path(inputFolder));
-			
-			//copy static cfg
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));			
 			
 			//copy csv file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName1), new Path(inputFolder + csvFileName1));
@@ -45,7 +38,7 @@ public class TestFileNameUpdateCmd extends TestETLCmd{
 			getFs().setPermission(new Path(inputFolder + csvFileName2), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));
 			
 			
-			FileNameUpdateCmd fnucmd=new FileNameUpdateCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);			
+			FileNameUpdateCmd fnucmd=new FileNameUpdateCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);			
 			fnucmd.sgProcess();
 			
 			//result
@@ -61,10 +54,8 @@ public class TestFileNameUpdateCmd extends TestETLCmd{
 	}
 	
 	@Test
-	public void testmr() {
+	public void testMR() {
 		String staticCfgName = "conf.properties";
-		String wfid="wfid1";
-		String dfsCfgFolder = "/test/filenameupdate/cfg/";
 		String inputFolder = "/test/filenameupdate/input/";
 		String outputFolder = "/test/filenameupdate/output/";
 		String csvFileName1 = "BBTPNJ33-FDB-01-2_eFemto_MAPPING_FILE_SAMSUNG.csv";
@@ -76,16 +67,11 @@ public class TestFileNameUpdateCmd extends TestETLCmd{
 		
 		try {
 			
-			getFs().delete(new Path(dfsCfgFolder), true);
 			getFs().delete(new Path(inputFolder), true);
 			getFs().delete(new Path(outputFolder), true);
 			
-			getFs().mkdirs(new Path(dfsCfgFolder));
 			getFs().mkdirs(new Path(inputFolder));
 			getFs().mkdirs(new Path(outputFolder));
-			
-			//copy static cfg
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));			
 			
 			//copy csv file
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName1), new Path(inputFolder + csvFileName1));
@@ -95,7 +81,7 @@ public class TestFileNameUpdateCmd extends TestETLCmd{
 			getFs().setPermission(new Path(inputFolder + csvFileName1), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));
 			getFs().setPermission(new Path(inputFolder + csvFileName2), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));	
 			
-			super.mrTest(dfsCfgFolder, inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, true);
+			super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, true);
 			
 			//result
 			List<String> output = HdfsUtil.listDfsFile(getFs(), inputFolder);

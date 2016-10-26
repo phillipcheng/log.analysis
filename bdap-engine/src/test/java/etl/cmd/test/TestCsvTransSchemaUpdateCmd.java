@@ -1,6 +1,6 @@
 package etl.cmd.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
@@ -17,7 +17,6 @@ import etl.cmd.CsvTransformCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
-import etl.util.Util;
 
 public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvTransSchemaUpdateCmd.class);
@@ -29,23 +28,20 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 	private void test1Fun() throws Exception {
 		try {
 			//
-			String remoteCfgFolder = "/etltest/transschemaupdate/cfg/";
+			String schemaFolder = "/etltest/transschemaupdate/cfg/";
 			String staticCfg = "csvTransSchemaUpdate1.properties";
 			String schemaFile = "dynschema_test1_schemas.txt";
 			//
 			String remoteSqlFolder="/test/dynschemacmd/schemahistory/"; //since this is hard coded in the dynCfg
 			String createsqlFile = "createtables.sql_wfid1";
 			
-			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransformCmd cmd = new CsvTransformCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvTransformCmd cmd = new CsvTransformCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
 			List<String> createSqls = cmd.getCreateSqls();
 			DBUtil.executeSqls(createSqls, cmd.getPc());
 			cmd.sgProcess();
@@ -91,23 +87,20 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 	private void noUpdateFun() throws Exception {
 		try {
 			//
-			String remoteCfgFolder = "/etltest/transschemaupdate/cfg/";
+			String schemaFolder = "/etltest/transschemaupdate/cfg/";
 			String staticCfg = "csvTransSchemaUpdate2.properties";
 			String schemaFile = "dynschema_test2_schemas.txt";
 			//
 			String remoteSqlFolder="/test/dynschemacmd/schemahistory/"; //since this is hard coded in the dynCfg
 			String createsqlFile = "createtables.sql_wfid1";
 			
-			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvTransformCmd cmd = new CsvTransformCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvTransformCmd cmd = new CsvTransformCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
