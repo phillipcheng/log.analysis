@@ -23,10 +23,10 @@
     "exe.type" : "mr",
     "input.format" : "line",
     "sftp.clean" : "false",
-    "sftp.host" : "127.0.0.1",
+    "sftp.host" : "192.85.247.104",
     "sftp.port" : "22",
-    "sftp.user" : "chengyi",
-    "sftp.pass" : "891605"
+    "sftp.user" : "dbadmin",
+    "sftp.pass" : "password"
   }, {
     "@class" : "action",
     "name" : "data1trans",
@@ -47,15 +47,16 @@
     "cmd.class" : "etl.cmd.CsvMergeCmd",
     "exe.type" : "mr",
     "input.format" : "File",
-    "src.files" : "'/flow/data1csv/'+WFID+'/*','/pde/data2/'+WFID+'/*'",
+    "src.files" : "'/flow1/data1csv/'+WFID+'/*','/flow1/data2/'+WFID+'/*'",
     "src.keys" : "1,0",
     "src.skipHeader" : "false, true",
     "join.type" : "inner",
-    "ret.value" : "csv0.concat('\\,').concat(table1[1]).concat('\\,').concat(table[2]).concat('\\,').concat(table[3]).concat('\\,').concat(table[4])"
+    "ret.value" : "csv0.concat('\\,').concat(table1[1]).concat('\\,').concat(table1[2]).concat('\\,').concat(table1[3]).concat('\\,').concat(table1[4])"
   }],
   "links" : [ {
     "fromNodeName" : "start",
     "toNodeName" : "sftp",
+    "dataName" : "sftpcfg",
     "fromActionDataOutletIdx" : 0,
     "toActionDataInletIdx" : 0,
     "linkType" : "success"
@@ -83,11 +84,16 @@
   }, {
     "fromNodeName" : "mergecsv",
     "toNodeName" : "end",
+    "dataName" : "mergecsv",
     "fromActionDataOutletIdx" : 0,
     "toActionDataInletIdx" : 0,
     "linkType" : "success"
   } ],
   "data" : [ {
+    "name" : "sftpcfg",
+    "location" : "/flow1/sftpcfg/test1.sftp.map.properties",
+    "instance" : "false"
+  },{
     "name" : "data1",
     "location" : "/flow1/data1/"
   }, {

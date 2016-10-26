@@ -23,7 +23,7 @@ public abstract class FlowMgr {
 		for (Node n: flow.getNodes()){
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
-				String propFileName = String.format("%s_action_%s.properties", flow.getName(), an.getName());
+				String propFileName = String.format("action_%s.properties", an.getName());
 				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getUserProperties());
 				propertyFiles.add(new InMemFile(FileType.actionProperty, propFileName, bytes));
 			}
@@ -31,6 +31,9 @@ public abstract class FlowMgr {
 		return propertyFiles;
 	}
 	
+	public InMemFile genEnginePropertyFile(EngineConf ec){
+		return new InMemFile(FileType.engineProperty, EngineConf.file_name, ec.getContent());
+	}
 	/**
 	 * update helper jars
 	 * @param files

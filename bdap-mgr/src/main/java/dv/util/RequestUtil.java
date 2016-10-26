@@ -2,22 +2,27 @@ package dv.util;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * 
- * @author ximing
- *
- */
+
 public class RequestUtil {
+	public static final Logger logger = LogManager.getLogger(RequestUtil.class);
 	
 	private static RestTemplate getRestTemplate(String proxyHost, int proxyPort) {
 		RestTemplate restTemplate = new RestTemplate();
@@ -32,22 +37,47 @@ public class RequestUtil {
 		return restTemplate;
 	}
 
-	public static String post(String url,String proxyHost, int proxyPort, Map<String, String> headMap,
-			String body) {
+	public static String post(String url, Map<String, String> bodyHeaderMap, String body) {
+		return post(url, null, 0, bodyHeaderMap, body);
+	}
+	
+	public static String post(String url,String proxyHost, int proxyPort, 
+			Map<String, String> bodyHeaderMap, String body) {
+		return post(url, proxyHost, proxyPort, null, bodyHeaderMap, body);
+	}
+	
+	public static String post(String url,String proxyHost, int proxyPort, Map<String, String> queryParamMap, 
+			Map<String, String> bodyHeaderMap, String body) {
+		List<BasicNameValuePair> nvpl = new ArrayList<BasicNameValuePair>();
+		for (String key: queryParamMap.keySet()){
+			String value = queryParamMap.get(key);
+			nvpl.add(new BasicNameValuePair(key, value));
+		}
+		String params = URLEncodedUtils.format(nvpl, Charset.defaultCharset());
+		String postUrl = url;
+		if (queryParamMap!=null){
+			postUrl = String.format("%s?%s", url, params);
+		}
 		HttpHeaders headers = new HttpHeaders();
 		MediaType type = MediaType.parseMediaType("application/xml; charset=UTF-8");
 		headers.setContentType(type);
 		headers.add("Accept", MediaType.APPLICATION_XML_VALUE.toString());
-		if (headMap != null) {
-			for (String key : headMap.keySet()) {
-				headers.add(key, headMap.get(key));
+		if (bodyHeaderMap != null) {
+			for (String key : bodyHeaderMap.keySet()) {
+				headers.add(key, bodyHeaderMap.get(key));
 			}
 		}
 		RestTemplate restTemplate = getRestTemplate(proxyHost,  proxyPort);
 		HttpEntity<String> formEntity = new HttpEntity<String>(body, headers);
-		String result = restTemplate.postForObject(url, formEntity,
-				String.class);
-		return result;
+		try {
+			logger.info(String.format("post-url:%s\n, header:%s\n, body:%s", postUrl, bodyHeaderMap, body));
+			String result = restTemplate.postForObject(postUrl, formEntity,
+					String.class);
+			return result;
+		}catch(RestClientException e){
+			logger.error(String.format("url:%s\n, header:%s\n, body:%s", postUrl, bodyHeaderMap, body), e);
+			return null;
+		}
 	}
 
 	public static String get(String url, String proxyHost, int proxyPort, Map<String, String> headMap) {
