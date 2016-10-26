@@ -1,0 +1,89 @@
+==submit a job
+Request:
+
+POST /oozie/v1/jobs
+Content-Type: application/xml;charset=UTF-8
+.
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property>
+        <name>user.name</name>
+        <value>bansalm</value>
+    </property>
+    <property>
+        <name>oozie.wf.application.path</name>
+        <value>hdfs://foo:8020/user/bansalm/myapp/</value>
+    </property>
+    ...
+</configuration>
+Response:
+
+HTTP/1.1 201 CREATED
+Content-Type: application/json;charset=UTF-8
+.
+{
+  id: "job-3"
+}
+A created job will be in PREP status. If the query string parameter 'action=start' is provided in the POST URL, the job will be started immediately and its status will be RUNNING .
+
+===
+
+Managing a Job
+
+A HTTP PUT request starts, suspends, resumes, kills, update or dryruns a job.
+
+Request:
+
+PUT /oozie/v1/job/job-3?action=start
+Response:
+
+HTTP/1.1 200 OK
+Valid values for the 'action' parameter are 'start', 'suspend', 'resume', 'kill', 'dryrun', 'rerun', and 'change'.
+
+===
+Job Information
+
+A HTTP GET request retrieves the job information.
+
+Request:
+
+GET /oozie/v1/job/job-3?show=info&timezone=GMT
+Response for a workflow job:
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{ 
+  id: "0-200905191240-oozie-W",
+  appName: "indexer-workflow",
+  appPath: "hdfs://user/bansalm/indexer.wf",
+  externalId: "0-200905191230-oozie-pepe",
+  user: "bansalm",
+  status: "RUNNING",
+  conf: "<configuration> ... </configuration>",
+  createdTime: "Thu, 01 Jan 2009 00:00:00 GMT",
+  startTime: "Fri, 02 Jan 2009 00:00:00 GMT",
+  endTime: null,
+  run: 0,
+  actions: [
+    {
+      id: "0-200905191240-oozie-W@indexer",
+      name: "indexer",
+      type: "map-reduce",
+      conf: "<configuration> ...</configuration>",
+      startTime: "Thu, 01 Jan 2009 00:00:00 GMT",
+      endTime: "Fri, 02 Jan 2009 00:00:00 GMT",
+      status: "OK",
+      externalId: "job-123-200903101010",
+      externalStatus: "SUCCEEDED",
+      trackerUri: "foo:8021",
+      consoleUrl: "http://foo:50040/jobdetailshistory.jsp?jobId=...",
+      transition: "reporter",
+      data: null,
+      errorCode: null,
+      errorMessage: null,
+      retries: 0
+    },
+    ...
+  ]
+}

@@ -20,9 +20,9 @@ import org.junit.Test;
 
 import bdap.util.EngineConf;
 import etl.cmd.ShellCmd;
+import etl.engine.EngineUtil;
 import etl.engine.InvokeMapper;
 import etl.util.OSType;
-import etl.util.DfsPropertiesUtil;
 import etl.util.SystemUtil;
 
 public class TestShellCmd extends TestETLCmd {
@@ -53,7 +53,7 @@ public class TestShellCmd extends TestETLCmd {
 			getFs().delete(new Path(remoteOutputFolder), true);
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));
 			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteCfgFolder+inputFile));
-			PropertiesConfiguration pc = DfsPropertiesUtil.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
+			PropertiesConfiguration pc = EngineUtil.getInstance().getMergedPC(remoteCfgFolder + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
 			FileUtils.deleteDirectory(destDir); 
@@ -108,7 +108,7 @@ public class TestShellCmd extends TestETLCmd {
 				executableFile = "copyfile.sh";
 				executableDir = "/tmp";
 			}
-			PropertiesConfiguration pc = DfsPropertiesUtil.getMergedPCFromDfs(getFs(), remoteCfgFolder + shellProp);
+			PropertiesConfiguration pc = EngineUtil.getInstance().getMergedPC(remoteCfgFolder + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
 			FileUtils.deleteDirectory(destDir); 

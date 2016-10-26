@@ -1,5 +1,6 @@
 package bdap.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -20,10 +21,14 @@ public class EngineConf {
 	public static final String cfgkey_kafka_enabled="kafka.enabled";
 	
 	public static final String cfgkey_db_type="db.type";
+		public static final String value_db_none="none";
+		public static final String value_db_vertica="vertica";
+		public static final String value_db_hive="hive";
 	public static final String cfgkey_db_driver="db.driver";
 	public static final String cfgkey_db_url="db.url";
 	public static final String cfgkey_db_user="db.user";
 	public static final String cfgkey_db_password="db.password";
+	
 	
 	public static final String cfgkey_hdfs_webhdfs_root="hdfs.webhdfs.root";
 	
@@ -42,6 +47,7 @@ public class EngineConf {
 	
 	
 	public EngineConf(){
+		conf = new PropertiesConfiguration();
 	}
 	
 	public EngineConf(String file){
@@ -70,7 +76,21 @@ public class EngineConf {
 		}
 	}
 	
+	public byte[] getContent(){
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		try {
+			conf.save(outputStream);
+			return outputStream.toByteArray();
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
 	public String getDefaultFs(){
 		return conf.getString(cfgkey_defaultFs);
+	}
+	public void addProperty(String key, String value){
+		conf.addProperty(key, value);
 	}
 }
