@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.fs.FileSystem;
-
+import org.apache.hadoop.fs.Path;
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.XmlUtil;
@@ -38,8 +38,13 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	public String genWfXmlFile(Flow flow){
-		WORKFLOWAPP wfa = OozieGenerator.genWfXml(flow, null, false);
-		return XmlUtil.marshalToString(wfa, "wf:workflow-app");
+		return genWfXmlFile(flow, null, false);
+	}
+	
+	public String genWfXmlFile(Flow flow, String startNode, boolean useInstanceId){
+		WORKFLOWAPP wfa = OozieGenerator.genWfXml(flow, startNode, useInstanceId);
+		String flowXml = XmlUtil.marshalToString(wfa, "workflow-app");
+		return flowXml.replace("xmlns:ns5=", "xmlns=");
 	}
 	
 	private InMemFile genWfXml(Flow flow, String startNode, boolean useInstanceId){
@@ -50,9 +55,8 @@ public class OozieFlowMgr extends FlowMgr{
 			wfFileName = String.format("%s_%s_workflow.xml", flow.getName(), startNode);
 		}
 		//gen flow_workflow.xml and flow_actionX.properties
-		WORKFLOWAPP wfa = OozieGenerator.genWfXml(flow, startNode, useInstanceId);
-		byte[] bytes = XmlUtil.marshalToBytes(wfa, "wf:workflow-app");
-		return new InMemFile(FileType.oozieWfXml, wfFileName, bytes);
+		String flowXml = genWfXmlFile(flow, startNode, useInstanceId);
+		return new InMemFile(FileType.oozieWfXml, wfFileName, flowXml.getBytes());
 	}
 	
 	private InMemFile genCoordXml(Flow flow){
@@ -116,6 +120,11 @@ public class OozieFlowMgr extends FlowMgr{
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+		try {
+			fs.delete(new Path(String.format("/user/%s/%s", oc.getUserName(), projectName)), true);
+		}catch(Exception e){
+			logger.error("", e);
+		}
 		for (InMemFile im:imFiles){
 			String dir = getDir(im.getFileType(), projectName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
@@ -123,11 +132,11 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 		//start the job
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
-		Map<String, String> headMap = new HashMap<String, String>();
-		headMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
+		Map<String, String> queryParamMap = new HashMap<String, String>();
+		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
 		bdap.xml.config.Configuration bodyConf = getBodyConf(oc, projectName, flow.getName());
 		String body = XmlUtil.marshalToString(bodyConf, "configuration");
-		RequestUtil.post(jobSumbitUrl, headMap, body);
+		RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
 		return newInstanceId;
 	}
 	

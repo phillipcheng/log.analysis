@@ -23,7 +23,7 @@ public abstract class FlowMgr {
 		for (Node n: flow.getNodes()){
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
-				String propFileName = String.format("%s_action_%s.properties", flow.getName(), an.getName());
+				String propFileName = String.format("action_%s.properties", an.getName());
 				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getUserProperties());
 				propertyFiles.add(new InMemFile(FileType.actionProperty, propFileName, bytes));
 			}

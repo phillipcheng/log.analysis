@@ -15,9 +15,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
+import bdap.util.SftpUtil;
 import etl.cmd.SftpCmd;
 import etl.engine.EngineUtil;
-import etl.util.SftpUtil;
 import etl.util.StringUtil;
 import serp.util.Strings;
 

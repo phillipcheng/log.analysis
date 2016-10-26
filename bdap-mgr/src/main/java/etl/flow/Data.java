@@ -6,6 +6,7 @@ public class Data {
 	
 	private String name;
 	private String location;//hdfs location
+	private boolean instance = true; //if instance is true, the input path is location/$wfid
 	
 	public Data(){
 	}
@@ -44,5 +45,13 @@ public class Data {
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	public boolean isInstance() {
+		return instance;
+	}
+
+	public void setInstance(boolean instance) {
+		this.instance = instance;
 	}
 }

@@ -3,7 +3,7 @@ oozie_user=dbadmin
 java_home=/usr/lib/jvm/java-1.8.0/
 
 #make lib
-$java_home/bin/jar -uf lib/preload-0.1.0-jar-with-dependencies.jar etlengine.properties
+$java_home/bin/jar -uf lib/bdap.engine-0.1.0.jar etlengine.properties
 
 #copy lib
 hdfs dfs -rm -r /user/$oozie_user/share/lib/preload/lib

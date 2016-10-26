@@ -6,12 +6,12 @@
 //
 
 @javax.xml.bind.annotation.XmlSchema(
-		namespace = "uri:oozie:workflow:0.5",
+		//namespace = "uri:oozie:workflow:0.5",
 		xmlns = { 
-				@javax.xml.bind.annotation.XmlNs(namespaceURI = "uri:oozie:workflow:0.5", prefix = "wf"),
 				@javax.xml.bind.annotation.XmlNs(namespaceURI = "http://www.w3.org/2001/XMLSchema-instance", prefix = "xsi"),
 				@javax.xml.bind.annotation.XmlNs(namespaceURI = "uri:oozie:shell-action:0.3", prefix = "shell"),
 				@javax.xml.bind.annotation.XmlNs(namespaceURI = "uri:oozie:ssh-action:0.2", prefix = "ssh"),
+				@javax.xml.bind.annotation.XmlNs(namespaceURI = "uri:oozie:workflow:0.5", prefix = ""),
 				
 		},
 		elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED

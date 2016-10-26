@@ -3,6 +3,7 @@ package etl.engine;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -13,6 +14,7 @@ import scala.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import bdap.util.PropertiesUtil;
 import etl.log.ETLLog;
 import etl.log.LogType;
 
@@ -158,6 +160,17 @@ public class EngineUtil {
 		}
 	}
 	
+	public PropertiesConfiguration getMergedPC(String conf){
+		PropertiesConfiguration cmdpc = PropertiesUtil.getPropertiesConfig(conf);//load from classpath
+		PropertiesConfiguration enginepc = getEngineProp();//load from classpath
+		Iterator<String> it = enginepc.getKeys();
+		while (it.hasNext()){
+			String key = it.next();
+			cmdpc.addProperty(key, enginepc.getProperty(key));
+		}
+		
+		return cmdpc;
+	}
 	
 	public ETLCmd[] getCmds(String strCmdClassNames, String strStaticConfigFiles, String wfName, String wfid, String defaultFs, 
 			String[] otherArgs, ProcessMode pm){

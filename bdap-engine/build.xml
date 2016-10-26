@@ -17,16 +17,17 @@
                 <include name="kafka-clients*.jar"/>
 				<include name="log4j-1.2.16.jar"/>
 				<include name="spark-core_*.jar"/>
+				<include name="spark-streaming-kafka*.jar"/>
 				<include name="scala-library-*.jar"/>
 				<include name="log4j-core-*.jar"/>
 				<include name="log4j-api-*.jar"/>
-				<include name="spark-streaming-kafka-0-10_2.11-2.0.0.jar"/>
+				<include name="bdap.*.jar"/>
 		    </fileset>
 			<fileset dir="lib/">
                 <include name="vertica*.jar"/>
             </fileset>
 			<fileset dir="${target}">
-                <include name="preload-0.1.0*.jar"/>
+                <include name="bdap.*.jar"/>
             </fileset>
 		</copy>
 		<copy todir="${dist}">
