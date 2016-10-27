@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,11 +30,9 @@ import etl.util.VarType;
 public class UnpackCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(UnpackCmd.class);
-	public static final String cfgkey_output_folder = "output.folder";
 	public static final String cfgkey_input_file_filter="input.file.filter";
 	public static final String cfgkey_output_file_filter="output.file.filter";
 	
-	private String outputFolder;
 	private FilenameFilter inputFileFilter;
 	private FilenameFilter outputFileFilter;
 	
@@ -50,13 +49,6 @@ public class UnpackCmd extends ETLCmd {
 
 		String fileFilterExp;
 		String fileFilter;
-		
-		String incomingFolderExp = super.getCfgString(cfgkey_output_folder, null);
-		if (incomingFolderExp != null) {
-			this.outputFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
-		} else {
-			this.outputFolder = "";
-		}
 		
 		fileFilterExp = super.getCfgString(cfgkey_input_file_filter, null);
 		if (fileFilterExp != null) {
@@ -91,6 +83,10 @@ public class UnpackCmd extends ETLCmd {
 		FSDataOutputStream fsOut;
 		ArchiveEntry entry;
 		String destFile;
+		
+		String outputFolder = context.getConfiguration().get(FileOutputFormat.OUTDIR);
+		if (!outputFolder.endsWith(Path.SEPARATOR))
+			outputFolder = outputFolder + Path.SEPARATOR;
 		
 		if (inputFileFilter.accept(null, path.getName())) {
 			try {
