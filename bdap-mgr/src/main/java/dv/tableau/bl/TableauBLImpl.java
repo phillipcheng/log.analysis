@@ -1,20 +1,28 @@
 package dv.tableau.bl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import bdap.util.PropertiesUtil;
 import bdap.util.XmlUtil;
+import dv.db.dao.AccountRepository;
+import dv.db.dao.AccountRepositoryImpl;
+import dv.db.dao.CommonDaoImpl;
 import dv.tableau.rest.TsResponse;
 import dv.util.RequestUtil;
 
+@Service("TableauBL")
 public class TableauBLImpl implements TableauBL {
 	public static final Logger logger = LogManager.getLogger(TableauBLImpl.class);
 	
+	private static final String config = "config/config.properties.template";
 	public static final String cfgkey_proxy_host="proxy.host";
 	public static final String cfgkey_proxy_port="proxy.port";
 	public static final String cfgkey_tableau_server_ip="tableau.server.ip";
@@ -25,7 +33,10 @@ public class TableauBLImpl implements TableauBL {
 	private String proxyHost;
 	private int proxyPort;
 	
-	public TableauBLImpl(String config){
+	@Autowired
+	CommonDaoImpl commonDao;
+
+	public TableauBLImpl(){
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
 		tableauServerIp = pc.getString(cfgkey_tableau_server_ip, null);
 		tableauServerPort = pc.getInt(cfgkey_tableau_server_port, 80);
