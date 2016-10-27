@@ -12,12 +12,10 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import bdap.util.JsonUtil;
 import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
-import etl.util.Util;
 
 public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvAggrSchemaUpdateCmd.class);
@@ -29,54 +27,47 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	}
 
 	private void test1Fun() throws Exception {
-		try {
-			String remoteCfgFolder = "/etltest/aggrschemaupdate/cfg/";
-			String staticCfg = "csvAggrSchemaUpdate1.properties";
-			String schemaFile = "dynschema_test1_schemas.txt";
-			//
-			String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //this is hard coded in static config
-			String createsqlFile = "createtables.sql_wfid1";
-			
-			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() +staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
-			
-			getFs().delete(new Path(remoteSqlFolder), true);
-			getFs().mkdirs(new Path(remoteSqlFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
-			
-			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
-			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
-			cmd.sgProcess();
-			List<String> dropSqls = cmd.getDropSqls();
-			DBUtil.executeSqls(dropSqls, cmd.getPc());
-			
-			//check the schema updated
-			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
-			String newTableName = "MyCore_aggr";
-			assertTrue(ls.hasTable(newTableName));
-			List<String> attrs = ls.getAttrNames(newTableName);
-			assertTrue(attrs.size()==8);
-			//check the create-sql
-			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
-			String expectedSqlVertica="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
-					+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
-					+ "MyCore numeric(15,5),VS_avePerCoreCpuUsage numeric(15,5),VS_peakPerCoreCpuUsage numeric(15,5))";
-			String expectedSqlHive="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
-					+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
-					+ "MyCore decimal(15,5),VS_avePerCoreCpuUsage decimal(15,5),VS_peakPerCoreCpuUsage decimal(15,5)) "
-					+ "ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"";
-			logger.info(sqls);
-			if (cmd.getDbtype()==DBType.HIVE){
-				assertTrue(sqls.contains(expectedSqlHive));
-			}else{
-				assertTrue(sqls.contains(expectedSqlVertica));
-			}
-			
-			//check dynCfg updated
-		} catch (Exception e) {
-			logger.error("", e);
+		String schemaFolder = "/etltest/aggrschemaupdate/cfg/";
+		String staticCfg = "csvAggrSchemaUpdate1.properties";
+		String schemaFile = "dynschema_test1_schemas.txt";
+		//
+		String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //this is hard coded in static config
+		String createsqlFile = "createtables.sql_wfid1";
+		
+		getFs().delete(new Path(schemaFolder), true);
+		getFs().mkdirs(new Path(schemaFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
+		
+		getFs().delete(new Path(remoteSqlFolder), true);
+		getFs().mkdirs(new Path(remoteSqlFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
+		
+		CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		cmd.sgProcess();
+		List<String> dropSqls = cmd.getDropSqls();
+		DBUtil.executeSqls(dropSqls, cmd.getPc());
+		
+		//check the schema updated
+		LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
+		String newTableName = "MyCore_aggr";
+		assertTrue(ls.hasTable(newTableName));
+		List<String> attrs = ls.getAttrNames(newTableName);
+		assertTrue(attrs.size()==8);
+		//check the create-sql
+		List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+		String expectedSqlVertica="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
+				+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
+				+ "MyCore numeric(15,5),VS_avePerCoreCpuUsage numeric(15,5),VS_peakPerCoreCpuUsage numeric(15,5))";
+		String expectedSqlHive="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
+				+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
+				+ "MyCore decimal(15,5),VS_avePerCoreCpuUsage decimal(15,5),VS_peakPerCoreCpuUsage decimal(15,5)) "
+				+ "ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"";
+		logger.info(sqls);
+		if (cmd.getDbtype()==DBType.HIVE){
+			assertTrue(sqls.contains(expectedSqlHive));
+		}else{
+			assertTrue(sqls.contains(expectedSqlVertica));
 		}
 	}
 	
@@ -97,30 +88,29 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	
 	private void groupFun() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/aggrschemaupdate/cfg/";
+			String schemaFolder = "/etltest/aggrschemaupdate/cfg/";
 			String staticCfg = "csvAggrGroupFun1.properties";
 			String schemaFile = "dynschema_test1_schemas.txt";
 			//
 			String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //this is hard coded in static config
 			String createsqlFile = "createtables.sql_wfid1";
 			
-			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() +staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
+			getFs().delete(new Path(schemaFolder), true);
+			getFs().mkdirs(new Path(schemaFolder));
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			
 			//check the schema updated
-			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
 			String newTableName = "MyCore_aggr";
 			assertTrue(ls.hasTable(newTableName));
 			List<String> attrs = ls.getAttrNames(newTableName);
@@ -163,31 +153,30 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	
 	private void multipleTablesFun() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/aggr/cfg/";//this is hard coded in the static properties for schema
+			String schemaFolder = "/etltest/aggr/cfg/";//this is hard coded in the static properties for schema
 			String staticCfg = "csvAggrMultipleFiles.properties";
 			String schemaFile = "multipleTableSchemas.txt";
 			//
 			String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //since this is hard coded in the dynCfg
 			String createsqlFile = "createtables.sql_wfid1";//since this is hard coded in the dynCfg
 			
-			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
+			getFs().delete(new Path(schemaFolder), true);
+			getFs().mkdirs(new Path(schemaFolder));
 			
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			
 			//check the schema updated
-			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
 			String newTableName = "MyCore_aggr";
 			String newTableName1 = "MyCore1_aggr";
 			assertTrue(ls.hasTable(newTableName));
@@ -245,33 +234,33 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		}
 	}
 	
-	private void mergeTablesFun() throws Exception {
+	@Test
+	public void mergeTables() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/aggr/cfg/";//this is hard coded in the static properties for schema
+			String schemaFolder = "/etltest/aggr/cfg/";//this is hard coded in the static properties for schema
 			String staticCfg = "csvAggrMergeTables.properties";
 			String schemaFile = "multipleTableSchemas.txt";
 			//
 			String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //since this is hard coded in the dynCfg
 			String createsqlFile = "createtables.sql_wfid1";//since this is hard coded in the dynCfg
 			
-			getFs().delete(new Path(remoteCfgFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
+			getFs().delete(new Path(schemaFolder), true);
+			getFs().mkdirs(new Path(schemaFolder));
 			
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfg), new Path(remoteCfgFolder + staticCfg));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(remoteCfgFolder + schemaFile));
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
 			
 			getFs().delete(new Path(remoteSqlFolder), true);
 			getFs().mkdirs(new Path(remoteSqlFolder));
 			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 			
-			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", remoteCfgFolder + staticCfg, getDefaultFS(), null);
+			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
 			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 			cmd.sgProcess();
 			List<String> dropSqls = cmd.getDropSqls();
 			DBUtil.executeSqls(dropSqls, cmd.getPc());
 			
 			//check the schema updated
-			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), remoteCfgFolder + schemaFile, LogicSchema.class);
+			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
 			String newTableName = "MyCoreMerge_";
 			assertTrue(ls.hasTable(newTableName));
 			List<String> attrs = ls.getAttrNames(newTableName);
@@ -298,21 +287,6 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		} catch (Exception e) {
 			logger.error("", e);
 			assertTrue(false);
-		}
-	}
-	
-	@Test
-	public void testMergeTables() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			mergeTablesFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					mergeTablesFun();
-					return null;
-				}
-			});
 		}
 	}
 }

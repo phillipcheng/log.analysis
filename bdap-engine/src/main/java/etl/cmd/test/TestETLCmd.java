@@ -100,22 +100,19 @@ public abstract class TestETLCmd {
 		}
     }
 	
-	public List<String> mapTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
+	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
 			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
 		try {
-			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().delete(new Path(remoteInputFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
 			getFs().mkdirs(new Path(remoteInputFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticProperties), new Path(remoteCfgFolder + staticProperties));
 			for (String csvFile : inputDataFiles) {
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
 			}
 			// run job
 			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			getConf().set(EngineConf.cfgkey_staticconfigfile, remoteCfgFolder + staticProperties);
+			getConf().set(EngineConf.cfgkey_staticconfigfile, this.getResourceSubFolder() + staticProperties);
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer
@@ -140,12 +137,10 @@ public abstract class TestETLCmd {
 		return null;
 	}
 	
-	public List<String> mrTest(String remoteCfgFolder, List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
 			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
 		try {
-			getFs().delete(new Path(remoteCfgFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
-			getFs().mkdirs(new Path(remoteCfgFolder));
 			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
 				if (rfifs._2.length > 0) {
 					getFs().delete(new Path(rfifs._1), true);
@@ -155,12 +150,11 @@ public abstract class TestETLCmd {
 					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
 				}
 			}
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticProperties), new Path(remoteCfgFolder + staticProperties));
 			
 			//run job
 			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			getConf().set(EngineConf.cfgkey_staticconfigfile, remoteCfgFolder + staticProperties);
+			getConf().set(EngineConf.cfgkey_staticconfigfile, this.getResourceSubFolder() + staticProperties);
 			getConf().set("mapreduce.output.textoutputformat.separator", ",");
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(InvokeMapper.class);
@@ -201,11 +195,11 @@ public abstract class TestETLCmd {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> mrTest(String remoteCfgFolder, String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
+	public List<String> mrTest(String remoteInputFolder, String remoteOutputFolder, String staticProperties, 
+			String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
 		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
 		rfifs.add(new Tuple2<String, String[]>(remoteInputFolder, inputDataFiles));
-		return mrTest(remoteCfgFolder, rfifs, remoteOutputFolder, staticProperties, cmdClassName, useFileNames);
+		return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, useFileNames);
 	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 

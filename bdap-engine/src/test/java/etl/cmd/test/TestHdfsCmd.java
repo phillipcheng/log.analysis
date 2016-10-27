@@ -1,5 +1,7 @@
 package etl.cmd.test;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
@@ -17,24 +19,23 @@ public class TestHdfsCmd extends TestETLCmd{
 	}
 	
 	@Test
-	public void test1Fun() throws Exception{
-		String wfName = "wfName";
-		String wfId = "wfid";
-		String cfg = "hdfscmd1.properties";
-		String dfsCfgFolder = "/test/hdfscmd/cfg/";
-		
-
-		getFs().delete(new Path(dfsCfgFolder), true);
-		getFs().mkdirs(new Path(dfsCfgFolder));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + cfg), new Path(dfsCfgFolder + cfg));
-		
-		HdfsCmd cmd = new HdfsCmd(wfName, wfId, dfsCfgFolder + cfg, null, super.getDefaultFS(), null);
-		String[] folders = cmd.getRmFolders();
-		for (String f:folders){
-			super.getFs().mkdirs(new Path(f));
+	public void test1Fun() {
+		try {
+			String wfName = "wfName";
+			String wfId = "wfid";
+			String cfg = "hdfscmd1.properties";
+			
+			HdfsCmd cmd = new HdfsCmd(wfName, wfId, this.getResourceSubFolder() + cfg, null, super.getDefaultFS(), null);
+			String[] folders = cmd.getRmFolders();
+			for (String f:folders){
+				super.getFs().mkdirs(new Path(f));
+			}
+			List<String> info = cmd.sgProcess();
+			
+			logger.info(info);
+		}catch(Exception e){
+			logger.error("", e);
+			assertTrue(false);
 		}
-		List<String> info = cmd.sgProcess();
-		
-		logger.info(info);
 	}
 }

@@ -161,7 +161,10 @@ public class EngineUtil {
 	}
 	
 	public PropertiesConfiguration getMergedPC(String conf){
-		PropertiesConfiguration cmdpc = PropertiesUtil.getPropertiesConfig(conf);//load from classpath
+		PropertiesConfiguration cmdpc = new PropertiesConfiguration();
+		if (conf!=null){
+			cmdpc = PropertiesUtil.getPropertiesConfig(conf);//load from classpath
+		}
 		PropertiesConfiguration enginepc = getEngineProp();//load from classpath
 		Iterator<String> it = enginepc.getKeys();
 		while (it.hasNext()){
