@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.apache.commons.configuration.PropertiesConfiguration;
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -136,5 +138,40 @@ public class GroupFun {
 	public static String getParentFolderName(String path){
 	    String rootToParent = path.substring(0, path.lastIndexOf('/', path.length() - 1));
 	    return rootToParent.substring(rootToParent.lastIndexOf('/', rootToParent.length() - 1) + 1);
+	}
+	
+	public static String subnumber(String hexStr, int beginByteIndex, int endByteIndex, String defaultValue) {
+		
+		byte[] byteArray=hexStringToByteArray(hexStr);
+		if(byteArray==null){
+			return defaultValue;
+		}
+		
+		int beginIndex=0;
+		int endIndex=0;
+		
+		if(beginByteIndex>(byteArray.length-1)){
+			return defaultValue;
+		}
+		beginIndex=byteArray.length-1-endByteIndex;
+		if(beginIndex<0) beginIndex=0;
+		endIndex=byteArray.length-1-beginByteIndex;
+		
+		
+		long value=0;
+		for(int i=beginIndex;i<=endIndex;i++){
+			value=(value << 8) | byteArray[i];
+		}
+
+		return String.valueOf(value);
+	}
+	
+	public static byte[] hexStringToByteArray(String hexStr) {
+		if(hexStr==null) return null;
+		hexStr=hexStr.toUpperCase();
+		if(hexStr.startsWith("0X")) hexStr=hexStr.substring(2);
+		if(hexStr.isEmpty()) return null;
+		if(hexStr.length()%2 ==1) hexStr="0"+hexStr;
+		return DatatypeConverter.parseHexBinary(hexStr);
 	}
 }
