@@ -49,13 +49,13 @@ public class RequestUtil {
 	public static String post(String url,String proxyHost, int proxyPort, Map<String, String> queryParamMap, 
 			Map<String, String> bodyHeaderMap, String body) {
 		List<BasicNameValuePair> nvpl = new ArrayList<BasicNameValuePair>();
-		for (String key: queryParamMap.keySet()){
-			String value = queryParamMap.get(key);
-			nvpl.add(new BasicNameValuePair(key, value));
-		}
-		String params = URLEncodedUtils.format(nvpl, Charset.defaultCharset());
 		String postUrl = url;
 		if (queryParamMap!=null){
+			for (String key: queryParamMap.keySet()){
+				String value = queryParamMap.get(key);
+				nvpl.add(new BasicNameValuePair(key, value));
+			}
+			String params = URLEncodedUtils.format(nvpl, Charset.defaultCharset());
 			postUrl = String.format("%s?%s", url, params);
 		}
 		HttpHeaders headers = new HttpHeaders();
