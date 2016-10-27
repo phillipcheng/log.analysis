@@ -2,10 +2,9 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.fs.Path;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,15 +20,15 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		return "csvaggr/";
 	}
 	
-	private void test1Fun() throws Exception {
+	@Test
+	public void test1() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvaggr/";
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvaggregate1.properties";
 			String[] csvFiles = new String[] {"csvaggregate.data"};
 			
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+output);
 			
 			// assertion
@@ -39,94 +38,52 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue("2.0".equals(csvs[6]));
 		} catch (Exception e) {
 			logger.error("", e);
-		}
-	}
-	
-	@Test
-	public void test1() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			test1Fun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					test1Fun();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void testMultipleTablesFun() throws Exception {
-		try {
-			String remoteCfgFolder = "/etltest/cfg/";
-			String remoteCsvFolder = "/etltest/csvaggr/";
-			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-			String csvtransProp = "csvAggrMultipleFiles.properties";
-			String[] csvFiles = new String[] {"MyCore_.data","MyCore1_.data"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-			logger.info("Output is:"+output);
-			// assertion
-			assertTrue(output.size() == 4);
-		} catch (Exception e) {
-			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
 	@Test
 	public void testMultipleTables() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			testMultipleTablesFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					testMultipleTablesFun();
-					return null;
-				}
-			});
+		try {
+			String remoteCsvFolder = "/etltest/csvaggr/";
+			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+			String csvtransProp = "csvAggrMultipleFiles.properties";
+			String[] csvFiles = new String[] {"MyCore_.data","MyCore1_.data"};
+			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			logger.info("Output is:"+output);
+			// assertion
+			assertTrue(output.size() == 4);
+		} catch (Exception e) {
+			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
-	private void groupFun() throws Exception {
+	@Test
+	public void testGroup() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvaggr/";
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrGroupFun1.properties";
 			String[] csvFiles = new String[] {"MyCore_.data"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+String.join("\n", output));
 			// assertion
 			assertTrue(output.size()==4);
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
 	@Test
-	public void testGroupFun() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			groupFun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					groupFun();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private void mergeTables() throws Exception {
+	public void mergeTables() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvaggr/";
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrMergeTables.properties";
 			String[] csvFiles = new String[] {"MyCore_.data", "MyCore1_.data"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+String.join("\n", output));
 			String dt = "2016-03-09T07:50:00+00:00";
 			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
@@ -137,33 +94,22 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue(output.contains(line));
 		} catch (Exception e) {
 			logger.error("", e);
-		}
-	}
-	
-	@Test
-	public void testMergeTables() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			mergeTables();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					mergeTables();
-					return null;
-				}
-			});
+			assertTrue(false);
 		}
 	}
 	
 	@Test
 	public void mergeTablesOuterjoin() throws Exception {
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/csvaggr/";
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrMergeTablesOuterjoin.properties";
+			//prepare schema
+			String schemaFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
+			String schemaFile = "multipleTableSchemas.txt";
+			getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 			String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
-			List<String> output = super.mrTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+String.join("\n", output));
 			String dt = "2016-03-28T11:05:00+00:00";
 			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
@@ -174,6 +120,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue(output.contains(csv));
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	

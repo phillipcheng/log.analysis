@@ -49,7 +49,7 @@ public class TestSendLogCmd extends TestETLCmd {
 	
 	@Test
 	public void testMsgGenRecieve() throws Exception {
-		final String dfsFolder = "/test/sendmsg/";
+		final String schemaFolder = "/test/sendmsg/";
 		final String staticCfgName = "msggen.properties";
 		final String schemaFile = "kafkaTimeTriggerMsg.schema";
 		final String wfName="wfName1";
@@ -57,23 +57,20 @@ public class TestSendLogCmd extends TestETLCmd {
 		final int exeInterval=3;
 		final int waitSeconds =10;
 		
-		getFs().delete(new Path(dfsFolder), true);
-		getFs().mkdirs(new Path(dfsFolder));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsFolder + staticCfgName));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(dfsFolder + schemaFile));
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
 		
 		ExecutorService es = Executors.newFixedThreadPool(3);
 		es.submit(new Runnable(){
 			@Override
 			public void run() {
-				ETLCmd cmd = new KafkaMsgGenCmd(wfName, wfid, dfsFolder+staticCfgName, getDefaultFS(), null);
+				ETLCmd cmd = new KafkaMsgGenCmd(wfName, wfid, getResourceSubFolder() +staticCfgName, getDefaultFS(), null);
 				ETLCmdMain.exeCmd(cmd, exeInterval, waitSeconds);
 			}
 		});
 		es.submit(new Runnable(){
 			@Override
 			public void run() {
-				ETLCmd cmd = new KafkaMsgDecodeCmd(wfName, wfid, dfsFolder+staticCfgName, getDefaultFS(), null);
+				ETLCmd cmd = new KafkaMsgDecodeCmd(wfName, wfid, getResourceSubFolder() +staticCfgName, getDefaultFS(), null);
 				ETLCmdMain.exeCmd(cmd, exeInterval, waitSeconds);
 			}
 		});
@@ -84,24 +81,20 @@ public class TestSendLogCmd extends TestETLCmd {
 	
 	@Test
 	public void genMsgs() throws Exception{
-		if (!super.isTestKafka()) return;
-		final String dfsFolder = "/test/sendmsg/";
+		final String schemaFolder = "/test/sendmsg/";
 		final String staticCfgName = "msggen.properties";
 		final String schemaFile = "kafkaTimeTriggerMsg.schema";
 		final String wfName = "wfName1";
 		final String wfid = "wf1";
 		final int waitSeconds = 5;
 		
-		getFs().delete(new Path(dfsFolder), true);
-		getFs().mkdirs(new Path(dfsFolder));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsFolder + staticCfgName));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(dfsFolder + schemaFile));
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
 		
 		ExecutorService es = Executors.newFixedThreadPool(3);
 		es.submit(new Runnable(){
 			@Override
 			public void run() {
-				ETLCmd cmd = new KafkaMsgGenCmd(wfName, wfid, dfsFolder+staticCfgName, getDefaultFS(), null);
+				ETLCmd cmd = new KafkaMsgGenCmd(wfName, wfid, getResourceSubFolder() +staticCfgName, getDefaultFS(), null);
 				ETLCmdMain.exeCmd(cmd, waitSeconds, waitSeconds-2);
 			}
 		});

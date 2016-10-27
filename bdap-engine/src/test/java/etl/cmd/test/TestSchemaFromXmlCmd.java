@@ -28,7 +28,6 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 		try {
 			//
 			String inputFolder = "/test/dynschemacmd/input/";
-			String dfsCfgFolder = "/test/dynschemacmd/cfg/";
 			String schemaFolder="/test/dynschemacmd/schema/";
 			String schemaHistoryFolder="/test/dynschemacmd/schemahistory/";
 			String sqlFileName = "createtables.sql_wfid1";
@@ -43,23 +42,19 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 			
 			//generate all the data files
 			getFs().delete(new Path(inputFolder), true);
-			getFs().delete(new Path(dfsCfgFolder), true);
 			getFs().delete(new Path(schemaFolder), true);
 			getFs().delete(new Path(schemaHistoryFolder), true);
 			//
 			getFs().mkdirs(new Path(inputFolder));
-			getFs().mkdirs(new Path(dfsCfgFolder));
 			getFs().mkdirs(new Path(schemaFolder));
 			getFs().mkdirs(new Path(schemaHistoryFolder));
 			
 			for (String inputFile: inputFiles){
 				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(inputFolder + inputFile));
 			}
-			//add the local conf file to dfs
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + staticCfgName), new Path(dfsCfgFolder + staticCfgName));
 			
 			//run cmd
-			XmlToCsvCmd cmd = new XmlToCsvCmd("wf1", wfid, dfsCfgFolder + staticCfgName, getDefaultFS(), null);
+			XmlToCsvCmd cmd = new XmlToCsvCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
 			List<String> info = cmd.sgProcess();
 			int numFiles = Integer.parseInt(info.get(0));
 			logger.info(info);
@@ -76,6 +71,7 @@ public class TestSchemaFromXmlCmd extends TestETLCmd{
 			logger.info(sqlContent);
 		} catch (Exception e) {
 			logger.error("Exception occured ", e);
+			assertTrue(false);
 		}
 	}
 	
