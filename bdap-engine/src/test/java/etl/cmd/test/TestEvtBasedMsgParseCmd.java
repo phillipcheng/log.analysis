@@ -73,6 +73,7 @@ public class TestEvtBasedMsgParseCmd extends TestETLCmd{
  			logger.info("The results verified succesfully.!");	
 		} catch (Exception e) {
  			logger.error("", e);
+ 			assertTrue(false);
  		}
  	}
 

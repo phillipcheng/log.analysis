@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,6 +38,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue("2.0".equals(csvs[6]));
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
@@ -53,6 +55,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue(output.size() == 4);
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
@@ -69,6 +72,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue(output.size()==4);
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
@@ -90,6 +94,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue(output.contains(line));
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
@@ -99,6 +104,10 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			String remoteCsvFolder = "/etltest/csvaggr/";
 			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 			String csvtransProp = "csvAggrMergeTablesOuterjoin.properties";
+			//prepare schema
+			String schemaFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
+			String schemaFile = "multipleTableSchemas.txt";
+			getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 			String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
 			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 			logger.info("Output is:"+String.join("\n", output));
@@ -111,6 +120,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 			assertTrue(output.contains(csv));
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	

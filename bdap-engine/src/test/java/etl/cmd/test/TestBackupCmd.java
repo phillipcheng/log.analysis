@@ -24,49 +24,46 @@ public class TestBackupCmd extends TestETLCmd{
 	
 	@Test
 	public void test1() throws Exception{
-		try {
-			String allFolder = "/test/BackupCmd/data/allFolder1/";
-			String wfidFolder = "/test/BackupCmd/data/wfidFolder1/";
+		String allFolder = "/test/BackupCmd/data/allFolder1/";
+		String wfidFolder = "/test/BackupCmd/data/wfidFolder1/";
 
-			String staticCfgName = "backup_test1_staticCfg.properties";
-			String wfName="wfid1";
-			String wfid="wfid1";
+		String staticCfgName = "backup_test1_staticCfg.properties";
+		String wfName="wfid1";
+		String wfid="wfid1";
 
-			String[] allFiles = new String[]{"all1", "all2"};
-			String[] wfidFiles = new String[]{wfid+"/a", wfid+"/b", "a", wfid+"abcd"};
+		String[] allFiles = new String[]{"all1", "all2"};
+		String[] wfidFiles = new String[]{wfid+"/a", wfid+"/b", "a", wfid+"abcd"};
 
-			String localFile = "backup_test1_data";
-			String historyFolder = "/test/datahistory/";
-			//generate all the data files
-			getFs().delete(new Path(allFolder), true);
-			getFs().delete(new Path(wfidFolder), true);
-			
-			for (String allFile: allFiles){
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(allFolder + allFile));
-			}
-			for (String wfidFile: wfidFiles){
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(wfidFolder + wfidFile));
-			}
-			//run cmd
-			BackupCmd cmd = new BackupCmd(wfName, wfid, getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
-			List<String> info = cmd.sgProcess();
-			int numFiles = Integer.parseInt(info.get(0));
-			logger.info(String.format("%d files backedup", numFiles));
-			assertTrue(numFiles==3);
-			//check results
-			List<String> flist;
-			//allFolder should be empty
-			flist = HdfsUtil.listDfsFile(getFs(), allFolder);
-			assertTrue(flist.size()==0);
-			//check the zip file
-			String ZipFileName=wfid+".zip";
-			flist = HdfsUtil.listDfsFile(getFs(), historyFolder);
-			assertTrue(flist.contains(ZipFileName));
-			//Check the number of files in Zip
-			int filecount=Util.getZipFileCount(getFs(),historyFolder+ZipFileName);
-			assertTrue(filecount==3);
-			} catch (Exception e) {
-			logger.error("Exception occured ", e);
+		String localFile = "backup_test1_data";
+		String historyFolder = "/test/datahistory/";
+		//generate all the data files
+		getFs().delete(new Path(allFolder), true);
+		getFs().delete(new Path(wfidFolder), true);
+		
+		for (String allFile: allFiles){
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(allFolder + allFile));
 		}
+		for (String wfidFile: wfidFiles){
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + localFile), new Path(wfidFolder + wfidFile));
+		}
+		//run cmd
+		BackupCmd cmd = new BackupCmd(wfName, wfid, getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		List<String> info = cmd.sgProcess();
+		int numFiles = Integer.parseInt(info.get(0));
+		logger.info(String.format("%d files backedup", numFiles));
+		assertTrue(numFiles==3);
+		//check results
+		List<String> flist;
+		//allFolder should be empty
+		flist = HdfsUtil.listDfsFile(getFs(), allFolder);
+		assertTrue(flist.size()==0);
+		//check the zip file
+		String ZipFileName=wfid+".zip";
+		flist = HdfsUtil.listDfsFile(getFs(), historyFolder);
+		assertTrue(flist.contains(ZipFileName));
+		//Check the number of files in Zip
+		int filecount=Util.getZipFileCount(getFs(),historyFolder+ZipFileName);
+		assertTrue(filecount==3);
+			
 	}
 }

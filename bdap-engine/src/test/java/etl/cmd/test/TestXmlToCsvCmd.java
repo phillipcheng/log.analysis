@@ -28,33 +28,29 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 	
 	@Test
 	public void test1() throws Exception{
-		try {
-			//
-			String inputFolder = "/test/xml2csv/input/";
-			String outputFolder = "/test/xml2csv/output/";
-			String schemaFolder="/test/xml2csv/schema/";
-			
-			String staticCfgName = "xml2csv1.properties";
-			String[] inputFiles = new String[]{"dynschema_test1_data.xml"};
-			String localSchemaFile = "dynschema_test1_schemas.txt";
-			String remoteSchemaFile = "schemas.txt";
-			
-			//schema
-			getFs().delete(new Path(schemaFolder), true);
-			getFs().mkdirs(new Path(schemaFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
-			
-			//run cmd
-			super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles, cmdClassName, true);
-			
-			//check results
-			//outputFolder should have the csv file
-			List<String> files = HdfsUtil.listDfsFile(getFs(), outputFolder);
-			logger.info(files);
-			String csvFileName = String.format("%s-r-00000", "MyCore_");
-			assertTrue(files.contains(csvFileName));
-		} catch (Exception e) {
-			logger.error("Exception occured ", e);
-		}
+		//
+		String inputFolder = "/test/xml2csv/input/";
+		String outputFolder = "/test/xml2csv/output/";
+		String schemaFolder="/test/xml2csv/schema/";
+		
+		String staticCfgName = "xml2csv1.properties";
+		String[] inputFiles = new String[]{"dynschema_test1_data.xml"};
+		String localSchemaFile = "dynschema_test1_schemas.txt";
+		String remoteSchemaFile = "schemas.txt";
+		
+		//schema
+		getFs().delete(new Path(schemaFolder), true);
+		getFs().mkdirs(new Path(schemaFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
+		
+		//run cmd
+		super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles, cmdClassName, true);
+		
+		//check results
+		//outputFolder should have the csv file
+		List<String> files = HdfsUtil.listDfsFile(getFs(), outputFolder);
+		logger.info(files);
+		String csvFileName = String.format("%s-r-00000", "MyCore_");
+		assertTrue(files.contains(csvFileName));
 	}
 }

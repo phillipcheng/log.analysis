@@ -27,53 +27,47 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	}
 
 	private void test1Fun() throws Exception {
-		try {
-			String schemaFolder = "/etltest/aggrschemaupdate/cfg/";
-			String staticCfg = "csvAggrSchemaUpdate1.properties";
-			String schemaFile = "dynschema_test1_schemas.txt";
-			//
-			String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //this is hard coded in static config
-			String createsqlFile = "createtables.sql_wfid1";
-			
-			getFs().delete(new Path(schemaFolder), true);
-			getFs().mkdirs(new Path(schemaFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
-			
-			getFs().delete(new Path(remoteSqlFolder), true);
-			getFs().mkdirs(new Path(remoteSqlFolder));
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
-			
-			CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
-			DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
-			cmd.sgProcess();
-			List<String> dropSqls = cmd.getDropSqls();
-			DBUtil.executeSqls(dropSqls, cmd.getPc());
-			
-			//check the schema updated
-			LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
-			String newTableName = "MyCore_aggr";
-			assertTrue(ls.hasTable(newTableName));
-			List<String> attrs = ls.getAttrNames(newTableName);
-			assertTrue(attrs.size()==8);
-			//check the create-sql
-			List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
-			String expectedSqlVertica="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
-					+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
-					+ "MyCore numeric(15,5),VS_avePerCoreCpuUsage numeric(15,5),VS_peakPerCoreCpuUsage numeric(15,5))";
-			String expectedSqlHive="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
-					+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
-					+ "MyCore decimal(15,5),VS_avePerCoreCpuUsage decimal(15,5),VS_peakPerCoreCpuUsage decimal(15,5)) "
-					+ "ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"";
-			logger.info(sqls);
-			if (cmd.getDbtype()==DBType.HIVE){
-				assertTrue(sqls.contains(expectedSqlHive));
-			}else{
-				assertTrue(sqls.contains(expectedSqlVertica));
-			}
-			
-			//check dynCfg updated
-		} catch (Exception e) {
-			logger.error("", e);
+		String schemaFolder = "/etltest/aggrschemaupdate/cfg/";
+		String staticCfg = "csvAggrSchemaUpdate1.properties";
+		String schemaFile = "dynschema_test1_schemas.txt";
+		//
+		String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //this is hard coded in static config
+		String createsqlFile = "createtables.sql_wfid1";
+		
+		getFs().delete(new Path(schemaFolder), true);
+		getFs().mkdirs(new Path(schemaFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
+		
+		getFs().delete(new Path(remoteSqlFolder), true);
+		getFs().mkdirs(new Path(remoteSqlFolder));
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
+		
+		CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		cmd.sgProcess();
+		List<String> dropSqls = cmd.getDropSqls();
+		DBUtil.executeSqls(dropSqls, cmd.getPc());
+		
+		//check the schema updated
+		LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
+		String newTableName = "MyCore_aggr";
+		assertTrue(ls.hasTable(newTableName));
+		List<String> attrs = ls.getAttrNames(newTableName);
+		assertTrue(attrs.size()==8);
+		//check the create-sql
+		List<String> sqls = HdfsUtil.stringsFromDfsFile(getFs(), remoteSqlFolder + createsqlFile);
+		String expectedSqlVertica="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
+				+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
+				+ "MyCore numeric(15,5),VS_avePerCoreCpuUsage numeric(15,5),VS_peakPerCoreCpuUsage numeric(15,5))";
+		String expectedSqlHive="create table if not exists sgsiwf.MyCore_aggr(endTime timestamp,"
+				+ "duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),"
+				+ "MyCore decimal(15,5),VS_avePerCoreCpuUsage decimal(15,5),VS_peakPerCoreCpuUsage decimal(15,5)) "
+				+ "ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"";
+		logger.info(sqls);
+		if (cmd.getDbtype()==DBType.HIVE){
+			assertTrue(sqls.contains(expectedSqlHive));
+		}else{
+			assertTrue(sqls.contains(expectedSqlVertica));
 		}
 	}
 	
