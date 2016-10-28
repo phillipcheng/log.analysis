@@ -50,6 +50,11 @@ public class TableauControllerTest {
     public void allProjects() throws Exception {
         mockMvc.perform(get("/tableau/rest/allProjects"));
     }
+    
+    @Test
+    public void allWorkbooks() throws Exception {
+        mockMvc.perform(get("/tableau/rest/allWorkbooks"));
+    }
    
    
 

@@ -13,10 +13,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import bdap.util.JsonUtil;
 import dv.UserNotFoundException;
-import dv.entity.AccountEntity;
-import dv.entity.AccountRepository;
-import dv.entity.FlowEntity;
-import dv.entity.FlowRepository;
+import dv.db.dao.AccountRepository;
+import dv.db.dao.FlowRepository;
+import dv.db.entity.AccountEntity;
+import dv.db.entity.FlowEntity;
 import etl.flow.Flow;
 
 @RestController

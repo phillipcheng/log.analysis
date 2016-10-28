@@ -15,10 +15,9 @@
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 	  <property name="driverClassName" value="org.h2.Driver" />
 	  <property name="url" value="jdbc:h2:tcp://localhost/~/dv_h2" />
-	  <property name="username" value="sa" />
+	  <property name="username" value="test" />
 	  <property name="password" value="" />
 	</bean>
-	
 	<bean id="hibernateJpaVendorAdapter" 
 	  class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
 	
@@ -36,7 +35,7 @@
 	   </props>
 	 </property>
 	 <!-- Set base package of your entities -->
-	 <property name="packagesToScan" value="dv.entity"/>
+	 <property name="packagesToScan" value="dv.db"/>
 	 <!-- Set share cache mode -->
 	 <property name="sharedCacheMode" value="ENABLE_SELECTIVE"/>
 	 <!-- Set validation mode -->
@@ -49,6 +48,6 @@
 	  <property name="entityManagerFactory" ref="entityManagerFactory"/>
 	</bean>
 	
-	<jpa:repositories base-package="dv.entity"/>
+	<jpa:repositories base-package="dv.db"/>
 	
 </beans>
