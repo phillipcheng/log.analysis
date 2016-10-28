@@ -20,11 +20,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 import dv.Application;
-import dv.entity.AccountEntity;
-import dv.entity.AccountRepository;
-import dv.entity.FlowRepository;
+import dv.db.dao.AccountRepository;
+import dv.db.dao.FlowRepository;
+import dv.db.entity.AccountEntity;
 import etl.flow.Flow;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

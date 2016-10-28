@@ -31,6 +31,16 @@
 			<artifactId>hadoop-client</artifactId>
 			<version>2.5.2</version>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+                  <artifactId>slf4j-log4j12</artifactId>
+                  <groupId>org.slf4j</groupId>
+				</exclusion>
+				<exclusion>
+                  <artifactId>servlet-api</artifactId>
+                  <groupId>javax.servlet</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -46,6 +56,12 @@
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-web</artifactId>
 		    <version>1.4.1.RELEASE</version>
+		    <exclusions>
+	            <exclusion>
+	            	<groupId>org.springframework.boot</groupId>
+	            	<artifactId>spring-boot-starter-logging</artifactId>
+	            </exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -115,6 +131,17 @@
             <version>4.3.3.RELEASE</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+                <groupId>org.springframework.session</groupId>
+                <artifactId>spring-session</artifactId>
+                <version>1.2.2.RELEASE</version>
+        </dependency>
+        <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-redis</artifactId>
+                <version>1.4.1.RELEASE</version>
+        </dependency>
+        
   </dependencies>
   
   <build>
@@ -147,6 +174,14 @@
 			   <configuration>
 			     	<skipTests>true</skipTests>
 			   </configuration>
+			</plugin>
+			<plugin>
+			  <artifactId>maven-jar-plugin</artifactId>
+			  <configuration>
+			    <archive>
+			      <addMavenDescriptor>false</addMavenDescriptor>
+			    </archive>
+			  </configuration>
 			</plugin>
 			<plugin>
 			    <groupId>org.springframework.boot</groupId>
