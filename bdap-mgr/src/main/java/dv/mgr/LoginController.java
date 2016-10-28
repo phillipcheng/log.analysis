@@ -33,9 +33,12 @@ public class LoginController {
 		boolean enableLogin = commonBL.validateLogin(account);
 		ModelAndView modelView = new ModelAndView();
 		if(enableLogin){
-			List list = commonBL.getAccountDetail(account);
+			List accountList = commonBL.getAccountDetail(account);
+			Map map = (Map)accountList.get(0);
+			List permissionList = commonBL.getAccountPermissions(account);
 			HttpSession session = request.getSession();
-			session.setAttribute("userDetail", list);
+			session.setAttribute("userDetail", map);
+			session.setAttribute("userPermission", permissionList);
 			return "/dashview/pages/index.html";
 		}
 		return "/dashview/pages/login.html";

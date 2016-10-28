@@ -47,5 +47,22 @@ public class CommonBLImpl implements CommonBL {
 		return null;
 	}
 	
+	public List getAccountPermissions(AccountEntity account) {
+		String userName = account.getUserName();
+		String password = account.getPassword();
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(" select pro.id, pro.projectName, pro.content, pro.type, per.action from t_permission per left join t_project pro on per.projectid=pro.id");
+		buffer.append(" where id in");
+		buffer.append(" (select permissionIds from t_group where id in ");
+		buffer.append(" (select groupids from t_account where name='%s' and password='%s'))");
+		String sql = buffer.toString();
+		sql = String.format(sql, userName, password);
+		List list = commonDao.getNativeMapBySQL(sql);
+		if(list != null && list.size() > 0) {
+			return list;
+		}
+		return null;
+	}
+	
 	
 }

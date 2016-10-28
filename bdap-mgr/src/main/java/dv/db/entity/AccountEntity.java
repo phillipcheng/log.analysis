@@ -1,5 +1,7 @@
 package dv.db.entity;
 
+import java.sql.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,9 +18,11 @@ public class AccountEntity {
 	@Column(name="name",length=50)  
 	private String userName;
 	private String password;
-	private int groupid;
+	//userId:groupids  1:n split by comma
+	private String groupids;
 	private int tableauUserId;
 	private String email;
+	private Date updateTime;
 	
 	public AccountEntity(){
 	}
@@ -55,12 +59,12 @@ public class AccountEntity {
 		this.userId = userId;
 	}
 
-	public int getGroupid() {
-		return groupid;
+	public String getGroupids() {
+		return groupids;
 	}
 
-	public void setGroupid(int groupid) {
-		this.groupid = groupid;
+	public void setGroupids(String groupids) {
+		this.groupids = groupids;
 	}
 
 	public int getTableauUserId() {
@@ -70,4 +74,13 @@ public class AccountEntity {
 	public void setTableauUserId(int tableauUserId) {
 		this.tableauUserId = tableauUserId;
 	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
 }

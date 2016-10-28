@@ -8,37 +8,33 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="t_group")
-public class GroupEntity {
+@Table(name="t_project")
+public class ProjectEntity {
 	
 	@Id
 	@GeneratedValue
 	private int id;
-	private String groupName;
-	//id:permissionId  1:n split by comma
-	private String permissionIds;
+	private String projectName;
+	private String content;
+	private String type;
 	private Date updateTime;
-	
-	public GroupEntity(){
-		
-	}
 	public int getId() {
 		return id;
 	}
 	public void setId(int id) {
 		this.id = id;
 	}
-	public String getGroupName() {
-		return groupName;
+	public String getProjectName() {
+		return projectName;
 	}
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
 	}
-	public String getPermissionIds() {
-		return permissionIds;
+	public String getContent() {
+		return content;
 	}
-	public void setPermissionIds(String permissionIds) {
-		this.permissionIds = permissionIds;
+	public void setContent(String content) {
+		this.content = content;
 	}
 	public Date getUpdateTime() {
 		return updateTime;
@@ -46,5 +42,11 @@ public class GroupEntity {
 	public void setUpdateTime(Date updateTime) {
 		this.updateTime = updateTime;
 	}
-
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	
 }
