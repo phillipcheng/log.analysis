@@ -247,6 +247,7 @@ public class OozieGenerator {
 		}
 		ja.getArg().add(String.format("action_%s.properties", an.getName()));
 		ja.getArg().add(nameNodeValue);
+		ja.getArg().addAll(an.getAddArgs());
 		return ja;
 	}
 	

@@ -1,12 +1,10 @@
 package etl.flow;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.configuration.PropertiesConfiguration;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -23,6 +21,7 @@ public class ActionNode extends Node{
 	public static List<String> sysProperties = null;
 	
 	private Map<String, String> properties = new LinkedHashMap<String, String>();//preserving the insertion order
+	private List<String> addArgs = new ArrayList<String>();//additional list of arguments
 	
 	@JsonIgnore
 	private ExeType exeType;
@@ -101,5 +100,13 @@ public class ActionNode extends Node{
 	@JsonIgnore
 	public void setExeType(ExeType exeType) {
 		this.exeType = exeType;
+	}
+
+	public List<String> getAddArgs() {
+		return addArgs;
+	}
+
+	public void setAddArgs(List<String> addArgs) {
+		this.addArgs = addArgs;
 	}
 }
