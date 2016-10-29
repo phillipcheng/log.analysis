@@ -1,7 +1,6 @@
-package etl.flow.oozie.test;
+package etl.flow.test;
 
 import java.security.PrivilegedExceptionAction;
-import java.text.SimpleDateFormat;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,15 +15,11 @@ import bdap.util.PropertiesUtil;
 
 public abstract class TestFlow {
 	public static final Logger logger = LogManager.getLogger(TestFlow.class);
-	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-	
-	public static final String remoteUser = "dbadmin";
 	
 	private static String cfgProperties="testFlow.properties";
 	
 	private static String key_localFolder="localFolder";
 	private static String key_defaultFs="defaultFs";
-	private static String key_jobTracker="jobTracker";
 	
 	
 	private PropertiesConfiguration pc;
@@ -45,14 +40,6 @@ public abstract class TestFlow {
 			pc = PropertiesUtil.getPropertiesConfig(cfgProperties);
 			localFolder = pc.getString(key_localFolder);
 			conf = new Configuration();
-			String jobTracker=pc.getString(key_jobTracker);
-			if (jobTracker!=null){
-				String host = jobTracker.substring(0,jobTracker.indexOf(":"));
-				conf.set("mapreduce.jobtracker.address", jobTracker);
-				conf.set("yarn.resourcemanager.hostname", host);
-				conf.set("mapreduce.framework.name", "yarn");
-				conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
-			}
 			defaultFS = pc.getString(key_defaultFs);
 			conf.set("fs.defaultFS", defaultFS);
 			if (defaultFS.contains("127.0.0.1")){
@@ -74,7 +61,7 @@ public abstract class TestFlow {
 	//override by sub test cases
 	public abstract String getResourceSubFolder();
 	
-	public String getLocalFolder() {
+	public String getResourceFolder() {
 		if (getResourceSubFolder()==null){
 			return localFolder;
 		}else
@@ -91,5 +78,13 @@ public abstract class TestFlow {
 	
 	public Configuration getConf(){
 		return conf;
+	}
+	
+	public String getLocalFolder() {
+		return localFolder;
+	}
+
+	public void setLocalFolder(String localFolder) {
+		this.localFolder = localFolder;
 	}
 }

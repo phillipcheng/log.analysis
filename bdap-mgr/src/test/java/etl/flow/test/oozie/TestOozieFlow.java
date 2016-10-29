@@ -1,4 +1,4 @@
-package etl.flow.oozie.test;
+package etl.flow.test.oozie;
 
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
@@ -15,6 +15,7 @@ import bdap.util.SftpUtil;
 import etl.flow.Flow;
 import etl.flow.oozie.OozieConf;
 import etl.flow.oozie.OozieFlowMgr;
+import etl.flow.test.TestFlow;
 
 public class TestOozieFlow extends TestFlow{
 	public static final Logger logger = LogManager.getLogger(TestOozieFlow.class);
@@ -62,10 +63,10 @@ public class TestOozieFlow extends TestFlow{
 		//setup data
 		String sftpUser="dbadmin";
 		String sftpPasswd="password";
-		SftpUtil.sftpFromLocal(hadoopId, 22, sftpUser, sftpPasswd, String.format("%sdata", super.getLocalFolder()), 
+		SftpUtil.sftpFromLocal(hadoopId, 22, sftpUser, sftpPasswd, String.format("%sdata", super.getResourceFolder()), 
 				String.format("/data/flow1/"));
 		try {
-			super.getFs().copyFromLocalFile(new Path(String.format("%sdata/sftpcfg/test1.sftp.map.properties", super.getLocalFolder())), 
+			super.getFs().copyFromLocalFile(new Path(String.format("%sdata/sftpcfg/test1.sftp.map.properties", super.getResourceFolder())), 
 					new Path("/flow1/sftpcfg/test1.sftp.map.properties"));
 		}catch(Exception e){
 			logger.error("", e);

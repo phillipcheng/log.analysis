@@ -1,6 +1,5 @@
 package etl.flow.mgr;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,13 +34,13 @@ public abstract class FlowMgr {
 		return new InMemFile(FileType.engineProperty, EngineConf.file_name, ec.getContent());
 	}
 	/**
-	 * update helper jars
+	 * update helper jars, mapping.properties
 	 * @param files
 	 * @param fsconf
 	 * @param ec
 	 * @return
 	 */
-	public abstract boolean uploadJars(InMemFile[] files, FlowServerConf fsconf, EngineConf ec);
+	public abstract void uploadFiles(String projectName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec);
 	
 	/**
 	 * instance level execution, used more in testing the process before production deployment

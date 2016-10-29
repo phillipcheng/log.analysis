@@ -1,13 +1,18 @@
 package etl.flow;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import bdap.util.PropertiesUtil;
 
 public class ActionNode extends Node{
 	
@@ -28,6 +33,15 @@ public class ActionNode extends Node{
 	public ActionNode(String name, ExeType exeType, int inletNum, int outletNum){
 		super(name, inletNum, outletNum);
 		this.exeType = exeType;
+	}
+	
+	//for writing test cases to construct action node from existing properties file
+	public ActionNode(String name, ExeType exeType, int inletNum, int outletNum, String propertiesFile){
+		this(name, exeType, inletNum, outletNum);
+		LinkedHashMap<String, String> map = PropertiesUtil.getPropertiesExactMap(propertiesFile);
+		for (String key: map.keySet()){
+			properties.put(key, map.get(key));
+		}
 	}
 	
 	@Override

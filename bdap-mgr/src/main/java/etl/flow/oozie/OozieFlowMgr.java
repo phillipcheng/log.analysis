@@ -120,11 +120,6 @@ public class OozieFlowMgr extends FlowMgr{
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-		try {
-			fs.delete(new Path(String.format("/user/%s/%s", oc.getUserName(), projectName)), true);
-		}catch(Exception e){
-			logger.error("", e);
-		}
 		for (InMemFile im:imFiles){
 			String dir = getDir(im.getFileType(), projectName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
@@ -157,12 +152,7 @@ public class OozieFlowMgr extends FlowMgr{
 		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
-		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-		for (InMemFile im:imFiles){
-			String dir = getDir(im.getFileType(), projectName, oc);
-			String path = String.format("%s%s", dir, im.getFileName());
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
-		}
+		uploadFiles(projectName, imFiles.toArray(new InMemFile[]{}), fsconf, ec);
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
@@ -177,9 +167,15 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public boolean uploadJars(InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
-		// TODO Auto-generated method stub
-		return false;
+	public void uploadFiles(String projectName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
+		OozieConf oc = (OozieConf) fsconf;
+		//deploy to the server
+		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+		for (InMemFile im:files){
+			String dir = getDir(im.getFileType(), projectName, oc);
+			String path = String.format("%s%s", dir, im.getFileName());
+			logger.info(String.format("copy to %s", path));
+			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+		}
 	}
-
 }

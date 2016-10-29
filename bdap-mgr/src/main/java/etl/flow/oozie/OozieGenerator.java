@@ -123,6 +123,10 @@ public class OozieGenerator {
 		mapperClassCp.setValue(EngineConf.mapper_class);
 		pl.add(mapperClassCp);
 		CmdDef cmd = getCmd(an);
+		if (cmd==null){
+			logger.error(String.format("%s is not supported.\n%s", an.getName(), an.getProperties()));
+			return null;
+		}
 		if (cmd.isHasReduce()){
 			CONFIGURATION.Property reducerClassCp = new CONFIGURATION.Property();
 			reducerClassCp.setName(prop_reduce_class);

@@ -238,9 +238,9 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	public List<Tuple2<String, String>> flatMapToPair(String value){
 		super.init();
 		try {
-			String row = value.toString();
-			//logger.info(String.format("process %s", row));
-			Document mf = getDocument(new Path(row));
+			String fileName = value.toString();
+			logger.info(String.format("process %s", fileName));
+			Document mf = getDocument(new Path(fileName));
 			Map<String, String> localDnMap = ParamUtil.parseMapParams((String)FileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
 			NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
 			List<Tuple2<String, String>> retList  = new ArrayList<Tuple2<String, String>>();
@@ -269,7 +269,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 					retList.addAll(genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName));
 				}
 			}
-			logger.info(String.format("file:%s generates %d tuple2.", row, retList.size()));
+			logger.info(String.format("file:%s generates %d tuple2.", fileName, retList.size()));
 			return retList;
 		}catch(Exception e){
 			logger.error("", e);
@@ -284,8 +284,11 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 			private static final long serialVersionUID = 1L;
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-				String value = t.substring(t.indexOf(CmdReciever.WFID_SEP)+1);
-				return flatMapToPair(value).iterator();
+				String fileName = t;
+				if (t.indexOf(CmdReciever.WFID_SEP)!=-1){
+					fileName = t.substring(t.indexOf(CmdReciever.WFID_SEP)+1);
+				}
+				return flatMapToPair(fileName).iterator();
 			}
 		});
 		return ret;
@@ -294,9 +297,9 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	 * @param row: each row is a xml file name
 	 */
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Map<String, Object> mapProcess(long offset, String fileName, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			List<Tuple2<String, String>> pairs = flatMapToPair(row);
+			List<Tuple2<String, String>> pairs = flatMapToPair(fileName);
 			for (Tuple2<String, String> pair: pairs){
 				context.write(new Text(pair._1), new Text(pair._2));
 			}
