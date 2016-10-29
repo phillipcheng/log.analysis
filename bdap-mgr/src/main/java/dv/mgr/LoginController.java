@@ -29,7 +29,7 @@ public class LoginController {
 	CommonBLImpl commonBL;
 	
 	@RequestMapping(value = "/signin",method = RequestMethod.POST)
-    public String signin (@ModelAttribute AccountEntity account, Model model, HttpServletRequest request, HttpServletResponse response){
+    public String signin (@ModelAttribute AccountEntity account, HttpServletRequest request){
 		boolean enableLogin = commonBL.validateLogin(account);
 		ModelAndView modelView = new ModelAndView();
 		if(enableLogin){
