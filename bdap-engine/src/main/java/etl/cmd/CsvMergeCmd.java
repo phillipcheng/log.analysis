@@ -22,23 +22,32 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
+import etl.cmd.transform.AggrOp;
+import etl.cmd.transform.AggrOpMap;
+import etl.cmd.transform.GroupOp;
+import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
 import etl.engine.JoinType;
 import etl.engine.MRMode;
+import etl.util.FieldType;
+import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import etl.util.StringUtil;
 import etl.util.VarType;
 import scala.Tuple2;
 
-public class CsvMergeCmd extends ETLCmd{
+public class CsvMergeCmd extends SchemaFileETLCmd{
 	private static final long serialVersionUID = 1L;
 	
 	public static final Logger logger = LogManager.getLogger(CsvMergeCmd.class);
 	
 	public static final String KEY_HEADER_SEP="----";
+	public static final String MULTIPLE_KEY_SEP="##";
+	
 	
 	//cfgkey
-	public static final String cfgkey_src_files="src.files";
+	public static final String cfgkey_src_entity="src.entity";
+	public static final String cfgkey_dest_entity="dest.entity";
 	public static final String cfgkey_src_keys="src.keys";
 	public static final String cfgkey_src_skipHeader="src.skipHeader";
 	public static final String cfgkey_join_type="join.type";
@@ -49,7 +58,9 @@ public class CsvMergeCmd extends ETLCmd{
 	
 	//
 	private Pattern[] srcFilesExp;
-	private int[] srcKeys;
+	private String[] srcTables;
+	private String destTable;
+	private List<IdxRange>[] srcKeys;
 	private boolean[] srcSkipHeader;
 	private JoinType joinType;
 	private transient CompiledScript retValueExp;
@@ -71,18 +82,23 @@ public class CsvMergeCmd extends ETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
-		String[] srcFiles =super.getCfgStringArray(cfgkey_src_files);
+		String[] srcFiles =super.getCfgStringArray(cfgkey_src_entity);
 		srcNum = srcFiles.length;
-		srcFilesExp = new Pattern[srcNum];
-		for (int i=0; i<srcNum; i++){
-			String scriptExp = srcFiles[i];
-			String globExp = (String) ScriptEngineUtil.eval(scriptExp, VarType.STRING, super.getSystemVariables());
-			srcFilesExp[i] = Pattern.compile(StringUtil.convertGlobToRegEx(globExp));
+		if (super.getLogicSchema()==null){
+			srcFilesExp = new Pattern[srcNum];
+			for (int i=0; i<srcNum; i++){
+				String scriptExp = srcFiles[i];
+				String globExp = (String) ScriptEngineUtil.eval(scriptExp, VarType.STRING, super.getSystemVariables());
+				srcFilesExp[i] = Pattern.compile(StringUtil.convertGlobToRegEx(globExp));
+			}
+		}else{
+			srcTables = srcFiles;
+			destTable = super.getCfgString(cfgkey_dest_entity, null);
 		}
 		String[] srcKeysArr = super.getCfgStringArray(cfgkey_src_keys);
-		srcKeys = new int[srcNum];
+		srcKeys = new List[srcNum];
 		for (int i=0; i<srcNum; i++){
-			srcKeys[i] = Integer.parseInt(srcKeysArr[i]);
+			srcKeys[i] = IdxRange.parseString(srcKeysArr[i]);
 		}
 		String[] srcSkipHeaderArr = super.getCfgStringArray(cfgkey_src_skipHeader);
 		srcSkipHeader = new boolean[srcNum];
@@ -91,11 +107,62 @@ public class CsvMergeCmd extends ETLCmd{
 		}
 		joinType = JoinType.valueOf(super.getCfgString(cfgkey_join_type, JoinType.inner.toString()));
 		String retValueStr = super.getCfgString(cfgkey_ret_value, null);
-		if (retValueStr!=null){
+		if (retValueStr!=null && !"".equals(retValueStr.trim())){
 			retValueExp = ScriptEngineUtil.compileScript(retValueStr);
 		}
 	}
 	
+	
+	//single process for schema update
+	@Override
+	public List<String> sgProcess(){
+		if (this.logicSchema==null)
+			return null;
+		Map<String, List<String>> attrsMap = new HashMap<String, List<String>>();
+		Map<String, List<FieldType>> attrTypesMap = new HashMap<String, List<FieldType>>();
+		
+		List<String> newAttrs = new ArrayList<String>();
+		List<FieldType> newTypes = new ArrayList<FieldType>();
+		{
+			String firstTable = srcTables[0];
+			List<IdxRange> commonGroupKeys = this.srcKeys[0];
+			AggrOp aop = new AggrOp(AggrOperator.group, commonGroupKeys);
+			AggrOpMap groupAOMap = new AggrOpMap();
+			groupAOMap.addAggrOp(aop);
+			List<String> attrs = logicSchema.getAttrNames(firstTable);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(firstTable);
+			int idxMax = attrs.size()-1;
+			groupAOMap.constructMap(idxMax);
+			for (int i=0; i<=idxMax; i++){
+				if (groupAOMap.getOp(i)!=null){
+					newAttrs.add(attrs.get(i)); //use common attr name
+					newTypes.add(attrTypes.get(i));
+				}
+			}
+		}
+		for (int i=0; i<srcNum; i++){
+			String oldTable = srcTables[i];
+			List<IdxRange> commonGroupKeys = this.srcKeys[i];
+			AggrOp aop = new AggrOp(AggrOperator.group, commonGroupKeys);
+			AggrOpMap groupAOMap = new AggrOpMap();
+			groupAOMap.addAggrOp(aop);
+			List<String> attrs = logicSchema.getAttrNames(oldTable);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(oldTable);
+			int idxMax = logicSchema.getAttrNames(oldTable).size()-1;
+			groupAOMap.constructMap(idxMax);
+			for (int j=0; j<=idxMax; j++){
+				if (groupAOMap.getOp(j)==null){//no group key
+					newAttrs.add(oldTable+"_"+attrs.get(j));//use updated name
+					newTypes.add(attrTypes.get(j));
+				}
+			}
+		}
+		attrsMap.put(destTable, newAttrs);
+		attrTypesMap.put(destTable, newTypes);
+		
+		return updateSchema(attrsMap, attrTypesMap);
+	}
+		
 	/**
 	 * map function in map-only or map-reduce mode, for map mode: output null for no key or value
 	 * @return map may contains following key:
@@ -105,29 +172,43 @@ public class CsvMergeCmd extends ETLCmd{
 	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
-		String fileName = Path.getPathWithoutSchemeAndAuthority(((FileSplit) context.getInputSplit()).getPath()).toString();
-		Map<String, Object> retMap = new HashMap<String, Object>();
 		int idx=-1;
-		for (int i=0; i<srcFilesExp.length; i++){
-			if (srcFilesExp[i].matcher(fileName).matches()){
-				idx=i;
-				break;
+		Map<String, Object> retMap = new HashMap<String, Object>();
+		if (super.getLogicSchema()!=null){
+			String tableName = super.getTableName(context);
+			for (int i=0; i<srcTables.length; i++){
+				if (srcTables[i].equals(tableName)){
+					idx=i;
+					break;
+				}
 			}
-		}
-		if (idx==-1){
-			logger.error(String.format("%s matches nothing %s", fileName, Arrays.asList(srcFilesExp)));
-			return retMap;
+			if (idx==-1){
+				logger.error(String.format("%s matches nothing %s", tableName, Arrays.asList(srcTables)));
+				return retMap;
+			}
+		}else{
+			String fileName = Path.getPathWithoutSchemeAndAuthority(((FileSplit) context.getInputSplit()).getPath()).toString();
+			for (int i=0; i<srcFilesExp.length; i++){
+				if (srcFilesExp[i].matcher(fileName).matches()){
+					idx=i;
+					break;
+				}
+			}
+			if (idx==-1){
+				logger.error(String.format("%s matches nothing %s", fileName, Arrays.asList(srcFilesExp)));
+				return retMap;
+			}
 		}
 		if (srcSkipHeader[idx] && offset==0){
 			return retMap;
 		}
-		int keyIdx = srcKeys[idx];
+		List<IdxRange> keyIdx = srcKeys[idx];
 		try {
 			CSVParser parser = CSVParser.parse(row, CSVFormat.DEFAULT);
 			CSVRecord csv = parser.getRecords().get(0);
-			String key = csv.get(keyIdx);
+			List<String> keys = GroupOp.getFieldsInRange(csv, keyIdx);
 			String value = String.format("%d%s%s", idx, KEY_HEADER_SEP, row);
-			Tuple2<String, String> v = new Tuple2<String, String>(key, value);
+			Tuple2<String, String> v = new Tuple2<String, String>(String.join(MULTIPLE_KEY_SEP, keys), value);
 			List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
 			vl.add(v);
 			retMap.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
@@ -135,6 +216,21 @@ public class CsvMergeCmd extends ETLCmd{
 			logger.error("", e);
 		}
 		return retMap;
+	}
+	
+	private List<String> getNonKeyValues(int srcIdx, CSVRecord csvr){
+		int fieldNum=0;
+		if (csvr==null){
+			if (logicSchema!=null){
+				String tableName = this.srcTables[srcIdx];
+				fieldNum = logicSchema.getAttrNames(tableName).size();
+			}else{
+				logger.info(String.format("file merge with No.%d file-entry empty. ok if used with inner join", srcIdx));
+			}
+		}else{
+			fieldNum = csvr.size();
+		}
+		return GroupOp.getFieldsOutRange(csvr, this.srcKeys[srcIdx], fieldNum);
 	}
 	
 	/**
@@ -146,45 +242,54 @@ public class CsvMergeCmd extends ETLCmd{
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
 		List<String[]> retlist = new ArrayList<String[]>();
 		Iterator<Text> it = values.iterator();
-		String[] contents = new String[srcNum];
+		CSVRecord[] mergedRecord = new CSVRecord[srcNum];
+		int hitNum=0;
 		while (it.hasNext()){
-			String v = it.next().toString();
-			int keyIdx = Integer.parseInt(v.substring(0, v.indexOf(KEY_HEADER_SEP)));
-			String rv = v.substring(v.indexOf(KEY_HEADER_SEP)+KEY_HEADER_SEP.length());
-			if (keyIdx<srcNum){
-				if (contents[keyIdx]==null){
-					contents[keyIdx]=rv;
+			try {
+				String v = it.next().toString();
+				logger.debug(String.format("key:%s, value:%s", key, v));
+				int keyIdx = Integer.parseInt(v.substring(0, v.indexOf(KEY_HEADER_SEP)));
+				String vs = v.substring(v.indexOf(KEY_HEADER_SEP)+KEY_HEADER_SEP.length());
+				CSVRecord csvr = mergedRecord[keyIdx];
+				if (csvr==null) {
+					CSVParser parser = CSVParser.parse(vs, CSVFormat.DEFAULT);
+					mergedRecord[keyIdx] = parser.getRecords().get(0);
+					hitNum++;
+					if (retValueExp!=null){
+						this.getSystemVariables().put(KEY_SYSTEM_VAR_TABLE+keyIdx, vs.split(",", -1));
+						this.getSystemVariables().put(KEY_SYSTEM_VAR_CSV+keyIdx, vs);
+					}
 				}else{
-					logger.warn(String.format("duplicated key, exist %s, now come:%s", contents[keyIdx], rv));
+					logger.error(String.format("data for keyIdx %d exists %s: now comes another %s", keyIdx, csvr, vs));
 				}
-			}else{
-				logger.error(String.format("keyIdx:%d >= srcNum:%d", keyIdx, srcNum));
+			}catch(Exception e){
+				logger.error("", e);
 			}
 		}
-		if (JoinType.inner==joinType){
-			boolean allFull=true;
-			int emptyIdx=0;
+		String ret = null;
+		if (retValueExp!=null){
+			ret = ScriptEngineUtil.eval(retValueExp, this.getSystemVariables());
+		}else{//default return is merge all, put the joinKey at the beginning and then table contents from 1 to srcNum
+			String keys = key.toString();
+			List<String> dValues = new ArrayList<String>();
+			dValues.addAll(Arrays.asList(keys.split(MULTIPLE_KEY_SEP)));
 			for (int i=0; i<srcNum; i++){
-				if (contents[i]==null){
-					allFull = false;
-					emptyIdx = i;
-					break;
-				}else{
-					this.getSystemVariables().put(KEY_SYSTEM_VAR_TABLE+i, contents[i].split(",", -1));
-					this.getSystemVariables().put(KEY_SYSTEM_VAR_CSV+i, contents[i]);
-				}
+				dValues.addAll(getNonKeyValues(i, mergedRecord[i]));
 			}
-			if (allFull){
-				String ret = ScriptEngineUtil.eval(retValueExp, this.getSystemVariables());
+			ret = String.join(",", dValues);
+		}
+			
+		if (JoinType.inner==joinType){
+			if (hitNum==srcNum){
 				retlist.add(new String[]{ret, null, ETLCmd.SINGLE_TABLE});
 			}else{
-				logger.warn(String.format("for inner join, data from table %d is empty", emptyIdx));
+				logger.warn(String.format("inner join, some data is missing, data from tables are %s", mergedRecord.toString()));
 			}
+		}else if (JoinType.outer == joinType){
+			retlist.add(new String[]{ret, null, ETLCmd.SINGLE_TABLE});
 		}else{
-			logger.error(String.format("join type %s not yet supported", joinType));
+			logger.error(String.format("join type:%s not supported.", joinType));
 		}
-		
 		return retlist;
 	}
-
 }
