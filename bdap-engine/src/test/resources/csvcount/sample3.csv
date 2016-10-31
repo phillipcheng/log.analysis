@@ -1,0 +1,4 @@
+StartTime,EndTime,Id,Name,Subject,Grade
+2016-10-12 10:10:02, 2016-10-12 10:10:18,1,Name1,Subject3,A
+2016-10-12 10:10:02, 2016-10-12 10:11:02,2,Name2,Subject3,B
+2016-10-12 10:10:11, 2016-10-12 10:10:59,1,Name1,Subject4,A

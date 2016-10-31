@@ -1,10 +1,13 @@
 package etl.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.bind.DatatypeConverter;
@@ -173,5 +176,31 @@ public class GroupFun {
 		if(hexStr.isEmpty()) return null;
 		if(hexStr.length()%2 ==1) hexStr="0"+hexStr;
 		return DatatypeConverter.parseHexBinary(hexStr);
+	}
+	
+	public static String[] splitTimeRange(String startTimeStr,String endTimeStr,String timeFormat, String timezone, long splitSize) throws ParseException{
+		SimpleDateFormat sdf=new SimpleDateFormat(timeFormat);
+		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
+		Date startTime=sdf.parse(startTimeStr);
+		Date endTime=sdf.parse(endTimeStr);
+		
+		long rangeStart= (startTime.getTime()/splitSize)*splitSize;
+		long rangeEnd=0;
+		if(endTime.getTime()%splitSize==0){
+			rangeEnd=endTime.getTime();
+		}else{
+			rangeEnd=((endTime.getTime()/splitSize)+1)*splitSize;
+		}
+		
+		int size= (int) ((rangeEnd-rangeStart)/splitSize);
+		
+		StringBuilder sb=new StringBuilder();
+		String[] splitedDateArray=new String[size];
+		for(int i=0;i<size;i++){
+			sb.append(sdf.format(new Date(rangeStart+i*splitSize))).append(",").append(sdf.format(new Date(rangeStart+(i+1)*splitSize)));
+			splitedDateArray[i]=sb.toString();
+			sb.setLength(0);
+		}
+		return splitedDateArray;
 	}
 }
