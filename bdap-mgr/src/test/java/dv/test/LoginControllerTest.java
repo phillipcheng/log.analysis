@@ -3,6 +3,8 @@ package dv.test;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -62,19 +65,12 @@ public class LoginControllerTest {
     
     @Test
     public void signin() throws Exception {
-    	AccountEntity account = new AccountEntity();
-    	account.setUserName("testname");
-    	account.setPassword("testpw");
-    	 mockMvc.perform(post("/login/signin")
-                 .content(this.json(account))
-                 .contentType(contentType))
-                 .andExpect(status().isNotFound());
+    	mockMvc.perform(post("/login/signin")
+    			.param("userName", "testname")
+    			.param("password", "testpw"))
+                 .andExpect(status().isOk());
     }
     
-    @Test
-    public void allProjects() throws Exception {
-        mockMvc.perform(get("/tableau/rest/allProjects"));
-    }
    
     protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
@@ -82,5 +78,6 @@ public class LoginControllerTest {
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
+  
 
 }

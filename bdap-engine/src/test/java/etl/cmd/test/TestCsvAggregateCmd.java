@@ -21,107 +21,66 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void test1() throws Exception {
-		try {
-			String remoteCsvFolder = "/etltest/csvaggr/";
-			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-			String csvtransProp = "csvaggregate1.properties";
-			String[] csvFiles = new String[] {"csvaggregate.data"};
-			
-			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-			logger.info("Output is:"+output);
-			
-			// assertion
-			assertTrue(output.size() > 0);
-			String sampleOutput = output.get(6);
-			String[] csvs = sampleOutput.split(",", -1);
-			assertTrue("2.0".equals(csvs[6]));
-		} catch (Exception e) {
-			logger.error("", e);
-			assertTrue(false);
-		}
+	public void testNoSchema() throws Exception {
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "csvAggrNoSchema.properties";
+		String[] csvFiles = new String[] {"csvaggregate.data"};
+		
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:"+output);
+		
+		// assertion
+		assertTrue(output.size() > 0);
+		String sampleOutput = output.get(6);
+		String[] csvs = sampleOutput.split(",", -1);
+		assertTrue("2.0".equals(csvs[6]));
 	}
 	
 	@Test
 	public void testMultipleTables() throws Exception {
-		try {
-			String remoteCsvFolder = "/etltest/csvaggr/";
-			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-			String csvtransProp = "csvAggrMultipleFiles.properties";
-			String[] csvFiles = new String[] {"MyCore_.data","MyCore1_.data"};
-			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-			logger.info("Output is:"+output);
-			// assertion
-			assertTrue(output.size() == 4);
-		} catch (Exception e) {
-			logger.error("", e);
-			assertTrue(false);
-		}
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "csvAggrMultipleFiles.properties";
+		String[] csvFiles = new String[] {"MyCore_.data","MyCore1_.data"};
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:"+output);
+		// assertion
+		assertTrue(output.size() == 4);
 	}
 	
 	@Test
 	public void testGroup() throws Exception {
-		try {
-			String remoteCsvFolder = "/etltest/csvaggr/";
-			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-			String csvtransProp = "csvAggrGroupFun1.properties";
-			String[] csvFiles = new String[] {"MyCore_.data"};
-			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-			logger.info("Output is:"+String.join("\n", output));
-			// assertion
-			assertTrue(output.size()==4);
-		} catch (Exception e) {
-			logger.error("", e);
-			assertTrue(false);
-		}
-	}
-	
-	@Test
-	public void mergeTables() throws Exception {
-		try {
-			String remoteCsvFolder = "/etltest/csvaggr/";
-			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-			String csvtransProp = "csvAggrMergeTables.properties";
-			String[] csvFiles = new String[] {"MyCore_.data", "MyCore1_.data"};
-			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-			logger.info("Output is:"+String.join("\n", output));
-			String dt = "2016-03-09T07:50:00+00:00";
-			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
-			String hour = GroupFun.hour(dt, dtformat);
-			String day = GroupFun.day(dt, dtformat);
-			String line = String.format("%s,%s,PT300S,vQDSD0101SGS-L-AL-20,lcp-1,vQDSD0101SGS-L-AL-20-VLR-01,1.0,36049.0,32907.0,36049.0,32907.0"
-					,hour,day);
-			assertTrue(output.contains(line));
-		} catch (Exception e) {
-			logger.error("", e);
-			assertTrue(false);
-		}
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "csvAggrGroupFun1.properties";
+		String[] csvFiles = new String[] {"MyCore_.data"};
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:"+String.join("\n", output));
+		// assertion
+		assertTrue(output.size()==4);
 	}
 	
 	@Test
 	public void mergeTablesOuterjoin() throws Exception {
-		try {
-			String remoteCsvFolder = "/etltest/csvaggr/";
-			String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-			String csvtransProp = "csvAggrMergeTablesOuterjoin.properties";
-			//prepare schema
-			String schemaFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
-			String schemaFile = "multipleTableSchemas.txt";
-			getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
-			String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
-			List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-			logger.info("Output is:"+String.join("\n", output));
-			String dt = "2016-03-28T11:05:00+00:00";
-			String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
-			String hour = GroupFun.hour(dt, dtformat);
-			String day = GroupFun.day(dt, dtformat);
-			String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0.0,0.0,0.0,114258.0,114258.0",
-					hour, day);
-			assertTrue(output.contains(csv));
-		} catch (Exception e) {
-			logger.error("", e);
-			assertTrue(false);
-		}
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "csvAggrMergeTablesOuterjoin.properties";
+		String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
+		//prepare schema
+		String schemaFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
+		String schemaFile = "multipleTableSchemas.txt";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
+		
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:\n"+String.join("\n", output));
+		String dt = "2016-03-28T11:05:00+00:00";
+		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
+		String hour = GroupFun.hour(dt, dtformat);
+		String day = GroupFun.day(dt, dtformat);
+		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0.0,0.0,0.0,114258.0,114258.0",
+				hour, day);
+		assertTrue(output.contains(csv));
 	}
 	
 }

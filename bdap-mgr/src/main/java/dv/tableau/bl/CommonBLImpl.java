@@ -52,9 +52,9 @@ public class CommonBLImpl implements CommonBL {
 		String password = account.getPassword();
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(" select pro.id, pro.projectName, pro.content, pro.type, per.action from t_permission per left join t_project pro on per.projectid=pro.id");
-		buffer.append(" where id in");
-		buffer.append(" (select permissionIds from t_group where id in ");
-		buffer.append(" (select groupids from t_account where name='%s' and password='%s'))");
+		buffer.append(" where per.id in");
+		buffer.append(" (select permissionIds from t_group t1 where t1.id in ");
+		buffer.append(" (select groupids from t_account t2 where name='%s' and password='%s'))");
 		String sql = buffer.toString();
 		sql = String.format(sql, userName, password);
 		List list = commonDao.getNativeMapBySQL(sql);

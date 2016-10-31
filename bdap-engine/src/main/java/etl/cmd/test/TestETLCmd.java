@@ -112,7 +112,11 @@ public abstract class TestETLCmd {
 			// run job
 			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			getConf().set(EngineConf.cfgkey_staticconfigfile, this.getResourceSubFolder() + staticProperties);
+			String cfgProperties = staticProperties;
+			if (this.getResourceSubFolder()!=null){
+				cfgProperties = this.getResourceSubFolder() + staticProperties;
+			}
+			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer
@@ -154,7 +158,11 @@ public abstract class TestETLCmd {
 			//run job
 			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
 			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			getConf().set(EngineConf.cfgkey_staticconfigfile, this.getResourceSubFolder() + staticProperties);
+			String cfgProperties = staticProperties;
+			if (this.getResourceSubFolder()!=null){
+				cfgProperties = this.getResourceSubFolder() + staticProperties;
+			}
+			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
 			getConf().set("mapreduce.output.textoutputformat.separator", ",");
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(InvokeMapper.class);

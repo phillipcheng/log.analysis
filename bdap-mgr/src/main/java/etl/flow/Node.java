@@ -17,7 +17,7 @@ public class Node{
 	
 	private String name;
 	private int inletNum = 0;
-	private int outletNum = 0;
+	private int outletNum = 0; //#action outlet not #data outlet
 	
 	public Node(){	
 	}

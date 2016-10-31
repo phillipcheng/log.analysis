@@ -45,11 +45,15 @@ public class TableauBLImpl implements TableauBL {
 	CommonDaoImpl commonDao;
 
 	public TableauBLImpl(){
-		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
-		tableauServerIp = pc.getString(cfgkey_tableau_server_ip, null);
-		tableauServerPort = pc.getInt(cfgkey_tableau_server_port, 80);
-		proxyHost = pc.getString(cfgkey_proxy_host, null);
-		proxyPort = pc.getInt(cfgkey_proxy_port);
+		try{
+			PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
+			tableauServerIp = pc.getString(cfgkey_tableau_server_ip, null);
+			tableauServerPort = pc.getInt(cfgkey_tableau_server_port, 80);
+			proxyHost = pc.getString(cfgkey_proxy_host, null);
+			proxyPort = pc.getInt(cfgkey_proxy_port);
+		}catch(Exception e){
+			logger.error("", e);
+		}
 	}
 	
 	@Override
@@ -87,7 +91,8 @@ public class TableauBLImpl implements TableauBL {
 	@Override
 	public List<WorkbookType> getWorkbooksBySite(String username, String password, String siteName) {
 		TsResponse tr = signin(username, password, siteName);
-		String url = String.format("http://%s:%d/api/2.0/sites/%s/workbooks", tableauServerIp, tableauServerPort, tr.getCredentials().getSite().getId());
+		String url = String.format("http://%s:%d/api/2.0/sites/%s/users/%s/workbooks", tableauServerIp, tableauServerPort, 
+				tr.getCredentials().getSite().getId(), tr.getCredentials().getUser().getId());
 		Map<String, String> headMap = new HashMap<String, String>();
 		headMap.put("X-Tableau-Auth", tr.getCredentials().getToken());
 		String response = RequestUtil.get(url, proxyHost, proxyPort, headMap);

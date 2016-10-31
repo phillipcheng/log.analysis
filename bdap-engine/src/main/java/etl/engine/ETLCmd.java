@@ -1,6 +1,7 @@
 package etl.engine;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -168,7 +169,8 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		this.defaultFs = defaultFs;
 		this.otherArgs = otherArgs;
 		this.prefix = prefix;
-		logger.info(String.format("wfName:%s, wfid:%s, cfg:%s, prefix:%s, defaultFs:%s", wfName, wfid, staticCfg, prefix, defaultFs));
+		logger.info(String.format("wfName:%s, wfid:%s, cfg:%s, prefix:%s, defaultFs:%s, otherArgs:%s", 
+				wfName, wfid, staticCfg, prefix, defaultFs, otherArgs!=null?Arrays.asList(otherArgs):"null"));
 		try {
 			String fs_key = "fs.defaultFS";
 			conf = new Configuration();
