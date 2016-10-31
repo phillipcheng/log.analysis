@@ -2,6 +2,8 @@ package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import javax.script.CompiledScript;
 
 //log4j2
@@ -22,6 +24,7 @@ import etl.engine.LogicSchema;
 import etl.engine.OutputType;
 import etl.util.DBType;
 import etl.util.DBUtil;
+import etl.util.FieldType;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
@@ -135,6 +138,47 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 		List<String> loginfo = new ArrayList<String>();
 		loginfo.add(createTableSqls.size()+"");
 		return loginfo;
+	}
+	
+	public List<String> updateSchema(Map<String, List<String>> attrsMap, Map<String, List<FieldType>> attrTypesMap){
+		boolean schemaUpdated = false;
+		List<String> createTableSqls = new ArrayList<String>();
+		for (String newTable: attrsMap.keySet()){
+			List<String> newAttrs = attrsMap.get(newTable);
+			List<FieldType> newTypes = attrTypesMap.get(newTable);
+			if (!logicSchema.hasTable(newTable)){
+				//update schema
+				logicSchema.updateTableAttrs(newTable, newAttrs);
+				logicSchema.updateTableAttrTypes(newTable, newTypes);
+				schemaUpdated = true;
+				//generate create table
+				createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, 
+						dbPrefix, getDbtype()));
+			}else{
+				List<String> existNewAttrs = logicSchema.getAttrNames(newTable);
+				List<FieldType> existNewAttrTypes = logicSchema.getAttrTypes(newTable);
+				if (existNewAttrs.containsAll(newAttrs)){//
+					//do nothing
+				}else{
+					logger.info(String.format("exist attrs for table %s:%s", newTable, existNewAttrs));
+					logger.info(String.format("new attrs for table %s:%s", newTable, newAttrs));
+					//update schema, happens only when the schema is updated by external force
+					logicSchema.updateTableAttrs(newTable, newAttrs);
+					logicSchema.updateTableAttrTypes(newTable, newTypes);
+					schemaUpdated = true;
+					//generate alter table
+					newAttrs.removeAll(existNewAttrs);
+					newTypes.removeAll(existNewAttrTypes);
+					createTableSqls.addAll(DBUtil.genUpdateTableSql(newAttrs, newTypes, newTable, 
+							dbPrefix, getDbtype()));
+				}
+			}
+		}
+		if (schemaUpdated){
+			return updateDynSchema(createTableSqls);
+		}else{
+			return null;
+		}
 	}
 
 	public DBType getDbtype() {

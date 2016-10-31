@@ -36,7 +36,7 @@ public class TestShellCmd extends TestETLCmd {
 	@Test
 	public void test1() throws Exception {
 		try{
-			String remoteCfgFolder = "/pde/cfg/";
+			String remoteInputFolder = "/pde/input/";
 			String remoteOutputFolder="/pde/output/";
 			OSType os = SystemUtil.getOsType();
 			//setup testing env
@@ -51,9 +51,8 @@ public class TestShellCmd extends TestETLCmd {
 			}
 			
 			getFs().delete(new Path(remoteOutputFolder), true);
-			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));
-			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteCfgFolder+inputFile));
-			PropertiesConfiguration pc = EngineUtil.getInstance().getMergedPC(remoteCfgFolder + shellProp);
+			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteInputFolder+inputFile));
+			PropertiesConfiguration pc = EngineUtil.getInstance().getMergedPC(this.getResourceSubFolder() + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
 			FileUtils.deleteDirectory(destDir); 
@@ -62,14 +61,14 @@ public class TestShellCmd extends TestETLCmd {
 			FileUtils.copyFileToDirectory(new File(getLocalFolder()+executableFile), new File(executableDir));
 			getConf().set(EngineConf.cfgkey_cmdclassname, "etl.cmd.ShellCmd");
 			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			getConf().set(EngineConf.cfgkey_staticconfigfile, remoteCfgFolder+shellProp);
+			getConf().set(EngineConf.cfgkey_staticconfigfile, this.getResourceSubFolder()+shellProp);
 			Job job = Job.getInstance(getConf(), "testShellCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);//no reducer
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(NullWritable.class);
 			FileInputFormat.setInputDirRecursive(job, true);
-			FileInputFormat.addInputPath(job, new Path(remoteCfgFolder+inputFile));
+			FileInputFormat.addInputPath(job, new Path(remoteInputFolder+inputFile));
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 			job.waitForCompletion(true);
 
@@ -89,13 +88,14 @@ public class TestShellCmd extends TestETLCmd {
 			logger.info("Results verified successfully ..!!");
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 	
 	@Test
 	public void test2() throws Exception {
 		try{
-			String remoteCfgFolder = "/pde/cfg/";
+			String remoteInputFolder = "/pde/input/";
 			String remoteOutputFolder="/pde/output/";
 			OSType os = SystemUtil.getOsType();
 			//setup testing env
@@ -108,27 +108,26 @@ public class TestShellCmd extends TestETLCmd {
 				executableFile = "copyfile.sh";
 				executableDir = "/tmp";
 			}
-			PropertiesConfiguration pc = EngineUtil.getInstance().getMergedPC(remoteCfgFolder + shellProp);
+			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteInputFolder+inputFile));
+			PropertiesConfiguration pc = EngineUtil.getInstance().getMergedPC(this.getResourceSubFolder() + shellProp);
 			File sourceDir = new File(pc.getString("srcfolder"));
 			File destDir = new File(pc.getString("destfolder"));
 			FileUtils.deleteDirectory(destDir); 
 			FileUtils.forceMkdir(destDir);
 			
 			getFs().delete(new Path(remoteOutputFolder), true);
-			getFs().copyFromLocalFile(new Path(getLocalFolder()+shellProp), new Path(remoteCfgFolder+shellProp));
-			getFs().copyFromLocalFile(new Path(getLocalFolder()+inputFile), new Path(remoteCfgFolder+inputFile));
 			//run job  
 			FileUtils.copyFileToDirectory(new File(getLocalFolder()+executableFile), new File(executableDir));
 			getConf().set(EngineConf.cfgkey_cmdclassname, "etl.cmd.ShellCmd");
 			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			getConf().set(EngineConf.cfgkey_staticconfigfile, remoteCfgFolder+shellProp);
+			getConf().set(EngineConf.cfgkey_staticconfigfile, this.getResourceSubFolder()+shellProp);
 			Job job = Job.getInstance(getConf(), "testShellCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);//no reducer
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(NullWritable.class);
 			FileInputFormat.setInputDirRecursive(job, true);
-			FileInputFormat.addInputPath(job, new Path(remoteCfgFolder+inputFile));
+			FileInputFormat.addInputPath(job, new Path(remoteInputFolder+inputFile));
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 			job.waitForCompletion(true);
 
@@ -151,6 +150,7 @@ public class TestShellCmd extends TestETLCmd {
 			logger.info("Results verified successfully ..!!");
 		} catch (Exception e) {
 			logger.error("", e);
+			assertTrue(false);
 		}
 	}
 }

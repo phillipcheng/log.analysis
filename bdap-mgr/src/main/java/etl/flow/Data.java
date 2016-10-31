@@ -6,6 +6,7 @@ public class Data {
 	
 	private String name;
 	private String location;//hdfs location
+	private String schemaName = null;//reference to schema
 	private boolean instance = true; //if instance is true, the input path is location/$wfid
 	
 	public Data(){
@@ -53,5 +54,13 @@ public class Data {
 
 	public void setInstance(boolean instance) {
 		this.instance = instance;
+	}
+
+	public String getSchemaName() {
+		return schemaName;
+	}
+
+	public void setSchemaName(String schemaName) {
+		this.schemaName = schemaName;
 	}
 }

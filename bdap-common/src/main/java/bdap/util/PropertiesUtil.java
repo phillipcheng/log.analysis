@@ -1,7 +1,9 @@
 package bdap.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -9,6 +11,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +43,34 @@ public class PropertiesUtil {
 		} catch (IOException e) {
 			logger.error("", e);
 		}
+	}
+	
+	//ordered
+	public static LinkedHashMap<String, String> getPropertiesExactMap(String conf){
+		BufferedReader in = null;
+		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+		try {
+			URL url = Thread.currentThread().getContextClassLoader().getResource(conf);
+			in = new BufferedReader(new InputStreamReader(url.openStream()));
+			String l;
+		    while ((l = in.readLine()) != null){
+		    	if (l.contains("=")){
+		    		String[] kv = l.split("=", 2);
+		    		map.put(kv[0], kv[1]);
+		    	}
+		    }
+		}catch(Exception e){
+			logger.error("", e);
+		}finally{
+			if (in!=null){
+				try {
+					in.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
+		}
+		return map;
 	}
 	
 	public static PropertiesConfiguration getPropertiesConfig(String conf){

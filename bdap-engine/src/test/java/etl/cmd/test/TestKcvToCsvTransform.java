@@ -23,17 +23,17 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 	
 	public static final String cmdClassName = "etl.cmd.KcvToCsvCmd";
 
-	private void test1Fun() throws Exception{
+	@Test
+	public void test1() throws Exception{
 		BufferedReader br = null;
 		try {
-			String remoteCfgFolder = "/etltest/cfg/";
 			String remoteCsvFolder = "/etltest/kcvtransform/";
 			String remoteCsvOutputFolder = "/etltest/kcvtransformout/";
 			// setup testing env
 			String kcvtransProp = "kcv2csv.properties";
 			String[] kcvFiles = new String[]{"PJ24002A_BBG2.fix"};
 			// run job
-			List<String> retlist = super.mapTest(remoteCfgFolder, remoteCsvFolder, remoteCsvOutputFolder, kcvtransProp, kcvFiles, 
+			List<String> retlist = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, kcvtransProp, kcvFiles, 
 					cmdClassName, true);
 			String regexPattern = "[\\s]+([A-Za-z0-9\\,\\. ]+)[\\s]+([A-Z][A-Z ]+)";
 			String line = null;
@@ -55,21 +55,6 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 		} finally {
 			if (br != null)
 				br.close();
-		}
-	}
-	
-	@Test
-	public void test1() throws Exception {
-		if (getDefaultFS().contains("127.0.0.1")){
-			test1Fun();
-		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-			ugi.doAs(new PrivilegedExceptionAction<Void>() {
-				public Void run() throws Exception {
-					test1Fun();
-					return null;
-				}
-			});
 		}
 	}
 

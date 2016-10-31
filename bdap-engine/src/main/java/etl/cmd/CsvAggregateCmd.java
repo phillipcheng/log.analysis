@@ -176,46 +176,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		return keys;
 	}
 	
-	private List<String> updateSchema(Map<String, List<String>> attrsMap, Map<String, List<FieldType>> attrTypesMap){
-		boolean schemaUpdated = false;
-		List<String> createTableSqls = new ArrayList<String>();
-		for (String newTable: attrsMap.keySet()){
-			List<String> newAttrs = attrsMap.get(newTable);
-			List<FieldType> newTypes = attrTypesMap.get(newTable);
-			if (!logicSchema.hasTable(newTable)){
-				//update schema
-				logicSchema.updateTableAttrs(newTable, newAttrs);
-				logicSchema.updateTableAttrTypes(newTable, newTypes);
-				schemaUpdated = true;
-				//generate create table
-				createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, 
-						dbPrefix, super.getDbtype()));
-			}else{
-				List<String> existNewAttrs = logicSchema.getAttrNames(newTable);
-				List<FieldType> existNewAttrTypes = logicSchema.getAttrTypes(newTable);
-				if (existNewAttrs.containsAll(newAttrs)){//
-					//do nothing
-				}else{
-					logger.info(String.format("exist attrs for table %s:%s", newTable, existNewAttrs));
-					logger.info(String.format("new attrs for table %s:%s", newTable, newAttrs));
-					//update schema, happens only when the schema is updated by external force
-					logicSchema.updateTableAttrs(newTable, newAttrs);
-					logicSchema.updateTableAttrTypes(newTable, newTypes);
-					schemaUpdated = true;
-					//generate alter table
-					newAttrs.removeAll(existNewAttrs);
-					newTypes.removeAll(existNewAttrTypes);
-					createTableSqls.addAll(DBUtil.genUpdateTableSql(newAttrs, newTypes, newTable, 
-							dbPrefix, super.getDbtype()));
-				}
-			}
-		}
-		if (schemaUpdated){
-			return super.updateDynSchema(createTableSqls);
-		}else{
-			return null;
-		}
-	}
 	//single process for schema update
 	@Override
 	public List<String> sgProcess(){

@@ -10,10 +10,12 @@ public class CmdDefMgr{
 		new CmdDef("etl.cmd.CsvMergeCmd", true),
 		new CmdDef("etl.cmd.CsvSplitCmd", true),
 		new CmdDef("etl.cmd.CsvTransformCmd", true),
-		new CmdDef("etl.cmd.KdvToCsvCmd", false),
+		new CmdDef("etl.cmd.KcvToCsvCmd", false),
 		new CmdDef("etl.cmd.SftpCmd", false),
 		new CmdDef("etl.cmd.ShellCmd", false),
-		new CmdDef("etl.cmd.XmlToCsvCmd", false)
+		new CmdDef("etl.cmd.XmlToCsvCmd", false),
+		//should be added via API or into database
+		new CmdDef("hpe.pde.cmd.SesToCsvCmd", true),
 	};
 	
 	private static CmdDefMgr instance;
@@ -31,10 +33,11 @@ public class CmdDefMgr{
 	}
 	
 	public CmdDef getCmdDef(String className){
-		if (cmdDefMap==null){
-			init();
-		}
 		return cmdDefMap.get(className);
+	}
+	
+	public void addCmdDef(CmdDef cd){
+		cmdDefMap.put(cd.getClassName(), cd);
 	}
 	
 	public static CmdDefMgr getInstance(){
