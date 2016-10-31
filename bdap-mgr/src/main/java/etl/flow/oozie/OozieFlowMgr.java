@@ -27,7 +27,7 @@ public class OozieFlowMgr extends FlowMgr{
 	
 	private String getDir(FileType ft, String projectName, OozieConf oc){
 		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
-				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile){
+				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || ft==FileType.log4j){
 			return String.format("%s/user/%s/%s/lib/", oc.getNameNode(), oc.getUserName(), projectName);
 		}else if (ft == FileType.oozieWfXml || ft == FileType.oozieCoordXml){
 			return String.format("%s/user/%s/%s/", oc.getNameNode(), oc.getUserName(), projectName);
@@ -103,9 +103,27 @@ public class OozieFlowMgr extends FlowMgr{
 		return bodyConf;
 	}
 
+	public String deployAndRun(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
+		//deploy to the server
+		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+		for (InMemFile im:deployFiles){
+			String dir = getDir(im.getFileType(), projectName, oc);
+			String path = String.format("%s%s", dir, im.getFileName());
+			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+		}
+		//start the job
+		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
+		Map<String, String> queryParamMap = new HashMap<String, String>();
+		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
+		bdap.xml.config.Configuration bodyConf = getBodyConf(oc, projectName, flowName);
+		String body = XmlUtil.marshalToString(bodyConf, "configuration");
+		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
+		logger.info(String.format("post result:%s", result));
+		return null;
+	}
+	
 	@Override
 	public String execute(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec, String startNode, String instanceId) {
-		String newInstanceId = null;
 		OozieConf oc = (OozieConf)fsconf;
 		//generate wf.xml
 		boolean useInstanceId = instanceId==null? false:true;
@@ -118,20 +136,7 @@ public class OozieFlowMgr extends FlowMgr{
 		//gen etlengine.properties
 		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
 		imFiles.add(enginePropertyFile);
-		//deploy to the server
-		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-		for (InMemFile im:imFiles){
-			String dir = getDir(im.getFileType(), projectName, oc);
-			String path = String.format("%s%s", dir, im.getFileName());
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
-		}
-		//start the job
-		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
-		Map<String, String> queryParamMap = new HashMap<String, String>();
-		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration bodyConf = getBodyConf(oc, projectName, flow.getName());
-		String body = XmlUtil.marshalToString(bodyConf, "configuration");
-		RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
+		String newInstanceId = deployAndRun(projectName, flow.getName(), imFiles, oc, ec);
 		return newInstanceId;
 	}
 	

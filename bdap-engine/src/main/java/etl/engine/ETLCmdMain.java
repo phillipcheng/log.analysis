@@ -33,9 +33,11 @@ public class ETLCmdMain {
 		Map<String, String> kvMap = new HashMap<String, String>();
 		if (otherArgs!=null){
 			for (String arg: otherArgs){
-				String[] kv = arg.split("=", 2);
-				if (kv.length==2){
-					kvMap.put(kv[0], kv[1]);
+				if (arg!=null){
+					String[] kv = arg.split("=", 2);
+					if (kv.length==2){
+						kvMap.put(kv[0], kv[1]);
+					}
 				}
 			}
 		}
