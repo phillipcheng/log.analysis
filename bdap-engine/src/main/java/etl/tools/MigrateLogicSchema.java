@@ -12,14 +12,12 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
-
 import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
 
 public class MigrateLogicSchema {
 	public static final Logger logger = LogManager.getLogger(MigrateLogicSchema.class);
-	public static void addTree(Path directory, final Collection<Path> all)
+	private static void addTree(Path directory, final Collection<Path> all)
 	        throws IOException {
 	    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
 	        @Override
@@ -36,9 +34,8 @@ public class MigrateLogicSchema {
 	    });
 	}
 	
-	@Test
-	public void testMigrate() throws IOException{
-		Path dir=java.nio.file.FileSystems.getDefault().getPath("src/test/resources");
+	public static void migrateSchema(String folder) throws IOException{
+		Path dir=java.nio.file.FileSystems.getDefault().getPath(folder);
 		List<Path> allSchemaFiles = new ArrayList<Path>();
 		addTree(dir, allSchemaFiles);
 		for (Path schemaFile:allSchemaFiles){

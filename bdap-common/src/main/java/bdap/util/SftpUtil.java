@@ -1,6 +1,7 @@
 package bdap.util;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ import java.util.Vector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -21,6 +23,40 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 public class SftpUtil {
 	public static final Logger logger = LogManager.getLogger(SftpUtil.class);
 	
+	
+	public static Session getSession(String host, int port, String user, String pass){
+		JSch jsch = new JSch();
+		try {
+			Session session = jsch.getSession(user, host, port);
+			session.setConfig("StrictHostKeyChecking", "no");
+			session.setPassword(pass);
+			session.connect();
+			return session;
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	public static String sendCommand(String command, Session sesConnection) {
+		StringBuilder outputBuffer = new StringBuilder();
+		try {
+			Channel channel = sesConnection.openChannel("exec");
+			((ChannelExec)channel).setCommand(command);
+			InputStream commandOutput = channel.getInputStream();
+			channel.connect();
+			int readByte = commandOutput.read();
+			while(readByte != 0xffffffff) {
+				outputBuffer.append((char)readByte);
+				readByte = commandOutput.read();
+			}
+			channel.disconnect();
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+		return outputBuffer.toString();
+	}
+
 	//
 	private static void sftpMkdir(ChannelSftp sftpChannel, String remoteFile) throws Exception{
 		int slash = remoteFile.lastIndexOf("/");
@@ -59,12 +95,8 @@ public class SftpUtil {
 		Session session = null;
 		try {
 			// connect
-			JSch jsch = new JSch();
+			session = getSession(host, port, user, pass);
 			Channel channel = null;
-			session = jsch.getSession(user, host, port);
-			session.setConfig("StrictHostKeyChecking", "no");
-			session.setPassword(pass);
-			session.connect();
 			channel = session.openChannel("sftp");
 			channel.connect();
 			final ChannelSftp sftpChannel = (ChannelSftp) channel;

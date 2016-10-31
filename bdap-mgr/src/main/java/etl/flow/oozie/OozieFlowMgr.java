@@ -11,6 +11,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
+import bdap.util.JsonUtil;
 import bdap.util.XmlUtil;
 import dv.util.RequestUtil;
 import etl.flow.Flow;
@@ -105,6 +106,7 @@ public class OozieFlowMgr extends FlowMgr{
 
 	public String deployAndRun(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
+		deployFiles.add(super.genEnginePropertyFile(ec));
 		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 		for (InMemFile im:deployFiles){
 			String dir = getDir(im.getFileType(), projectName, oc);
@@ -119,7 +121,12 @@ public class OozieFlowMgr extends FlowMgr{
 		String body = XmlUtil.marshalToString(bodyConf, "configuration");
 		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
 		logger.info(String.format("post result:%s", result));
-		return null;
+		Map<String, String> vm = JsonUtil.fromJsonString(result, HashMap.class);
+		if (vm!=null){
+			return vm.get("id");
+		}else{
+			return null;
+		}
 	}
 	
 	@Override
@@ -133,9 +140,6 @@ public class OozieFlowMgr extends FlowMgr{
 		//gen action.properties
 		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
 		imFiles.addAll(actionPropertyFiles);
-		//gen etlengine.properties
-		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
-		imFiles.add(enginePropertyFile);
 		String newInstanceId = deployAndRun(projectName, flow.getName(), imFiles, oc, ec);
 		return newInstanceId;
 	}
