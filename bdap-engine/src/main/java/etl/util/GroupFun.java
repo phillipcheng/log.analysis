@@ -4,16 +4,20 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
 import etl.engine.SafeSimpleDateFormat;
 
@@ -27,6 +31,7 @@ public class GroupFun {
 	public static SafeSimpleDateFormat hourSdf = new SafeSimpleDateFormat("HH");
 	public static ConcurrentHashMap<String, SafeSimpleDateFormat> formatMap = new ConcurrentHashMap<String, SafeSimpleDateFormat>();
 	
+	///////////////date time related util functions
 	public static String hourEpoch(String input){
 		Date d = new Date(Long.parseLong(input)*1000);
 		return hourSdf.format(d);
@@ -121,6 +126,7 @@ public class GroupFun {
 		return String.valueOf(outputSec);
 	}
 	
+	////////////
 	public static Map<String, String> getMap(String mappingFile, String keyKey, String valueKey){
 		logger.info(String.format("mapping file:%s", mappingFile));
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(mappingFile);
@@ -135,13 +141,14 @@ public class GroupFun {
 		return mapping;
 	}
 	
+	//////////////
 	public static String getParentFolderName(String path){
 	    String rootToParent = path.substring(0, path.lastIndexOf('/', path.length() - 1));
 	    return rootToParent.substring(rootToParent.lastIndexOf('/', rootToParent.length() - 1) + 1);
 	}
 	
+	///////////////
 	public static String subnumber(String hexStr, int beginByteIndex, int endByteIndex, String defaultValue) {
-		
 		byte[] byteArray=hexStringToByteArray(hexStr);
 		if(byteArray==null){
 			return defaultValue;
@@ -173,5 +180,23 @@ public class GroupFun {
 		if(hexStr.isEmpty()) return null;
 		if(hexStr.length()%2 ==1) hexStr="0"+hexStr;
 		return DatatypeConverter.parseHexBinary(hexStr);
+	}
+	
+	//////////////////
+	public static String[] getValues(String defaultFs, String dfsFile){
+		try {
+			Configuration conf = new Configuration();
+			conf.set("fs.defaultFS", defaultFs);
+			FileSystem fs = FileSystem.get(conf);
+			List<String> strs = HdfsUtil.stringsFromDfsFile(fs, dfsFile);
+			if (strs.size()==0){
+				return null;
+			}else{
+				return strs.get(0).split(",");
+			}
+		}catch(Exception e){
+			logger.error(String.format("error getValues from %s", dfsFile), e);
+			return null;
+		}
 	}
 }

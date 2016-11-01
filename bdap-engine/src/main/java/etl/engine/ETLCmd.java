@@ -184,6 +184,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		pc = EngineUtil.getInstance().getMergedPC(staticCfg);
 		systemVariables = new HashMap<String, Object>();
 		systemVariables.put(VAR_WFID, wfid);
+		systemVariables.put(EngineUtil.key_defaultfs, EngineUtil.getInstance().getDefaultFs());
 		String[] varnames = pc.getStringArray(cfgkey_vars);
 		if (varnames!=null){
 			for (String varname: varnames){
@@ -233,6 +234,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	 * ETLCmd.RESULT_KEY_LOG: list of String user defined log info
 	 * ETLCmd.RESULT_KEY_OUTPUT: list of String output
 	 * ETLCmd.RESULT_KEY_OUTPUT_MAP: list of Tuple2<key, value>
+	 * null, if in the mapper it write to context directly for performance
 	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {

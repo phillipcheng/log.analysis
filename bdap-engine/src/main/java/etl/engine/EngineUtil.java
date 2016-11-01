@@ -226,7 +226,11 @@ public class EngineUtil {
 			for (String[] ret: rets){
 				if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
 					if (ret[1]!=null){
-						context.write(new Text(ret[0]), new Text(ret[1]));
+						if (!"".equals(ret[0].trim())){
+							context.write(new Text(ret[0]), new Text(ret[1]));
+						}else{
+							context.write(new Text(ret[1]), null);
+						}
 					}else{
 						context.write(new Text(ret[0]), null);
 					}
