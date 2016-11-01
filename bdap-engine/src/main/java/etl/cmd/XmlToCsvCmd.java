@@ -186,49 +186,60 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	 * @param: newAttrs: attrs found in xml
 	 */
 	private List<Tuple2<String, String>> genData(Node mi, Map<String, String> localDnMap, List<String> orgAttrs, 
-			List<String> newAttrs, String tableName) throws Exception {
-		List<String> tableLvlSystemAttValues = new ArrayList<String>();
-		for (XPathExpression exp:xpathExpTableSystemAttrs){
-			tableLvlSystemAttValues.add((String) exp.evaluate(mi, XPathConstants.STRING));
-		}
-		//gen value idx mapping
-		Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//new attr to old attr idx mapping
-		for (int i=0; i<orgAttrs.size(); i++){
-			String attr = orgAttrs.get(i);
-			int idx = newAttrs.indexOf(attr);
-			if (idx!=-1){
-				mapping.put(idx, i);
-			}
-		}
+			List<String> newAttrs, String tableName) {
 		List<Tuple2<String, String>> retList  = new ArrayList<Tuple2<String, String>>();
-		NodeList mvl = (NodeList) xpathExpTableRows.evaluate(mi, XPathConstants.NODESET);
-		for (int k=0; k<mvl.getLength(); k++){
-			Node mv = getNode(mvl, k);
-			List<String> fieldValues = new ArrayList<String>();
-			//system values
-			for (String v:tableLvlSystemAttValues){
-				fieldValues.add(v);
+		try {
+			List<String> tableLvlSystemAttValues = new ArrayList<String>();
+			for (XPathExpression exp:xpathExpTableSystemAttrs){
+				tableLvlSystemAttValues.add((String) exp.evaluate(mi, XPathConstants.STRING));
 			}
-			for (String n:fileLvlSystemFieldNames){
-				fieldValues.add(localDnMap.get(n));	
+			//gen value idx mapping
+			Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//new attr to old attr idx mapping
+			for (int i=0; i<orgAttrs.size(); i++){
+				String attr = orgAttrs.get(i);
+				int idx = newAttrs.indexOf(attr);
+				if (idx!=-1){
+					mapping.put(idx, i);
+				}
 			}
-			//object values
-			String moldn = (String) xpathExpTableObjDesc.evaluate(mv, XPathConstants.STRING);
-			TreeMap<String, String> kvs = ParamUtil.parseMapParams(moldn);
-			for (String v:kvs.values()){
-				fieldValues.add(v);
+			NodeList mvl = (NodeList) xpathExpTableRows.evaluate(mi, XPathConstants.NODESET);
+			for (int k=0; k<mvl.getLength(); k++){
+				Node mv = getNode(mvl, k);
+				try{
+					List<String> fieldValues = new ArrayList<String>();
+					//system values
+					for (String v:tableLvlSystemAttValues){
+						fieldValues.add(v);
+					}
+					for (String n:fileLvlSystemFieldNames){
+						fieldValues.add(localDnMap.get(n));	
+					}
+					//object values
+					String moldn = (String) xpathExpTableObjDesc.evaluate(mv, XPathConstants.STRING);
+					TreeMap<String, String> kvs = ParamUtil.parseMapParams(moldn);
+					for (String v:kvs.values()){
+						fieldValues.add(v);
+					}
+					String[] vs = new String[orgAttrs.size()];
+					NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
+					for (int i=0; i<rlist.getLength(); i++){
+						Node r = getNode(rlist, i);
+						String v = r.getTextContent();
+						int idx = mapping.get(i);
+						vs[idx]=v;
+					}
+					fieldValues.addAll(Arrays.asList(vs));
+					String csv = Util.getCsv(fieldValues, false);
+					logger.debug(String.format("%s,%s", tableName, csv));
+					retList.add(new Tuple2<String, String>(tableName, csv));
+				}catch(Exception e){
+					logger.error(String.format("exception: mv:%s, orgAttr:%s, newAttr:%s, mapping:%s", 
+							mv.getTextContent(), orgAttrs, newAttrs, mapping), e);
+					return retList;
+				}
 			}
-			String[] vs = new String[orgAttrs.size()];
-			NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
-			for (int i=0; i<rlist.getLength(); i++){
-				Node r = getNode(rlist, i);
-				String v = r.getTextContent();
-				vs[mapping.get(i)]=v;
-			}
-			fieldValues.addAll(Arrays.asList(vs));
-			String csv = Util.getCsv(fieldValues, false);
-			logger.debug(String.format("%s,%s", tableName, csv));
-			retList.add(new Tuple2<String, String>(tableName, csv));
+		}catch(Exception e){
+			logger.error("", e);
 		}
 		
 		return retList;

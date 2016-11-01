@@ -73,6 +73,28 @@ public class ScriptEngineUtil {
 		}
 	}
 	
+	public static Object evalObject(CompiledScript cs, Map<String, Object> variables){
+		Bindings bindings = new SimpleBindings();
+        if (variables!=null){
+			for (String key: variables.keySet()){
+				Object v = variables.get(key);
+				if (v instanceof Date){
+					bindings.put(key, ((Date)v).getTime());
+				}else{
+					bindings.put(key, v);
+				}
+			}
+		}
+		try {
+			Object ret = cs.eval(bindings);
+			logger.debug(String.format("eval get result: '%s'", ret));
+			return ret;
+		} catch (ScriptException e) {
+			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
+			return null;
+		}
+	}
+	
 	public static Object eval(String exp, VarType toType, Map<String,Object> variables, boolean logError){
 		ScriptEngine jsEngine = manager.getEngineByName("nashorn");
 		

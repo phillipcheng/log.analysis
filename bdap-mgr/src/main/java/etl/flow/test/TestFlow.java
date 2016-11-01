@@ -17,12 +17,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
+import org.junit.Test;
 
+import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
 import etl.flow.mgr.FileType;
 import etl.flow.mgr.InMemFile;
 import etl.flow.oozie.OozieConf;
+import etl.flow.oozie.OozieFlowMgr;
 
 public abstract class TestFlow {
 	public static final Logger logger = LogManager.getLogger(TestFlow.class);
@@ -32,7 +35,6 @@ public abstract class TestFlow {
 	private static String key_platform_src_root="platform.src.root";
 	private static String key_localFolder="localFolder";
 	private static String key_defaultFs="defaultFs";
-	
 	
 	private PropertiesConfiguration pc;
 	
@@ -72,7 +74,18 @@ public abstract class TestFlow {
 		}
     }
 	
-	public void deployEngine(OozieConf oc){
+	public OozieConf getOC(){
+		OozieConf oc = new OozieConf(cfgProperties);
+		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
+		return oc;
+	}
+	
+	public EngineConf getEC(){
+		EngineConf ec = new EngineConf(cfgProperties);
+		return ec;
+	}
+	
+	private void deployEngine(OozieConf oc){
 		FileSystem fs = HdfsUtil.getHadoopFs(oc.getNameNode());
 		String[] libJars = new String[]{bdapSrcRoot+"bdap-common/target/bdap.common-0.1.0.jar", 
 				bdapSrcRoot+"bdap-engine/target/bdap.engine-0.1.0.jar"};
@@ -123,23 +136,58 @@ public abstract class TestFlow {
 				}
 				
 			}
-			for (String jarPath: jarPaths){
-				Path jarFile = Paths.get(this.getLocalFolder() + jarPath);
-				fl.add(new InMemFile(FileType.thirdpartyJar, jarFile.getFileName().toString(), Files.readAllBytes(jarFile)));
+			if (jarPaths!=null){
+				for (String jarPath: jarPaths){
+					Path jarFile = Paths.get(this.getLocalFolder() + jarPath);
+					fl.add(new InMemFile(FileType.thirdpartyJar, jarFile.getFileName().toString(), Files.readAllBytes(jarFile)));
+				}
 			}
 		}catch(Exception e){
 			logger.error("", e);
 		}
 		return fl;
 	}
-	//override by sub test cases
-	public abstract String getResourceSubFolder();
 	
-	public String getResourceFolder() {
-		if (getResourceSubFolder()==null){
-			return localFolder;
-		}else
-			return localFolder + getResourceSubFolder();
+	private String runFlow(String projectName, String flowName, String[] jars){
+		OozieFlowMgr ofm = new OozieFlowMgr();
+		List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s/%s", getLocalFolder(), projectName, flowName), jars);
+		return ofm.deployAndRun(projectName, flowName, deployFiles, getOC(), getEC());
+	}
+	
+	public String testFlow(String projectName, String flowName, String[] jars) {
+		try {
+			if (getEC().getDefaultFs().contains("127.0.0.1")){
+				return runFlow(projectName, flowName, jars);
+			}else{
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+				return ugi.doAs(new PrivilegedExceptionAction<String>() {
+							public String run() throws Exception {
+								return runFlow(projectName, flowName, jars);
+							}
+						});
+			}
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	public void runDeployBdap() {
+		try {
+			if (getEC().getDefaultFs().contains("127.0.0.1")){
+				deployEngine(getOC());
+			}else{
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+				ugi.doAs(new PrivilegedExceptionAction<Void>() {
+					public Void run() throws Exception {
+						deployEngine(getOC());
+						return null;
+					}
+				});
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
 	}
 
 	public FileSystem getFs() {

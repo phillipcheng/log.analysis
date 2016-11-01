@@ -101,31 +101,4 @@ public class GroupOp implements Serializable{
 		}
 		return values;
 	}
-	
-	public List<String> getCsvFields(CSVRecord r, Map<String, Object> variables){
-		List<String> keys = new ArrayList<String>();
-		if (getExpGroupExpScripts()!=null){
-			String[] fields = new String[r.size()];
-			for (int i=0; i<fields.length; i++){
-				fields[i] = r.get(i);
-			}
-			variables.put(ETLCmd.VAR_FIELDS, fields);
-			for (CompiledScript cs:getExpGroupExpScripts()){
-				keys.add(ScriptEngineUtil.eval(cs, variables));
-			}
-		}
-		
-		List<IdxRange> irl = getCommonGroupIdx();
-		for (IdxRange ir: irl){
-			int start = ir.getStart();
-			int end = ir.getEnd();
-			if (ir.getEnd()==-1){
-				end = r.size()-1;
-			}
-			for (int i=start; i<=end; i++){
-				keys.add(r.get(i));
-			}
-		}
-		return keys;
-	}
 }

@@ -1,5 +1,8 @@
 package etl.flow.oozie;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
+
+import bdap.util.PropertiesUtil;
 import etl.flow.mgr.FlowServerConf;
 
 //this is needed to generate job.properties and deployment
@@ -20,14 +23,21 @@ public class OozieConf implements FlowServerConf {
 	
 	private String oozieServerIp;
 	private int oozieServerPort;
-	private String jobTracker;
 	private String nameNode;
+	private String jobTracker;
 	private String queueName = "default";
 	private String oozieLibPath;
 	private String userName;
 	
-	public OozieConf(){	
+	public OozieConf(String confFile){
+		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(confFile);
+		oozieServerIp = pc.getString(key_oozie_server_ip);
+		oozieServerPort = pc.getInt(key_oozie_server_port);
+		nameNode = pc.getString(key_nameNode);
+		jobTracker =pc.getString(key_jobTracker);
+		userName = pc.getString(key_user_name);
 	}
+	
 	public OozieConf(String oozieServerIp, int oozieServerPort, String nameNode, String jobTracker, String oozieLibPath, String userName){
 		this.oozieServerIp = oozieServerIp;
 		this.oozieServerPort = oozieServerPort;
