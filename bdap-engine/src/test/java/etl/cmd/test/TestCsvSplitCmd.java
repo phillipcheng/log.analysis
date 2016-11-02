@@ -34,7 +34,7 @@ public class TestCsvSplitCmd extends TestETLCmd {
 		
 		List<String> files = HdfsUtil.listDfsFile(getFs(), remoteCsvOutputFolder);
 		logger.info("Output files: {}", files);
-		assertEquals(files.size(), 17);
+		assertEquals(files.size(), 4);
 		assertTrue(output.contains("H,262227201,20160409.0000,20160409.0100,7CF85400035D,1233,1,262227201,0,0,0,0,0"));
 	}
 }
