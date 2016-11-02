@@ -119,20 +119,14 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	@Test
 	public void testMultipleTables() throws Exception {
 		String schemaFolder = "/etltest/aggr/cfg/";//this is hard coded in the static properties for schema
-		String staticCfg = "csvAggrMultipleFiles.properties";
+		String staticCfg = "multipleTablesNoMerge.properties";
 		String schemaFile = "multipleTableSchemas.txt";
 		//
 		String remoteSqlFolder="/etltest/aggrschemaupdate/schemahistory/"; //since this is hard coded in the dynCfg
 		String createsqlFile = "createtables.sql_wfid1";//since this is hard coded in the dynCfg
 		
-		getFs().delete(new Path(schemaFolder), true);
-		getFs().mkdirs(new Path(schemaFolder));
-		
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
-		
-		getFs().delete(new Path(remoteSqlFolder), true);
-		getFs().mkdirs(new Path(remoteSqlFolder));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + schemaFile), new Path(schemaFolder + schemaFile));
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + createsqlFile), new Path(remoteSqlFolder + createsqlFile));
 		
 		CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + staticCfg, getDefaultFS(), null);
 		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());

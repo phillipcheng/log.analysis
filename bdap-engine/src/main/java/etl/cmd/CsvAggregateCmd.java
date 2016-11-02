@@ -32,7 +32,6 @@ import etl.cmd.transform.AggrOpMap;
 import etl.cmd.transform.GroupOp;
 import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
-import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
@@ -57,11 +56,12 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public static final String cfgkey_aggr_old_table="old.table";
 	public static final String cfgkey_aggr_new_table="new.table";
 	
-	private String[] oldTables = null;
+	int oldTableCnt=0;
+	private String[][] oldTables = null;
 	private String[] newTables = null;
-	private transient Map<String, String> oldnewTableMap;
-	private transient Map<String, AggrOpMap> aoMapMap; //table name to AggrOpMap
-	private transient Map<String, GroupOp> groupKeysMap; //table name to 
+	private transient Map<String, List<String>> oldnewTableMap;
+	private transient Map<String, AggrOpMap> aoMapMap; //old table name to AggrOpMap
+	private transient Map<String, GroupOp> groupKeysMap; //old table name to groupOp
 	
 	private boolean mergeTable = false;
 	
@@ -103,7 +103,12 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		aoMapMap = new HashMap<String, AggrOpMap>();
 		groupKeysMap = new HashMap<String, GroupOp>();
 		if (super.cfgContainsKey(cfgkey_aggr_old_table)){
-			oldTables = super.getCfgStringArray(cfgkey_aggr_old_table);
+			String[] oldTableGroups = super.getCfgStringArray(cfgkey_aggr_old_table);
+			oldTables = new String[oldTableGroups.length][];
+			for (int i=0; i<oldTables.length;i++){
+				oldTables[i]=oldTableGroups[i].split(";");
+				oldTableCnt+=oldTables[i].length;
+			}
 		}
 		if (super.cfgContainsKey(cfgkey_aggr_new_table)){
 			newTables = super.getCfgStringArray(cfgkey_aggr_new_table);
@@ -115,37 +120,44 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			GroupOp groupOp = getGroupOp(null);
 			groupKeysMap.put(SINGLE_TABLE, groupOp);
 		}else{
-			oldnewTableMap = new HashMap<String, String>();
+			oldnewTableMap = new HashMap<String, List<String>>();
 			for (int i=0; i<oldTables.length; i++){
-				String tableName = oldTables[i];
-				if (newTables.length>i){
+				for (int j=0; j<oldTables[i].length; j++){
+					String tableName = oldTables[i][j];
 					String newTable = newTables[i];
-					oldnewTableMap.put(tableName, newTable);
-				}
-				AggrOpMap aoMap = null;
-				GroupOp groupOp = null;
-				if (super.cfgContainsKey(tableName+"."+cfgkey_aggr_op)){
-					aoMap = new AggrOpMap(super.getCfgStringArray(tableName+"."+cfgkey_aggr_op));
-					String groupKey = tableName+"."+cfgkey_aggr_groupkey;
-					String groupKeyExp = tableName+"."+cfgkey_aggr_groupkey_exp;
-					if (super.cfgContainsKey(groupKey) || super.cfgContainsKey(groupKeyExp)){
-						groupOp = getGroupOp(tableName);
-					}else{//for merge tables
-						groupOp = getGroupOp(null);
+					List<String> newTables = oldnewTableMap.get(tableName);
+					if (newTables==null){
+						newTables = new ArrayList<String>();
+						oldnewTableMap.put(tableName, newTables);
 					}
-				}else if (super.cfgContainsKey(cfgkey_aggr_op)){
-					aoMap = new AggrOpMap(super.getCfgStringArray(cfgkey_aggr_op));
-					groupOp = getGroupOp(null);
-				}else{
-					logger.error(String.format("aggr_op not configured for table %s", tableName));
+					newTables.add(newTable);
+					AggrOpMap aoMap = null;
+					GroupOp groupOp = null;
+					if (super.cfgContainsKey(tableName+"."+cfgkey_aggr_op)){
+						aoMap = new AggrOpMap(super.getCfgStringArray(tableName+"."+cfgkey_aggr_op));
+						String groupKey = tableName+"."+cfgkey_aggr_groupkey;
+						String groupKeyExp = tableName+"."+cfgkey_aggr_groupkey_exp;
+						if (super.cfgContainsKey(groupKey) || super.cfgContainsKey(groupKeyExp)){
+							groupOp = getGroupOp(tableName);
+						}else{//for merge tables
+							groupOp = getGroupOp(null);
+						}
+					}else if (super.cfgContainsKey(cfgkey_aggr_op)){
+						aoMap = new AggrOpMap(super.getCfgStringArray(cfgkey_aggr_op));
+						groupOp = getGroupOp(null);
+					}else{
+						logger.error(String.format("aggr_op not configured for table %s", tableName));
+					}
+					aoMapMap.put(tableName, aoMap);
+					groupKeysMap.put(tableName, groupOp);
 				}
-				aoMapMap.put(tableName, aoMap);
-				groupKeysMap.put(tableName, groupOp);
 			}
 		}
-		this.mergeTable = (oldTables!=null && newTables!=null && oldTables.length>1 && newTables.length==1);
+		this.mergeTable = oldnewTableMap!=null && this.oldTableCnt>this.newTables.length;
 		if (mergeTable){
-			Arrays.sort(oldTables);
+			for (String[] oldTableGroup:oldTables){
+				Arrays.sort(oldTableGroup);
+			}
 		}
 	}
 	
@@ -176,14 +188,14 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		return keys;
 	}
 	
+	Map<String, List<String>> attrsMap = new HashMap<String, List<String>>();
+	Map<String, List<FieldType>> attrTypesMap = new HashMap<String, List<FieldType>>();
 	//single process for schema update
 	@Override
 	public List<String> sgProcess(){
-		Map<String, List<String>> attrsMap = new HashMap<String, List<String>>();
-		Map<String, List<FieldType>> attrTypesMap = new HashMap<String, List<FieldType>>();
 		if (!mergeTable){//one to one aggr
-			for (int tbIdx=0; tbIdx<oldTables.length; tbIdx++){
-				String oldTable = oldTables[tbIdx];
+			for (int tbIdx=0; tbIdx<oldTables[0].length; tbIdx++){
+				String oldTable = oldTables[0][tbIdx];
 				String newTable = newTables[tbIdx];
 				List<String> attrs = logicSchema.getAttrNames(oldTable);
 				List<FieldType> attrTypes = logicSchema.getAttrTypes(oldTable);
@@ -213,48 +225,57 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 				attrTypesMap.put(newTable, newTypes);
 			}
 		}else{//many to one aggr rows and merge tables
-			String firstTable = oldTables[0];
-			List<IdxRange> commonGroupKeys = groupKeysMap.get(firstTable).getCommonGroupIdx();
-			AggrOp aop = new AggrOp(AggrOperator.group, commonGroupKeys);
-			AggrOpMap groupAOMap = new AggrOpMap();
-			groupAOMap.addAggrOp(aop);
-			List<String> attrs = logicSchema.getAttrNames(firstTable);
-			List<FieldType> attrTypes = logicSchema.getAttrTypes(firstTable);
-			List<String> newAttrs = new ArrayList<String>();
-			List<FieldType> newTypes = new ArrayList<FieldType>();
-			int idxMax = attrs.size()-1;
-			groupAOMap.constructMap(idxMax);
-			for (int i=0; i<=idxMax; i++){
-				if (groupAOMap.getOp(i)!=null){
-					newAttrs.add(attrs.get(i)); //use common attr name
-					newTypes.add(attrTypes.get(i));
-				}
-			}
-			String[] groupExpNames = groupKeysMap.get(firstTable).getExpGroupNames();
-			String[] groupExpTypes = groupKeysMap.get(firstTable).getExpGroupTypes();
-			if (groupExpNames!=null){
-				for (int i=0; i<groupExpNames.length; i++){
-					newAttrs.add(0, groupExpNames[groupExpNames.length-1-i]);//use common attr name
-					newTypes.add(0, new FieldType(groupExpTypes[groupExpNames.length-1-i]));
-				}
-			}
-			for (String oldTable: oldTables){
-				attrs = logicSchema.getAttrNames(oldTable);
-				attrTypes = logicSchema.getAttrTypes(oldTable);
-				AggrOpMap aoMap = aoMapMap.get(oldTable);
-				idxMax = logicSchema.getAttrNames(oldTable).size()-1;
-				aoMap.constructMap(idxMax);
+			for (int idx=0; idx<oldTables.length; idx++){
+				String[] oldTableGroup=oldTables[idx];
+				String newTableName = newTables[idx];
+				String firstTable = oldTableGroup[0];
+				List<IdxRange> commonGroupKeys = groupKeysMap.get(firstTable).getCommonGroupIdx();
+				AggrOp aop = new AggrOp(AggrOperator.group, commonGroupKeys);
+				AggrOpMap groupAOMap = new AggrOpMap();
+				groupAOMap.addAggrOp(aop);
+				List<String> attrs = logicSchema.getAttrNames(firstTable);
+				List<FieldType> attrTypes = logicSchema.getAttrTypes(firstTable);
+				List<String> newAttrs = new ArrayList<String>();
+				List<FieldType> newTypes = new ArrayList<FieldType>();
+				int idxMax = attrs.size()-1;
+				groupAOMap.constructMap(idxMax);
 				for (int i=0; i<=idxMax; i++){
-					if (aoMap.getOp(i)!=null){
-						newAttrs.add(oldTable+"_"+attrs.get(i));//use updated name
+					if (groupAOMap.getOp(i)!=null){
+						newAttrs.add(attrs.get(i)); //use common attr name
 						newTypes.add(attrTypes.get(i));
 					}
 				}
+				String[] groupExpNames = groupKeysMap.get(firstTable).getExpGroupNames();
+				String[] groupExpTypes = groupKeysMap.get(firstTable).getExpGroupTypes();
+				if (groupExpNames!=null){
+					for (int i=0; i<groupExpNames.length; i++){
+						newAttrs.add(0, groupExpNames[groupExpNames.length-1-i]);//use common attr name
+						newTypes.add(0, new FieldType(groupExpTypes[groupExpNames.length-1-i]));
+					}
+				}
+				for (String oldTable: oldTableGroup){
+					attrs = logicSchema.getAttrNames(oldTable);
+					attrTypes = logicSchema.getAttrTypes(oldTable);
+					AggrOpMap aoMap = aoMapMap.get(oldTable);
+					idxMax = logicSchema.getAttrNames(oldTable).size()-1;
+					aoMap.constructMap(idxMax);
+					for (int i=0; i<=idxMax; i++){
+						if (aoMap.getOp(i)!=null){
+							newAttrs.add(oldTable+"_"+attrs.get(i));//use updated name
+							newTypes.add(attrTypes.get(i));
+						}
+					}
+				}
+				attrsMap.put(newTableName, newAttrs);
+				attrTypesMap.put(newTableName, newTypes);
 			}
-			attrsMap.put(newTables[0], newAttrs);
-			attrTypesMap.put(newTables[0], newTypes);
 		}
 		return updateSchema(attrsMap, attrTypesMap);
+	}
+	
+	public void genSchemaSql(String lsFile, String sqlFile){
+		sgProcess();
+		super.genSchemaSql(attrsMap, attrTypesMap, lsFile, sqlFile);
 	}
 
 	//tableKey.aggrKeys,aggrValues
@@ -265,30 +286,39 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			String row = value.toString();
 			CSVParser parser = CSVParser.parse(row, CSVFormat.DEFAULT);
 			List<CSVRecord> csvl = parser.getRecords();
-			String tableKey = SINGLE_TABLE;
+			String oldTableName = SINGLE_TABLE;
 			for (CSVRecord r: csvl){
 				GroupOp groupKeys = null;
 				if (oldTables==null){
 					groupKeys = groupKeysMap.get(SINGLE_TABLE);
 				}else{
 					if (groupKeysMap.containsKey(tableName)){
-						tableKey = tableName;
+						oldTableName = tableName;
 						groupKeys = groupKeysMap.get(tableName);
 					}else{
 						logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), tableName));
 						break;
 					}
 				}
-				List<String> keys = getCsvFields(r, groupKeys);
 				String v = row;
 				if (!mergeTable){
-					keys.add(0, tableKey);
+					List<String> keys = getCsvFields(r, groupKeys);
+					keys.add(0, oldTableName);
+					String newKey = Util.getCsv(keys, false);
+					logger.debug(String.format("key:%s, value:%s", newKey, v));
+					ret.add(new Tuple2<String, String>(newKey, v));
 				}else{
-					v = tableKey + KEY_SEP + row;
+					List<String> newTableNames = oldnewTableMap.get(tableName);
+					v = oldTableName + KEY_SEP + row;
+					for (String newTableName:newTableNames){
+						List<String> keys = getCsvFields(r, groupKeys);
+						keys.add(0, newTableName);
+						String newKey = Util.getCsv(keys, false);
+						logger.debug(String.format("key:%s, value:%s", newKey, v));
+						ret.add(new Tuple2<String, String>(newKey, v));
+					}
 				}
-				String newKey = Util.getCsv(keys, false);
-				logger.debug(String.format("key:%s, value:%s", newKey, v));
-				ret.add(new Tuple2<String, String>(newKey, v));
+				
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -300,6 +330,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
 			String tableName = getTableName(context);
+			logger.debug(String.format("in map tableName:%s", tableName));
 			if (tableName==null || "".equals(tableName.trim())){
 				logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
 						((FileSplit) context.getInputSplit()).getPath().getName()));
@@ -358,18 +389,19 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	
 	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
 		super.init();
+		String[] kl = key.toString().split(KEY_SEP, -1);
+		String tableName = kl[0];
+		List<String> ks = new ArrayList<String>();
+		for (int i=1; i<kl.length; i++){
+			ks.add(kl[i]);
+		}
+		String newKey = String.join(KEY_SEP, ks);
 		if (!mergeTable){
-			String[] kl = key.toString().split(KEY_SEP, -1);
-			String tableName = kl[0];
-			List<String> ks = new ArrayList<String>();
-			for (int i=1; i<kl.length; i++){
-				ks.add(kl[i]);
-			}
-			String newKey = String.join(KEY_SEP, ks);
 			List<CSVRecord> rl = new ArrayList<CSVRecord>();
 			Iterator<String> its = it.iterator();
 			while (its.hasNext()){
 				String v = its.next();
+				logger.debug(String.format("reduce: key:%s, one value:%s", key, v));
 				try {
 					CSVParser parser = CSVParser.parse(v.toString(), CSVFormat.DEFAULT);
 					rl.addAll(parser.getRecords());
@@ -379,28 +411,32 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			}
 			String newTableName = tableName;
 			if (oldnewTableMap!=null && oldnewTableMap.containsKey(tableName)){
-				newTableName = oldnewTableMap.get(tableName);
+				newTableName = oldnewTableMap.get(tableName).get(0);
 			}
 			return new Tuple3<String, String, String>(newKey, 
 					Util.getCsv(getAggrValues(tableName, rl), false), 
 					newTableName);
 		}else{
+			int grpIdx = Arrays.asList(newTables).indexOf(tableName);
+			if (grpIdx==-1){
+				logger.error(String.format("%s not found in new tables %s", tableName, Arrays.asList(newTables)));
+			}
 			TreeMap<String, List<CSVRecord>> sortedTableValuesMap = new TreeMap<String, List<CSVRecord>>();
 			Iterator<String> its = it.iterator();
 			while (its.hasNext()){
 				try {
 					String s = its.next().toString();
-					logger.debug(String.format("aggr: key:%s, one value:%s", key, s));
+					logger.debug(String.format("reduce: key:%s, one value:%s", key, s));
 					int firstComma =s.indexOf(KEY_SEP);
-					String tableName = s.substring(0, firstComma);
+					String oldTableName = s.substring(0, firstComma);
 					String vs = s.substring(firstComma+1);
 					CSVParser parser = CSVParser.parse(vs, CSVFormat.DEFAULT);
 					List<CSVRecord> rl = new ArrayList<CSVRecord>();
 					rl.addAll(parser.getRecords());
-					List<CSVRecord> csvrl = sortedTableValuesMap.get(tableName);
+					List<CSVRecord> csvrl = sortedTableValuesMap.get(oldTableName);
 					if (csvrl==null) {
 						csvrl = new ArrayList<CSVRecord>();
-						sortedTableValuesMap.put(tableName, csvrl);
+						sortedTableValuesMap.put(oldTableName, csvrl);
 					}
 					csvrl.addAll(rl);
 				}catch(Exception e){
@@ -408,17 +444,16 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 				}
 			}
 			List<String> aggrValues = new ArrayList<String>();
-			for (int i=0; i<oldTables.length; i++){
-				String tableName = oldTables[i];
-				List<CSVRecord> csvrl = sortedTableValuesMap.get(tableName);
-				List<String> avs = getAggrValues(tableName, csvrl);
+			for (int i=0; i<oldTables[grpIdx].length; i++){
+				String oldTableName = oldTables[grpIdx][i];
+				List<CSVRecord> csvrl = sortedTableValuesMap.get(oldTableName);
+				List<String> avs = getAggrValues(oldTableName, csvrl);
 				aggrValues.addAll(avs);
-				
 			}
 			return new Tuple3<String, String, String>(
-					key.toString(), 
+					newKey.toString(), 
 					Util.getCsv(aggrValues, false), 
-					newTables[0]);
+					newTables[grpIdx]);
 		}
 	}
 	
@@ -458,21 +493,5 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 		
 		return csvaggr;
 		
-	}
-
-	public String[] getOldTables() {
-		return oldTables;
-	}
-
-	public void setOldTables(String[] oldTables) {
-		this.oldTables = oldTables;
-	}
-
-	public String[] getNewTables() {
-		return newTables;
-	}
-
-	public void setNewTables(String[] newTables) {
-		this.newTables = newTables;
 	}
 }

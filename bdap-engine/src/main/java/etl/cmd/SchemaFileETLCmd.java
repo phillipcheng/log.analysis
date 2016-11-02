@@ -1,5 +1,8 @@
 package etl.cmd;
 
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +12,10 @@ import javax.script.CompiledScript;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.JsonUtils;
 
 import bdap.util.HdfsUtil;
+import bdap.util.JsonUtil;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.fs.Path;
@@ -140,6 +145,24 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 		return loginfo;
 	}
 	
+	public void genSchemaSql(Map<String, List<String>> attrsMap, Map<String, List<FieldType>> attrTypesMap, String schemaFile, String sqlFile){
+		List<String> createTableSqls = new ArrayList<String>();
+		LogicSchema newls = new LogicSchema();
+		newls.setAttrNameMap(attrsMap);
+		newls.setAttrTypeMap(attrTypesMap);
+		for (String newTable: attrsMap.keySet()){
+			List<String> newAttrs = attrsMap.get(newTable);
+			List<FieldType> newTypes = attrTypesMap.get(newTable);
+			createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, dbPrefix, getDbtype())+";\n");
+		}
+		JsonUtil.toLocalJsonFile(schemaFile, newls);
+		try {
+			java.nio.file.Path out = Paths.get(sqlFile);
+			Files.write(out, createTableSqls, Charset.defaultCharset());
+		}catch(Exception e){
+			logger.error("", e);
+		}
+	}
 	public List<String> updateSchema(Map<String, List<String>> attrsMap, Map<String, List<FieldType>> attrTypesMap){
 		boolean schemaUpdated = false;
 		List<String> createTableSqls = new ArrayList<String>();

@@ -102,7 +102,8 @@ public class EngineUtil {
 				sendLog = engineProp.getBoolean(key_enable_kafka, false);
 				bootstrapServers = engineProp.getString(key_bootstrap_servers);
 				logger.info(String.format("kafka producer bootstrap servers:%s", bootstrapServers));
-				producer = createProducer(bootstrapServers);
+				if (bootstrapServers!=null)
+					producer = createProducer(bootstrapServers);
 				logInterval = engineProp.getInt(key_log_interval, 30);
 			}catch(Exception e){
 				logger.error("failed to get kafka producer.", e);
