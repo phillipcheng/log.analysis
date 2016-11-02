@@ -37,5 +37,18 @@ public class TestGroupFun {
 		logger.info(output);
 		Assert.assertEquals(output, "");
 	}
+	
+	@Test
+	public void testSplitTimeRange() throws Exception{
+		
+		String[] value=GroupFun.splitTimeRange("2016-10-12 10:10:02", "2016-10-12 10:10:05", "yyyy-MM-dd HH:mm:ss", "UTC","yyyy-MM-dd HH:mm:ss.S",5000L);
+		
+		String readableValue=String.join("\n", value);
+		logger.info("Value:\n{}", readableValue);
+		
+		Assert.assertEquals(2, value.length);
+		Assert.assertEquals("2016-10-12 10:10:00.0,2016-10-12 10:10:04.999", value[0]);
+		Assert.assertEquals("2016-10-12 10:10:05.0,2016-10-12 10:10:09.999", value[1]);
+	}
 
 }
