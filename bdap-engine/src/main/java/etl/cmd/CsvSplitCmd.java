@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.CompiledScript;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -17,8 +19,11 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.collect.Lists;
+
 import etl.engine.ETLCmd;
 import etl.util.IdxRange;
+import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
 
 public class CsvSplitCmd extends ETLCmd {
@@ -28,9 +33,14 @@ public class CsvSplitCmd extends ETLCmd {
 
 	private static final String SPLIT_KEYS = "split.keys";
 	private static final String SPLIT_KEYS_OMIT = "split.keys.omit";
+	private static final String SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
+
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	
 	private List<IdxRange> splitKeys;
 	private boolean splitKeysOmit;
+	
+	private CompiledScript splitKeysReduce;
 	
 	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
@@ -46,15 +56,25 @@ public class CsvSplitCmd extends ETLCmd {
 		
 		splitKeys = IdxRange.parseString(getCfgString(SPLIT_KEYS, null));
 		splitKeysOmit = getCfgBoolean(SPLIT_KEYS_OMIT, false);
+		
+		String cfg = getCfgString(SPLIT_KEYS_REDUCE_EXP, null);
+		if (cfg != null && cfg.length() > 0)
+			splitKeysReduce = ScriptEngineUtil.compileScript(cfg);
 	}
 
 	public Map<String, Object> mapProcess(long offset, String row,
 			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
 		Map<String, Object> ret = new HashMap<String, Object>();
-		CSVParser parser = CSVParser.parse(row, CSVFormat.DEFAULT.withTrim());
-		CSVRecord csv = parser.getRecords().get(0);
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
-		vl.add(getTuple2(csv, splitKeys, splitKeysOmit));
+		CSVParser parser = null;
+		try {
+			parser = CSVParser.parse(row, CSVFormat.DEFAULT.withTrim());
+			for (CSVRecord csv : parser.getRecords())
+				vl.add(getTuple2(csv, splitKeys, splitKeysOmit));
+		} finally {
+			if (parser != null)
+				parser.close();
+		}
 		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
 		return ret;
 	}
@@ -72,7 +92,7 @@ public class CsvSplitCmd extends ETLCmd {
 			
 			for (i = 0; i < csv.size(); i ++) {
 				if (isSplitKey(splitKeys, csv.size(), i)) {
-					keys.add(csv.get(i));
+					keys.add(tryEscapeHyphen(csv.get(i)));
 					if (!splitKeysOmit)
 						printer.print(csv.get(i));
 					
@@ -89,6 +109,13 @@ public class CsvSplitCmd extends ETLCmd {
 		keysName = StringUtils.join(keys, "-");
 		
 		return new Tuple2<String, String>(keysName, buffer.toString());
+	}
+
+	private String tryEscapeHyphen(String key) {
+		if (key != null && key.contains("-"))
+			return key.replace('-', '_');
+		else
+			return key;
 	}
 
 	private boolean isSplitKey(List<IdxRange> splitKeys, int recordValues, int i) {
@@ -110,9 +137,37 @@ public class CsvSplitCmd extends ETLCmd {
 		Iterator<Text> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();
-			ret.add(new String[]{v, null, key.toString()});
+			ret.add(new String[]{v, null, reduceKey(key.toString(), v)});
 		}
 		
 		return ret;
+	}
+
+	private String reduceKey(String key, String value) throws Exception {
+		if (splitKeysReduce != null) {
+			String[] keys;
+			if (key != null && key.length() > 0)
+				keys = key.split("-");
+			else
+				keys = EMPTY_STRING_ARRAY;
+			getSystemVariables().put("keys", keys);
+
+			CSVParser parser = null;
+			try {
+				parser = CSVParser.parse(value, CSVFormat.DEFAULT.withTrim());
+				for (CSVRecord csv : parser.getRecords())
+					getSystemVariables().put(ETLCmd.VAR_FIELDS, Lists.newArrayList(csv));
+			} finally {
+				if (parser != null)
+					parser.close();
+			}
+			String result = ScriptEngineUtil.eval(splitKeysReduce, getSystemVariables());
+			getSystemVariables().remove("keys");
+			getSystemVariables().remove(ETLCmd.VAR_FIELDS);
+			return result;
+			
+		} else {
+			return key;
+		}
 	}
 }
