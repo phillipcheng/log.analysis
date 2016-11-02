@@ -20,7 +20,7 @@ import dv.db.entity.FlowEntity;
 import etl.flow.Flow;
 
 @RestController
-@RequestMapping("/{userId}/flow")
+@RequestMapping("/{userName}/flow")
 public class FlowController {
 	
 	@Autowired
@@ -33,10 +33,10 @@ public class FlowController {
 	private final AccountRepository accountRepository;
 	
 	@RequestMapping(method = RequestMethod.POST)
-	ResponseEntity<?> add(@PathVariable String userId, @RequestBody Flow input) {
-		this.validateUser(userId);
+	ResponseEntity<?> add(@PathVariable String userName, @RequestBody Flow input) {
+		this.validateUser(userName);
 		FlowEntity fe = flowRepository.save(new FlowEntity(input.getName(),
-				userId, JsonUtil.toJsonString(input)));
+				userName, JsonUtil.toJsonString(input)));
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setLocation(ServletUriComponentsBuilder
@@ -46,15 +46,15 @@ public class FlowController {
 	}
 	
 	@RequestMapping(value = "/{flowId}", method = RequestMethod.GET)
-	FlowEntity getFlow(@PathVariable String userId, @PathVariable String flowId) {
-		this.validateUser(userId);
+	FlowEntity getFlow(@PathVariable String userName, @PathVariable String flowId) {
+		this.validateUser(userName);
 		return this.flowRepository.findOne(flowId);
 	}
 	
-	private void validateUser(String userId) {
-		AccountEntity ae = this.accountRepository.findOne(userId);
+	private void validateUser(String userName) {
+		AccountEntity ae = this.accountRepository.findOne(userName);
 		if (ae==null){
-			throw new UserNotFoundException(userId);
+			throw new UserNotFoundException(userName);
 		}
 	}
 	

@@ -12,9 +12,10 @@ import javax.persistence.Table;
 @Table(name="t_account")
 public class AccountEntity {
 
-	@Id
+	
 	@GeneratedValue
 	private int userId;
+	@Id
 	@Column(name="name",length=50)  
 	private String userName;
 	private String password;

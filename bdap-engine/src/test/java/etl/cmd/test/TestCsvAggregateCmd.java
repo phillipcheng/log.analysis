@@ -83,4 +83,23 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		assertTrue(output.contains(csv));
 	}
 	
+	@Test
+	public void testNoGroupAggr() throws Exception {
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "csvAggrNoGroup.properties";
+		String[] csvFiles = new String[] {"data1.data"};
+		//prepare data
+		String dataFile = "maxA";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+dataFile), new Path("/data/"+dataFile));
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:"+output);
+		
+		// assertion
+		assertTrue(output.size() > 0);
+		String sampleOutput = output.get(0);
+		String[] csvs = sampleOutput.split(",", -1);
+		assertTrue("1.0".equals(csvs[0]));
+	}
+	
 }
