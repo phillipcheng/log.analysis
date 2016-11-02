@@ -2,10 +2,12 @@ package etl.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
@@ -178,29 +180,34 @@ public class GroupFun {
 		return DatatypeConverter.parseHexBinary(hexStr);
 	}
 	
-	public static String[] splitTimeRange(String startTimeStr,String endTimeStr,String timeFormat, String timezone, long splitSize) throws ParseException{
-		SimpleDateFormat sdf=new SimpleDateFormat(timeFormat);
-		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
-		Date startTime=sdf.parse(startTimeStr);
-		Date endTime=sdf.parse(endTimeStr);
-		
-		long rangeStart= (startTime.getTime()/splitSize)*splitSize;
-		long rangeEnd=0;
-		if(endTime.getTime()%splitSize==0){
-			rangeEnd=endTime.getTime();
-		}else{
-			rangeEnd=((endTime.getTime()/splitSize)+1)*splitSize;
+	public static String[] splitTimeRange(String startTimeStr,String endTimeStr,String inputTimeFormat, String inputTimezone, String outputTimeFormat, long splitSize){
+		try{
+			SimpleDateFormat sdf=new SimpleDateFormat(inputTimeFormat);
+			sdf.setTimeZone(TimeZone.getTimeZone(inputTimezone));
+			SimpleDateFormat sdfOut=new SimpleDateFormat(outputTimeFormat);
+			sdfOut.setTimeZone(TimeZone.getTimeZone("UTC"));
+			
+			Date startTime=sdf.parse(startTimeStr);
+			Date endTime=sdf.parse(endTimeStr);
+			
+			long rangeStart= (startTime.getTime()/splitSize)*splitSize;
+			
+			StringBuilder sb=new StringBuilder();
+			List<String> splitedDateList=new ArrayList<String>();
+			long splitRangeStart=rangeStart;
+			while(splitRangeStart<=endTime.getTime()){
+				sb.append(sdfOut.format(new Date(splitRangeStart))).append(",").append(sdfOut.format(new Date(splitRangeStart+splitSize-1)));
+				splitedDateList.add(sb.toString());
+				sb.setLength(0);
+				splitRangeStart=splitRangeStart+splitSize;
+			}
+			
+			return splitedDateList.toArray(new String[0]);
+		}catch(Exception e){
+			logger.error("Cannot split the time range with startTime:{}, endTime:{}, inputTimeFormat:{}, inputTimeZone:{}, outputTimeFormat:{}, splitSize:{}",new Object[]{startTimeStr,endTimeStr,inputTimeFormat, inputTimezone, outputTimeFormat, splitSize});
+			logger.error("With Exception:",e);
+			return null;
 		}
 		
-		int size= (int) ((rangeEnd-rangeStart)/splitSize);
-		
-		StringBuilder sb=new StringBuilder();
-		String[] splitedDateArray=new String[size];
-		for(int i=0;i<size;i++){
-			sb.append(sdf.format(new Date(rangeStart+i*splitSize))).append(",").append(sdf.format(new Date(rangeStart+(i+1)*splitSize)));
-			splitedDateArray[i]=sb.toString();
-			sb.setLength(0);
-		}
-		return splitedDateArray;
 	}
 }

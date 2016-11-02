@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.CompiledScript;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -36,7 +38,9 @@ public class CsvCountCmd extends SchemaFileETLCmd{
 	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
 	
 	private String splitDimensionExp;
+	private CompiledScript splitDimensionCS=null;
 	private String groupDimensionExp;
+	private CompiledScript groupDimensionCS=null;
 	private boolean skipHeader=false;
 	private String rowValidation;
 	private boolean inputEndWithComma=false;	
@@ -62,6 +66,15 @@ public class CsvCountCmd extends SchemaFileETLCmd{
 		skipHeader =super.getCfgBoolean(cfgkey_skip_header, false);
 		rowValidation = super.getCfgString(cfgkey_row_validation, null);
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
+		
+		if(splitDimensionExp!=null){
+			splitDimensionCS=ScriptEngineUtil.compileScript(splitDimensionExp);
+		}
+		
+		if(groupDimensionExp!=null){
+			groupDimensionCS=ScriptEngineUtil.compileScript(groupDimensionExp);
+		}
+		 
 	}
 	
 	@Override
@@ -95,7 +108,7 @@ public class CsvCountCmd extends SchemaFileETLCmd{
 		//get dims
 		String groupDimsValue=null;
 		if(groupDimensionExp!=null){
-			groupDimsValue=(String) ScriptEngineUtil.eval(groupDimensionExp, VarType.STRING, super.getSystemVariables());
+			groupDimsValue=(String) ScriptEngineUtil.eval(this.groupDimensionCS, super.getSystemVariables());
 			if(groupDimsValue==null){
 				logger.info("No dims:" + row);
 				return null;
@@ -104,7 +117,7 @@ public class CsvCountCmd extends SchemaFileETLCmd{
 		
 		String[] splitDimsValueArray=null;
 		if(splitDimensionExp!=null){			
-			splitDimsValueArray=(String[])ScriptEngineUtil.eval(splitDimensionExp, VarType.OBJECT, super.getSystemVariables());
+			splitDimsValueArray=(String[]) ScriptEngineUtil.evalObject(this.splitDimensionCS, super.getSystemVariables());
 			if(splitDimsValueArray==null || splitDimsValueArray.length==0){
 				logger.info("No splited dims:" + row);
 				return null;

@@ -32,7 +32,7 @@ public class TestCsvCountCmd extends TestETLCmd{
 		}		
 	}
 	
-	@Test
+//	@Test
 	public void testmr_groupdim() {
 		String staticCfgName = "csvcount.conf.properties";
 		String wfid="wfid1";
@@ -65,7 +65,7 @@ public class TestCsvCountCmd extends TestETLCmd{
 			getFs().setPermission(new Path(inputFolder + csvFileName1), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));
 			getFs().setPermission(new Path(inputFolder + csvFileName2), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));	
 			
-			List<String> output = super.mrTest(dfsCfgFolder, inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, false);
+			List<String> output = super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, false);
 			logger.info("Output is:\n"+String.join("\n",output));
 			
 			Assert.assertEquals(5, output.size());
@@ -113,16 +113,15 @@ public class TestCsvCountCmd extends TestETLCmd{
 			getFs().setPermission(new Path(inputFolder + csvFileName1), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));
 			getFs().setPermission(new Path(inputFolder + csvFileName2), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));	
 			
-			List<String> output = super.mrTest(dfsCfgFolder, inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, false);
+			List<String> output = super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, false);
 			logger.info("Output is:\n"+String.join("\n",output));
 			
-			Assert.assertEquals(13, output.size());
-			Assert.assertTrue(output.contains("2016-10-12 10:10:05,2016-10-12 10:10:10,2"));
-			Assert.assertTrue(output.contains("2016-10-12 10:10:10,2016-10-12 10:10:15,3"));
-			Assert.assertTrue(output.contains("2016-10-12 10:10:15,2016-10-12 10:10:20,3"));
-			Assert.assertTrue(output.contains("2016-10-12 10:10:20,2016-10-12 10:10:25,2"));
-
-			
+			Assert.assertEquals(5, output.size());
+			Assert.assertEquals("2016-10-12 10:10:00.0,2016-10-12 10:10:04.999,1", output.get(0));
+			Assert.assertEquals("2016-10-12 10:10:05.0,2016-10-12 10:10:09.999,1", output.get(1));
+			Assert.assertEquals("2016-10-12 10:10:10.0,2016-10-12 10:10:14.999,1", output.get(2));
+			Assert.assertEquals("2016-10-12 10:10:15.0,2016-10-12 10:10:19.999,2", output.get(3));
+			Assert.assertEquals("2016-10-12 10:10:20.0,2016-10-12 10:10:24.999,1", output.get(4));			
 		}  catch (Exception e) {
 			logger.error("Exception occured due to invalid data-history path", e);
 		}
