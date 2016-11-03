@@ -23,7 +23,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import etl.cmd.transform.AggrOp;
-import etl.cmd.transform.AggrOpMap;
+import etl.cmd.transform.AggrOps;
 import etl.cmd.transform.GroupOp;
 import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
@@ -126,35 +126,24 @@ public class CsvMergeCmd extends SchemaFileETLCmd{
 		{
 			String firstTable = srcTables[0];
 			List<IdxRange> commonGroupKeys = this.srcKeys[0];
-			AggrOp aop = new AggrOp(AggrOperator.group, commonGroupKeys);
-			AggrOpMap groupAOMap = new AggrOpMap();
-			groupAOMap.addAggrOp(aop);
 			List<String> attrs = logicSchema.getAttrNames(firstTable);
 			List<FieldType> attrTypes = logicSchema.getAttrTypes(firstTable);
-			int idxMax = attrs.size()-1;
-			groupAOMap.constructMap(idxMax);
-			for (int i=0; i<=idxMax; i++){
-				if (groupAOMap.getOp(i)!=null){
-					newAttrs.add(attrs.get(i)); //use common attr name
-					newTypes.add(attrTypes.get(i));
-				}
+			List<Integer> groupKeyIdxList = GroupOp.getIdxInRange(commonGroupKeys, attrs.size());
+			for (int i:groupKeyIdxList){
+				newAttrs.add(attrs.get(i)); //use common attr name
+				newTypes.add(attrTypes.get(i));
 			}
 		}
 		for (int i=0; i<srcNum; i++){
 			String oldTable = srcTables[i];
 			List<IdxRange> commonGroupKeys = this.srcKeys[i];
-			AggrOp aop = new AggrOp(AggrOperator.group, commonGroupKeys);
-			AggrOpMap groupAOMap = new AggrOpMap();
-			groupAOMap.addAggrOp(aop);
 			List<String> attrs = logicSchema.getAttrNames(oldTable);
 			List<FieldType> attrTypes = logicSchema.getAttrTypes(oldTable);
-			int idxMax = logicSchema.getAttrNames(oldTable).size()-1;
-			groupAOMap.constructMap(idxMax);
-			for (int j=0; j<=idxMax; j++){
-				if (groupAOMap.getOp(j)==null){//no group key
-					newAttrs.add(oldTable+"_"+attrs.get(j));//use updated name
-					newTypes.add(attrTypes.get(j));
-				}
+			int attrNum = logicSchema.getAttrNames(oldTable).size();
+			List<Integer> groupKeyIdxList = GroupOp.getIdxOutRange(commonGroupKeys, attrNum);
+			for (int j:groupKeyIdxList){
+				newAttrs.add(oldTable+"_"+attrs.get(j));
+				newTypes.add(attrTypes.get(j));
 			}
 		}
 		attrsMap.put(destTable, newAttrs);

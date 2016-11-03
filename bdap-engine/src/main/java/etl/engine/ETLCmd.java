@@ -135,11 +135,15 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		if (prefix!=null){
 			realKey = prefix+"."+key;
 		}
+		pc.setDelimiterParsingDisabled(true);
+		String v=null;
 		if (pc.containsKey(realKey)){
-			return pc.getString(realKey, defaultValue);
+			v = pc.getString(realKey, defaultValue);
 		}else{
-			return pc.getString(key, defaultValue);
+			v = pc.getString(key, defaultValue);
 		}
+		pc.setDelimiterParsingDisabled(false);
+		return v;
 	}
 	
 	//return 0 length array if not found

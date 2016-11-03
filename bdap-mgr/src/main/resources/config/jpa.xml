@@ -48,6 +48,13 @@
 	  <property name="entityManagerFactory" ref="entityManagerFactory"/>
 	</bean>
 	
-	<jpa:repositories base-package="dv.db"/>
+	<jpa:repositories base-package="dv.db"
+	  		repository-impl-postfix="Impl"
+            entity-manager-factory-ref="entityManagerFactory"
+            transaction-manager-ref="transactionManager">
+    </jpa:repositories>  
+    <!-- use annotation define transaction-->
+	<tx:annotation-driven transaction-manager="transactionManager"
+		proxy-target-class="true" /> 
 	
 </beans>
