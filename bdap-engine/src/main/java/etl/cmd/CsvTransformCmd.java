@@ -36,15 +36,15 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	
 	//cfgkey
 	public static final String cfgkey_skip_header="skip.header";
-	public static final String cfgkey_row_validation="row.validation";
 	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
+	public static final String cfgkey_row_validation="row.validation";
 	public static final String cfgkey_col_op="col.op";
 	public static final String cfgkey_old_talbe="old.table";
 	public static final String cfgkey_add_fields="add.fields";
 	
 	private boolean skipHeader=false;
-	private String rowValidation;
 	private boolean inputEndWithComma=false;
+	private String rowValidation;
 	private String oldTable;
 	
 	private transient List<String> addFieldsNames;
@@ -72,8 +72,8 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
 		skipHeader =super.getCfgBoolean(cfgkey_skip_header, false);
-		rowValidation = super.getCfgString(cfgkey_row_validation, null);
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
+		rowValidation = super.getCfgString(cfgkey_row_validation, null);
 		oldTable = super.getCfgString(cfgkey_old_talbe, null);
 		addFieldsNames = new ArrayList<String>();
 		addFieldsTypes = new ArrayList<String>();
