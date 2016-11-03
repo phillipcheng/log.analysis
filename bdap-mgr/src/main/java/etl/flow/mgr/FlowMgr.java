@@ -64,4 +64,45 @@ public abstract class FlowMgr {
 	 * @return success or failure
 	 */
 	public abstract boolean deploy(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec);
+	
+	/**
+	 * get the flow log of submitted instance
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return log content
+	 */
+	public abstract String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId);
+	
+	/**
+	 * get the action node log of submitted instance
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return log content
+	 */
+	public abstract String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * get the action node info of submitted instance
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return node info
+	 */
+	public abstract NodeInfo getNodeInfo(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * get the action node output file content (sliced to max size: 1MB)
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @param outputFilePath
+	 * @return file content
+	 */
+	public abstract String getNodeOutputFile(String projectName, FlowServerConf fsconf, String instanceId, String nodeName, String outputFilePath);
 }

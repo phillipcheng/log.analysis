@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -33,6 +34,26 @@ public class JsonUtil {
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		try {
 			return mapper.readValue(json, clazz);
+		} catch (Exception e) {
+			logger.error("", e);
+			return null;
+		}
+	}
+
+	public static <T> T fromJsonString(String json, String attrName, Class<T> clazz){
+		return fromJsonString(json, attrName, clazz, false);
+	}
+	
+	public static <T> T fromJsonString(String json, String attrName, Class<T> clazz, boolean useDefaultTyping){
+		ObjectMapper mapper = new ObjectMapper();
+		if (useDefaultTyping){
+			mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		}
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		try {
+			JsonNode root = mapper.readTree(json);
+			JsonNode attr = root.get(attrName);
+			return mapper.treeToValue(attr, clazz);
 		} catch (Exception e) {
 			logger.error("", e);
 			return null;

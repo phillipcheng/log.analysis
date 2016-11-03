@@ -1,5 +1,8 @@
 package etl.flow.oozie;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,7 +11,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
@@ -19,12 +21,14 @@ import etl.flow.mgr.FileType;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
+import etl.flow.mgr.NodeInfo;
 import etl.flow.oozie.coord.COORDINATORAPP;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 
 public class OozieFlowMgr extends FlowMgr{
 	
 	public static final Logger logger = LogManager.getLogger(OozieFlowMgr.class);
+	private String dateTimePattern;
 	
 	private String getDir(FileType ft, String projectName, OozieConf oc){
 		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
@@ -186,5 +190,139 @@ public class OozieFlowMgr extends FlowMgr{
 			logger.info(String.format("copy to %s", path));
 			HdfsUtil.writeDfsFile(fs, path, im.getContent());
 		}
+	}
+
+	@Override
+	public String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId) {
+		OozieConf oc = (OozieConf)fsconf;
+		String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=log", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+		Map<String, String> headMap = new HashMap<String, String>();
+		return RequestUtil.get(jobLogUrl, null, 0, headMap);
+	}
+
+	@Override
+	public String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			
+		}
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public NodeInfo getNodeInfo(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, String>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				for (Map<String, String> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						return toNodeInfo(a);
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	/* Sample action node info: [cred=null, userRetryMax=0, trackerUri=null, data=null, errorMessage=null, userRetryCount=0, externalChildIDs=null, externalId=null, errorCode=null, conf=<map-reduce xmlns="uri:oozie:workflow:0.5">
+	  <job-tracker>${jobTracker}</job-tracker>
+	  <name-node>${nameNode}</name-node>
+	  <configuration>
+	    <property>
+	      <name>mapred.mapper.new-api</name>
+	      <value>true</value>
+	    </property>
+	    <property>
+	      <name>mapred.reducer.new-api</name>
+	      <value>true</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.task.timeout</name>
+	      <value>0</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.map.class</name>
+	      <value>etl.engine.InvokeMapper</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.reduces</name>
+	      <value>0</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.inputformat.class</name>
+	      <value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.input.fileinputformat.inputdir</name>
+	      <value>/flow1/sftpcfg/test1.sftp.map.properties</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.outputformat.class</name>
+	      <value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat</value>
+	    </property>
+	    <property>
+	      <name>cmdClassName</name>
+	      <value>etl.cmd.SftpCmd</value>
+	    </property>
+	    <property>
+	      <name>wfName</name>
+	      <value>flow1</value>
+	    </property>
+	    <property>
+	      <name>wfid</name>
+	      <value>${wf:id()}</value>
+	    </property>
+	    <property>
+	      <name>staticConfigFile</name>
+	      <value>action_sftp.properties</value>
+	    </property>
+	  </configuration>
+	</map-reduce>, type=map-reduce, transition=null, retries=0, consoleUrl=null, stats=null, userRetryInterval=10, name=sftp, startTime=null, toString=Action name[sftp] status[PREP], id=0000008-161103161438380-oozie-play-W@sftp, endTime=null, externalStatus=null, status=PREP]
+	*/
+	private NodeInfo toNodeInfo(Map<String, String> nodeInfo) {
+		NodeInfo n = new NodeInfo();
+		DateFormat dtFormat;
+		if (dateTimePattern != null)
+			dtFormat = new SimpleDateFormat(dateTimePattern);
+		else
+			dtFormat = DateFormat.getDateTimeInstance();
+		n.setNodeId(nodeInfo.get("id"));
+		n.setNodeName(nodeInfo.get("name"));
+		n.setStatus(nodeInfo.get("status"));
+		n.setType(nodeInfo.get("type"));
+		String t = nodeInfo.get("startTime");
+		if (t != null)
+			try {
+				n.setStartTime(dtFormat.parse(t));
+			} catch (ParseException e) {
+				logger.error(e.getMessage(), e);
+			}
+		t = nodeInfo.get("endTime");
+		if (t != null)
+			try {
+				n.setEndTime(dtFormat.parse(t));
+			} catch (ParseException e) {
+				logger.error(e.getMessage(), e);
+			}
+		return n;
+	}
+
+	@Override
+	public String getNodeOutputFile(String projectName, FlowServerConf fsconf, String instanceId, String nodeName,
+			String outputFilePath) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getDateTimePattern() {
+		return dateTimePattern;
+	}
+
+	public void setDateTimePattern(String dateTimePattern) {
+		this.dateTimePattern = dateTimePattern;
 	}
 }
