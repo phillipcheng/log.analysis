@@ -11,26 +11,18 @@
 		<script type="text/javascript" src="../libs/jquery/jQuery.min.1.9.1.js"></script>
 		<script type="text/javascript" src="../libs/bootstrap/bootstrap.min.js"></script>
 		<script type="text/javascript" src="../libs/d3/d3.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_self.js"></script>
+		
 		<script type="text/javascript">
-			var display = null;
-			var svg = null;
-
-			var _scopeData = {
-				start: {
-					x: 100,
-					y: 100
-				},
-				end: {
-					x: 100,
-					y: 500
-				}
-			};
-
-			var init = function() {
-				display = d3.select("#display");
-				svg = d3.select("#displaysvg");
-
-			}
+			 document.onkeydown=function(event){
+			 	  var e = event || window.event || arguments.callee.caller.arguments[0];
+			 	  if(e && e.keyCode==27){ // 按 Esc 取消操作
+			 	  		x1 = y1 = x2 = y2 = 0;
+			 	  		clickObj_One_id = clickObj_Two_id = "";
+			 	  		booleanCheckedBegin = false;
+			 	  		d3.select("#linemove").attr("d", "M0,0");
+			 	  }
+			 }
 		</script>
 	</head>
 
@@ -43,32 +35,35 @@
 		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 			<div class="container-fluid">
 				<div class="navbar-header">
-					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-					<a class="navbar-brand" href="#">Project name</a>
+					<a class="navbar-brand" href="#">Design Panel</a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li>
-							<a href="javascript:;" onclick="init()">Dashboard</a>
+							<a href="javascript:;" onclick="init()">start</a>
 						</li>
-						<li>
-							<a href="#">Settings</a>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">action 类型 <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li>
+									<a href="#one">Action One</a>
+								</li>
+								<li>
+									<a href="#two">Action Two</a>
+								</li>
+								<li class="divider"></li>
+								<li>
+									<a href="#three">Action Three</a>
+								</li>
+							</ul>
 						</li>
 						<li>
 							<a href="#">Profile</a>
 						</li>
 						<li>
-							<a href="#">Help</a>
+							<a href="javascript:;" onclick="javascript:console.log(_scopeData);">Help</a>
 						</li>
 					</ul>
-					<form class="navbar-form navbar-right">
-						<input type="text" class="form-control" placeholder="Search...">
-					</form>
 				</div>
 			</div>
 		</nav>
@@ -82,31 +77,49 @@
                     	描述：这是左半部份
                     -->
 					<div style="height: 20px;"></div>
+
 					<div class="panel-group" id="accordion">
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
-				<a data-toggle="collapse" data-parent="#accordion" 
-				   href="#collapseOne">
-					Action One
-				</a>
-			</h4>
+									<a data-toggle="collapse" data-parent="#accordion" 
+									   href="#collapseOne">
+										Action One
+									</a>
+								</h4>
 							</div>
 							<div id="collapseOne" class="panel-collapse collapse in">
 								<div class="panel-body">
-									Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo.
-									<button>add</button>
+									<button class="btn btn-primary" style="width: 95%;">insert</button>
+									<div style="height: 10px;"></div>
+									<div class="panel-group" id="accordionOne">
+										<div class="panel panel-default">
+											<div class="panel-heading">
+												<h4 class="panel-title">
+													<a data-toggle="collapse" data-parent="#accordionOne" 
+													   href="#collapseOneOne">
+														Action One One
+													</a>
+												</h4>
+											</div>
+											<div id="collapseOneOne" class="panel-collapse collapse">
+												<div class="panel-body">
+													The One Information<br/> Property One:<br/> Property Two:<br /> Property Three:<br/>
+												</div>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 						<div class="panel panel-default">
 							<div class="panel-heading">
 								<h4 class="panel-title">
-				<a data-toggle="collapse" data-parent="#accordion" 
-				   href="#collapseTwo">
-					Action Two
-				</a>
-			</h4>
+									<a data-toggle="collapse" data-parent="#accordion" 
+									   href="#collapseTwo">
+										Action Two
+									</a>
+								</h4>
 							</div>
 							<div id="collapseTwo" class="panel-collapse collapse">
 								<div class="panel-body">
@@ -134,18 +147,33 @@
 				</div>
 				<div class="col-md-8">
 					<div style="height: 20px;"></div>
-					<div id="display">
+
+					<div id="display" onmouseup="">
 						<svg id="displaysvg" style="width: 100%;height: 100%;">
+							<defs>
+								<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
+									<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #269ABC;" />
+								</marker>
+								<marker id="circle" markerWidth="4" markerHeight="4" refx="2" refy="2">
+									<circle cx="2" cy="2" r="2" stroke="none" fill="#f00" onclick="init()" />
+								</marker>
+							</defs>
+							<path id="linemove" marker-end="url(#arrow)"></path>
 						</svg>
-						<div id="star">
-							<br/> start
+						<div id="divmovepoint" class="point"></div>
+
+						<!--<div id="star">
+							<br/>start
 							<div id="starpoint"></div>
 						</div>
+
 						<div id="end">
-							<div id="endpoint"></div>
+							<div id="endpointUP"></div>
 							<br /> end
-						</div>
+						</div>-->
+
 					</div>
+
 				</div>
 				<div class="col-md-2">
 					<div style="height: 20px;"></div>
@@ -180,8 +208,9 @@
 							<p>jMeter 是一款开源的测试软件。它是 100% 纯 Java 应用程序，用于负载和性能测试。</p>
 						</div>
 						<div class="tab-pane fade" id="ejb">
-							<p>Enterprise Java Beans（EJB）是一个创建高度可扩展性和强大企业级应用程序的开发架构，部署在兼容应用程序服务器（比如 JBOSS、Web Logic 等）的 J2EE 上。
+							<p>这是控制台的内容输出
 							</p>
+							<p id="pconsole"></p>
 						</div>
 					</div>
 
