@@ -49,7 +49,7 @@ public class TestOozieFlow extends TestFlow{
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		String flowFile = getResourceFolder()+"flow1.json";
 		Flow flow = (Flow) JsonUtil.fromLocalJsonFile(flowFile, Flow.class);
-		ofm.execute(projectName, flow, getOC(), getEC(), null, null);
+		ofm.execute(projectName, flow, null, getOC(), getEC(), null, null);
 	}
 	
 	@Test

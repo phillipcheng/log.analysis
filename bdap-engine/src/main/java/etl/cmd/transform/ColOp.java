@@ -100,7 +100,7 @@ public class ColOp {
 					items.set(targetIdx, val);
 				}
 			}else{
-				logger.error(String.format("%s evaluated to null with vars %s.", expCS, vars));
+				logger.error(String.format("%s evaluated to null with vars %s.", exp, vars));
 			}
 		}else if (type == ColOpType.remove){
 			items.remove(targetIdx);

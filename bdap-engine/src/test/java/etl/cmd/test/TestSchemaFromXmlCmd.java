@@ -10,8 +10,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
+import bdap.util.Util;
 import etl.cmd.XmlToCsvCmd;
-import etl.util.Util;
+
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

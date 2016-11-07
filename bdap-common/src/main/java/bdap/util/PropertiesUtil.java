@@ -60,7 +60,7 @@ public class PropertiesUtil {
 		    	}
 		    }
 		}catch(Exception e){
-			logger.error("", e);
+			logger.error(String.format("try to load properties form conf file: %s", conf), e);
 		}finally{
 			if (in!=null){
 				try {

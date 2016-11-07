@@ -10,7 +10,7 @@ import java.util.Vector;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.spark.streaming.receiver.Receiver;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -68,9 +68,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private int sftpGetRetryWait;
 	private int sftpConnectRetryCount;
 	private int sftpConnectRetryWait;
-	private boolean sftpClean;
+	private boolean sftpClean=false;
 	private int fileLimit=0;
-	private boolean sftpNamesOnly = false;
+	private boolean sftpNamesOnly = false; //when this is true, we lost the capability to enable the overlap of the multiple SftpCmd to process the same dir.
 
 	public SftpCmd(){
 		super();
@@ -103,9 +103,12 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		this.sftpClean = super.getCfgBoolean(cfgkey_sftp_clean, false);
 		this.fileLimit = super.getCfgInt(cfgkey_file_limit, 0);
 		this.sftpNamesOnly = super.getCfgBoolean(cfgkey_names_only, false);
+		if (this.sftpNamesOnly){
+			this.sftpClean=false;//when only return name, then the file can't be cleaned since someone is going to get this later and remove it by himself,
+		}
 	}
 
-	public List<String> process(long mapKey){
+	public List<String> process(long mapKey, Receiver<String> r){
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
@@ -192,6 +195,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 									sftpChannel.rm(srcFile);
 								}
 								files.add(destFile);
+								if (r!=null){//give to receiver
+									r.store(destFile);
+								}
 							}
 							numProcessed++;
 							if (this.fileLimit>0 && numProcessed>=this.fileLimit){
@@ -221,18 +227,20 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 				outputList.add(ParamUtil.makeMapParams(argNames, argValues));
 			}
 			HdfsUtil.writeDfsFile(getFs(), String.format("%s%s", this.getIncomingFolder(), String.valueOf(mapKey)), outputList);
+			return outputList;
+		}else{
+			return files;
 		}
-		return files;
 	}
 	
 	@Override
-	public List<String> sparkRecieve() {
-		return process(0);
+	public void sparkRecieve(Receiver<String> r) {
+		process(0, r);
 	}
 	
 	@Override
 	public List<String> sgProcess(){
-		List<String> ret = process(0);
+		List<String> ret = process(0, null);
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");
@@ -282,7 +290,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		}
 		
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		List<String> logInfo = process(offset);
+		List<String> logInfo = process(offset, null);
 		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
 		
 		return retMap;

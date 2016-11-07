@@ -1,7 +1,6 @@
 package etl.spark;
 
 import java.util.Date;
-import java.util.List;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,10 +43,7 @@ public class CmdReciever extends Receiver<String> {
 						cmd.setWfid(wfId);
 						cmd.reinit();
 						SparkReciever reciever = (SparkReciever)cmd;
-						List<String> files = reciever.sparkRecieve();
-						for (String file:files){
-							store(wfId + WFID_SEP + file);
-						}
+						reciever.sparkRecieve(CmdReciever.this);
 						Thread.sleep(sleepSeconds*1000);
 					}
 				}catch(Throwable t){
