@@ -96,6 +96,11 @@ public class OozieFlowMgr extends FlowMgr{
 			oozieLibPath.setValue(oc.getOozieLibPath());
 			bodyConf.getProperty().add(oozieLibPath);
 		}{
+			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
+			oozieLibPath.setName(OozieConf.key_useSystemPath);
+			oozieLibPath.setValue("true");
+			bodyConf.getProperty().add(oozieLibPath);
+		}{
 			bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
 			propWfAppPath.setName(OozieConf.key_oozieWfAppPath);
 			propWfAppPath.setValue(String.format("%s/user/%s/%s/%s_workflow.xml", oc.getNameNode(), oc.getUserName(), projectName, flowName));
@@ -104,6 +109,7 @@ public class OozieFlowMgr extends FlowMgr{
 		return bodyConf;
 	}
 
+	//deploy all the in-mem files and execute the workflow
 	public String deployAndRun(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
 		deployFiles.add(super.genEnginePropertyFile(ec));
@@ -129,12 +135,16 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 	}
 	
+	//transform the flow to workflow.xml, actionX.properties, then deploy and run
 	@Override
-	public String execute(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec, String startNode, String instanceId) {
+	public String execute(String projectName, Flow flow, List<InMemFile> imFiles, 
+			FlowServerConf fsconf, EngineConf ec, String startNode, String instanceId) {
 		OozieConf oc = (OozieConf)fsconf;
 		//generate wf.xml
 		boolean useInstanceId = instanceId==null? false:true;
-		List<InMemFile> imFiles = new ArrayList<InMemFile>();
+		if (imFiles==null){
+			imFiles = new ArrayList<InMemFile>();
+		}
 		InMemFile wfXml = genWfXml(flow, startNode, useInstanceId);
 		imFiles.add(wfXml);
 		//gen action.properties

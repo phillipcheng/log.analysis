@@ -215,6 +215,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	/**
+	 * process a list of (file name containing path, each line) tuple
 	 * @param input
 	 * @return
 	 */
@@ -224,6 +225,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	/**
+	 * process the list of input (can be hdfs file name, can be a string containing parameters)
 	 * @param input
 	 * @return
 	 */
@@ -248,6 +250,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	/**
 	 * reduce function in map-reduce mode
+	 * List of [newkey, newValue, baseOutputPath]
 	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
 	 * set newValue to null, if output line results
 	 * @return list of newKey, newValue, baseOutputPath

@@ -14,6 +14,7 @@ public class OozieConf implements FlowServerConf {
 	public static final String key_nameNode="nameNode";
 	public static final String key_queueName="queueName";
 	public static final String key_oozieLibPath="oozie.libpath";
+	public static final String key_useSystemPath="oozie.use.system.libpath";
 	public static final String key_oozieWfAppPath="oozie.wf.application.path";
 	public static final String key_oozieCoordinateAppPath="oozie.coord.application.path";
 	public static final String key_user_name="user.name";

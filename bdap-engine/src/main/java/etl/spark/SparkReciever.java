@@ -1,6 +1,6 @@
 package etl.spark;
 
-import java.util.List;
+import org.apache.spark.streaming.receiver.Receiver;
 
 public interface SparkReciever {
 	/**
@@ -8,5 +8,5 @@ public interface SparkReciever {
 	 * @param input
 	 * @return
 	 */
-	public List<String> sparkRecieve();
+	public void sparkRecieve(Receiver<String> r);
 }

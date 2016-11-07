@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import etl.util.Util;
+import bdap.util.Util;
 
 public class TestCsvTransformCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvTransformCmd.class);
@@ -33,14 +33,13 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[] {"PJ24002A_BBG2.csv"};
 		
 		List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-		logger.info("Output is:"+output);
+		logger.info("Output is:\n" + String.join("\n", output));
 		
 		// assertion
 		assertTrue(output.size() > 0);
 		String sampleOutput = output.get(0);
 		String[] csvs = sampleOutput.split(",", -1);
 		int mergedColumn = 2;
-		logger.info("Last element:"+csvs[csvs.length - 1]+" "+ csvs[mergedColumn] + " "+csvs[mergedColumn-1]+ " " +csvs[mergedColumn+1]);
 		assertTrue("BBG2".equals(csvs[csvs.length - 1])); // check filename appended to last
 		assertFalse("MeasTime".equals(csvs[0]));//skip header check
 		assertTrue(csvs[mergedColumn].contains("-"));//check column merged
