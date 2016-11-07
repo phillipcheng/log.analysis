@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+	</head>
+	<body>
+		<div id="divparent">
+			<div id="divchildren"></div>
+		</div>
+		<script>
+			var o = document.getElementById("divchildren");
+			if(o){
+				console.log(o.offsetParent);
+			}
+		</script>
+	</body>
+</html>
