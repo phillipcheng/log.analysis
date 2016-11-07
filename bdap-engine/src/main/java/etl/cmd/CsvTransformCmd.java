@@ -17,6 +17,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
+
+import bdap.util.Util;
 import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
@@ -24,7 +26,6 @@ import etl.engine.OutputType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
-import etl.util.Util;
 import etl.util.VarType;
 
 import scala.Tuple2;
@@ -132,9 +133,11 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		}
 	}
 
-	public Tuple2<String, String> mapToPair(String key, String value){
+	//value is each line
+	public Tuple2<String, String> mapToPair(String pathName, String value){
 		super.init();
-		String tableName = key;
+		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+		String tableName = getTableName(pathName);
 		String row = value;
 		String output="";
 		
@@ -189,15 +192,9 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			logger.info("skip header:" + row);
 			return null;
 		}
-		getPathName(context);//set path name in the system variables
-		String tableName = getTableName(context);
-		if (tableName==null || "".equals(tableName.trim())){
-			logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
-					((FileSplit) context.getInputSplit()).getPath().getName()));
-		}else{
-			Tuple2<String, String> ret = mapToPair(tableName, row);
-			retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
-		}
+		String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+		Tuple2<String, String> ret = mapToPair(pathName, row);
+		retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
 		return retMap;
 	}
 	
@@ -216,6 +213,7 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 		return ret;
 	}
 	
+	//key contain fileName, value is each line
 	@Override
 	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
 		JavaRDD<Tuple2<String, String>> mapret = input.map(new Function<Tuple2<String, String>, Tuple2<String, String>>(){
@@ -224,8 +222,27 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
 				return mapToPair(t._1, t._2);
 			}
+		}).filter(new Function<Tuple2<String, String>, Boolean>(){
+			@Override
+			public Boolean call(Tuple2<String, String> v1) throws Exception {
+				if (v1==null){
+					return false;
+				}else{
+					return true;
+				}
+			}
 		});
-		return mapret;
+		JavaRDD<Tuple2<String, String>> csvret=mapret;
+		if (super.getOutputType()==OutputType.single){
+			csvret = mapret.map(new Function<Tuple2<String,String>, Tuple2<String,String>>(){
+				@Override
+				public Tuple2<String, String> call(Tuple2<String, String> v1) throws Exception {
+					return new Tuple2<String,String>(ETLCmd.SINGLE_TABLE, v1._2);
+				}
+			});
+		}
+		
+		return csvret;
 	}
 
 	public String getOldTable() {

@@ -17,17 +17,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
-import org.junit.Test;
-
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
+import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
+import bdap.util.Util;
+import etl.flow.Flow;
 import etl.flow.mgr.FileType;
 import etl.flow.mgr.InMemFile;
 import etl.flow.oozie.OozieConf;
 import etl.flow.oozie.OozieFlowMgr;
 
 public abstract class TestFlow {
+
 	public static final Logger logger = LogManager.getLogger(TestFlow.class);
 	
 	private static String cfgProperties="testFlow.properties";
@@ -42,12 +44,7 @@ public abstract class TestFlow {
 	private String localFolder = "";
 	private FileSystem fs;
 	private String defaultFS;
-	private Configuration conf;
-	
-	//
-	public static void setCfgProperties(String testProperties){
-		cfgProperties = testProperties;
-	}
+	private transient Configuration conf;
 	
 	@Before
     public void setUp() {
@@ -74,13 +71,13 @@ public abstract class TestFlow {
 		}
     }
 	
-	public OozieConf getOC(){
+	protected OozieConf getOC(){
 		OozieConf oc = new OozieConf(cfgProperties);
 		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
 		return oc;
 	}
 	
-	public EngineConf getEC(){
+	protected EngineConf getEC(){
 		EngineConf ec = new EngineConf(cfgProperties);
 		return ec;
 	}
@@ -102,32 +99,32 @@ public abstract class TestFlow {
 	}
 	
 	//action properties should prefix with action. mapping properties should suffix with mapping.properties
-	public List<InMemFile> getDeploymentUnits(String folder, String[] jarPaths){
+	private List<InMemFile> getDeploymentUnits(String folder, String[] jarPaths, boolean fromJson){
 		List<InMemFile> fl = new ArrayList<InMemFile>();
 		Path directoryPath = Paths.get(folder);
 		try {
 			if (Files.isDirectory(directoryPath)) {
-				DirectoryStream<Path> stream = Files.newDirectoryStream(directoryPath, "action.*.properties");
-				for (Path path : stream) {
-				    logger.info(String.format("action path:%s", path.getFileName().toString()));
-					byte[] content = Files.readAllBytes(path);
-					fl.add(new InMemFile(FileType.actionProperty, path.getFileName().toString(), content));
+				DirectoryStream<Path> stream = null;
+				if (!fromJson){
+					stream = Files.newDirectoryStream(directoryPath, "action.*.properties");
+					for (Path path : stream) {
+					    logger.info(String.format("action path:%s", path.getFileName().toString()));
+						byte[] content = Files.readAllBytes(path);
+						fl.add(new InMemFile(FileType.actionProperty, path.getFileName().toString(), content));
+					}
+					stream = Files.newDirectoryStream(directoryPath, "*workflow.xml");
+					for (Path path : stream) {
+					    logger.info(String.format("workflow path:%s", path.getFileName().toString()));
+						byte[] content = Files.readAllBytes(path);
+						fl.add(new InMemFile(FileType.oozieWfXml, path.getFileName().toString(), content));
+					}
 				}
-				
 				stream = Files.newDirectoryStream(directoryPath, "*_mapping.properties");
 				for (Path path : stream) {
 				    logger.info(String.format("mapping path:%s", path.getFileName().toString()));
 					byte[] content = Files.readAllBytes(path);
 					fl.add(new InMemFile(FileType.ftmappingFile, path.getFileName().toString(), content));
 				}
-				
-				stream = Files.newDirectoryStream(directoryPath, "*workflow.xml");
-				for (Path path : stream) {
-				    logger.info(String.format("workflow path:%s", path.getFileName().toString()));
-					byte[] content = Files.readAllBytes(path);
-					fl.add(new InMemFile(FileType.oozieWfXml, path.getFileName().toString(), content));
-				}
-				
 				stream = Files.newDirectoryStream(directoryPath, "log4j*");
 				for (Path path : stream) {
 				    logger.info(String.format("log4j path:%s", path.getFileName().toString()));
@@ -148,21 +145,28 @@ public abstract class TestFlow {
 		return fl;
 	}
 	
-	private String runFlow(String projectName, String flowName, String[] jars){
+	private String runFlow(String projectName, String flowName, String[] jars, boolean fromJson){
+		String jsonFile = String.format("%s/%s/%s/%s.json", getLocalFolder(), projectName, flowName, flowName);
 		OozieFlowMgr ofm = new OozieFlowMgr();
-		List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s/%s", getLocalFolder(), projectName, flowName), jars);
-		return ofm.deployAndRun(projectName, flowName, deployFiles, getOC(), getEC());
+		List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s/%s", getLocalFolder(), projectName, flowName), 
+				jars, fromJson);
+		if (!fromJson){
+			return ofm.deployAndRun(projectName, flowName, deployFiles, getOC(), getEC());
+		}else{
+			Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
+			return ofm.execute(projectName, flow, deployFiles, this.getOC(), this.getEC(), null, null);
+		}
 	}
 	
-	public String testFlow(String projectName, String flowName, String[] jars) {
+	public String testFlow(String projectName, String flowName, String[] jars, boolean fromJson) {
 		try {
 			if (getEC().getDefaultFs().contains("127.0.0.1")){
-				return runFlow(projectName, flowName, jars);
+				return runFlow(projectName, flowName, jars, fromJson);
 			}else{
 				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 				return ugi.doAs(new PrivilegedExceptionAction<String>() {
 							public String run() throws Exception {
-								return runFlow(projectName, flowName, jars);
+								return runFlow(projectName, flowName, jars, fromJson);
 							}
 						});
 			}
@@ -172,7 +176,7 @@ public abstract class TestFlow {
 		}
 	}
 	
-	public void runDeployBdap() {
+	public void deployBdap() {
 		try {
 			if (getEC().getDefaultFs().contains("127.0.0.1")){
 				deployEngine(getOC());
@@ -190,23 +194,39 @@ public abstract class TestFlow {
 		}
 	}
 
-	public FileSystem getFs() {
+	//generate json file from java construction
+	public void genFlowJson(String rootFolder, String projectName, Flow flow){
+		String jsonFileName=String.format("%s/%s/%s/%s.json", rootFolder, projectName, flow.getName(), flow.getName());
+		String jsonString = JsonUtil.toJsonString(flow);
+		Util.writeFile(jsonFileName, jsonString);
+	}
+	
+	//generate oozie xml from json file
+	public String genOozieFlow(String jsonFile){
+		OozieFlowMgr ofm = new OozieFlowMgr();
+		Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
+		String flowXml = ofm.genWfXmlFile(flow);
+		logger.info("\n" + flowXml);
+		return flowXml;
+	}
+	
+	protected FileSystem getFs() {
 		return fs;
 	}
 	
-	public String getDefaultFS() {
+	protected String getDefaultFS() {
 		return defaultFS;
 	}
 	
-	public Configuration getConf(){
+	protected Configuration getConf(){
 		return conf;
 	}
 	
-	public String getLocalFolder() {
+	protected String getLocalFolder() {
 		return localFolder;
 	}
 
-	public void setLocalFolder(String localFolder) {
+	protected void setLocalFolder(String localFolder) {
 		this.localFolder = localFolder;
 	}
 }

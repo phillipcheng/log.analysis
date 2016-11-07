@@ -23,6 +23,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+
+import bdap.util.Util;
+
 import org.apache.spark.api.java.function.Function;
 
 import etl.cmd.transform.AggrOp;
@@ -33,7 +36,6 @@ import etl.engine.ETLCmd;
 import etl.util.FieldType;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
-import etl.util.Util;
 import etl.util.VarType;
 import scala.Tuple2;
 import scala.Tuple3;

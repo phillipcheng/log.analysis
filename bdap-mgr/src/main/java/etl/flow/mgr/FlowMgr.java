@@ -50,7 +50,8 @@ public abstract class FlowMgr {
 	 * @param startNode
 	 * @return the wf instanceid
 	 */
-	public abstract String execute(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec, String startNode, String instanceId);
+	public abstract String execute(String projectName, Flow flow, List<InMemFile> imFiles, FlowServerConf fsconf, 
+			EngineConf ec, String startNode, String instanceId);
 	
 	/**
 	 * deploy the process, it will be executed/instantiated by the start conditions

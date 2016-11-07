@@ -33,12 +33,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import bdap.util.Util;
 import etl.spark.CmdReciever;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
-import etl.util.Util;
 import etl.util.VarType;
 import scala.Tuple2;
 
@@ -290,16 +290,10 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	
 	@Override
 	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input){
-		JavaRDD<Tuple2<String, String>> ret = input.flatMap(new FlatMapFunction<String, 
-				Tuple2<String, String>>(){
-			private static final long serialVersionUID = 1L;
+		JavaRDD<Tuple2<String, String>> ret = input.flatMap(new FlatMapFunction<String, Tuple2<String, String>>(){
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-				String fileName = t;
-				if (t.indexOf(CmdReciever.WFID_SEP)!=-1){
-					fileName = t.substring(t.indexOf(CmdReciever.WFID_SEP)+1);
-				}
-				return flatMapToPair(fileName).iterator();
+				return flatMapToPair(t).iterator();
 			}
 		});
 		return ret;

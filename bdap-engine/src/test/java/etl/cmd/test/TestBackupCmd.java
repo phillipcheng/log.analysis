@@ -7,8 +7,8 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
+import bdap.util.Util;
 import etl.cmd.BackupCmd;
-import etl.util.Util;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
