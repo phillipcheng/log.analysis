@@ -109,8 +109,9 @@ public class OozieFlowMgr extends FlowMgr{
 		return bodyConf;
 	}
 
+	
 	//deploy all the in-mem files and execute the workflow
-	public String deployAndRun(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
+	public void deploy(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
 		deployFiles.add(super.genEnginePropertyFile(ec));
 		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
@@ -119,6 +120,11 @@ public class OozieFlowMgr extends FlowMgr{
 			String path = String.format("%s%s", dir, im.getFileName());
 			HdfsUtil.writeDfsFile(fs, path, im.getContent());
 		}
+	}
+	
+	//deploy all the in-mem files and execute the workflow
+	public String deployAndRun(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
+		deploy(projectName, flowName, deployFiles, oc, ec);
 		//start the job
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
