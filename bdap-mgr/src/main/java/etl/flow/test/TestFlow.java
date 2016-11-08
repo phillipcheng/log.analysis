@@ -145,28 +145,37 @@ public abstract class TestFlow {
 		return fl;
 	}
 	
-	private String runFlow(String projectName, String flowName, String[] jars, boolean fromJson){
+	private String runFlow(String projectName, String flowName, String[] jars, boolean fromJson, boolean run){
 		String jsonFile = String.format("%s/%s/%s/%s.json", getLocalFolder(), projectName, flowName, flowName);
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s/%s", getLocalFolder(), projectName, flowName), 
 				jars, fromJson);
 		if (!fromJson){
-			return ofm.deployAndRun(projectName, flowName, deployFiles, getOC(), getEC());
+			if (run){
+				return ofm.deployAndRun(projectName, flowName, deployFiles, getOC(), getEC());
+			}else{
+				ofm.deploy(projectName, flowName, deployFiles, getOC(), getEC());
+				return null;
+			}
 		}else{
 			Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
 			return ofm.execute(projectName, flow, deployFiles, this.getOC(), this.getEC(), null, null);
 		}
 	}
 	
+	
 	public String testFlow(String projectName, String flowName, String[] jars, boolean fromJson) {
+		return testFlow(projectName, flowName, jars, fromJson, true);
+	}
+	public String testFlow(String projectName, String flowName, String[] jars, boolean fromJson, boolean run) {
 		try {
 			if (getEC().getDefaultFs().contains("127.0.0.1")){
-				return runFlow(projectName, flowName, jars, fromJson);
+				return runFlow(projectName, flowName, jars, fromJson, run);
 			}else{
 				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
 				return ugi.doAs(new PrivilegedExceptionAction<String>() {
 							public String run() throws Exception {
-								return runFlow(projectName, flowName, jars, fromJson);
+								return runFlow(projectName, flowName, jars, fromJson, run);
 							}
 						});
 			}
