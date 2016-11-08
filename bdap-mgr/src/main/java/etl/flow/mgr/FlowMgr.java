@@ -97,13 +97,30 @@ public abstract class FlowMgr {
 	public abstract NodeInfo getNodeInfo(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
 	
 	/**
-	 * get the action node output file content (sliced to max size: 1MB)
+	 * list the action node's input files
 	 * @param projectName
 	 * @param fsconf
 	 * @param instanceId
 	 * @param nodeName
-	 * @param outputFilePath
+	 * @return list of file paths
+	 */
+	public abstract String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * list the action node's output files
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return list of file paths
+	 */
+	public abstract String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * get the distributed file
+	 * @param fsconf
+	 * @param filePath
 	 * @return file content
 	 */
-	public abstract String getNodeOutputFile(String projectName, FlowServerConf fsconf, String instanceId, String nodeName, String outputFilePath);
+	public abstract InMemFile getDFSFile(FlowServerConf fsconf, String filePath);
 }

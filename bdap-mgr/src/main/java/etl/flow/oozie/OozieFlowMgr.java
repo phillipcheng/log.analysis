@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -113,7 +114,6 @@ public class OozieFlowMgr extends FlowMgr{
 		return bodyConf;
 	}
 
-	
 	//deploy all the in-mem files and execute the workflow
 	public void deploy(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
@@ -219,10 +219,122 @@ public class OozieFlowMgr extends FlowMgr{
 	@Override
 	public String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
 		if (nodeName != null) {
-			
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				Map<String, Object> action = null;
+				for (Map<String, Object> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						action = a;
+						break;
+					}
+				}
+				
+				if (action != null) {
+					String launcherJobId = null;
+					String childJobIds[] = null;
+					StringBuilder strbuf = new StringBuilder();
+					ArrayList<Map<String, Object>> jobAttempts;
+					String url;
+					Object t;
+					t = action.get("externalId");
+					if (t != null)
+						launcherJobId = t.toString();
+					t = action.get("externalChildIDs");
+					if (t != null)
+						childJobIds = t.toString().split(",");
+					
+					if (launcherJobId != null) {
+						url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/jobattempts", oc.getHistoryServer(), launcherJobId);
+						jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
+						
+						for (Map<String, Object> a: jobAttempts) {
+							appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
+							appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
+							appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+						}
+					}
+					
+					if (childJobIds != null) {
+						ArrayList<Map<String, Object>> tasks;
+						ArrayList<Map<String, Object>> taskAttempts;
+						String user;
+						for (String id: childJobIds) {
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s", oc.getHistoryServer(), id);
+							user = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "job.user", String.class);
+							
+							/* Application master attempts */
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/jobattempts", oc.getHistoryServer(), id);
+							jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
+							
+							for (Map<String, Object> a: jobAttempts) {
+								appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
+								appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
+								appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+							}
+							
+							/* Task attempts */
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/tasks", oc.getHistoryServer(), id);
+							tasks = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "tasks.task", ArrayList.class);
+							if (tasks != null) {
+								for (Map<String, Object> task: tasks) {
+									url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/tasks/%s/attempts", oc.getHistoryServer(), id, task.get("id"));
+									taskAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "taskAttempts.taskAttempt", ArrayList.class);
+									if (taskAttempts != null) {
+										for (Map<String, Object> taskAttempt: taskAttempts) {
+											url = String.format("%s/jobhistory/logs/%s/%s/%s/%s",
+													oc.getHistoryServer(), nodeAddressToId(fsconf, (String)taskAttempt.get("nodeHttpAddress")),
+													(String)taskAttempt.get("assignedContainerId"), (String)taskAttempt.get("id"), user);
+
+											appendLog(strbuf, url + "/stderr?start=0");
+											appendLog(strbuf, url + "/stdout?start=0");
+											appendLog(strbuf, url + "/syslog?start=0");
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					return strbuf.toString();
+				}
+			}
 		}
-		// TODO Auto-generated method stub
-		return null;
+		return "";
+	}
+	
+	private String nodeAddressToId(FlowServerConf fsconf, String nodeAddress) {
+		/* TODO: Node id mapping history */
+		Map<String, String> headMap = new HashMap<String, String>();
+		OozieConf oc = (OozieConf)fsconf;
+		String url = String.format("%s/ws/v1/cluster/nodes", oc.getRmWebApp());
+		ArrayList<Map<String, Object>> nodes = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "nodes.node", ArrayList.class);
+		if (nodes != null) {
+			for (Map<String, Object> n: nodes) {
+				if (nodeAddress.equals(n.get("nodeHTTPAddress")))
+					return (String)n.get("id");
+			}
+		}
+		return "";
+	}
+
+	private void appendLog(StringBuilder strbuf, String url) {
+		Map<String, String> headMap = new HashMap<String, String>();
+		String log = RequestUtil.get(url, null, 0, headMap);
+		int logStart = log.indexOf("<pre>");
+		int logEnd = log.indexOf("</pre>");
+		if (logStart != -1 && logEnd != -1)
+			log = log.substring(logStart + 5, logEnd);
+		else
+			log = "";
+		strbuf.append(url);
+		strbuf.append("\n");
+		strbuf.append("------------------------------------------\n");
+		strbuf.append(log);
+		strbuf.append("------------------------------------------\n");
+		strbuf.append("------------------------------------------\n");
 	}
 
 	@Override
@@ -303,9 +415,9 @@ public class OozieFlowMgr extends FlowMgr{
 		NodeInfo n = new NodeInfo();
 		DateFormat dtFormat;
 		if (dateTimePattern != null)
-			dtFormat = new SimpleDateFormat(dateTimePattern);
+			dtFormat = new SimpleDateFormat(dateTimePattern, Locale.forLanguageTag("en-US"));
 		else
-			dtFormat = DateFormat.getDateTimeInstance();
+			dtFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.forLanguageTag("en-US"));
 		n.setNodeId(nodeInfo.get("id"));
 		n.setNodeName(nodeInfo.get("name"));
 		n.setStatus(nodeInfo.get("status"));
@@ -328,8 +440,37 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public String getNodeOutputFile(String projectName, FlowServerConf fsconf, String instanceId, String nodeName,
-			String outputFilePath) {
+	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				Map<String, Object> action = null;
+				for (Map<String, Object> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						action = a;
+						break;
+					}
+				}
+				
+				if (action != null) {
+					
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(FlowServerConf fsconf, String filePath) {
 		// TODO Auto-generated method stub
 		return null;
 	}

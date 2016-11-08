@@ -52,7 +52,12 @@ public class JsonUtil {
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		try {
 			JsonNode root = mapper.readTree(json);
-			JsonNode attr = root.get(attrName);
+			JsonNode attr = root;
+			if (attrName != null) {
+				String[] attrNames = attrName.split("\\.");
+				for (String a: attrNames)
+					attr = attr.get(a);
+			}
 			return mapper.treeToValue(attr, clazz);
 		} catch (Exception e) {
 			logger.error("", e);
