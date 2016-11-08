@@ -210,6 +210,7 @@ public abstract class TestETLCmd {
 		return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, useFileNames);
 	}
 	
+	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 
 			String localLibFolder, String verticaLibName) throws Exception{
     	Path remoteLibPath = new Path(remoteLibFolder);

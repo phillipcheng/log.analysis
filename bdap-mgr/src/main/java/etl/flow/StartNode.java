@@ -9,8 +9,8 @@ public class StartNode extends Node{
 	public StartNode(){	
 	}
 	
-	public StartNode(int duration, int inlet, int outlet) {
-		super(start_node_name, inlet, outlet);
+	public StartNode(int duration) {
+		super(start_node_name);
 		this.duration = duration;
 	}
 	

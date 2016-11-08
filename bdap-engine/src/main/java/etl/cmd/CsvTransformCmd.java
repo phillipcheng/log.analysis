@@ -14,7 +14,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 
@@ -199,7 +201,8 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	}
 	
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<String[]> ret = new ArrayList<String[]>();	
 		Iterator<Text> it = values.iterator();
 		while (it.hasNext()){

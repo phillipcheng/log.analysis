@@ -1,5 +1,7 @@
 package etl.flow;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -16,20 +18,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 public class Node{
 	
 	private String name;
-	private int inletNum = 0;
-	private int outletNum = 0; //#action outlet not #data outlet
+	private List<NodeLet> inlets = new ArrayList<NodeLet>();
+	private List<NodeLet> outlets = new ArrayList<NodeLet>();
 	
 	public Node(){	
 	}
 	
-	public Node(String name, int inletNum, int outletNum){
+	public Node(String name){
 		this.name = name;
-		this.inletNum = inletNum;
-		this.outletNum = outletNum;
 	}
 	
 	public String toString(){
-		return String.format("%s,%d,%d", name, inletNum, outletNum);
+		return String.format("%s,%d,%d", name);
 	}
 	
 	@Override
@@ -41,36 +41,28 @@ public class Node{
 		if (!Objects.equals(that.getName(), name)){
 			return false;
 		}
-		if (that.getInletNum()!=inletNum){
-			return false;
-		}
-		if (that.getOutletNum()!=outletNum){
-			return false;
-		}
 		return true;
 	}
 
 	public String getName() {
 		return name;
 	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
 	
-	public int getInletNum() {
-		return inletNum;
+	public void addInLet(NodeLet nl){
+		inlets.add(nl);
 	}
-
-	public void setInletNum(int inletNum) {
-		this.inletNum = inletNum;
+	public void addOutLet(NodeLet nl){
+		outlets.add(nl);
 	}
-
-	public int getOutletNum() {
-		return outletNum;
+	
+	public List<NodeLet> getInLets(){
+		return inlets;
 	}
-
-	public void setOutletNum(int outletNum) {
-		this.outletNum = outletNum;
+	
+	public List<NodeLet> getOutlets(){
+		return outlets;
 	}
 }

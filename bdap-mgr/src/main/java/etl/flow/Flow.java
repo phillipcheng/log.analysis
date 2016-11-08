@@ -21,9 +21,9 @@ public class Flow extends Node{
 	
 	private Map<String, String> properties = new LinkedHashMap<String, String>();
 	
-	private List<Node> nodes;
+	private List<Node> nodes;//data link can be induced by checking same data specified by one outlet and one inlet
 
-	private List<Link> links; //from action to action
+	private List<Link> links; //action link,
 	
 	private List<Data> data;
 	
@@ -126,7 +126,7 @@ public class Flow extends Node{
 	}
 	
 	public Flow(String name) {
-		super(name, 0, 0);
+		super(name);
 	}
 	
 	@JsonIgnore

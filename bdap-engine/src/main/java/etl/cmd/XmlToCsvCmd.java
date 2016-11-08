@@ -26,6 +26,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.w3c.dom.Document;
@@ -318,7 +320,8 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	 * @return newKey, newValue, baseOutputPath
 	 */
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<String[]> rets = new ArrayList<String[]>();
 		for (Text v: values){
 			//logger.info(String.format("v:%s", v.toString()));

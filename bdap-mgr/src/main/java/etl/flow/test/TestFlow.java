@@ -203,13 +203,6 @@ public abstract class TestFlow {
 		}
 	}
 
-	//generate json file from java construction
-	public void genFlowJson(String rootFolder, String projectName, Flow flow){
-		String jsonFileName=String.format("%s/%s/%s/%s.json", rootFolder, projectName, flow.getName(), flow.getName());
-		String jsonString = JsonUtil.toJsonString(flow);
-		Util.writeFile(jsonFileName, jsonString);
-	}
-	
 	//generate oozie xml from json file
 	public String genOozieFlow(String jsonFile){
 		OozieFlowMgr ofm = new OozieFlowMgr();

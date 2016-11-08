@@ -29,14 +29,14 @@ public class ActionNode extends Node{
 	public ActionNode(){
 	}
 	
-	public ActionNode(String name, ExeType exeType, int inletNum, int outletNum){
-		super(name, inletNum, outletNum);
+	public ActionNode(String name, ExeType exeType){
+		super(name);
 		this.exeType = exeType;
 	}
 	
 	//for writing test cases to construct action node from existing properties file
-	public ActionNode(String name, ExeType exeType, int inletNum, int outletNum, String propertiesFile){
-		this(name, exeType, inletNum, outletNum);
+	public ActionNode(String name, ExeType exeType, String propertiesFile){
+		this(name, exeType);
 		LinkedHashMap<String, String> map = PropertiesUtil.getPropertiesExactMap(propertiesFile);
 		for (String key: map.keySet()){
 			properties.put(key, map.get(key));

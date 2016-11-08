@@ -19,7 +19,7 @@ public class TestCsvTransposeCmd extends TestETLCmd {
 		return "csvtranspose/";
 	}
 	
-//	@Test
+	@Test
 	public void testSingleColumn() throws Exception {
 		String remoteCsvFolder = "/etltest/csvtranspose/input/";
 		String remoteCsvOutputFolder = "/etltest/csvtranspose/output/";
@@ -34,7 +34,7 @@ public class TestCsvTransposeCmd extends TestETLCmd {
 		assertTrue(output.contains("name3,,F,C"));
 	}
 	
-//	@Test
+	@Test
 	public void testMultipleColumns() throws Exception {
 		String remoteCsvFolder = "/etltest/csvtranspose/input/";
 		String remoteCsvOutputFolder = "/etltest/csvtranspose/output/";

@@ -223,23 +223,25 @@ public class EngineUtil {
 	public void processReduceCmd(ETLCmd cmd, Text key, Iterable<Text> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		try {
-			List<String[]> rets = cmd.reduceProcess(key, values);
-			for (String[] ret: rets){
-				if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
-					if (ret[1]!=null){
-						if (!"".equals(ret[0].trim())){
-							context.write(new Text(ret[0]), new Text(ret[1]));
+			List<String[]> rets = cmd.reduceProcess(key, values, context, mos);
+			if (rets!=null){
+				for (String[] ret: rets){
+					if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
+						if (ret[1]!=null){
+							if (!"".equals(ret[0].trim())){
+								context.write(new Text(ret[0]), new Text(ret[1]));
+							}else{
+								context.write(new Text(ret[1]), null);
+							}
 						}else{
-							context.write(new Text(ret[1]), null);
+							context.write(new Text(ret[0]), null);
 						}
 					}else{
-						context.write(new Text(ret[0]), null);
-					}
-				}else{
-					if (ret[1]!=null){
-						mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
-					}else{
-						mos.write(new Text(ret[0]), null, ret[2]);
+						if (ret[1]!=null){
+							mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
+						}else{
+							mos.write(new Text(ret[0]), null, ret[2]);
+						}
 					}
 				}
 			}

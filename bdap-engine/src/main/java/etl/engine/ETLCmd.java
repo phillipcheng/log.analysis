@@ -17,7 +17,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaRDD;
 import etl.spark.SparkProcessor;
 import etl.util.ScriptEngineUtil;
@@ -45,7 +46,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public static final String KEY_SEP=",";
 	public static final String SINGLE_TABLE="single.table";
 	
-	private String wfName;//wf template name
+	protected String wfName;//wf template name
 	protected String wfid;
 	protected String staticCfg;
 	protected String defaultFs;
@@ -235,6 +236,16 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	/**
+	 * return a splitted JavaRDD<String>
+	 * @param input
+	 * @return
+	 */
+	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input){
+		logger.error("empty spark process impl, should not be invoked.");
+		return null;
+	}
+	
+	/**
 	 * map function in map-only or map-reduce mode, for map mode: output null for no key or value
 	 * @return map may contains following key:
 	 * ETLCmd.RESULT_KEY_LOG: list of String user defined log info
@@ -250,12 +261,14 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	/**
 	 * reduce function in map-reduce mode
-	 * List of [newkey, newValue, baseOutputPath]
+	 * return List of [newkey, newValue, baseOutputPath]
+	 * return null, means done in the subclass
 	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
 	 * set newValue to null, if output line results
 	 * @return list of newKey, newValue, baseOutputPath
 	 */
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values) throws Exception{
+	public List<String[]> reduceProcess(Text key, Iterable<Text> valuesR, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		logger.error("empty reduce impl, should not be invoked.");
 		return null;
 	}
