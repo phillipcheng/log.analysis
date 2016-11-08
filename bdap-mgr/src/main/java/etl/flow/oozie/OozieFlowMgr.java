@@ -1,14 +1,17 @@
 package etl.flow.oozie;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
@@ -19,12 +22,14 @@ import etl.flow.mgr.FileType;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
+import etl.flow.mgr.NodeInfo;
 import etl.flow.oozie.coord.COORDINATORAPP;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 
 public class OozieFlowMgr extends FlowMgr{
 	
 	public static final Logger logger = LogManager.getLogger(OozieFlowMgr.class);
+	private String dateTimePattern;
 	
 	private String getDir(FileType ft, String projectName, OozieConf oc){
 		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
@@ -109,7 +114,6 @@ public class OozieFlowMgr extends FlowMgr{
 		return bodyConf;
 	}
 
-	
 	//deploy all the in-mem files and execute the workflow
 	public void deploy(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
@@ -202,5 +206,280 @@ public class OozieFlowMgr extends FlowMgr{
 			logger.info(String.format("copy to %s", path));
 			HdfsUtil.writeDfsFile(fs, path, im.getContent());
 		}
+	}
+
+	@Override
+	public String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId) {
+		OozieConf oc = (OozieConf)fsconf;
+		String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=log", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+		Map<String, String> headMap = new HashMap<String, String>();
+		return RequestUtil.get(jobLogUrl, null, 0, headMap);
+	}
+
+	@Override
+	public String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				Map<String, Object> action = null;
+				for (Map<String, Object> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						action = a;
+						break;
+					}
+				}
+				
+				if (action != null) {
+					String launcherJobId = null;
+					String childJobIds[] = null;
+					StringBuilder strbuf = new StringBuilder();
+					ArrayList<Map<String, Object>> jobAttempts;
+					String url;
+					Object t;
+					t = action.get("externalId");
+					if (t != null)
+						launcherJobId = t.toString();
+					t = action.get("externalChildIDs");
+					if (t != null)
+						childJobIds = t.toString().split(",");
+					
+					if (launcherJobId != null) {
+						url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/jobattempts", oc.getHistoryServer(), launcherJobId);
+						jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
+						
+						for (Map<String, Object> a: jobAttempts) {
+							appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
+							appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
+							appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+						}
+					}
+					
+					if (childJobIds != null) {
+						ArrayList<Map<String, Object>> tasks;
+						ArrayList<Map<String, Object>> taskAttempts;
+						String user;
+						for (String id: childJobIds) {
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s", oc.getHistoryServer(), id);
+							user = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "job.user", String.class);
+							
+							/* Application master attempts */
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/jobattempts", oc.getHistoryServer(), id);
+							jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
+							
+							for (Map<String, Object> a: jobAttempts) {
+								appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
+								appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
+								appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+							}
+							
+							/* Task attempts */
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/tasks", oc.getHistoryServer(), id);
+							tasks = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "tasks.task", ArrayList.class);
+							if (tasks != null) {
+								for (Map<String, Object> task: tasks) {
+									url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/tasks/%s/attempts", oc.getHistoryServer(), id, task.get("id"));
+									taskAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "taskAttempts.taskAttempt", ArrayList.class);
+									if (taskAttempts != null) {
+										for (Map<String, Object> taskAttempt: taskAttempts) {
+											url = String.format("%s/jobhistory/logs/%s/%s/%s/%s",
+													oc.getHistoryServer(), nodeAddressToId(fsconf, (String)taskAttempt.get("nodeHttpAddress")),
+													(String)taskAttempt.get("assignedContainerId"), (String)taskAttempt.get("id"), user);
+
+											appendLog(strbuf, url + "/stderr?start=0");
+											appendLog(strbuf, url + "/stdout?start=0");
+											appendLog(strbuf, url + "/syslog?start=0");
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					return strbuf.toString();
+				}
+			}
+		}
+		return "";
+	}
+	
+	private String nodeAddressToId(FlowServerConf fsconf, String nodeAddress) {
+		/* TODO: Node id mapping history */
+		Map<String, String> headMap = new HashMap<String, String>();
+		OozieConf oc = (OozieConf)fsconf;
+		String url = String.format("%s/ws/v1/cluster/nodes", oc.getRmWebApp());
+		ArrayList<Map<String, Object>> nodes = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "nodes.node", ArrayList.class);
+		if (nodes != null) {
+			for (Map<String, Object> n: nodes) {
+				if (nodeAddress.equals(n.get("nodeHTTPAddress")))
+					return (String)n.get("id");
+			}
+		}
+		return "";
+	}
+
+	private void appendLog(StringBuilder strbuf, String url) {
+		Map<String, String> headMap = new HashMap<String, String>();
+		String log = RequestUtil.get(url, null, 0, headMap);
+		int logStart = log.indexOf("<pre>");
+		int logEnd = log.indexOf("</pre>");
+		if (logStart != -1 && logEnd != -1)
+			log = log.substring(logStart + 5, logEnd);
+		else
+			log = "";
+		strbuf.append(url);
+		strbuf.append("\n");
+		strbuf.append("------------------------------------------\n");
+		strbuf.append(log);
+		strbuf.append("------------------------------------------\n");
+		strbuf.append("------------------------------------------\n");
+	}
+
+	@Override
+	public NodeInfo getNodeInfo(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, String>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				for (Map<String, String> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						return toNodeInfo(a);
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	/* Sample action node info: [cred=null, userRetryMax=0, trackerUri=null, data=null, errorMessage=null, userRetryCount=0, externalChildIDs=null, externalId=null, errorCode=null, conf=<map-reduce xmlns="uri:oozie:workflow:0.5">
+	  <job-tracker>${jobTracker}</job-tracker>
+	  <name-node>${nameNode}</name-node>
+	  <configuration>
+	    <property>
+	      <name>mapred.mapper.new-api</name>
+	      <value>true</value>
+	    </property>
+	    <property>
+	      <name>mapred.reducer.new-api</name>
+	      <value>true</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.task.timeout</name>
+	      <value>0</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.map.class</name>
+	      <value>etl.engine.InvokeMapper</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.reduces</name>
+	      <value>0</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.inputformat.class</name>
+	      <value>org.apache.hadoop.mapreduce.lib.input.NLineInputFormat</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.input.fileinputformat.inputdir</name>
+	      <value>/flow1/sftpcfg/test1.sftp.map.properties</value>
+	    </property>
+	    <property>
+	      <name>mapreduce.job.outputformat.class</name>
+	      <value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat</value>
+	    </property>
+	    <property>
+	      <name>cmdClassName</name>
+	      <value>etl.cmd.SftpCmd</value>
+	    </property>
+	    <property>
+	      <name>wfName</name>
+	      <value>flow1</value>
+	    </property>
+	    <property>
+	      <name>wfid</name>
+	      <value>${wf:id()}</value>
+	    </property>
+	    <property>
+	      <name>staticConfigFile</name>
+	      <value>action_sftp.properties</value>
+	    </property>
+	  </configuration>
+	</map-reduce>, type=map-reduce, transition=null, retries=0, consoleUrl=null, stats=null, userRetryInterval=10, name=sftp, startTime=null, toString=Action name[sftp] status[PREP], id=0000008-161103161438380-oozie-play-W@sftp, endTime=null, externalStatus=null, status=PREP]
+	*/
+	private NodeInfo toNodeInfo(Map<String, String> nodeInfo) {
+		NodeInfo n = new NodeInfo();
+		DateFormat dtFormat;
+		if (dateTimePattern != null)
+			dtFormat = new SimpleDateFormat(dateTimePattern, Locale.forLanguageTag("en-US"));
+		else
+			dtFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.forLanguageTag("en-US"));
+		n.setNodeId(nodeInfo.get("id"));
+		n.setNodeName(nodeInfo.get("name"));
+		n.setStatus(nodeInfo.get("status"));
+		n.setType(nodeInfo.get("type"));
+		String t = nodeInfo.get("startTime");
+		if (t != null)
+			try {
+				n.setStartTime(dtFormat.parse(t));
+			} catch (ParseException e) {
+				logger.error(e.getMessage(), e);
+			}
+		t = nodeInfo.get("endTime");
+		if (t != null)
+			try {
+				n.setEndTime(dtFormat.parse(t));
+			} catch (ParseException e) {
+				logger.error(e.getMessage(), e);
+			}
+		return n;
+	}
+
+	@Override
+	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				Map<String, Object> action = null;
+				for (Map<String, Object> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						action = a;
+						break;
+					}
+				}
+				
+				if (action != null) {
+					
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(FlowServerConf fsconf, String filePath) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getDateTimePattern() {
+		return dateTimePattern;
+	}
+
+	public void setDateTimePattern(String dateTimePattern) {
+		this.dateTimePattern = dateTimePattern;
 	}
 }
