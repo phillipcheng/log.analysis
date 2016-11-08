@@ -12,6 +12,8 @@ public class OozieConf implements FlowServerConf {
 	public static final String key_oozie_server_port="oozie.server.port";
 	public static final String key_jobTracker="jobTracker";
 	public static final String key_nameNode="nameNode";
+	public static final String key_rmWebApp="rmWebApp";
+	public static final String key_historyServer="historyServer";
 	public static final String key_queueName="queueName";
 	public static final String key_oozieLibPath="oozie.libpath";
 	public static final String key_useSystemPath="oozie.use.system.libpath";
@@ -26,6 +28,8 @@ public class OozieConf implements FlowServerConf {
 	private int oozieServerPort;
 	private String nameNode;
 	private String jobTracker;
+	private String historyServer;
+	private String rmWebApp;
 	private String queueName = "default";
 	private String oozieLibPath;
 	private String userName;
@@ -36,6 +40,8 @@ public class OozieConf implements FlowServerConf {
 		oozieServerPort = pc.getInt(key_oozie_server_port);
 		nameNode = pc.getString(key_nameNode);
 		jobTracker =pc.getString(key_jobTracker);
+		rmWebApp = pc.getString(key_rmWebApp);
+		historyServer = pc.getString(key_historyServer);
 		userName = pc.getString(key_user_name);
 	}
 	
@@ -88,6 +94,18 @@ public class OozieConf implements FlowServerConf {
 	}
 	public void setOozieServerPort(int oozieServerPort) {
 		this.oozieServerPort = oozieServerPort;
+	}
+	public String getHistoryServer() {
+		return historyServer;
+	}
+	public void setHistoryServer(String historyServer) {
+		this.historyServer = historyServer;
+	}
+	public String getRmWebApp() {
+		return rmWebApp;
+	}
+	public void setRmWebApp(String rmWebApp) {
+		this.rmWebApp = rmWebApp;
 	}
 	
 }
