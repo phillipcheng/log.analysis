@@ -68,6 +68,64 @@ public abstract class FlowMgr {
 	 */
 	public abstract boolean deploy(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec);
 	
+	/**
+	 * get the flow log of submitted instance
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return log content
+	 */
+	public abstract String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId);
+	
+	/**
+	 * get the action node log of submitted instance
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return log content
+	 */
+	public abstract String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * get the action node info of submitted instance
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return node info
+	 */
+	public abstract NodeInfo getNodeInfo(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * list the action node's input files
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return list of file paths
+	 */
+	public abstract String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * list the action node's output files
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @param nodeName
+	 * @return list of file paths
+	 */
+	public abstract String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	
+	/**
+	 * get the distributed file
+	 * @param fsconf
+	 * @param filePath
+	 * @return file content
+	 */
+	public abstract InMemFile getDFSFile(FlowServerConf fsconf, String filePath);
+	
 	//generate json file from java construction
 	public static void genFlowJson(String rootFolder, String projectName, Flow flow){
 		String jsonFileName=String.format("%s/%s/%s/%s.json", rootFolder, projectName, flow.getName(), flow.getName());
