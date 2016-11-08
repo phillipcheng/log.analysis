@@ -47,26 +47,40 @@ var nodeHadFirstLine = function(result) {
  * @param {Object} result
  */
 var nodeHadEndLine = function(result) {
-	
+
 	//纪录第二个点
 	if(result.obj.id.toString().localeCompare(templine.firstId) == 0) {
 		console.log("return false");
 		return false;
 	} else if(templine.firstId.length > 0) {
 		//画线吧
-		
+
 		//检查一下，是否进行了重复的画线操作
 		if(!checkedExistLines(templine.firstId + "_" + result.obj.id)) {
 			templine.endPoint = (event.x - display_off_left) + "," + (event.y - display_off_top);
-			var temp_d = "M" + templine.firstPoint + " L" + (event.x - display_off_left) + "," + (event.y - display_off_top);
+			var temp_d = "M" + templine.firstPoint + " L" + templine.endPoint;
 
-			svg.append("path")
-			.attr("id",templine.firstId + "_" + result.obj.id)
-			.attr("d", temp_d).style({
-				stroke: "#269ABC",
-				"stroke-width": 2
-			});
+			if(action_move_y > 0) {
+				temp_d = "M" + templine.firstPoint + " L";
+				temp_d += (event.x - display_off_left) + ",";
+				temp_d += action_move_y;
+				templine.endPoint = (event.x - display_off_left) + "," + action_move_y;
+			} else if(action_move_x > 0) {
+				temp_d = "M" + templine.firstPoint + " L";
+				temp_d += action_move_x + ",";
+				temp_d += (event.y - display_off_top);
+				templine.endPoint = action_move_x + "," + (event.y - display_off_top);
+			}
 			
+			console.log("temp_d", temp_d);
+			svg.append("path")
+				.attr("id", templine.firstId + "_" + result.obj.id)
+				.attr("d", temp_d).style({
+					stroke: "#269ABC",
+					"stroke-width": 2
+				})
+				.attr("marker-end", "url(#arrow)");
+
 			//加到线的列表里面
 			var temp_obj = {};
 			temp_obj.id = templine.firstId + "_" + result.obj.id;
@@ -74,6 +88,7 @@ var nodeHadEndLine = function(result) {
 			temp_obj.endId = result.obj.id;
 			temp_obj.firstPoint = templine.firstPoint;
 			temp_obj.endPoint = templine.endPoint;
+			temp_obj.direction = action_move_direction;
 			lines.push(temp_obj);
 		}
 
@@ -93,25 +108,41 @@ var changeLines = function(objId) {
 	if(templine.firstId.toString().localeCompare(objId) == 0) {
 		//改变临时点的位置
 		templine.firstPoint = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
-	}else{
+	} else {
 		//console.log("lines",lines);
-		for(var i = 0;i<lines.length;i++){
-			if(lines[i]["id"].indexOf(objId)>-1){
+		for(var i = 0; i < lines.length; i++) {
+			if(lines[i]["id"].indexOf(objId) > -1) {
 				//console.log("find","------find------");
-				if(lines[i]["firstId"].toString().localeCompare(objId)==0){
+				if(lines[i]["firstId"].toString().localeCompare(objId) == 0) {
 					//记录线的开始坐标
 					//console.log("here","--------here---------");
-					var temp_d = "M"+(parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
+					var temp_d = "M" + (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
 					temp_d += " L";
 					temp_d += lines[i]["endPoint"].toString();
-					d3.select("#"+lines[i]["id"]).attr("d",temp_d);
+					d3.select("#" + lines[i]["id"]).attr("d", temp_d);
 					lines[i]["firstPoint"] = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
-				}else if(lines[i]["endId"].toString().localeCompare(objId)==0){
+				} else if(lines[i]["endId"].toString().localeCompare(objId) == 0) {
 					//记录线的结束坐标
-					console.log("there","--------there---------");
-					var temp_d = "M"+lines[i]["firstPoint"]+" L";
-					temp_d += (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
-					d3.select("#"+lines[i]["id"]).attr("d",temp_d);
+					console.log("there", "--------there---------");
+					var temp_d = "M" + lines[i]["firstPoint"] + " L";
+					if(lines[i]["direction"].toString().localeCompare("top")==0){
+						temp_d += parseInt(ostyle.left) + parseInt(ostyle.width)/2;
+						temp_d += ",";
+						temp_d += parseInt(ostyle.top) - 10;
+					}else if(lines[i]["direction"].toString().localeCompare("bottom")==0){
+						temp_d += parseInt(ostyle.left) + parseInt(ostyle.width)/2;
+						temp_d += ",";
+						temp_d += parseInt(ostyle.top) + 10;
+					}else if(lines[i]["direction"].toString().localeCompare("left")==0){
+						temp_d += parseInt(ostyle.left) - 10;
+						temp_d += ",";
+						temp_d += parseInt(ostyle.top) + parseInt(ostyle.height)/2;
+					}else if(lines[i]["direction"].toString().localeCompare("right")==0){
+						temp_d += parseInt(ostyle.left) + 10;
+						temp_d += ",";
+						temp_d += parseInt(ostyle.top) + parseInt(ostyle.height)/2;
+					}
+					d3.select("#" + lines[i]["id"]).attr("d", temp_d);
 					lines[i]["endPoint"] = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
 				}
 			}
@@ -140,9 +171,9 @@ var checkedExistLines = function(lineId) {
 	 */
 var createAction = function() {
 	var temp_id = "node_";
-	temp_id += new Date().getTime(); 
+	temp_id += new Date().getTime();
 	display.append("div")
-		.attr("id",temp_id)
+		.attr("id", temp_id)
 		.attr("class", "nodeAction")
 		.style({
 			left: (event.x - display_off_left - 50) + "px",
@@ -150,6 +181,8 @@ var createAction = function() {
 		})
 		.text("Action")
 		.attr("onclick", "mouseNodeClick()")
+		.attr("onmousemove", "mouseActionMove()")
+		.attr("onmouseout", "mouseActionOut()")
 		.call(d3.behavior.drag().on("drag", dragNodeMove));
 
 }

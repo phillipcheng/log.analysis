@@ -5,7 +5,8 @@
  * firstId:'',
  * endId:'',
  * firstPoint:'',
- * endPoint:''
+ * endPoint:'',
+ * direction:''
  * }
  * ]
  */
@@ -54,3 +55,9 @@ var display_off_left = 0;
 var display_off_top = 0;
 
 var booleanoutermove = false;
+
+var action_move_x = 0;
+
+var action_move_y = 0;
+
+var action_move_direction = "";

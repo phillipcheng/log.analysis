@@ -13,13 +13,13 @@ document.onkeydown = function(event) {
 		//1.
 		booleanmoveline = false;
 		initTempLine();
-		
+
 		//2.
 		document.getElementById("temp").style.display = "none";
 		booleanoutermove = false;
 	}
 	if(e && e.keyCode == 47) { // 按 Delete 删除操作
-		
+
 	}
 }
 
@@ -31,15 +31,17 @@ document.onmouseup = function() {
 		booleanoutermove = false;
 		var o = document.getElementById("temp");
 		o.style.display = "none";
-		
+
 		createAction();
 	}
 }
 
 /**
  * 鼠标移动事件
+ * 用于在dispaly上面进行的动作
  */
 var mouseMove = function() {
+	//console.log("---------mouseMove---------------");
 	var hander = event.srcElement ? event.srcElement : event.target;
 
 	var result = {};
@@ -49,25 +51,83 @@ var mouseMove = function() {
 
 	if(booleanmoveline) {
 		//根据鼠标的移动进行画线
-		if(templine.middlePoint.toString().localeCompare("") == 0) {
+		if(templine.endPoint.toString().localeCompare("") == 0) {
 			//只有两个点
 			var temp_d = "M" + templine.firstPoint + " L" + (event.x - display_off_left) + "," + (event.y - display_off_top);
 			d3.select("#linemove").attr("d", temp_d).style({
 				stroke: "#269ABC",
 				"stroke-width": 2
 			});
-		} else {
-			
 		}
 	}
 
 	//移动需要创建的节点
+	//用于Action的操作
 	if(booleanoutermove) {
 		var o = document.getElementById("temp");
 		o.style.left = (event.x - display_off_left - 50) + "px";
 		o.style.top = (event.y - display_off_top - 50) + "px";
 	}
 
+}
+
+/**
+ * 鼠标移动事件
+ * 用于在Action上面进行的动作
+ * (内部移动)
+ */
+var mouseActionMove = function() {
+	var hander = event.srcElement ? event.srcElement : event.target;
+
+	var result = {};
+	result.obj = hander;
+	result.left = event.x;
+	result.top = event.y;
+
+	var ostyle = hander.currentStyle ? hander.currentStyle : window.getComputedStyle(hander, null);
+
+	var x1 = parseInt(ostyle.left);
+	var y1 = parseInt(ostyle.top);
+	var x2 = x1 + parseInt(ostyle.width);
+	var y2 = y1 + parseInt(ostyle.height);
+
+	hander.style.borderColor = "#379082";
+	action_move_direction = "";
+	action_move_x = action_move_y = 0;
+
+	if(Math.abs(x1 - (event.x - display_off_left)) <= 15) {
+		hander.style.borderLeftColor = "red";
+		action_move_x = parseInt(ostyle.left)- 10;
+		action_move_direction = "left";
+	} else if(Math.abs(x2 - (event.x - display_off_left)) <= 15) {
+		hander.style.borderRightColor = "red";
+		action_move_x = parseInt(ostyle.left) + parseInt(ostyle.width) + 10;
+		action_move_direction = "right";
+	} else if(Math.abs(y1 - (event.y - display_off_top)) <= 15) {
+		hander.style.borderTopColor = "red";
+		action_move_y = parseInt(ostyle.top) - 10;
+		action_move_direction = "top";
+	} else if(Math.abs(y2 - (event.y - display_off_top)) <= 15) {
+		hander.style.borderBottomColor = "red";
+		action_move_y = parseInt(ostyle.top) + parseInt(ostyle.height) + 10;
+		action_move_direction = "bottom";
+	} else {
+
+	}
+
+	return result;
+}
+
+/**
+ * 鼠标移动事件
+ * 用于在Action上面进行的动作
+ * (外部移动)
+ */
+var mouseActionOut = function() {
+	console.log("----------mouseActionOut-----------");
+	var hander = event.srcElement ? event.srcElement : event.target;
+	hander.style.borderColor = "#379082";
+	action_move_x = action_move_y = 0;
 }
 
 /**
@@ -79,9 +139,9 @@ var mouseNodeClick = function() {
 	result.obj = hander;
 	result.left = event.x;
 	result.top = event.y;
-	
+
 	nodeHadEndLine(result);
-	
+
 	return result;
 }
 
@@ -119,7 +179,7 @@ var dragNodeMove = function() {
 
 	changeLines(dragTarget.attr("id"));
 
-	event.stopPropagation();
+	//event.stopPropagation();
 
 	return result;
 }
