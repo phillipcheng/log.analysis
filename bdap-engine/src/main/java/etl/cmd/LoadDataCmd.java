@@ -13,7 +13,7 @@ import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;
 
-public class LoadDataCmd extends SchemaFileETLCmd{
+public class LoadDataCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(LoadDataCmd.class);
 	//cfgkey

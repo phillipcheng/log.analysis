@@ -36,7 +36,7 @@ import etl.util.StringUtil;
 import etl.util.VarType;
 import scala.Tuple2;
 
-public class CsvMergeCmd extends SchemaFileETLCmd{
+public class CsvMergeCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 	
 	public static final Logger logger = LogManager.getLogger(CsvMergeCmd.class);

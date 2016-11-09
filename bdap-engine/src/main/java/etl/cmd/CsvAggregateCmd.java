@@ -24,7 +24,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.Util;
 
@@ -42,7 +44,7 @@ import etl.util.VarType;
 import scala.Tuple2;
 import scala.Tuple3;
 
-public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
+public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(CsvAggregateCmd.class);
 
@@ -50,7 +52,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public static final String AGGR_OPERATOR_SEP="\\|";
 	
 	//cfgkey
-	public static final String cfgkey_skip_header="skip.header";
 	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
 	public static final String cfgkey_aggr_op="aggr.op";
 	public static final String cfgkey_aggr_groupkey="aggr.groupkey";
@@ -60,7 +61,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	public static final String cfgkey_aggr_old_table="old.table";
 	public static final String cfgkey_aggr_new_table="new.table";
 	
-	private boolean skipHeader=false;
 	private boolean inputEndWithComma=false;
 	private int oldTableCnt=0;
 	private String[][] oldTables = null;
@@ -106,7 +106,6 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
-		skipHeader =super.getCfgBoolean(cfgkey_skip_header, false);
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
 		aoMapMap = new HashMap<String, AggrOps>();
 		groupKeysMap = new HashMap<String, GroupOp>();
@@ -559,7 +558,7 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
 		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
@@ -569,9 +568,8 @@ public class CsvAggregateCmd extends SchemaFileETLCmd implements Serializable{
 			}
 		});
 		
-		JavaRDD<Tuple2<String, String>> csvaggr = csvgroup.groupByKey().map(new Function<Tuple2<String, Iterable<String>>, Tuple2<String, String>>(){
+		JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
 			private static final long serialVersionUID = 1L;
-
 			@Override
 			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
 				Tuple3<String, String, String> t3 = reduceByKey(t._1, t._2);

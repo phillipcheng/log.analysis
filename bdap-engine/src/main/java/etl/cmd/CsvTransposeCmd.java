@@ -39,7 +39,7 @@ import etl.util.ScriptEngineUtil;
  *  N1  , S2    , B
  */
 
-public class CsvTransposeCmd extends SchemaFileETLCmd {
+public class CsvTransposeCmd extends SchemaETLCmd {
 
 	private static final long serialVersionUID = 5412418379859088398L;
 	
@@ -48,8 +48,7 @@ public class CsvTransposeCmd extends SchemaFileETLCmd {
 	//Stor the origin configured table name or splited table name
 	public static final String VAR_NAME_ORIGIN_TABLE_NAME="originTableName";
 	
-	//cfgkey	
-	public static final String cfgkey_skip_header = "skip.header";
+	//cfgkey
 	public static final String cfgkey_with_trailing_delimiter = "with.trailing.delimiter";	
 	
 	//Group of columns output
@@ -73,7 +72,6 @@ public class CsvTransposeCmd extends SchemaFileETLCmd {
 	//used to output the result into different files, if not configuration, all expose into single file
 	public static final String cfgkey_output_filename_exp = "output.filename.exp";
 
-	private boolean skipHeader = false;
 	private boolean withTrailingDelimiter = false;
 	private List<IdxRange> groupFieldList=new ArrayList<IdxRange>();	
 	private String tableName;
@@ -102,7 +100,6 @@ public class CsvTransposeCmd extends SchemaFileETLCmd {
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		setMrMode(MRMode.line);
-		this.skipHeader =getCfgBoolean(cfgkey_skip_header, false);
 		this.withTrailingDelimiter=getCfgBoolean(cfgkey_with_trailing_delimiter, false);
 		this.groupFieldList=IdxRange.parseString(getCfgString(cfgkey_group_fields, null));
 		

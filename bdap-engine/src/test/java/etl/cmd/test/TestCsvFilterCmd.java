@@ -55,7 +55,7 @@ public class TestCsvFilterCmd extends TestETLCmd{
 		JavaSparkContext jsc = new JavaSparkContext(conf);
 		JavaRDD<String> ds = jsc.textFile(super.getLocalFolder()+csvFile);
 		CsvFilterCmd cmd= new CsvFilterCmd(wfName, wfid, super.getLocalFolder()+csvSplitProp, super.getDefaultFS(), null);
-		Map<String, JavaRDD<String>> ret = cmd.sparkSplitProcess(ds);
+		Map<String, JavaRDD<String>> ret = cmd.sparkSplitProcess(ds, null);
 		String key = "csv";
 		String csvString="csv, abcd, eff";
 		String sesString="ses, dbbd, qqq";

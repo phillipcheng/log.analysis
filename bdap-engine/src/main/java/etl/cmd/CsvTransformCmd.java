@@ -17,8 +17,10 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.Util;
 import etl.cmd.transform.ColOp;
@@ -32,20 +34,18 @@ import etl.util.VarType;
 
 import scala.Tuple2;
 
-public class CsvTransformCmd extends SchemaFileETLCmd{
+public class CsvTransformCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(CsvTransformCmd.class);
 	
 	//cfgkey
-	public static final String cfgkey_skip_header="skip.header";
 	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
 	public static final String cfgkey_row_validation="row.validation";
 	public static final String cfgkey_col_op="col.op";
 	public static final String cfgkey_old_talbe="old.table";
 	public static final String cfgkey_add_fields="add.fields";
 	
-	private boolean skipHeader=false;
 	private boolean inputEndWithComma=false;
 	private String rowValidation;
 	private String oldTable;
@@ -74,7 +74,6 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
-		skipHeader =super.getCfgBoolean(cfgkey_skip_header, false);
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
 		rowValidation = super.getCfgString(cfgkey_row_validation, null);
 		oldTable = super.getCfgString(cfgkey_old_talbe, null);
@@ -218,8 +217,8 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 	
 	//key contain fileName, value is each line
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
-		JavaRDD<Tuple2<String, String>> mapret = input.map(new Function<Tuple2<String, String>, Tuple2<String, String>>(){
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> mapret = input.mapToPair(new PairFunction<Tuple2<String, String>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
 			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
@@ -235,16 +234,15 @@ public class CsvTransformCmd extends SchemaFileETLCmd{
 				}
 			}
 		});
-		JavaRDD<Tuple2<String, String>> csvret=mapret;
+		JavaPairRDD<String, String> csvret=mapret;
 		if (super.getOutputType()==OutputType.single){
-			csvret = mapret.map(new Function<Tuple2<String,String>, Tuple2<String,String>>(){
+			csvret = mapret.mapToPair(new PairFunction<Tuple2<String,String>, String,String>(){
 				@Override
 				public Tuple2<String, String> call(Tuple2<String, String> v1) throws Exception {
 					return new Tuple2<String,String>(ETLCmd.SINGLE_TABLE, v1._2);
 				}
 			});
 		}
-		
 		return csvret;
 	}
 

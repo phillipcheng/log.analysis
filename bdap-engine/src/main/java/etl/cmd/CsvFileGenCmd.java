@@ -16,7 +16,7 @@ import org.apache.hadoop.fs.Path;
 import etl.util.FieldType;
 import etl.util.VarType;
 
-public class CsvFileGenCmd extends SchemaFileETLCmd{
+public class CsvFileGenCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(CsvFileGenCmd.class);

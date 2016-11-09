@@ -11,8 +11,11 @@ import java.util.Map;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -65,7 +68,7 @@ public class ShellCmd extends ETLCmd {
 		}
 	}
 
-	private List<Tuple2<String, String>> processRow(String row) {
+	private List<String> processRow(String row) {
 		try {
 			if (row.contains(ParamUtil.kvSep)){
 				Map<String, String> keyValueMap = ParamUtil.parseMapParams(row);
@@ -84,16 +87,10 @@ public class ShellCmd extends ETLCmd {
 			String ret = outputStream.toString();
 			String lines[] = ret.split("\\r?\\n");
 			logger.info(String.format("process for key:%s ended with exitValue %d. \nstdout:\n%s", params.get(cfgkey_param_key), exitValue, ret));
-			List<Tuple2<String, String>> tl = new ArrayList<Tuple2<String,String>>();
+			List<String> tl = new ArrayList<String>();
 			for (String line: lines){
 				if (line.startsWith(capture_prefix)){
-					String kv = line.substring(capture_prefix.length());
-					String[] vs = kv.split(key_value_sep, 2);//split only once
-					if (vs.length==2){
-						tl.add(new Tuple2<String,String>(vs[0], vs[1]));
-					}else{
-						logger.error(String.format("%s should be like key:value", kv));
-					}
+					tl.add(line.substring(capture_prefix.length()));
 				}
 			}
 			return tl;
@@ -105,20 +102,19 @@ public class ShellCmd extends ETLCmd {
 	
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
-		List<Tuple2<String, String>> vl = processRow(row);
+		List<String> vl = processRow(row);
 		Map<String, Object> ret = new HashMap<String, Object>();
 		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
 		return ret;
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input){
-		JavaRDD<Tuple2<String, String>> ret = input.flatMap(new FlatMapFunction<String, Tuple2<String, String>>(){
+	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext sc){
+		JavaRDD<String> ret = input.flatMap(new FlatMapFunction<String, String>(){
 			@Override
-			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
+			public Iterator<String> call(String t) throws Exception {
 				return processRow(t).iterator();
 			}
-			
 		});
 		return ret;
 	}

@@ -19,7 +19,14 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.PairFunction;
+
 import etl.spark.SparkProcessor;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
@@ -37,6 +44,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	//cfgkey
 	public static final String cfgkey_vars="vars";
+	public static final String cfgkey_skip_header="skip.header";
 	
 	//system variables
 	public static final String VAR_NAME_TABLE_NAME="tablename";
@@ -52,6 +60,8 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	protected String defaultFs;
 	protected String[] otherArgs;
 	private String prefix;
+	
+	protected boolean skipHeader=false;
 	
 	protected transient FileSystem fs;
 	private transient PropertiesConfiguration pc;
@@ -199,6 +209,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 				systemVariables.put(varname, value);
 			}
 		}
+		skipHeader =getCfgBoolean(cfgkey_skip_header, false);
 	}
 	
 	public void init(){
@@ -215,34 +226,77 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		return systemVariables;
 	}
 	
-	/**
-	 * process a list of (file name containing path, each line) tuple
-	 * @param input
-	 * @return
-	 */
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
+	@Override
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
 		logger.error("empty spark process impl, should not be invoked.");
 		return null;
 	}
 	
-	/**
-	 * process the list of input (can be hdfs file name, can be a string containing parameters)
-	 * @param input
-	 * @return
-	 */
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input){
+	@Override
+	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
 		logger.error("empty spark process impl, should not be invoked.");
 		return null;
 	}
 	
-	/**
-	 * return a splitted JavaRDD<String>
-	 * @param input
-	 * @return
-	 */
-	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input){
+	@Override
+	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input, JavaSparkContext jsc){
 		logger.error("empty spark process impl, should not be invoked.");
 		return null;
+	}
+	@Override
+	public JavaPairRDD<String, String> sparkVtoKvProcess(JavaRDD<String> input, JavaSparkContext jsc){
+		logger.error("empty spark process impl, should not be invoked.");
+		return null;
+	}
+	
+	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc){
+		JavaPairRDD<String, String> prdd = null;
+		for (String file:inputfiles.collect()){
+			JavaRDD<String> content = jsc.textFile(file);
+			if (skipHeader){
+				String header = content.first();
+				content = content.filter(new Function<String, Boolean>(){
+					@Override
+					public Boolean call(String v1) throws Exception {
+						return !header.equals(v1);
+					}
+				});
+			};
+			JavaPairRDD<String, String> tprdd = content.mapToPair(new PairFunction<String, String, String>(){
+				@Override
+				public Tuple2<String, String> call(String t1) throws Exception {
+					return new Tuple2<String, String>(file, t1);
+				}
+			});
+			if (prdd==null){
+				prdd = tprdd;
+			}else{
+				prdd = prdd.union(tprdd);
+			}
+		}
+		return sparkProcessKeyValue(prdd, jsc);
+	}
+	
+	public JavaRDD<String> sparkProcessFilesToV(JavaRDD<String> inputfiles, JavaSparkContext jsc){
+		JavaRDD<String> prdd = null;
+		for (String file:inputfiles.collect()){
+			JavaRDD<String> content = jsc.textFile(file);
+			if (skipHeader){
+				String header = content.first();
+				content = content.filter(new Function<String, Boolean>(){
+					@Override
+					public Boolean call(String v1) throws Exception {
+						return !header.equals(v1);
+					}
+				});
+			};
+			if (prdd==null){
+				prdd = content;
+			}else{
+				prdd = prdd.union(content);
+			}
+		}
+		return sparkProcess(prdd, jsc);
 	}
 	
 	/**

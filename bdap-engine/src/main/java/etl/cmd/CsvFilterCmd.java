@@ -9,8 +9,10 @@ import javax.script.CompiledScript;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.hadoop.io.LongWritable;
@@ -81,7 +83,7 @@ public class CsvFilterCmd extends ETLCmd {
 	}
 	
 	@Override
-	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input){
+	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input, JavaSparkContext jsc){
 		Map<String, JavaRDD<String>> retMap = new HashMap<String, JavaRDD<String>>();
 		JavaPairRDD<String, String> kv = input.mapToPair(new PairFunction<String, String, String>(){
 			@Override
