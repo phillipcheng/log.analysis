@@ -16,7 +16,6 @@ var init = function() {
 			left: "100px",
 			top: "30px"
 		}).text("star")
-		.attr("onclick", "mouseNodeClick()")
 		.call(d3.behavior.drag().on("drag", dragNodeMove))
 		.append("div").attr("class", "point")
 		.attr("onclick", "mouseNodePointClick()");
@@ -31,8 +30,6 @@ var init = function() {
  * @param {Object} result
  */
 var nodeHadFirstLine = function(result) {
-
-	event.stopPropagation();
 
 	//纪录第一个点
 	templine.firstPoint = (result.left - display_off_left) + "," + (result.top - display_off_top);
@@ -50,7 +47,7 @@ var nodeHadEndLine = function(result) {
 
 	//纪录第二个点
 	if(result.obj.id.toString().localeCompare(templine.firstId) == 0) {
-		console.log("return false");
+
 		return false;
 	} else if(templine.firstId.length > 0) {
 		//画线吧
@@ -71,25 +68,28 @@ var nodeHadEndLine = function(result) {
 				temp_d += (event.y - display_off_top);
 				templine.endPoint = action_move_x + "," + (event.y - display_off_top);
 			}
-			
-			console.log("temp_d", temp_d);
-			svg.append("path")
-				.attr("id", templine.firstId + "_" + result.obj.id)
-				.attr("d", temp_d).style({
-					stroke: "#269ABC",
-					"stroke-width": 2
-				})
-				.attr("marker-end", "url(#arrow)");
 
-			//加到线的列表里面
-			var temp_obj = {};
-			temp_obj.id = templine.firstId + "_" + result.obj.id;
-			temp_obj.firstId = templine.firstId;
-			temp_obj.endId = result.obj.id;
-			temp_obj.firstPoint = templine.firstPoint;
-			temp_obj.endPoint = templine.endPoint;
-			temp_obj.direction = action_move_direction;
-			lines.push(temp_obj);
+			if((action_move_x + action_move_y) > 0) {
+				//确定了边界点的时候,才能画线的
+				svg.append("path")
+					.attr("id", templine.firstId + "_" + result.obj.id)
+					.attr("d", temp_d).style({
+						stroke: "#269ABC",
+						"stroke-width": 2
+					})
+					.attr("marker-end", "url(#arrow)");
+
+				//加到线的列表里面
+				var temp_obj = {};
+				temp_obj.id = templine.firstId + "_" + result.obj.id;
+				temp_obj.firstId = templine.firstId;
+				temp_obj.endId = result.obj.id;
+				temp_obj.firstPoint = templine.firstPoint;
+				temp_obj.endPoint = templine.endPoint;
+				temp_obj.enddirection = action_move_direction;
+				lines.push(temp_obj);
+			}
+
 		}
 
 		//恢复 初始化 移动化线功能
@@ -103,47 +103,55 @@ var nodeHadEndLine = function(result) {
  * @param {Object} objId
  */
 var changeLines = function(objId) {
+	//console.log("-------------"+objId+"--------------");
 	var o = document.getElementById(objId);
 	var ostyle = o.currentStyle ? o.currentStyle : window.getComputedStyle(o, null);
+	//console.log(templine);
 	if(templine.firstId.toString().localeCompare(objId) == 0) {
 		//改变临时点的位置
 		templine.firstPoint = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
 	} else {
-		//console.log("lines",lines);
+
 		for(var i = 0; i < lines.length; i++) {
 			if(lines[i]["id"].indexOf(objId) > -1) {
-				//console.log("find","------find------");
+
 				if(lines[i]["firstId"].toString().localeCompare(objId) == 0) {
 					//记录线的开始坐标
-					//console.log("here","--------here---------");
 					var temp_d = "M" + (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
 					temp_d += " L";
 					temp_d += lines[i]["endPoint"].toString();
 					d3.select("#" + lines[i]["id"]).attr("d", temp_d);
 					lines[i]["firstPoint"] = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
+				
 				} else if(lines[i]["endId"].toString().localeCompare(objId) == 0) {
 					//记录线的结束坐标
-					console.log("there", "--------there---------");
+
 					var temp_d = "M" + lines[i]["firstPoint"] + " L";
-					if(lines[i]["direction"].toString().localeCompare("top")==0){
-						temp_d += parseInt(ostyle.left) + parseInt(ostyle.width)/2;
+					if(lines[i]["enddirection"].toString().localeCompare("top") == 0) {
+						temp_d += parseInt(ostyle.left) + parseInt(ostyle.width) / 2;
 						temp_d += ",";
 						temp_d += parseInt(ostyle.top) - 10;
-					}else if(lines[i]["direction"].toString().localeCompare("bottom")==0){
-						temp_d += parseInt(ostyle.left) + parseInt(ostyle.width)/2;
+						lines[i]["endPoint"] = (parseInt(ostyle.left) + parseInt(ostyle.width) / 2) + "," + (parseInt(ostyle.top) - 10);
+					} else if(lines[i]["enddirection"].toString().localeCompare("bottom") == 0) {
+						//	console.log(ostyle.left+","+ostyle.width+","+ostyle.top+","+ostyle.height);
+						temp_d += parseInt(ostyle.left) + (parseInt(ostyle.width) / 2);
 						temp_d += ",";
-						temp_d += parseInt(ostyle.top) + 10;
-					}else if(lines[i]["direction"].toString().localeCompare("left")==0){
+						temp_d += parseInt(ostyle.top) + (parseInt(ostyle.height)) + 10;
+						//console.log(temp_d);
+						lines[i]["endPoint"] = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + (parseInt(ostyle.height)) + 10);
+					} else if(lines[i]["enddirection"].toString().localeCompare("left") == 0) {
 						temp_d += parseInt(ostyle.left) - 10;
 						temp_d += ",";
-						temp_d += parseInt(ostyle.top) + parseInt(ostyle.height)/2;
-					}else if(lines[i]["direction"].toString().localeCompare("right")==0){
-						temp_d += parseInt(ostyle.left) + 10;
+						temp_d += parseInt(ostyle.top) + (parseInt(ostyle.height) / 2);
+						lines[i]["endPoint"] = (parseInt(ostyle.left) - 10) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) / 2);
+					} else if(lines[i]["enddirection"].toString().localeCompare("right") == 0) {
+						temp_d += parseInt(ostyle.left) + parseInt(ostyle.width) + 10;
 						temp_d += ",";
-						temp_d += parseInt(ostyle.top) + parseInt(ostyle.height)/2;
+						temp_d += parseInt(ostyle.top) + (parseInt(ostyle.height) / 2);
+						lines[i]["endPoint"] = (parseInt(ostyle.left) + parseInt(ostyle.width) + 10) + "," + (parseInt(ostyle.top) + (parseInt(ostyle.height) / 2));
 					}
 					d3.select("#" + lines[i]["id"]).attr("d", temp_d);
-					lines[i]["endPoint"] = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
+					//lines[i]["endPoint"] = (parseInt(ostyle.left) + (parseInt(ostyle.width) / 2)) + "," + (parseInt(ostyle.top) + parseInt(ostyle.height) + 5);
 				}
 			}
 		}
@@ -183,6 +191,39 @@ var createAction = function() {
 		.attr("onclick", "mouseNodeClick()")
 		.attr("onmousemove", "mouseActionMove()")
 		.attr("onmouseout", "mouseActionOut()")
-		.call(d3.behavior.drag().on("drag", dragNodeMove));
+		.call(d3.behavior.drag().on("drag", dragNodeMove))
+		.append("div")
+		.attr("class", "pointNode")
+		.attr("onclick", "mouseNodePointClick()");
 
+	//加入到节点集合里面
+	actions.push(temp_id);
 }
+
+///**
+// * 得在选中的对象
+// * @param {Object} o
+// */
+//var getSelectionObj = function(o) {
+//	var selectionId = o.getAttribute("id").toString();
+//	if(selection_id.startsWith("line_")){
+//		//如果选中的是线
+//		selection_id = selectionId;
+//		//修改选中的线的样式
+//		
+//	}else if(selection_id.startsWith("node")){
+//		//如果选中的是节点
+//		selection_id = selectionId;
+//		//修改选中的节点的样式
+//		document.getElementById(selectionId).style.borderColor = "red";
+//	}else if(selection_id.localeCompare("display")==0){
+//		//如果选中的是 display
+//		//清除 ID 为    selection_id 的选中样式
+//		
+//		if(selection_id.startsWith("line_")){
+//			
+//		}else if(selection_id.startsWith("node")){
+//			document.getElementById(selectionId).style.borderColor = "#379082";
+//		}
+//	}
+//}

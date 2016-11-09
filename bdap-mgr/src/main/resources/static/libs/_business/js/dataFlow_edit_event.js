@@ -8,7 +8,7 @@
  */
 document.onkeydown = function(event) {
 	var e = event || window.event || arguments.callee.caller.arguments[0];
-	console.log(e);
+
 	if(e && e.keyCode == 27) { // 按 Esc 取消操作
 		//1.
 		booleanmoveline = false;
@@ -36,19 +36,20 @@ document.onmouseup = function() {
 	}
 }
 
+
 /**
  * 鼠标移动事件
  * 用于在dispaly上面进行的动作
  */
 var mouseMove = function() {
-	//console.log("---------mouseMove---------------");
+
 	var hander = event.srcElement ? event.srcElement : event.target;
 
 	var result = {};
 	result.obj = hander;
 	result.left = event.x;
 	result.top = event.y;
-
+	console.log(booleanmoveline);
 	if(booleanmoveline) {
 		//根据鼠标的移动进行画线
 		if(templine.endPoint.toString().localeCompare("") == 0) {
@@ -97,7 +98,7 @@ var mouseActionMove = function() {
 
 	if(Math.abs(x1 - (event.x - display_off_left)) <= 15) {
 		hander.style.borderLeftColor = "red";
-		action_move_x = parseInt(ostyle.left)- 10;
+		action_move_x = parseInt(ostyle.left) - 10;
 		action_move_direction = "left";
 	} else if(Math.abs(x2 - (event.x - display_off_left)) <= 15) {
 		hander.style.borderRightColor = "red";
@@ -124,7 +125,7 @@ var mouseActionMove = function() {
  * (外部移动)
  */
 var mouseActionOut = function() {
-	console.log("----------mouseActionOut-----------");
+
 	var hander = event.srcElement ? event.srcElement : event.target;
 	hander.style.borderColor = "#379082";
 	action_move_x = action_move_y = 0;
@@ -135,20 +136,26 @@ var mouseActionOut = function() {
  */
 var mouseNodeClick = function() {
 	var hander = event.srcElement ? event.srcElement : event.target;
+	
 	var result = {};
 	result.obj = hander;
 	result.left = event.x;
 	result.top = event.y;
-
-	nodeHadEndLine(result);
+	
+	if(templine.firstId.toString().length == 0) {
+		
+	} else {
+		nodeHadEndLine(result); //此方法用于记录 画线的第二个移点 而进行的处理		
+	}
 
 	return result;
 }
 
 /**
- * 鼠标 开始画线点 被点击 事件
+ * 鼠标 开始画线点 被点击 事件(star)
  */
 var mouseNodePointClick = function() {
+	event.stopPropagation();
 	var hander = event.srcElement ? event.srcElement : event.target;
 	var result = {};
 	result.obj = hander;
@@ -179,7 +186,7 @@ var dragNodeMove = function() {
 
 	changeLines(dragTarget.attr("id"));
 
-	//event.stopPropagation();
+	event.stopPropagation();
 
 	return result;
 }

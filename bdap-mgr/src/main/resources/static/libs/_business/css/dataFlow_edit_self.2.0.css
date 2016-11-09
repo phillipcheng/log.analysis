@@ -48,16 +48,31 @@ svg path:hover {
 .point {
 	width: 10px;
 	height: 10px;
-	border-radius: 20px;
+	border-radius: 5px;
 	background-color: red;
 	margin-left: 35px;
 	margin-top: 15px;
 	position: absolute;
 }
 
-.point:hover {
+.point:hover{
 	cursor: crosshair;
-	background-color: orangered;
+	background-color:orange;
+}
+
+.pointNode{
+	width: 10px;
+	height: 10px;
+	border-radius: 5px;
+	background-color: red;
+	margin-left: 45px;
+	margin-top: 55px;
+	position: absolute;
+}
+
+.pointNode:hover{
+	cursor: crosshair;
+	background-color:orange;
 }
 
 .nodeAction {
@@ -69,5 +84,8 @@ svg path:hover {
 	text-align: center;
 	background-color: #C0A16B;
 	position: absolute;
+}
+.nodeAction:hover{
+	 cursor: pointer;	
 }
 
