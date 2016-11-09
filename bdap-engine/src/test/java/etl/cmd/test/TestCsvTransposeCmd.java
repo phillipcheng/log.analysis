@@ -55,12 +55,6 @@ public class TestCsvTransposeCmd extends TestETLCmd {
 		String remoteCsvOutputFolder = "/etltest/csvtranspose/output/";
 		String csvtransProp = "pdeStat.properties";
 		String[] csvFiles = new String[] {"STAT1027.Small_AJ2"};		
-		String cfgFolder = "/etltest/csvtranspose/cfg/"; //hardcoded in the properties
-
-		String[] cfgFiles=new String[]{"pde_state_table_fields_mapping.properties","pde_state_table_name_mapping.properties"};
-		for(String cfgFile:cfgFiles){
-			getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+cfgFile), new Path(cfgFolder+cfgFile));
-		}		
 		
 		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:\n{}",String.join("\n", output));

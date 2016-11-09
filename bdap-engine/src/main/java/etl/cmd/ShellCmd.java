@@ -104,7 +104,7 @@ public class ShellCmd extends ETLCmd {
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
 		List<String> vl = processRow(row);
 		Map<String, Object> ret = new HashMap<String, Object>();
-		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
+		ret.put(RESULT_KEY_OUTPUT_LINE, vl);
 		return ret;
 	}
 	

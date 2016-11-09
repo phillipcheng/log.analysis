@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -131,7 +133,9 @@ public class CsvSplitCmd extends ETLCmd {
 		return false;
 	}
 
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values) throws Exception {
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<String[]> ret = new ArrayList<String[]>();
 
 		Iterator<Text> it = values.iterator();

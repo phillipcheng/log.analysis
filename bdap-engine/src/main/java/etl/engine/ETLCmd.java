@@ -321,7 +321,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	 * set newValue to null, if output line results
 	 * @return list of newKey, newValue, baseOutputPath
 	 */
-	public List<String[]> reduceProcess(Text key, Iterable<Text> valuesR, 
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		logger.error("empty reduce impl, should not be invoked.");
 		return null;

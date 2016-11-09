@@ -84,8 +84,8 @@ public abstract class TestFlow {
 	
 	private void deployEngine(OozieConf oc){
 		FileSystem fs = HdfsUtil.getHadoopFs(oc.getNameNode());
-		String[] libJars = new String[]{bdapSrcRoot+"bdap-common/target/bdap.common-0.1.0.jar", 
-				bdapSrcRoot+"bdap-engine/target/bdap.engine-0.1.0.jar"};
+		String[] libJars = new String[]{bdapSrcRoot+"bdap-common/target/bdap.common-VERSION.jar", 
+				bdapSrcRoot+"bdap-engine/target/bdap.engine-VERSION.jar"};
 		try {
 			for (String libJar: libJars){
 				Path localJar = Paths.get(libJar);

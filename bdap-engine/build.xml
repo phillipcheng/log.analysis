@@ -6,8 +6,11 @@
 	<target name="dist" depends="clean">
 		<mkdir dir="${dist}"/>
         <mkdir dir="${dist}/lib"/>
+		<mkdir dir="${dist}/bin"/>
+        <mkdir dir="${dist}/schema"/>
         <mkdir dir="${dist}/sql"/>
-		<copy todir="${dist}/lib/">
+        <mkdir dir="${dist}/cfg"/>
+		<copy todir="${dist}/lib/"> <!-- copy thirdparty lib-->
 			<fileset dir="${target}/lib/">
 		    	<include name="commons*.jar"/>
 				<include name="jackson-core-2.6.5.jar"/>
@@ -21,42 +24,39 @@
 				<include name="scala-library-*.jar"/>
 				<include name="log4j-core-*.jar"/>
 				<include name="log4j-api-*.jar"/>
-				<include name="bdap.*.jar"/>
 		    </fileset>
 			<fileset dir="lib/">
                 <include name="vertica*.jar"/>
             </fileset>
+		</copy>
+		<copy todir="${dist}/"> <!-- copy my lib-->
+			<fileset dir="${target}/lib/">
+				<include name="bdap.*.jar"/>
+		    </fileset>
 			<fileset dir="${target}">
                 <include name="bdap.*.jar"/>
             </fileset>
 		</copy>
-		<copy todir="${dist}">
+		<copy todir="${dist}/bin"><!-- copy shell scripts -->
             <fileset dir="bin">
                 <include name="*.sh"/>
             </fileset>
-			<fileset dir="src/main/resources">
-                <include name="etlengine.properties.template"/>
+        </copy>
+		<copy todir="${dist}/schema"><!-- copy schema-->
+            <fileset dir="src/main/resources">
                 <include name="logschema.txt"/>
             </fileset>
         </copy>
-		<copy todir="${dist}">
-            <fileset dir="bin">
-                <include name="*.sh"/>
-            </fileset>
-            <fileset dir="src/main/resources">
-                <include name="etlengine.properties.template"/>
-            </fileset>
-        </copy>
-		<copy todir="${dist}/sql">
+		<copy todir="${dist}/sql"><!-- copy sql-->
             <fileset dir="sql">
             </fileset>
         </copy>
-		<!--
-		<jar destfile="${dist}/lib/preload-0.1.0-all.jar">
-		    <zipgroupfileset dir="${dist}/lib" includes="preload-0.1.0-jar-with-dependencies.jar" />
-            <zipgroupfileset dir="${src}/lib" includes="vertica-jdbc-7.0.1-0.jar" />
-		</jar>
-		-->
+		<copy todir="${dist}/cfg"><!-- copy cfg-->
+			<fileset dir="src/main/resources">
+	            <include name="etlengine.properties.template"/>
+	            <include name="log4j*"/>
+	        </fileset>
+        </copy>
 	</target>
 	
 	<target name="clean">
