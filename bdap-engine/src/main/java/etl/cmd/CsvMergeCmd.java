@@ -20,7 +20,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import etl.cmd.transform.AggrOp;
 import etl.cmd.transform.AggrOps;
@@ -36,7 +38,7 @@ import etl.util.StringUtil;
 import etl.util.VarType;
 import scala.Tuple2;
 
-public class CsvMergeCmd extends SchemaFileETLCmd{
+public class CsvMergeCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 	
 	public static final Logger logger = LogManager.getLogger(CsvMergeCmd.class);
@@ -228,7 +230,9 @@ public class CsvMergeCmd extends SchemaFileETLCmd{
 	 * set newValue to null, if output line results
 	 * @return list of newKey, newValue, baseOutputPath
 	 */
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<String[]> retlist = new ArrayList<String[]>();
 		Iterator<Text> it = values.iterator();
 		CSVRecord[] mergedRecord = new CSVRecord[srcNum];

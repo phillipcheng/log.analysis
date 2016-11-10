@@ -26,8 +26,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.PairFunction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -42,7 +48,7 @@ import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
 
-public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
+public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(XmlToCsvCmd.class);
@@ -289,8 +295,8 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcess(JavaRDD<String> input){
-		JavaRDD<Tuple2<String, String>> ret = input.flatMap(new FlatMapFunction<String, Tuple2<String, String>>(){
+	public JavaPairRDD<String, String> sparkVtoKvProcess(JavaRDD<String> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> ret = input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
 				return flatMapToPair(t).iterator();
@@ -298,6 +304,7 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 		});
 		return ret;
 	}
+	
 	/**
 	 * @param row: each row is a xml file name
 	 */
@@ -318,7 +325,8 @@ public class XmlToCsvCmd extends SchemaFileETLCmd implements Serializable{
 	 * @return newKey, newValue, baseOutputPath
 	 */
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<String[]> rets = new ArrayList<String[]>();
 		for (Text v: values){
 			//logger.info(String.format("v:%s", v.toString()));

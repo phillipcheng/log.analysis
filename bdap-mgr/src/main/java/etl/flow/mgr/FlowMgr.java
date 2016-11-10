@@ -7,7 +7,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
+import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
+import bdap.util.Util;
 import etl.flow.ActionNode;
 import etl.flow.Flow;
 import etl.flow.Node;
@@ -123,4 +125,11 @@ public abstract class FlowMgr {
 	 * @return file content
 	 */
 	public abstract InMemFile getDFSFile(FlowServerConf fsconf, String filePath);
+	
+	//generate json file from java construction
+	public static void genFlowJson(String rootFolder, String projectName, Flow flow){
+		String jsonFileName=String.format("%s/%s/%s/%s.json", rootFolder, projectName, flow.getName(), flow.getName());
+		String jsonString = JsonUtil.toJsonString(flow);
+		Util.writeFile(jsonFileName, jsonString);
+	}
 }

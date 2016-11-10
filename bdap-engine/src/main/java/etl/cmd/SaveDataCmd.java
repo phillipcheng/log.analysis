@@ -1,11 +1,10 @@
 package etl.cmd;
 
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import etl.engine.ETLCmd;
 import etl.spark.SparkUtil;
-import scala.Tuple2;
 
 public class SaveDataCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
@@ -29,7 +28,7 @@ public class SaveDataCmd extends ETLCmd {
 	}
 	
 	@Override
-	public JavaRDD<Tuple2<String, String>> sparkProcessKeyValue(JavaRDD<Tuple2<String, String>> input){
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
 		SparkUtil.saveByKey(input, defaultFs, logTmpDir, wfid);
 		return null;
 	}

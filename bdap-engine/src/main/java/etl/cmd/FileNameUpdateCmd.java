@@ -109,14 +109,6 @@ public class FileNameUpdateCmd extends ETLCmd {
 		return null;
 	}
 	
-	/**
-	 * @return newKey, newValue, baseOutputPath
-	 */
-	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values){
-		return null;
-	}
-	
 	private void updateFileName(Path path) {
 		List<String> headlinesList=new ArrayList<String>();
 		List<String> taillinesList=new ArrayList<String>();

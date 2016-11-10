@@ -23,6 +23,7 @@ import etl.flow.Flow;
 import etl.flow.InputFormatType;
 import etl.flow.Link;
 import etl.flow.Node;
+import etl.flow.NodeLet;
 import etl.flow.StartNode;
 import etl.flow.oozie.coord.COORDINATORAPP;
 
@@ -80,9 +81,9 @@ public class OozieGenerator {
 	public static final String wfid_param_exp= "${wfid}";
 	
 	private static String getInputFormat(InputFormatType ift){
-		if (InputFormatType.line == ift){
+		if (InputFormatType.Line == ift){
 			return prop_inputformat_line;
-		}else if (InputFormatType.fileName == ift){
+		}else if (InputFormatType.FileName == ift){
 			return prop_inputformat_filename;
 		}else if (InputFormatType.File == ift){
 			return prop_inputformat_textfile;
@@ -139,9 +140,9 @@ public class OozieGenerator {
 			pl.add(reducerNumCp);
 		}
 		//input and output configuration
-		Set<Link> inlinks = flow.getInLinks(an.getName());
+		List<NodeLet> inlets = an.getInLets();
 		List<String> inputDataDirs = new ArrayList<String>();
-		for (Link ln: inlinks){
+		for (NodeLet ln: inlets){
 			if (ln.getDataName()!=null){
 				Data d = flow.getDataDef(ln.getDataName());
 				if (d==null){
@@ -170,14 +171,14 @@ public class OozieGenerator {
 		outputFormatCp.setName(prop_outputformat);
 		CONFIGURATION.Property outputDirCp = new CONFIGURATION.Property();
 		outputDirCp.setName(prop_outputdirs);
-		Set<Link> outlinks = flow.getOutLinks(an.getName());
+		List<NodeLet> outlets = an.getOutlets();
 		String outputDataDir=null;
-		if (outlinks!=null && outlinks.size()==1){//only support 1 output datasource, >1 are treated as no output
-			String dataName = outlinks.iterator().next().getDataName();
+		if (outlets!=null && outlets.size()==1){//for multiple output, the location should be the same, only differ baseoutput
+			String dataName = outlets.iterator().next().getDataName();
 			if (dataName!=null){
 				Data d = flow.getDataDef(dataName);
 				if (d==null){
-					logger.error(String.format("data not found:%s", outlinks.iterator().next().getDataName()));
+					logger.error(String.format("data not found:%s", dataName));
 					return null;
 				}
 				outputDataDir = d.getLocation()+wfid;
@@ -313,7 +314,7 @@ public class OozieGenerator {
 		boolean useFork = false;
 		ACTION fromAction=null;
 		FORK forkNode=null;
-		if (fromNode.getOutletNum()>1){
+		if (fromNode.getOutlets().size()>1){
 			useFork=true;
 			String forkName = getForkNodeName(ln.getFromNodeName());
 			forkNode = getForkNode(wfa, forkName);
@@ -329,7 +330,7 @@ public class OozieGenerator {
 			}
 		}
 		String nextNodeName = ln.getToNodeName();
-		if (toNode.getInletNum()>1){
+		if (toNode.getInLets().size()>1){
 			//may need to gen join, the toNode's corresponding join node is named as toNode.name+"_"+join
 			String joinNodeName = getJoinNodeName(ln.getToNodeName());
 			JOIN j = getJoinNode(wfa, joinNodeName);

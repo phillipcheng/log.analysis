@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>bdap</groupId>
 		<artifactId>bdap.parent</artifactId>
-		<version>0.1.0</version>
+		<version>VERSION</version>
 		<relativePath>..</relativePath>
 	</parent>
 	
@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>bdap</groupId>
 			<artifactId>bdap.common</artifactId>
-			<version>0.1.0</version>
+			<version>VERSION</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -150,8 +150,22 @@
 	           <directory>src/main/resources</directory>
 	       </resource>
 		</resources>
-				
+		
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+					<id>make-a-jar</id>
+					<phase>compile</phase>
+					<goals>
+						<goal>jar</goal>
+					</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- 
 			<plugin>
 			    <groupId>org.springframework.boot</groupId>
 			    <artifactId>spring-boot-maven-plugin</artifactId>
@@ -163,7 +177,7 @@
 			            </goals>
 			        </execution>
 			    </executions>
-			</plugin>
+			</plugin> -->
 		</plugins>
 	</build>
 </project>

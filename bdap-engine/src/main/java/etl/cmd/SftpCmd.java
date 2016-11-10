@@ -10,6 +10,9 @@ import java.util.Vector;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.streaming.receiver.Receiver;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
@@ -31,6 +34,7 @@ import etl.spark.SparkReciever;
 import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
+import scala.Tuple2;
 
 public class SftpCmd extends ETLCmd implements SparkReciever{
 	private static final long serialVersionUID = 1L;
@@ -108,7 +112,46 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		}
 	}
 
-	public List<String> process(long mapKey, Receiver<String> r){
+	public List<String> process(long mapKey, String row, Receiver<String> r){
+		logger.info(String.format("param: %s", row));
+		Map<String, String> pm = ParamUtil.parseMapParams(row);
+		if (pm.containsKey(cfgkey_sftp_host)){
+			this.host = pm.get(cfgkey_sftp_host);
+		}
+		if (pm.containsKey(cfgkey_sftp_port)) {
+			this.port = Integer.parseInt(pm.get(cfgkey_sftp_port));
+		}
+		if (pm.containsKey(cfgkey_sftp_user)) {
+			this.user = pm.get(cfgkey_sftp_user);
+		}
+		if (pm.containsKey(cfgkey_sftp_pass)) {
+			this.pass = pm.get(cfgkey_sftp_pass);
+		}
+		if (pm.containsKey(cfgkey_sftp_folder)) {
+			this.fromDirs = new String[]{pm.get(cfgkey_sftp_folder)};
+		}
+		if (pm.containsKey(cfgkey_file_filter)) {
+			String fileFilterExp = pm.get(cfgkey_file_filter);
+			if (fileFilterExp!=null){
+				this.fileFilter = (String) ScriptEngineUtil.eval(fileFilterExp, VarType.STRING, super.getSystemVariables());
+			}
+		}
+		if (pm.containsKey(cfgkey_sftp_get_retry)) {
+			this.sftpGetRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_get_retry));
+		}
+		if (pm.containsKey(cfgkey_sftp_connect_retry)) {
+			this.sftpConnectRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_connect_retry));
+		}
+		if (pm.containsKey(cfgkey_sftp_clean)) {
+			sftpClean = new Boolean(pm.get(cfgkey_sftp_clean));
+		}
+		if (pm.containsKey(cfgkey_incoming_folder)) {
+			String incomingFolderExp = pm.get(cfgkey_incoming_folder);
+			if (incomingFolderExp!=null){
+				this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
+			}
+		}
+		
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int getRetryCntTemp = 1;
@@ -235,12 +278,12 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	
 	@Override
 	public void sparkRecieve(Receiver<String> r) {
-		process(0, r);
+		process(0, null, r);
 	}
 	
 	@Override
 	public List<String> sgProcess(){
-		List<String> ret = process(0, null);
+		List<String> ret = process(0, null, null);
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");
@@ -250,50 +293,29 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		//override param
-		logger.info(String.format("param: %s", row));
-		Map<String, String> pm = ParamUtil.parseMapParams(row);
-		if (pm.containsKey(cfgkey_sftp_host)){
-			this.host = pm.get(cfgkey_sftp_host);
-		}
-		if (pm.containsKey(cfgkey_sftp_port)) {
-			this.port = Integer.parseInt(pm.get(cfgkey_sftp_port));
-		}
-		if (pm.containsKey(cfgkey_sftp_user)) {
-			this.user = pm.get(cfgkey_sftp_user);
-		}
-		if (pm.containsKey(cfgkey_sftp_pass)) {
-			this.pass = pm.get(cfgkey_sftp_pass);
-		}
-		if (pm.containsKey(cfgkey_sftp_folder)) {
-			this.fromDirs = new String[]{pm.get(cfgkey_sftp_folder)};
-		}
-		if (pm.containsKey(cfgkey_file_filter)) {
-			String fileFilterExp = pm.get(cfgkey_file_filter);
-			if (fileFilterExp!=null){
-				this.fileFilter = (String) ScriptEngineUtil.eval(fileFilterExp, VarType.STRING, super.getSystemVariables());
-			}
-		}
-		if (pm.containsKey(cfgkey_sftp_get_retry)) {
-			this.sftpGetRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_get_retry));
-		}
-		if (pm.containsKey(cfgkey_sftp_connect_retry)) {
-			this.sftpConnectRetryCount = Integer.parseInt(pm.get(cfgkey_sftp_connect_retry));
-		}
-		if (pm.containsKey(cfgkey_sftp_clean)) {
-			sftpClean = new Boolean(pm.get(cfgkey_sftp_clean));
-		}
-		if (pm.containsKey(cfgkey_incoming_folder)) {
-			String incomingFolderExp = pm.get(cfgkey_incoming_folder);
-			if (incomingFolderExp!=null){
-				this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
-			}
-		}
-		
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		List<String> logInfo = process(offset, null);
+		List<String> outputList = process(offset, row, null);
+		List<String> logInfo = new ArrayList<String>();
+		logInfo.add(String.valueOf(outputList.size()));
 		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
-		
 		return retMap;
+	}
+	
+	@Override
+	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
+		List<String> lines = input.collect();
+		List<String> ret = new ArrayList<String>();
+		for (int i=0; i<lines.size(); i++){
+			String row = lines.get(i);
+			List<String> fileList = process(i, row, null);
+			ret.addAll(fileList);
+		}
+		return jsc.parallelize(ret);
+	}
+	
+	@Override
+	public boolean hasReduce(){
+		return false;
 	}
 
 	public String[] getFromDirs() {
@@ -342,12 +364,6 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 
 	public void setPass(String pass) {
 		this.pass = pass;
-	}
-	
-
-	@Override
-	public boolean hasReduce(){
-		return false;
 	}
 
 	public int getSftpGetRetryCount() {

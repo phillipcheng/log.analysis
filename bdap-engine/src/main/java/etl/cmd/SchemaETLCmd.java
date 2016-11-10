@@ -9,21 +9,18 @@ import java.util.Map;
 
 import javax.script.CompiledScript;
 
-//log4j2
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.util.JsonUtils;
-
-import bdap.util.HdfsUtil;
-import bdap.util.JsonUtil;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import bdap.util.HdfsUtil;
+import bdap.util.JsonUtil;
 import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
 import etl.engine.OutputType;
@@ -35,9 +32,9 @@ import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
 
-public abstract class SchemaFileETLCmd extends ETLCmd{
+public abstract class SchemaETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
-	public static final Logger logger = LogManager.getLogger(SchemaFileETLCmd.class);
+	public static final Logger logger = LogManager.getLogger(SchemaETLCmd.class);
 
 	//cfgkey
 	public static final String cfgkey_schema_file="schema.file";
@@ -63,14 +60,14 @@ public abstract class SchemaFileETLCmd extends ETLCmd{
 	
 	private DBType dbtype = DBType.NONE;
 	
-	public SchemaFileETLCmd(){
+	public SchemaETLCmd(){
 	}
 	
-	public SchemaFileETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+	public SchemaETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
 	}
 	
-	public SchemaFileETLCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+	public SchemaETLCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 	}
 	

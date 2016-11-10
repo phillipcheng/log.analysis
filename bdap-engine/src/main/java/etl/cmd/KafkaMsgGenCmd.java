@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 import etl.engine.EngineUtil;
 import etl.util.ScriptEngineUtil;
 
-public class KafkaMsgGenCmd extends SchemaFileETLCmd{
+public class KafkaMsgGenCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(KafkaMsgGenCmd.class);
 	//cfgkey

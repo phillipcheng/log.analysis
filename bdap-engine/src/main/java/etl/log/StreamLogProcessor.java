@@ -9,13 +9,13 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction2;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.Time;
-import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
+import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
@@ -57,7 +57,7 @@ public class StreamLogProcessor {
 					LocationStrategies.PreferConsistent(), 
 					ConsumerStrategies.Subscribe(Arrays.asList(new String[]{logTopicName}), kafkaParams));
 			
-			JavaDStream<Tuple2<String,String>> csvs = ds.map(new Function<ConsumerRecord<Object,Object>,Tuple2<String,String>>(){
+			JavaPairDStream<String,String> csvs = ds.mapToPair(new PairFunction<ConsumerRecord<Object,Object>,String,String>(){
 				private static final long serialVersionUID = 1L;
 
 				@Override
@@ -73,17 +73,16 @@ public class StreamLogProcessor {
 				}
 				
 			});
-			
-			csvs.cache().foreachRDD(new VoidFunction2<JavaRDD<Tuple2<String,String>>, Time>(){
+			csvs.cache().foreachRDD(new VoidFunction2<JavaPairRDD<String,String>, Time>(){
 				private static final long serialVersionUID = 1L;
 				@Override
-				public void call(JavaRDD<Tuple2<String,String>> v1, Time v2) throws Exception {
+				public void call(JavaPairRDD<String,String> v1, Time v2) throws Exception {
 					if (!v1.isEmpty() && v1.count()>0){
 						String batchid = StringUtil.replaceSpaces(v2.toString());
 						
 						SaveDataCmd saveDataCmd = new SaveDataCmd(wfName, batchid, null, defaultFs, null);
 						saveDataCmd.setSendLog(false);
-						saveDataCmd.sparkProcessKeyValue(v1);
+						saveDataCmd.sparkProcessKeyValue(v1, jsc.sparkContext());
 						
 						LoadDataCmd loadDataCmd = new LoadDataCmd(wfName, batchid, null, "log", defaultFs, null);
 						//if logs are imported to db, import and then delete the files

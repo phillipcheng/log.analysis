@@ -84,8 +84,8 @@ public abstract class TestFlow {
 	
 	private void deployEngine(OozieConf oc){
 		FileSystem fs = HdfsUtil.getHadoopFs(oc.getNameNode());
-		String[] libJars = new String[]{bdapSrcRoot+"bdap-common/target/bdap.common-0.1.0.jar", 
-				bdapSrcRoot+"bdap-engine/target/bdap.engine-0.1.0.jar"};
+		String[] libJars = new String[]{bdapSrcRoot+"bdap-common/target/bdap.common-VERSION.jar", 
+				bdapSrcRoot+"bdap-engine/target/bdap.engine-VERSION.jar"};
 		try {
 			for (String libJar: libJars){
 				Path localJar = Paths.get(libJar);
@@ -203,13 +203,6 @@ public abstract class TestFlow {
 		}
 	}
 
-	//generate json file from java construction
-	public void genFlowJson(String rootFolder, String projectName, Flow flow){
-		String jsonFileName=String.format("%s/%s/%s/%s.json", rootFolder, projectName, flow.getName(), flow.getName());
-		String jsonString = JsonUtil.toJsonString(flow);
-		Util.writeFile(jsonFileName, jsonString);
-	}
-	
 	//generate oozie xml from json file
 	public String genOozieFlow(String jsonFile){
 		OozieFlowMgr ofm = new OozieFlowMgr();

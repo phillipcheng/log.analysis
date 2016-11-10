@@ -15,7 +15,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import etl.engine.EngineUtil;
 import etl.util.FieldType;
 
-public class KafkaMsgDecodeCmd extends SchemaFileETLCmd{
+public class KafkaMsgDecodeCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(KafkaMsgDecodeCmd.class);
 	//cfgkey

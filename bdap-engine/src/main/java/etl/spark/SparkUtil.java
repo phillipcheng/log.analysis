@@ -7,8 +7,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.HdfsUtil;
 import scala.Tuple2;
@@ -17,16 +15,8 @@ public class SparkUtil {
 
 	public static final Logger logger = LogManager.getLogger(SparkUtil.class);
 	
-	public static void saveByKey(JavaRDD<Tuple2<String, String>> input, final String defaultFs, 
-			final String dir, String wfid){
-		JavaPairRDD<String, String> pairs = input.mapToPair(new PairFunction<Tuple2<String, String>, String, String>(){
-			@Override
-			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
-				return t;
-			}
-		});
-		
-		List<Tuple2<String, Iterable<String>>> datalist = pairs.groupByKey().collect();
+	public static void saveByKey(JavaPairRDD<String, String> input, String defaultFs, String dir, String wfid){
+		List<Tuple2<String, Iterable<String>>> datalist = input.groupByKey().collect();
 		for (Tuple2<String, Iterable<String>> data: datalist){
 			String key = data._1;
 			Iterable<String> vs = data._2;
