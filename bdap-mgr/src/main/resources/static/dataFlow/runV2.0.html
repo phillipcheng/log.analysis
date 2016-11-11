@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../libs/bootstrap/bootstrap.min.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow_run_dashboard.2.0.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow_run_self.2.0.css" />
+
+		<script type="text/javascript" src="../libs/jquery/jQuery.min.1.9.1.js"></script>
+		<script type="text/javascript" src="../libs/bootstrap/bootstrap.min.js"></script>
+		<script type="text/javascript" src="../libs/d3/d3.js"></script>
+
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_run_const.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_run_self.2.0.js"></script>
+
+	</head>
+
+	<body>
+		<!--
+        	作者：offline
+        	时间：2016-11-01
+        	描述：标题头文件
+        -->
+		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="#">Design Panel</a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<a href="javascript:;" onclick="init()">start</a>
+						</li>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">action 类型 <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li>
+									<a href="#one">Action One</a>
+								</li>
+								<li>
+									<a href="#two">Action Two</a>
+								</li>
+								<li class="divider"></li>
+								<li>
+									<a href="#three">Action Three</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="#">Profile</a>
+						</li>
+						<li>
+							<a href="javascript:;" onclick="javascript:console.log(lines);console.log(actions);">Help</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-2">
+					<!--
+                    	作者：715277829@qq.com
+                    	时间：2016-11-09
+                    	描述：左半部份
+                    -->
+					<div style="height: 20px;"></div>
+
+				</div>
+				<div class="col-md-8">
+					<div style="height: 20px;"></div>
+					<div id="display">
+						<svg id="displaysvg" style="width: 100%;height: 100%;">
+							<defs>
+								<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
+									<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #269ABC;" />
+								</marker>
+								<marker id="circle" markerWidth="4" markerHeight="4" refx="2" refy="2">
+									<circle cx="2" cy="2" r="2" stroke="none" fill="#f00" onclick="init()" />
+								</marker>
+							</defs>
+							<path id="linemove" marker-end="url(#arrow)"></path>
+						</svg>
+					</div>
+				</div>
+				<div class="col-md-2">
+					<!--
+                    	作者：715277829@qq.com
+                    	时间：2016-11-09
+                    	描述：右半部份
+                    -->
+					<div style="height: 20px;"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="divoperation" style="width: 300px;height: 500px;" class="panel panel-default myself">
+			<div class="panel-body">
+				<div class="alert alert-info" role="alert">opration panel</div>
+				<div class="btn-group btn-group-sm">
+					<button type="button" class="btn btn-success">Left</button>
+					<button type="button" class="btn btn-info">Run</button>
+					<button type="button" class="btn btn-warning">Right</button>
+				</div>
+				<div style="height: 10px;"></div>
+				<ul id="myTab" class="nav nav-tabs">
+					<li class="active">
+						<a href="#tabdata" data-toggle="tab">View Data</a>
+					</li>
+					<li>
+						<a href="#tablog" data-toggle="tab">View Log</a>
+					</li>
+				</ul>
+				<div id="myTabContent" class="tab-content">
+					<div class="tab-pane fade in active" id="tabdata">
+						<p>iOS 是一个由苹果公司开发和发布的手机操作系统。最初是于 2007 年首次发布 iPhone、iPod Touch 和 Apple TV。iOS 派生自 OS X，它们共享 Darwin 基础。OS X 操作系统是用在苹果电脑上，iOS 是苹果的移动版本。</p>
+					</div>
+					<div class="tab-pane fade" id="tablog">
+						<p>最初是于 2007 年首次发布 iPhone、iPod Touch 和 Apple TV。iOS 派生自 OS X，它们共享 Darwin 基础。OS X 操作系统是用在苹果电脑上，iOS 是苹果的移动版本。</p>
+					</div>					
+				</div>
+			</div>
+		</div>
+		
+	
+
+	</body>
+
+</html>

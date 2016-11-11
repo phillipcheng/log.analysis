@@ -2,28 +2,22 @@
 <html>
 
 	<head>
-		<meta charset="utf-8" />
+		<meta charset="UTF-8">
 		<title></title>
 		<link rel="stylesheet" href="../libs/bootstrap/bootstrap.min.css" />
-		<link rel="stylesheet" href="../libs/_business/css/dataFlow_dashboard.css" />
-		<link rel="stylesheet" href="../libs/_business/css/dataFlow_self.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow_edit_dashboard.2.0.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow_edit_self.2.0.css" />
 
 		<script type="text/javascript" src="../libs/jquery/jQuery.min.1.9.1.js"></script>
 		<script type="text/javascript" src="../libs/bootstrap/bootstrap.min.js"></script>
 		<script type="text/javascript" src="../libs/d3/d3.js"></script>
-		<script type="text/javascript" src="../libs/_business/js/dataFlow_self.js"></script>
 		
-		<script type="text/javascript">
-			 document.onkeydown=function(event){
-			 	  var e = event || window.event || arguments.callee.caller.arguments[0];
-			 	  if(e && e.keyCode==27){ // 按 Esc 取消操作
-			 	  		x1 = y1 = x2 = y2 = 0;
-			 	  		clickObj_One_id = clickObj_Two_id = "";
-			 	  		booleanCheckedBegin = false;
-			 	  		d3.select("#linemove").attr("d", "M0,0");
-			 	  }
-			 }
-		</script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_edit_const.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_edit_event.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_edit_position.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_edit_outer.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow_edit_self.2.0.js"></script>
+	
 	</head>
 
 	<body>
@@ -61,7 +55,7 @@
 							<a href="#">Profile</a>
 						</li>
 						<li>
-							<a href="javascript:;" onclick="javascript:console.log(_scopeData);">Help</a>
+							<a href="javascript:;" onclick="javascript:console.log(lines);console.log(actions);">Help</a>
 						</li>
 					</ul>
 				</div>
@@ -90,7 +84,7 @@
 							</div>
 							<div id="collapseOne" class="panel-collapse collapse in">
 								<div class="panel-body">
-									<button class="btn btn-primary" style="width: 95%;">insert</button>
+									<button id="btn_one" class="btn btn-primary" style="width: 95%;">insert</button>
 									<div style="height: 10px;"></div>
 									<div class="panel-group" id="accordionOne">
 										<div class="panel panel-default">
@@ -147,8 +141,8 @@
 				</div>
 				<div class="col-md-8">
 					<div style="height: 20px;"></div>
-
-					<div id="display" onmouseup="">
+					<div id="display">
+						<div id="temp" style="position:absolute;border:2px;border-style:dotted;width: 100px;height: 100px;border-radius:20px;background: greenyellow;z-index: 10;opacity: 0.5;display: none;"></div>
 						<svg id="displaysvg" style="width: 100%;height: 100%;">
 							<defs>
 								<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
@@ -160,17 +154,6 @@
 							</defs>
 							<path id="linemove" marker-end="url(#arrow)"></path>
 						</svg>
-						<div id="divmovepoint" class="point"></div>
-
-						<!--<div id="star">
-							<br/>start
-							<div id="starpoint"></div>
-						</div>
-
-						<div id="end">
-							<div id="endpointUP"></div>
-							<br /> end
-						</div>-->
 
 					</div>
 

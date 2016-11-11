@@ -10,12 +10,13 @@ svg line {
 	stroke-width: 2;
 }
 
+
 /*svg path {
 	stroke:#269ABC;
 	stroke-width:1;
 }*/
 
-svg path:hover{
+svg path:hover {
 	cursor: move;
 }
 
@@ -29,7 +30,7 @@ svg path:hover{
 	margin-left: 0px;
 }
 
-#star {
+#node_star {
 	width: 80px;
 	height: 60px;
 	padding-top: 20px;
@@ -40,57 +41,51 @@ svg path:hover{
 	position: absolute;
 }
 
-#star:hover {
+#node_star:hover {
 	cursor: pointer;
 }
 
-#starpointDOWN {
+.point {
 	width: 10px;
 	height: 10px;
 	border-radius: 5px;
-	margin-top: 18px;
-	margin-left: 35px;
 	background-color: red;
+	margin-left: 35px;
+	margin-top: 15px;
+	position: absolute;
 }
 
-#starpointDOWN:hover {
+.point:hover{
 	cursor: crosshair;
-	background-color: orange;
+	background-color:orange;
 }
 
-#end{
-	width: 80px;
-	height: 60px;
+.pointNode{
+	width: 10px;
+	height: 10px;
+	border-radius: 5px;
+	background-color: red;
+	margin-left: 45px;
+	margin-top: 55px;
+	position: absolute;
+}
+
+.pointNode:hover{
+	cursor: crosshair;
+	background-color:orange;
+}
+
+.nodeAction {
+	width: 100px;
+	height: 100px;
 	padding-top: 20px;
 	border-radius: 20px;
 	border: 2px solid #379082;
 	text-align: center;
+	background-color: #C0A16B;
 	position: absolute;
-	background-color: white;
+}
+.nodeAction:hover{
+	 cursor: pointer;	
 }
 
-#end:hover{
-	cursor:pointer;
-}			
-
-#endpointUP{
-	width: 10px;
-	height: 10px;
-	border-radius: 5px;
-	margin-top: -50px;
-	margin-left: 35px;
-	background-color: red;
-}
-
-#endpointUP:hover{
-	cursor: crosshair;
-	background-color: orange;				
-}
-
-.point{
-	width: 10px;
-	height: 10px;
-	border-radius: 5px;
-	position: absolute;
-	background-color: olivedrab;
-}
