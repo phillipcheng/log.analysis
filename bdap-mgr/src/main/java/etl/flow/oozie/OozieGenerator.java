@@ -140,7 +140,7 @@ public class OozieGenerator {
 			pl.add(reducerNumCp);
 		}
 		//input and output configuration
-		List<NodeLet> inlets = an.getInLets();
+		List<NodeLet> inlets = an.getInlets();
 		List<String> inputDataDirs = new ArrayList<String>();
 		for (NodeLet ln: inlets){
 			if (ln.getDataName()!=null){
@@ -330,7 +330,7 @@ public class OozieGenerator {
 			}
 		}
 		String nextNodeName = ln.getToNodeName();
-		if (toNode.getInLets().size()>1){
+		if (toNode.getInlets().size()>1){
 			//may need to gen join, the toNode's corresponding join node is named as toNode.name+"_"+join
 			String joinNodeName = getJoinNodeName(ln.getToNodeName());
 			JOIN j = getJoinNode(wfa, joinNodeName);

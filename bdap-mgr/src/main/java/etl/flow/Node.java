@@ -29,7 +29,7 @@ public class Node{
 	}
 	
 	public String toString(){
-		return String.format("%s,%d,%d", name);
+		return String.format("%s", name);
 	}
 	
 	@Override
@@ -58,7 +58,7 @@ public class Node{
 		outlets.add(nl);
 	}
 	
-	public List<NodeLet> getInLets(){
+	public List<NodeLet> getInlets(){
 		return inlets;
 	}
 	
