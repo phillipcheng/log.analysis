@@ -4,19 +4,19 @@ import java.time.format.DateTimeFormatter;
 
 public class CoordConf {
 	
-	public static String sdformat="yyyy-MM-dd'T'hh:mm:ss";
+	public static String sdformat="yyyy-MM-dd'T'hh:mm'Z'";
 	public static DateTimeFormatter df = DateTimeFormatter.ofPattern(sdformat);
 	
 	private String startTime;
 	private String endTime;
-	private int duration; //unit minute
+	private String duration; //unit minute
 	private String coordPath;
 	private String timeZone;
 	
-	public CoordConf(String startTime, String endTime, int duration){
+	public CoordConf(String startTime, String endTime, String duration){
 		this.startTime= startTime;
 		this.endTime = endTime;
-		this.duration = duration;
+		this.setDuration(duration);
 	}
 	
 	public String getStartTime() {
@@ -25,9 +25,7 @@ public class CoordConf {
 	public String getEndTime() {
 		return endTime;
 	}
-	public int getDuration() {
-		return duration;
-	}
+	
 	public String getTimeZone() {
 		return timeZone;
 	}
@@ -37,9 +35,6 @@ public class CoordConf {
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
 	}
-	public void setDuration(int duration) {
-		this.duration = duration;
-	}
 	public void setTimeZone(String timeZone) {
 		this.timeZone = timeZone;
 	}
@@ -48,6 +43,14 @@ public class CoordConf {
 	}
 	public void setCoordPath(String coordPath) {
 		this.coordPath = coordPath;
+	}
+
+	public String getDuration() {
+		return duration;
+	}
+
+	public void setDuration(String duration) {
+		this.duration = duration;
 	}
 }
 

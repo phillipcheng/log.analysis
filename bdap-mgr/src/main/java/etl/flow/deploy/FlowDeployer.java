@@ -1,11 +1,13 @@
 package etl.flow.deploy;
 
+import java.io.File;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import bdap.util.EngineConf;
-import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import bdap.util.SystemUtil;
@@ -37,7 +38,6 @@ public class FlowDeployer {
 	
 	private static String cfgProperties="testFlow.properties";
 	
-	private static String key_platform_local_lib="platform.local.lib";
 	private static String key_platform_remote_lib="platform.remote.lib";
 	private static String key_platform_coordinator_xml="platform.coordinate.xml";
 	private static String key_projects="projects";
@@ -49,7 +49,6 @@ public class FlowDeployer {
 	
 	private PropertiesConfiguration pc;
 	
-	private String platformLocalLib="";
 	private String platformRemoteLib="";
 	private String platformCoordinateXml="";
 	private Map<String, String> projectLocalDirMap= new HashMap<String, String>();
@@ -77,7 +76,6 @@ public class FlowDeployer {
 		conf = new Configuration();
 		defaultFS = pc.getString(key_defaultFs);
 		conf.set("fs.defaultFS", defaultFS);
-		platformLocalLib = pc.getString(key_platform_local_lib);
 		platformRemoteLib = pc.getString(key_platform_remote_lib);
 		setPlatformCoordinateXml(pc.getString(key_platform_coordinator_xml));
 		hdfsUser = pc.getString(key_hdfs_user);
@@ -100,6 +98,20 @@ public class FlowDeployer {
 			logger.error("", e);
 		}
     }
+    
+    public Collection<String> listProjects(){
+    	return projectLocalDirMap.keySet();
+    }
+    
+    public Collection<String> listFlows(String project){
+    	String locaDir = projectLocalDirMap.get(project);
+    	File[] directories = new File(locaDir).listFiles(File::isDirectory);
+    	List<String> ret =new ArrayList<String>();
+    	for (File dir:directories){
+    		ret.add(dir.getName());
+    	}
+    	return ret;
+    }
 	
 	public OozieConf getOC(){
 		OozieConf oc = new OozieConf(cfgProperties);
@@ -114,40 +126,6 @@ public class FlowDeployer {
 		return ec;
 	}
 	
-	private void deployEngine(OozieConf oc){
-		FileSystem fs = HdfsUtil.getHadoopFs(oc.getNameNode());
-		String[] libJars = new String[]{platformLocalLib+"bdap-common/target/bdap.common-r0.2.0.jar", 
-				platformLocalLib+"bdap-engine/target/bdap.engine-r0.2.0.jar"};
-		try {
-			for (String libJar: libJars){
-				Path localJar = Paths.get(libJar);
-				String fileName = localJar.getFileName().toString();
-				String remoteJar = oc.getOozieLibPath() + fileName;
-				HdfsUtil.writeDfsFile(fs, remoteJar, Files.readAllBytes(localJar));
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}
-	}
-	
-	public void runDeployEngine() {
-		try {
-			if (localDeploy){
-				deployEngine(getOC());
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-				ugi.doAs(new PrivilegedExceptionAction<Void>() {
-					public Void run() throws Exception {
-						deployEngine(getOC());
-						return null;
-					}
-				});
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}
-	}
-	
 	//action properties should prefix with action. mapping properties should suffix with mapping.properties
 	private List<InMemFile> getDeploymentUnits(String folder, String[] jarPaths, boolean fromJson){
 		List<InMemFile> fl = new ArrayList<InMemFile>();
@@ -156,7 +134,7 @@ public class FlowDeployer {
 			if (Files.isDirectory(directoryPath)) {
 				DirectoryStream<Path> stream = null;
 				if (!fromJson){
-					stream = Files.newDirectoryStream(directoryPath, "action.*.properties");
+					stream = Files.newDirectoryStream(directoryPath, "action*.properties");
 					for (Path path : stream) {
 					    logger.info(String.format("action path:%s", path.getFileName().toString()));
 						byte[] content = Files.readAllBytes(path);
@@ -202,6 +180,7 @@ public class FlowDeployer {
 		if (!fromJson){
 			List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s", localProjectFolder, flowName), 
 					jars, fromJson);
+			logger.info(String.format("files deployed:%s", deployFiles));
 			ofm.deployFlowFromXml(hdfsProjectFolder, flowName, deployFiles, getOC(), getEC());
 		}else{
 			String jsonFile = String.format("%s/%s/%s.json", localProjectFolder, flowName, flowName);
@@ -285,8 +264,15 @@ public class FlowDeployer {
 		return flowXml;
 	}
 
-	public static void usage(){
-		System.out.println(String.format("%s%s", FlowDeployer.class.getName(), " (deploy/run)(Flow/Coordinator) prjName flowName [jars]"));
+	public static void usage(FlowDeployer fd){
+		System.out.println(String.format("%s%s", FlowDeployer.class.getName(), " [deploy|run]Flow prjName flowName [jars]"));
+		System.out.println(String.format("%s%s", FlowDeployer.class.getName(), " runCoordinator prjName flowName startTime endTime duration"));
+		System.out.println(String.format("time format:%s", CoordConf.sdformat));
+		System.out.println(String.format("duration unit: minute, min:5"));
+		for (String prj: fd.listProjects()){
+			Collection<String> flows = fd.listFlows(prj);
+			System.out.println(String.format("%s:\n%s", prj, String.join("\n  ", flows)));
+		}
 	}
 	/**
 	 * config testFlow.propertie then
@@ -297,15 +283,15 @@ public class FlowDeployer {
 	 * @param args
 	 */
 	public static void main(String[] args){
+		FlowDeployer fd = new FlowDeployer();
 		if (args.length<3){
-			usage();
+			usage(fd);
 			return;
 		}
 		String cmd=args[0];
 		String prjName=args[1];
 		String flowName=args[2];
 		String[] jars=null;
-		FlowDeployer fd = new FlowDeployer();
 		if (DeployCmd.deployFlow.toString().equals(cmd)){
 			if (args.length>3){
 				jars = args[3].split(",");
@@ -317,7 +303,7 @@ public class FlowDeployer {
 			int startIdx=3;
 			String startTime=args[startIdx++];
 			String endTime=args[startIdx++];
-			int duration=Integer.parseInt(args[startIdx++]);
+			String duration=args[startIdx++];
 			CoordConf cc = new CoordConf(startTime, endTime, duration);
 			cc.setCoordPath(fd.getPlatformCoordinateXml());
 			fd.runStartCoordinator(prjName, flowName, cc);

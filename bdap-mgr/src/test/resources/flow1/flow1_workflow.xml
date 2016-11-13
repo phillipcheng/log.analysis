@@ -35,7 +35,7 @@
                 </property>
                 <property>
                     <name>mapreduce.input.fileinputformat.inputdir</name>
-                    <value>/flow1/etcfg/sftp.map.properties</value>
+                    <value>/flow1/sftpcfg/test1.sftp.map.properties</value>
                 </property>
                 <property>
                     <name>mapreduce.job.outputformat.class</name>

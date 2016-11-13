@@ -1,5 +1,5 @@
 <project name="preload" default="dist" basedir=".">
-	<property name="dist"  location="dist"/>
+	<property name="dist"  location="bdap-r0.2.0"/>
 	<property name="src"  location="."/>
 	<property name="engine.target"  location="bdap-engine/target"/>
 	<property name="engine.src"  location="bdap-engine"/>
@@ -70,13 +70,24 @@
         </copy>
 		<!-- mgr module -->
 		<copy todir="${dist}/mgr/lib"><!-- copy lib-->
-            <fileset dir="${mgr.target}">
+            <fileset dir="${mgr.target}/lib">
             </fileset>
+			<fileset dir="${mgr.target}/">
+				<include name="bdap*"/>
+			</fileset>
         </copy>
 		<copy todir="${dist}/mgr/bin"><!-- copy shell-->
             <fileset dir="${mgr.src}/bin">
             </fileset>
         </copy>
+		<copy todir="${dist}/mgr/cfg"><!-- copy cfg and test case-->
+            <fileset dir="${mgr.src}/src/test/resources">
+            	<exclude name="flow1/data/"/>
+            	<exclude name="flow1/expected/"/>
+            </fileset>
+        </copy>
+		<tar destfile="${src}/bdap-r0.2.0.tar" basedir="${dist}"/>
+		<gzip destfile="${src}/bdap-r0.2.0.tar.gz" src="${src}/bdap-r0.2.0.tar"/>
 	</target>
 	
 	<target name="clean">

@@ -17,5 +17,5 @@ hdfs dfs -mkdir -p ${bdap_dir}/cfg
 
 for f in ../cfg/*
 do
-	hdfs dfs -copyFromLocal -f $f ${bdap_dir}/engine/cfg/`basename $f`
+	hdfs dfs -copyFromLocal -f $f ${bdap_dir}/cfg/`basename $f`
 done

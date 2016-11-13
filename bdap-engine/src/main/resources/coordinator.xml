@@ -1,4 +1,4 @@
-<coordinator-app name="${flowName}" frequency="${coord:minutes(${duration})}" start="${start}" end="${end}" timezone="GMT"
+<coordinator-app name="${flowName}" frequency="${duration}" start="${start}" end="${end}" timezone="GMT"
                  xmlns="uri:oozie:coordinator:0.2">
         <action>
             <workflow>
