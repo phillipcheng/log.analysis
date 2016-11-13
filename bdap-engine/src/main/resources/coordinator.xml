@@ -1,0 +1,22 @@
+<coordinator-app name="${flowName}" frequency="${coord:minutes(${duration})}" start="${start}" end="${end}" timezone="GMT"
+                 xmlns="uri:oozie:coordinator:0.2">
+        <action>
+            <workflow>
+            <app-path>${workflowAppUri}</app-path>
+            <configuration>
+                <property>
+                    <name>jobTracker</name>
+                    <value>${jobTracker}</value>
+                </property>
+                <property>
+                    <name>nameNode</name>
+                    <value>${nameNode}</value>
+                </property>
+                <property>
+                    <name>queueName</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+        </workflow>
+    </action>
+</coordinator-app>

@@ -1,0 +1,5 @@
+lab to prd
+(Get-Content smsc_kpi_v1.1_lab_v9.3.7.twb) | ForEach-Object { $_ -replace "cmslab", "pdeanalytics" } | ForEach-Object { $_ -replace "192.85.247.104", "10.194.205.140" }| ForEach-Object { $_ -replace "192.238.57.4", "10.194.205.136" }|Set-Content smsc_kpi_v1.1_prd_v9.3.7.twb
+
+prd to lab
+(Get-Content etllog_prd.twb) | ForEach-Object { $_ -replace "pdeanalytics","cmslab" } | ForEach-Object { $_ -replace "10.194.205.140","192.85.247.104" }| ForEach-Object { $_ -replace "10.194.205.136", "192.238.57.4" }|Set-Content etllog_lab.twb

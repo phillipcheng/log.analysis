@@ -40,10 +40,6 @@ public class Flow extends Node{
 	public void init(){
 		nodeMap = new HashMap<String, Node>();
 		for (Node n: nodes){
-			if (n instanceof ActionNode){
-				ActionNode an = (ActionNode)n;
-				an.setExeType(ExeType.valueOf(an.getProperty(ActionNode.key_exe_type)));
-			}
 			nodeMap.put(n.getName(), n);
 		}
 		dataMap = new HashMap<String, Data>();

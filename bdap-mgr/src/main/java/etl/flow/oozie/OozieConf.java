@@ -31,7 +31,7 @@ public class OozieConf implements FlowServerConf {
 	private String historyServer;
 	private String rmWebApp;
 	private String queueName = "default";
-	private String oozieLibPath;
+	private String oozieLibPath;//bdap platform lib path
 	private String userName;
 	
 	public OozieConf(String confFile){
@@ -42,16 +42,14 @@ public class OozieConf implements FlowServerConf {
 		jobTracker =pc.getString(key_jobTracker);
 		rmWebApp = pc.getString(key_rmWebApp);
 		historyServer = pc.getString(key_historyServer);
-		userName = pc.getString(key_user_name);
 	}
 	
-	public OozieConf(String oozieServerIp, int oozieServerPort, String nameNode, String jobTracker, String oozieLibPath, String userName){
+	public OozieConf(String oozieServerIp, int oozieServerPort, String nameNode, String jobTracker, String oozieLibPath){
 		this.oozieServerIp = oozieServerIp;
 		this.oozieServerPort = oozieServerPort;
 		this.nameNode = nameNode;
 		this.jobTracker = jobTracker;
 		this.oozieLibPath = oozieLibPath;
-		this.userName = userName;
 	}
 	public String getOozieLibPath() {
 		return oozieLibPath;
@@ -77,12 +75,6 @@ public class OozieConf implements FlowServerConf {
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
 	}
-	public String getUserName() {
-		return userName;
-	}
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
 	public String getOozieServerIp() {
 		return oozieServerIp;
 	}
@@ -107,5 +99,12 @@ public class OozieConf implements FlowServerConf {
 	public void setRmWebApp(String rmWebApp) {
 		this.rmWebApp = rmWebApp;
 	}
-	
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
 }

@@ -29,7 +29,7 @@ public class Node{
 	}
 	
 	public String toString(){
-		return String.format("%s,%d,%d", name);
+		return String.format("%s", name);
 	}
 	
 	@Override
