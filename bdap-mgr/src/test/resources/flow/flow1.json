@@ -1,37 +1,33 @@
 {
   "@class" : "flow",
   "name" : "flow1",
-  "inletNum" : 0,
-  "outletNum" : 0,
   "nodes" : [ {
     "@class" : "start",
     "name" : "start",
-    "inletNum" : 0,
-    "outletNum" : 1,
+    "outlets" : [ { "name" : "start_sftp", "dataName" : "sftpcfg" } ],
     "duration" : 300
   }, {
     "@class" : "end",
     "name" : "end",
-    "inletNum" : 1,
-    "outletNum" : 0
+    "outlets" : [ { "name" : "mergecsv_end", "dataName" : "mergecsv" } ]
   }, {
     "@class" : "action",
     "name" : "sftp",
-    "inletNum" : 1,
-    "outletNum" : 2,
+    "inlets" : [ { "name" : "start_sftp", "dataName" : "sftpcfg" } ],
+    "outlets" : [ { "name" : "sftp_data1trans", "dataName" : "data1" }, { "name" : "sftp_mergecsv", "dataName" : "data2" } ],
     "cmd.class" : "etl.cmd.SftpCmd",
     "exe.type" : "mr",
-    "input.format" : "line",
+    "input.format" : "Line",
     "sftp.clean" : "false",
-    "sftp.host" : "192.85.247.104",
+    "sftp.host" : "127.0.0.1",
     "sftp.port" : "22",
-    "sftp.user" : "dbadmin",
-    "sftp.pass" : "password"
+    "sftp.user" : "player",
+    "sftp.pass" : "123456"
   }, {
     "@class" : "action",
     "name" : "data1trans",
-    "inletNum" : 1,
-    "outletNum" : 1,
+    "inlets" : [ { "name" : "sftp_data1trans", "dataName" : "data1" } ],
+    "outlets" : [ { "name" : "data1trans_mergecsv", "dataName" : "data1csv" } ],
     "cmd.class" : "etl.cmd.CsvTransformCmd",
     "exe.type" : "mr",
     "input.format" : "File",
@@ -42,12 +38,12 @@
   }, {
     "@class" : "action",
     "name" : "mergecsv",
-    "inletNum" : 2,
-    "outletNum" : 1,
+    "inlets" : [ { "name" : "data1trans_mergecsv", "dataName" : "data1csv" }, { "name" : "data1trans_mergecsv", "dataName" : "data2" } ],
+    "outlets" : [ { "name" : "mergecsv_end", "dataName" : "mergecsv" } ],
     "cmd.class" : "etl.cmd.CsvMergeCmd",
     "exe.type" : "mr",
     "input.format" : "File",
-    "src.files" : "'/flow1/data1csv/'+WFID+'/*','/flow1/data2/'+WFID+'/*'",
+    "src.entity" : "'/flow1/data1csv/'+WFID+'/*','/flow1/data2/'+WFID+'/*'",
     "src.keys" : "1,0",
     "src.skipHeader" : "false, true",
     "join.type" : "inner",
@@ -56,37 +52,22 @@
   "links" : [ {
     "fromNodeName" : "start",
     "toNodeName" : "sftp",
-    "dataName" : "sftpcfg",
-    "fromActionDataOutletIdx" : 0,
-    "toActionDataInletIdx" : 0,
     "linkType" : "success"
   }, {
     "fromNodeName" : "sftp",
     "toNodeName" : "data1trans",
-    "dataName" : "data1",
-    "fromActionDataOutletIdx" : 0,
-    "toActionDataInletIdx" : 0,
     "linkType" : "success"
   }, {
     "fromNodeName" : "sftp",
     "toNodeName" : "mergecsv",
-    "dataName" : "data2",
-    "fromActionDataOutletIdx" : 1,
-    "toActionDataInletIdx" : 1,
     "linkType" : "success"
   }, {
     "fromNodeName" : "data1trans",
     "toNodeName" : "mergecsv",
-    "dataName" : "data1csv",
-    "fromActionDataOutletIdx" : 0,
-    "toActionDataInletIdx" : 0,
     "linkType" : "success"
   }, {
     "fromNodeName" : "mergecsv",
     "toNodeName" : "end",
-    "dataName" : "mergecsv",
-    "fromActionDataOutletIdx" : 0,
-    "toActionDataInletIdx" : 0,
     "linkType" : "success"
   } ],
   "data" : [ {

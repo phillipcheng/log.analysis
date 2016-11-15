@@ -5,6 +5,9 @@ public class NodeLet {
 	private String name;
 	private String dataName=null;
 	
+	public NodeLet(){
+	}
+	
 	public NodeLet(String name){
 		this.name = name;
 	}
