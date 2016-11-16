@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>bdap</groupId>
 		<artifactId>bdap.parent</artifactId>
-		<version>VERSION</version>
+		<version>r0.2.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	
@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>bdap</groupId>
 			<artifactId>bdap.common</artifactId>
-			<version>VERSION</version>
+			<version>r0.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -146,7 +146,7 @@
 	           </excludes>
 	       </resource>
 		</resources>
-				
+
 		<plugins>
 			<plugin>
 		          <groupId>org.apache.maven.plugins</groupId>

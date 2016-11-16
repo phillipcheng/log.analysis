@@ -1,0 +1,80 @@
+{
+  "attrNameMap" : {
+    "etlexception" : [ "startdt", "wfname", "wfid", "actionname", "exception" ],
+    "etlstat" : [ "startdt", "enddt", "wfname", "wfid", "actionname", "cnt1", "cnt2", "cnt3", "cnt4" ]
+  },
+  "attrTypeMap" : {
+    "etlexception" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 100,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 200,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 100,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 5000,
+      "precision" : 0,
+      "scale" : 0
+    } ],
+    "etlstat" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 100,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 200,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 100,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 5
+    } ]
+  }
+}

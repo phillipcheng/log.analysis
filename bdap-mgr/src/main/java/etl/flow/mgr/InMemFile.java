@@ -14,6 +14,10 @@ public class InMemFile {
 		this.content = content;
 	}
 	
+	public String toString(){
+		return String.format("type:%s,name:%s", fileType, fileName);
+	}
+	
 	public FileType getFileType() {
 		return fileType;
 	}

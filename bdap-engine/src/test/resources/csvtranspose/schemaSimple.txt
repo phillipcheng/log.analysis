@@ -1,5 +1,0 @@
-{
-  "typeMap" : {
-  	"Subject" : [ "Chinese","English","Math"] 
-  }
-}

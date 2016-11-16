@@ -16,6 +16,7 @@ import bdap.util.CmdDef;
 import bdap.util.CmdDefMgr;
 import bdap.util.EngineConf;
 import etl.flow.ActionNode;
+import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.EndNode;
 import etl.flow.ExeType;
@@ -330,6 +331,8 @@ public class OozieGenerator {
 			}
 		}
 		String nextNodeName = ln.getToNodeName();
+		//TODO algorithm to generate join, join depends on how many execution paths point to me, not the number of inlets, this is action flow driven
+		/*
 		if (toNode.getInLets().size()>1){
 			//may need to gen join, the toNode's corresponding join node is named as toNode.name+"_"+join
 			String joinNodeName = getJoinNodeName(ln.getToNodeName());
@@ -342,7 +345,7 @@ public class OozieGenerator {
 				wfa.getDecisionOrForkOrJoin().add(j);
 			}
 			nextNodeName = j.getName();
-		}
+		}*/
 		//link to the nextNodeName
 		if (useFork){
 			FORKTRANSITION ft = new FORKTRANSITION();
@@ -418,9 +421,10 @@ public class OozieGenerator {
 				//gen node
 				if (node instanceof ActionNode){
 					ActionNode an = (ActionNode)node;
-					if (an.getExeType()==ExeType.mr){
+					ExeType exeType = ExeType.valueOf(an.getProperty(ActionNode.key_exe_type));
+					if (exeType==ExeType.mr){
 						act.setMapReduce(genMRAction(flow, an, hasInstanceId));
-					}else if (an.getExeType()==ExeType.java){
+					}else if (exeType==ExeType.java){
 						act.setJava(genJavaAction(flow, an, hasInstanceId));
 					}
 					wfa.getDecisionOrForkOrJoin().add(act);
@@ -461,15 +465,13 @@ public class OozieGenerator {
 	}
 	//2020-10-27T09:00Z
 	public static final String key_app_path="workflowAppUri";
-	private static String sdformat="yyyy-MM-dd'T'hh:mm:ss";
-	private static DateTimeFormatter df = DateTimeFormatter.ofPattern(sdformat);
 	public static COORDINATORAPP genCoordXml(Flow flow){
 		//default startTime=now, endTime = 3*duration+startTime, timezone:currentTimezone
 		int durationSec = flow.getStart().getDuration();
 		ZoneId zoneId = ZoneId.systemDefault();
 		ZonedDateTime now = ZonedDateTime.now(zoneId);
 		ZonedDateTime later = now.plus(durationSec, ChronoUnit.SECONDS);
-		return genCoordXml(flow, df.format(now), df.format(later), zoneId.getId());
+		return genCoordXml(flow, CoordConf.df.format(now), CoordConf.df.format(later), zoneId.getId());
 	}
 	
 	public static COORDINATORAPP genCoordXml(Flow flow, String startTime, String endTime, String timezone){

@@ -1,0 +1,6 @@
+{
+  "attrNameMap" : {
+    "TableNamex" : [ "Name", "Chinese", "English","Math"]
+  },
+  "attrTypeMap" : { }
+}

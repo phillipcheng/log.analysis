@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>bdap</groupId>
 		<artifactId>bdap.parent</artifactId>
-		<version>VERSION</version>
+		<version>r0.2.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	
@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>bdap</groupId>
 			<artifactId>bdap.common</artifactId>
-			<version>VERSION</version>
+			<version>r0.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -32,7 +32,6 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-client</artifactId>
-			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
                   <artifactId>slf4j-log4j12</artifactId>
@@ -52,96 +51,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
-		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-web</artifactId>
-		    <version>1.4.1.RELEASE</version>
-		    <exclusions>
-	            <exclusion>
-	            	<groupId>org.springframework.boot</groupId>
-	            	<artifactId>spring-boot-starter-logging</artifactId>
-	            </exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot</artifactId>
-		    <version>1.4.1.RELEASE</version>
-		</dependency>
-		
-		<dependency>
+        <dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-web</artifactId>
 		    <version>4.3.3.RELEASE</version>
 		</dependency>
-		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-webmvc</artifactId>
-		    <version>4.3.3.RELEASE</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-orm</artifactId>
-		    <version>4.3.3.RELEASE</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>com.h2database</groupId>
-		    <artifactId>h2</artifactId>
-		    <version>1.4.192</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.hibernate</groupId>
-		    <artifactId>hibernate-core</artifactId>
-		    <version>5.2.3.Final</version>
-		</dependency>
-		<dependency>
-		  <groupId>org.hibernate.javax.persistence</groupId>
-		  <artifactId>hibernate-jpa-2.0-api</artifactId>
-		  <version>1.0.1.Final</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework.data</groupId>
-		    <artifactId>spring-data-jpa</artifactId>
-		    <version>1.10.4.RELEASE</version>
-		</dependency>
-		
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-test</artifactId>
-            <version>1.4.1.RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-		<dependency>
-		    <groupId>javax.servlet</groupId>
-		    <artifactId>javax.servlet-api</artifactId>
-		    <version>3.0.1</version>
-		    <scope>test</scope>
-		</dependency>
-		<dependency>
-		    <groupId>org.mockito</groupId>
-		    <artifactId>mockito-all</artifactId>
-		    <version>1.10.19</version>
-            <scope>test</scope>
-		</dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>4.3.3.RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-                <groupId>org.springframework.session</groupId>
-                <artifactId>spring-session</artifactId>
-                <version>1.2.2.RELEASE</version>
-        </dependency>
-        <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-redis</artifactId>
-                <version>1.4.1.RELEASE</version>
-        </dependency>
-        
   </dependencies>
   
   <build>
@@ -153,31 +67,24 @@
 		
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-					<id>make-a-jar</id>
-					<phase>compile</phase>
-					<goals>
-						<goal>jar</goal>
-					</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- 
-			<plugin>
-			    <groupId>org.springframework.boot</groupId>
-			    <artifactId>spring-boot-maven-plugin</artifactId>
-			    <version>1.4.1.RELEASE</version>
-			    <executions>
-			        <execution>
-			            <goals>
-			                <goal>repackage</goal>
-			            </goals>
-			        </execution>
-			    </executions>
-			</plugin> -->
+		          <groupId>org.apache.maven.plugins</groupId>
+		          <artifactId>maven-dependency-plugin</artifactId>
+		          <executions>
+		              <execution>
+		                  <id>copy-dependencies</id>
+		                  <phase>prepare-package</phase>
+		                  <goals>
+		                      <goal>copy-dependencies</goal>
+		                  </goals>
+		                  <configuration>
+		                      <outputDirectory>${project.build.directory}/lib</outputDirectory>
+		                      <overWriteReleases>false</overWriteReleases>
+		                      <overWriteSnapshots>false</overWriteSnapshots>
+		                      <overWriteIfNewer>true</overWriteIfNewer>
+		                  </configuration>
+		              </execution>
+		          </executions>
+		     </plugin>
 		</plugins>
 	</build>
 </project>

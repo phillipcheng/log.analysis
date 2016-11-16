@@ -21,12 +21,22 @@ public class TestCsvTransposeCmd extends TestETLCmd {
 	
 	@Test
 	public void testSingleColumn() throws Exception {
-		String remoteCsvFolder = "/etltest/csvtranspose/input/";
-		String remoteCsvOutputFolder = "/etltest/csvtranspose/output/";
+		String inputFolder = "/etltest/csvtranspose/input/";
+		String outputFolder = "/etltest/csvtranspose/output/";
+		String cfgFolder = "/etltest/csvtranspose/cfg/";
+		
 		String csvtransProp = "singleColumn.properties";
+		String schemaFileName = "singleColumn.schema";
+		
 		String[] csvFiles = new String[] {"singleColumnData.csv"};
 		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		getFs().delete(new Path(cfgFolder), true);
+		getFs().mkdirs(new Path(cfgFolder));
+		
+		//copy schema file
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFileName), new Path(cfgFolder + schemaFileName));
+		
+		List<String> output = super.mrTest(inputFolder, outputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:\n{}",String.join("\n", output));
 		assertEquals(3, output.size());
 		assertTrue(output.contains("name1,A,B,D"));
@@ -35,32 +45,25 @@ public class TestCsvTransposeCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testMultipleColumns() throws Exception {
-		String remoteCsvFolder = "/etltest/csvtranspose/input/";
-		String remoteCsvOutputFolder = "/etltest/csvtranspose/output/";
-		String csvtransProp = "multipleColumns.properties";
-		String[] csvFiles = new String[] {"multipleColumnData.csv"};
-		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-		logger.info("Output is:\n{}",String.join("\n", output));
-		assertEquals(2, output.size());
-		assertTrue(output.contains("2016,g1,,v1_02,v1_03,v2_01,,v2_03"));
-		assertTrue(output.contains("2016,g2,v1_01,,v1_03,v2_01,v2_02,"));
-	}
-	
-	
-	@Test
 	public void testPDEStat() throws Exception {
-		String remoteCsvFolder = "/etltest/csvtranspose/input/";
-		String remoteCsvOutputFolder = "/etltest/csvtranspose/output/";
-		String csvtransProp = "pdeStat.properties";
-		String[] csvFiles = new String[] {"STAT1027.Small_AJ2"};		
+		String inputFolder = "/etltest/csvtranspose/input/";
+		String outputFolder = "/etltest/csvtranspose/output/";
+		String cfgFolder = "/etltest/csvtranspose/cfg/";
 		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		String csvtransProp = "pdeStat.properties";
+		String schemaFileName = "stat.schema";
+		String[] csvFiles = new String[] {"STAT1027.Small_AJ2"};	
+		
+		getFs().delete(new Path(cfgFolder), true);
+		getFs().mkdirs(new Path(cfgFolder));
+		
+		//copy schema file
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFileName), new Path(cfgFolder + schemaFileName));
+		
+		List<String> output = super.mrTest(inputFolder, outputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:\n{}",String.join("\n", output));
 		
-		assertEquals(15,output.size());
-		assertTrue(output.contains("20161027,0000,016,CTXKEY,0000000073,,,,,0000000007,,,"));
-
+		assertEquals(25,output.size());
+		assertTrue(output.contains("20161027,0000,016,CTXKEY,0000000073,0000000007,"));
 	}
 }

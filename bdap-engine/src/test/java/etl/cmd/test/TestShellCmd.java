@@ -13,10 +13,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import bdap.util.OSType;
+import bdap.util.SystemUtil;
 import etl.cmd.ShellCmd;
 import etl.engine.EngineUtil;
-import etl.util.OSType;
-import etl.util.SystemUtil;
 
 public class TestShellCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(ShellCmd.class);

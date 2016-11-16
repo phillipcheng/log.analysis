@@ -33,6 +33,11 @@ public class Data {
 		this(name, location, dataType, psType);
 		this.recordType = recordType;
 	}
+	public Data(String name, String location, InputFormatType dataType, PersistType psType, boolean instance){
+		this(name, location, dataType, psType);
+		this.instance = instance;
+	}
+	
 
 	@Override
 	public boolean equals(Object obj){

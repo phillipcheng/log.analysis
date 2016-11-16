@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>bdap</groupId>
 	<artifactId>bdap.parent</artifactId>
-	<version>VERSION</version>
+	<version>r0.2.0</version>
 	<name>bdap.parent</name>
 	<packaging>pom</packaging>
 	
@@ -106,7 +106,9 @@
 	<modules>
 		<module>bdap-common</module>
 		<module>bdap-engine</module>
+		<module>bdap-log</module>
 		<module>bdap-schemagen</module>
 		<module>bdap-mgr</module>
+		<module>bdap-webapp</module>
 	</modules>
 </project>

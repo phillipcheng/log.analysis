@@ -9,7 +9,7 @@ public class Link {
 	private LinkType linkType = LinkType.success;
 
 	public String toString(){
-		return String.format("%s_%s_%d_%d_%s", this.fromNodeName, this.toNodeName);
+		return String.format("%s_%s", this.fromNodeName, this.toNodeName);
 	}
 
 	public Link(){
