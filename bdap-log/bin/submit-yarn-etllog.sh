@@ -1,13 +1,15 @@
 JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk.x86_64/
 SPARK_HOME=/data/spark-2.0.0-bin-hadoop2.7
-ENGINE_LIB=hdfs://192.85.247.104:19000/bdap-r0.2.0/engine/lib
-LOG_LIB=hdfs://192.85.247.104:19000/bdap-r0.2.0/log/lib
+#ENGINE_LIB=hdfs://192.85.247.104:19000/bdap-r0.2.0/engine/lib
+#LOG_LIB=hdfs://192.85.247.104:19000/bdap-r0.2.0/log/lib
+ENGINE_LIB=/data/bdap-r0.2.0/engine/lib
+LOG_LIB=/data/bdap-r0.2.0/log/lib
 export HADOOP_CONF_DIR=/data/hadoop-2.5.2/etc/hadoop/
 
 $SPARK_HOME/bin/spark-submit \
   --class etl.log.StreamLogProcessor \
   --master yarn \
-  --deploy-mode cluster \
+  --deploy-mode client \
   --supervise \
   --executor-memory 4G \
   --total-executor-cores 10 \

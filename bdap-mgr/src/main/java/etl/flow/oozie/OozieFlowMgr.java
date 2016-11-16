@@ -46,7 +46,8 @@ public class OozieFlowMgr extends FlowMgr{
 			hdfsDir = hdfsDir.substring(1);
 		}
 		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
-				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || ft==FileType.log4j){
+				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || 
+				ft==FileType.log4j || ft == FileType.logicSchema){
 			return String.format("%s/%s/%s/lib/", nameNodePath, hdfsDir, flowName);
 		}else if (ft == FileType.oozieWfXml || ft == FileType.oozieCoordXml){
 			return String.format("%s/%s/%s/", nameNodePath, hdfsDir, flowName);

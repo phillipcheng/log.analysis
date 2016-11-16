@@ -1,6 +1,7 @@
 package etl.flow.mgr;
 
 public enum FileType {
+	logicSchema,
 	thirdpartyJar,
 	oozieWfXml,
 	oozieCoordXml,
