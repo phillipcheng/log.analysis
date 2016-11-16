@@ -119,9 +119,9 @@ public class OozieFlowMgr extends FlowMgr{
 		return bodyConf;
 	}
 	/*
-	oozie.libpath=${nameNode}/user/${user.name}/bdap-r0.2.0/lib/
-	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-r0.2.0/binfile/binfile_workflow.xml
-	note: ${nameNode}/user/${user.name}/pde-r0.2.0/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/
+	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
+	note: ${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
 	 */
 	private bdap.xml.config.Configuration getWfConf(OozieConf oc, String projectDir, String flowName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
@@ -141,9 +141,9 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	/*
-	oozie.libpath=${nameNode}/user/${user.name}/bdap-r0.2.0/lib/,${nameNode}/user/${user.name}/pde-r0.2.0/binfile/lib/
-	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-r0.2.0/binfile/binfile_coordinator.xml
-	workflowAppUri=${nameNode}/user/${user.name}/pde-r0.2.0/binfile/binfile_workflow.xml
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/,${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/
+	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_coordinator.xml
+	workflowAppUri=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
 	flowName=test1
 	duration=15
 	start=2016-09-21T08:40Z
