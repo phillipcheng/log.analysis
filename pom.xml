@@ -108,6 +108,7 @@
 		<module>bdap-engine</module>
 		<module>bdap-log</module>
 		<module>bdap-schemagen</module>
+		<module>bdap-pushagent</module>
 		<module>bdap-mgr</module>
 		<module>bdap-webapp</module>
 	</modules>
