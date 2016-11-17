@@ -12,12 +12,12 @@
 		<mkdir dir="${dist}"/>
 		<copy todir="${dist}/engine/lib/"> <!-- copy thirdparty lib-->
 			<fileset dir="${engine.target}/lib/">
-		    	<include name="commons*.jar"/>
-				<include name="jackson-core-2.6.5.jar"/>
-                <include name="jackson-databind-2.6.5.jar"/>
-				<include name="jackson-annotations*.jar"/>
-                <include name="jsch*.jar"/>
-                <include name="kafka-clients*.jar"/>
+				<include name="commons*.jar"/>
+				<include name="jackson-core-*.jar"/>
+				<include name="jackson-databind-*.jar"/>
+				<include name="jackson-annotations-*.jar"/>
+				<include name="jsch*.jar"/>
+				<include name="kafka-clients*.jar"/>
 				<include name="log4j-1.2.16.jar"/>
 				<include name="spark-core_*.jar"/>
 				<include name="spark-streaming-kafka*.jar"/>
@@ -25,13 +25,13 @@
 				<include name="log4j-core-*.jar"/>
 				<include name="log4j-api-*.jar"/>
 				<include name="bdap.*.jar"/>
-		    </fileset>
+			</fileset>
 			<fileset dir="${engine.src}/lib/">
-				<include name="vertica*.jar"/>
+				<include name="*.jar"/>
 				</fileset>
 			<fileset dir="${engine.target}">
 				<include name="bdap.*.jar"/>
-				</fileset>
+			</fileset>
 		</copy>
 		<copy todir="${dist}/engine/bin"><!-- copy shell scripts -->
 			<fileset dir="${engine.src}/bin">
@@ -41,8 +41,8 @@
 		<copy todir="${dist}/engine/cfg"><!-- copy shell scripts -->
 			<fileset dir="${engine.src}/src/main/resources">
 				<include name="coordinator.xml"/>
-            </fileset>
-        </copy>
+			</fileset>
+		</copy>
 		<!-- log module -->
 		<copy todir="${dist}/log/lib"><!-- copy lib-->
             <fileset dir="${log.target}">

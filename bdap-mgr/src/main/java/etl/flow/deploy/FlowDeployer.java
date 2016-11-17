@@ -1,6 +1,7 @@
 package etl.flow.deploy;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import bdap.util.EngineConf;
+import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import bdap.util.SystemUtil;
@@ -38,6 +40,7 @@ public class FlowDeployer {
 	
 	private static String cfgProperties="testFlow.properties";
 	
+	private static String key_platform_src="platform.src";//for testing purpose, in production, this is done in install.sh
 	private static String key_platform_remote_lib="platform.remote.lib";
 	private static String key_platform_coordinator_xml="platform.coordinate.xml";
 	private static String key_projects="projects";
@@ -49,6 +52,7 @@ public class FlowDeployer {
 	
 	private PropertiesConfiguration pc;
 	
+	private String platformSrc;
 	private String platformRemoteLib="";
 	private String platformCoordinateXml="";
 	private Map<String, String> projectLocalDirMap= new HashMap<String, String>();
@@ -76,6 +80,7 @@ public class FlowDeployer {
 		conf = new Configuration();
 		defaultFS = pc.getString(key_defaultFs);
 		conf.set("fs.defaultFS", defaultFS);
+		platformSrc = pc.getString(key_platform_src);
 		platformRemoteLib = pc.getString(key_platform_remote_lib);
 		setPlatformCoordinateXml(pc.getString(key_platform_coordinator_xml));
 		hdfsUser = pc.getString(key_hdfs_user);
@@ -97,6 +102,52 @@ public class FlowDeployer {
 		}catch(Exception e){
 			logger.error("", e);
 		}
+    }
+    
+    private String[] allLibPrefix = new String[]{"commons", "jackson-core-", "jackson-databind-", "jackson-annotations-", "jsch", 
+    		"kafka-clients", "log4j-1.2.16", "spark-core_", "spark-streaming-kafka", "scala-library-", "log4j-core-", "log4j-api-", "bdap."};
+    private String[] myLibPrefix = new String[]{"bdap."};
+    private void installPlatformLib(DirectoryStream<Path> stream) throws Exception{
+    	for (Path path : stream) {
+		    logger.info(String.format("lib path:%s", path.getFileName().toString()));
+			byte[] content = Files.readAllBytes(path);
+			String remotePath = String.format("%s/%s", platformRemoteLib, path.getFileName().toString());
+			HdfsUtil.writeDfsFile(fs, remotePath, content);
+		}
+    }
+    
+    public void installEngine(boolean clean) throws Exception {
+    	//copy lib
+    	String targetLib = String.format("%s%s", platformSrc, File.separator+"target"+File.separator+"lib");
+    	DirectoryStream<Path> stream = null;
+    	String[] libPrefix;
+    	if (clean){
+    		libPrefix=allLibPrefix;
+    		fs.delete(new org.apache.hadoop.fs.Path(platformRemoteLib), true);
+    	}else{
+    		libPrefix=myLibPrefix;
+    	}
+    	stream = Files.newDirectoryStream(Paths.get(targetLib), new DirectoryStream.Filter<Path>(){
+			@Override
+			public boolean accept(Path entry) throws IOException {
+				if (entry.getFileName().toString().endsWith("jar")){
+					for (String prefix:libPrefix){
+						if (entry.getFileName().toString().startsWith(prefix)){
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+    	});
+    	installPlatformLib(stream);
+    	stream = Files.newDirectoryStream(Paths.get(String.format("%s%s", platformSrc, File.separator+"lib")), "*.jar");
+    	installPlatformLib(stream);
+    	stream = Files.newDirectoryStream(Paths.get(String.format("%s%s", platformSrc, File.separator+"target")), "bdap.*.jar");
+    	installPlatformLib(stream);
+    	//copy conf
+    	byte[] coordinateXmlContent = Files.readAllBytes(Paths.get(String.format("%s%s", platformSrc, "\\src\\main\\resources\\coordinator.xml")));
+    	HdfsUtil.writeDfsFile(fs, platformCoordinateXml, coordinateXmlContent);
     }
     
     public Collection<String> listProjects(){
@@ -213,21 +264,21 @@ public class FlowDeployer {
 		}
 	}
 	
-	private String execute(String projectName, String flowName, boolean fromJson){
+	private String execute(String projectName, String flowName){
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		return ofm.executeFlow(hdfsProjectFolder, flowName, getOC(), getEC());
 	}
 	
-	public String runExecute(String projectName, String flowName, boolean fromJson) {
+	public String runExecute(String projectName, String flowName) {
 		try {
 			if (localDeploy){		
-				return execute(projectName, flowName, fromJson);
+				return execute(projectName, flowName);
 			}else{
 				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
 				return ugi.doAs(new PrivilegedExceptionAction<String>() {
 						public String run() throws Exception {
-							return execute(projectName, flowName, fromJson);
+							return execute(projectName, flowName);
 						}
 					});
 			}
@@ -304,7 +355,7 @@ public class FlowDeployer {
 			}
 			fd.runDeploy(prjName, flowName, jars, false);
 		}else if (DeployCmd.runFlow.toString().equals(cmd)){
-			fd.runExecute(prjName, flowName, false);
+			fd.runExecute(prjName, flowName);
 		}else if (DeployCmd.runCoordinator.toString().equals(cmd)){
 			int startIdx=3;
 			String startTime=args[startIdx++];

@@ -12,16 +12,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import bdap.util.HdfsUtil;
 import bdap.util.SftpUtil;
 import etl.cmd.SftpCmd;
 import etl.engine.EngineUtil;
 import etl.util.StringUtil;
-import serp.util.Strings;
 
 public class TestSftpCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestSftpCmd.class);
@@ -213,7 +209,7 @@ public class TestSftpCmd extends TestETLCmd {
 			assertTrue(fl.get(0).equals("0"));
 			
 			List<String> contents = HdfsUtil.stringsFromDfsFile(cmd.getFs(), dfsIncomingFolder+file);
-			logger.info(Strings.join(contents.toArray(new String[]{}),"\n"));
+			logger.info(String.join("\n", contents));
 			assertTrue(contents.size()==3);
 		}catch(Exception e){
 			logger.error("", e);
