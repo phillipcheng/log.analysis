@@ -193,7 +193,6 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	//deploy all the in-mem files
-	@Override
 	public boolean deployFlowFromXml(String projectDir, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
 		deployFiles.add(super.genEnginePropertyFile(ec));
@@ -206,18 +205,13 @@ public class OozieFlowMgr extends FlowMgr{
 		return true;
 	}
 	
-	//TODO
-	//generate the wf.xml, action.properties, etlengine.propertis, coordinator and deploy it
+	//generate the wf.xml, action.properties, etlengine.propertis, and deploy it
 	@Override
 	public boolean deployFlowFromJson(String projectDir, Flow flow, FlowServerConf fsconf, EngineConf ec) {
-		OozieConf oc = (OozieConf)fsconf;
 		List<InMemFile> imFiles = new ArrayList<InMemFile>();
 		//gen wf xml
 		InMemFile wfXml = genWfXml(flow, null, false);
 		imFiles.add(wfXml);
-		//gen coord xml
-		InMemFile coordXml = genCoordXml(flow);
-		imFiles.add(coordXml);
 		//gen action.properties
 		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
 		imFiles.addAll(actionPropertyFiles);
@@ -226,16 +220,6 @@ public class OozieFlowMgr extends FlowMgr{
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fsconf, ec);
-		//start the coordinator
-		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
-		Map<String, String> headMap = new HashMap<String, String>();
-		bdap.xml.config.Configuration bodyConf = getCommonConf(oc);
-		bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
-		propWfAppPath.setName(OozieConf.key_oozieCoordinateAppPath);
-		propWfAppPath.setValue(String.format("%s/%s/%s/%s_coordinator.xml", oc.getNameNode(), projectDir, flow.getName(), flow.getName()));
-		bodyConf.getProperty().add(propWfAppPath);
-		String body = XmlUtil.marshalToString(bodyConf, "configuration");
-		RequestUtil.post(jobSumbitUrl, headMap, body);
 		return true;
 	}
 	

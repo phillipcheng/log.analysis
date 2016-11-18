@@ -26,6 +26,10 @@ public class ActionNode extends Node{
 	public ActionNode(){
 	}
 	
+	public ActionNode(String name){
+		super(name);
+	}
+	
 	public ActionNode(String name, ExeType exeType){
 		super(name);
 		properties.put(key_exe_type, exeType.toString());

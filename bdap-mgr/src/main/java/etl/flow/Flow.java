@@ -1,7 +1,9 @@
 package etl.flow;
 
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,8 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import bdap.util.DiGraph;
 
 public class Flow extends Node{
 	public static final Logger logger = LogManager.getLogger(Flow.class);
@@ -42,15 +46,17 @@ public class Flow extends Node{
 		for (Node n: nodes){
 			nodeMap.put(n.getName(), n);
 		}
-		dataMap = new HashMap<String, Data>();
-		for (Data d: data){
-			dataMap.put(d.getName(), d);
+		if (data!=null){
+			dataMap = new HashMap<String, Data>();
+			for (Data d: data){
+				dataMap.put(d.getName(), d);
+			}
 		}
 		nodeOutLinkMap = new HashMap<String, Set<Link>>();
 		for (Link lnk: links){
 			Set<Link> ll = nodeOutLinkMap.get(lnk.getFromNodeName());
 			if (ll == null){
-				ll = new HashSet<Link>();
+				ll = new TreeSet<Link>();
 				nodeOutLinkMap.put(lnk.getFromNodeName(), ll);
 			}
 			ll.add(lnk);
@@ -59,7 +65,7 @@ public class Flow extends Node{
 		for (Link lnk: links){
 			Set<Link> ll = nodeInLinkMap.get(lnk.getToNodeName());
 			if (ll == null){
-				ll = new HashSet<Link>();
+				ll = new TreeSet<Link>();
 				nodeInLinkMap.put(lnk.getToNodeName(), ll);
 			}
 			ll.add(lnk);
@@ -69,7 +75,7 @@ public class Flow extends Node{
 			String lnkName = lnk.toString();
 			Set<Node> nl = linkNodeMap.get(lnkName);
 			if (nl == null){
-				nl = new HashSet<Node>();
+				nl = new TreeSet<Node>();
 				linkNodeMap.put(lnkName, nl);
 			}
 			if (nodeMap.containsKey(lnk.getToNodeName())){
@@ -101,6 +107,36 @@ public class Flow extends Node{
 		return true;
 	}
 	
+	public List<Node> getTopoOrder(){
+		List<Node> nl = this.getNodes();
+		Map<String, Integer> nameIdxMap = new HashMap<String, Integer>();
+		Node[] idxNodeArray = new Node[nl.size()];
+		for (int i=0; i<nl.size(); i++){
+			Node n = nl.get(i);
+			nameIdxMap.put(n.getName(), i);
+			idxNodeArray[i]=n;
+		}
+		int v = nl.size();
+		DiGraph dg = new DiGraph(v);
+		for (Link lnk:this.getLinks()){
+			int from = nameIdxMap.get(lnk.getFromNodeName());
+			int to = nameIdxMap.get(lnk.getToNodeName());
+			dg.addEdge(from, to);
+		}
+		dg.topologicalSort();
+		if (dg.isHasOrder()){
+			List<Integer> li = dg.getOrder();
+			List<Node> ret = new ArrayList<Node>();
+			for (int i:li){
+				ret.add(idxNodeArray[i]);
+			}
+			return ret;
+		}else{
+			logger.error(String.format("flow is not a dag"));
+			return null;
+		}
+	}
+	
 	public Set<Link> getInLinks(String nodeName){
 		return nodeInLinkMap.get(nodeName);
 	}
@@ -128,6 +164,11 @@ public class Flow extends Node{
 	@JsonIgnore
 	public StartNode getStart() {
 		return (StartNode) nodeMap.get(StartNode.start_node_name);
+	}
+	
+	@JsonIgnore
+	public EndNode getEnd() {
+		return (EndNode) nodeMap.get(EndNode.end_node_name);
 	}
 	
 	@JsonAnyGetter

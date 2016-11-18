@@ -31,8 +31,7 @@ public class TestOozieFlow {
 	
 	private FlowDeployer deployer = new FlowDeployer();
 	
-	@Test
-	public void genFlow1Json(){
+	public static Flow getFlow1(){
 		String wfName="flow1";
 		Flow flow = new Flow(wfName);
 		flow.putProperty(Flow.key_wfName, wfName);
@@ -64,7 +63,7 @@ public class TestOozieFlow {
 		flow.setNodes(actionNodes);
 		//data
 		List<Data> data= new ArrayList<Data>();
-		data.add(new Data("sftp.map", "/flow1/etcfg/sftp.map.properties", InputFormatType.Line, PersistType.FileOrMem, false));
+		data.add(new Data("sftp.map", "/flow1/sftpcfg/test1.sftp.map.properties", InputFormatType.Line, PersistType.FileOrMem, false));
 		data.add(new Data("data1", "/flow1/data1/", InputFormatType.File, PersistType.FileOrMem));
 		data.add(new Data("data2", "/flow1/data2/", InputFormatType.File, PersistType.FileOrMem));
 		data.add(new Data("data1trans", "/flow1/csvtrans/", InputFormatType.Line, PersistType.FileOrMem));
@@ -79,7 +78,11 @@ public class TestOozieFlow {
 		links.add(new Link("csvmerge", EndNode.end_node_name));
 		flow.setLinks(links);
 		
-		JsonUtil.toLocalJsonFile(getRelativeResourceFolder() + "flow1.json", flow);
+		return flow;
+	}
+	@Test
+	public void genFlow1Json(){
+		JsonUtil.toLocalJsonFile(getRelativeResourceFolder() + "flow1.json", getFlow1());
 	}
 	
 	@Test
@@ -112,7 +115,7 @@ public class TestOozieFlow {
 		String flowName="flow1";
 		initData();
 		deployer.runDeploy(projectName, flowName, null, true);
-		deployer.runExecute(projectName, flowName, true);
+		deployer.runExecute(projectName, flowName);
 	}
 	
 	@Test
@@ -121,14 +124,14 @@ public class TestOozieFlow {
 		String flowName="flow1";
 		initData();
 		deployer.runDeploy(projectName, flowName, null, false);
-		deployer.runExecute(projectName, flowName, false);
+		deployer.runExecute(projectName, flowName);
 	}
 	
-	public String getRelativeResourceFolder() {
+	public static String getRelativeResourceFolder() {
 		return "src/test/resources/flow1/";
 	}
 	
-	public String getResFolderFromClassPath() {
+	public static String getResFolderFromClassPath() {
 		return "flow1/";
 	}
 }

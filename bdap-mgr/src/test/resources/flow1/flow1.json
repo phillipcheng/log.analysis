@@ -66,7 +66,7 @@
       "dataName" : "data2"
     } ],
     "exe.type" : "mr",
-    "src.files" : "'/flow1/data1csv/'+WFID+'/*','/flow1/data2/'+WFID+'/*'",
+    "src.entity" : "'/flow1/csvtrans/'+WFID+'/*','/flow1/data2/'+WFID+'/*'",
     "src.keys" : "1,0",
     "src.skipHeader" : "false, true",
     "join.type" : "inner",
@@ -93,7 +93,7 @@
   } ],
   "data" : [ {
     "name" : "sftp.map",
-    "location" : "/flow1/etcfg/sftp.map.properties",
+    "location" : "/flow1/sftpcfg/test1.sftp.map.properties",
     "dataFormat" : "Line",
     "recordType" : "StringList",
     "psType" : "FileOrMem",

@@ -19,7 +19,6 @@ import etl.flow.oozie.OozieConf;
 public abstract class FlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
 	
-	
 	//generate the properties files for all the cmd to initiate
 	public List<InMemFile> genProperties(Flow flow){
 		List<InMemFile> propertyFiles = new ArrayList<InMemFile>();
@@ -38,8 +37,6 @@ public abstract class FlowMgr {
 		return new InMemFile(FileType.engineProperty, EngineConf.file_name, ec.getContent());
 	}
 	
-	
-	public abstract boolean deployFlowFromXml(String projectDir, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec);
 	public abstract boolean deployFlowFromJson(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec);
 	public abstract String executeFlow(String projectDir, String flowName, OozieConf oc, EngineConf ec);
 	public abstract String executeCoordinator(String projectDir, String flowName, OozieConf oc, EngineConf ec, CoordConf cc);
