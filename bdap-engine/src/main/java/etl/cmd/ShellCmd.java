@@ -16,6 +16,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
+
+import bdap.util.SystemUtil;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -78,15 +81,9 @@ public class ShellCmd extends ETLCmd {
 			}
 			String cmd = StringUtil.fillParams(command, params, "$", "");
 			logger.info(String.format("mr command is %s", cmd));
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
-			DefaultExecutor executor = new DefaultExecutor();
-			executor.setStreamHandler(streamHandler);
-			CommandLine cmdLine = CommandLine.parse(cmd);
-			int exitValue = executor.execute(cmdLine);
-			String ret = outputStream.toString();
+			String ret = SystemUtil.execCmd(cmd);
 			String lines[] = ret.split("\\r?\\n");
-			logger.info(String.format("process for key:%s ended with exitValue %d. \nstdout:\n%s", params.get(cfgkey_param_key), exitValue, ret));
+			logger.info(String.format("process for key:%s ended. \nstdout:\n%s", params.get(cfgkey_param_key), ret));
 			List<String> tl = new ArrayList<String>();
 			for (String line: lines){
 				if (line.startsWith(capture_prefix)){
