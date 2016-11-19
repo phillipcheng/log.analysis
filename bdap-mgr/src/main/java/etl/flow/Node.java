@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
     @JsonSubTypes.Type(value = EndNode.class, name = "end"),
     @JsonSubTypes.Type(value = Flow.class, name = "flow")
 })
-public class Node{
+public class Node implements Comparable<Node>{
 	
 	private String name;
 	private List<NodeLet> inlets = new ArrayList<NodeLet>();
@@ -29,7 +29,7 @@ public class Node{
 	}
 	
 	public String toString(){
-		return String.format("%s,%d,%d", name);
+		return String.format("%s", name);
 	}
 	
 	@Override
@@ -64,5 +64,10 @@ public class Node{
 	
 	public List<NodeLet> getOutlets(){
 		return outlets;
+	}
+
+	@Override
+	public int compareTo(Node o) {
+		return this.name.compareTo(o.getName());
 	}
 }

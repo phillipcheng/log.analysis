@@ -1,0 +1,132 @@
+{
+  "@class" : "flow",
+  "name" : "flow1",
+  "outlets" : [ ],
+  "nodes" : [ {
+    "@class" : "start",
+    "name" : "start",
+    "outlets" : [ ],
+    "duration" : 300,
+    "inLets" : [ ]
+  }, {
+    "@class" : "end",
+    "name" : "end",
+    "outlets" : [ ],
+    "inLets" : [ ]
+  }, {
+    "@class" : "action",
+    "name" : "sftp",
+    "outlets" : [ ],
+    "addArgs" : [ ],
+    "inLets" : [ {
+      "name" : "0",
+      "dataName" : "sftp.map"
+    } ],
+    "exe.type" : "mr",
+    "sftp.host" : "192.85.247.104",
+    "sftp.user" : "dbadmin",
+    "sftp.port" : "22",
+    "sftp.pass" : "password",
+    "sftp.names.only" : "false",
+    "sftp.clean" : "false",
+    "input.format" : "Line",
+    "cmd.class" : "etl.cmd.SftpCmd"
+  }, {
+    "@class" : "action",
+    "name" : "csvtransform",
+    "outlets" : [ {
+      "name" : "0",
+      "dataName" : "data1trans"
+    } ],
+    "addArgs" : [ ],
+    "inLets" : [ {
+      "name" : "0",
+      "dataName" : "data1"
+    } ],
+    "exe.type" : "mr",
+    "skip.header" : "true",
+    "input.endwithcomma" : "true",
+    "col.op" : "i|8:var groupFunClass = Java.type(\\\"etl.util.GroupFun\\\"); groupFunClass.getParentFolderName(pathname)",
+    "output.type" : "single",
+    "input.format" : "File",
+    "cmd.class" : "etl.cmd.CsvTransformCmd"
+  }, {
+    "@class" : "action",
+    "name" : "csvmerge",
+    "outlets" : [ {
+      "name" : "0",
+      "dataName" : "csvmerge"
+    } ],
+    "addArgs" : [ ],
+    "inLets" : [ {
+      "name" : "0",
+      "dataName" : "data1trans"
+    }, {
+      "name" : "1",
+      "dataName" : "data2"
+    } ],
+    "exe.type" : "mr",
+    "src.entity" : "'/flow1/csvtrans/'+WFID+'/*','/flow1/data2/'+WFID+'/*'",
+    "src.keys" : "1,0",
+    "src.skipHeader" : "false, true",
+    "join.type" : "inner",
+    "ret.value" : "csv0.concat('\\\\,').concat(table1[1]).concat('\\\\,').concat(table1[2]).concat('\\\\,').concat(table1[3]).concat('\\\\,').concat(table1[4])",
+    "input.format" : "File",
+    "cmd.class" : "etl.cmd.CsvMergeCmd"
+  } ],
+  "links" : [ {
+    "fromNodeName" : "start",
+    "toNodeName" : "sftp",
+    "linkType" : "success"
+  }, {
+    "fromNodeName" : "sftp",
+    "toNodeName" : "csvtransform",
+    "linkType" : "success"
+  }, {
+    "fromNodeName" : "csvtransform",
+    "toNodeName" : "csvmerge",
+    "linkType" : "success"
+  }, {
+    "fromNodeName" : "csvmerge",
+    "toNodeName" : "end",
+    "linkType" : "success"
+  } ],
+  "data" : [ {
+    "name" : "sftp.map",
+    "location" : "/flow1/sftpcfg/test1.sftp.map.properties",
+    "dataFormat" : "Line",
+    "recordType" : "StringList",
+    "psType" : "FileOrMem",
+    "instance" : false
+  }, {
+    "name" : "data1",
+    "location" : "/flow1/data1/",
+    "dataFormat" : "File",
+    "recordType" : "StringList",
+    "psType" : "FileOrMem",
+    "instance" : true
+  }, {
+    "name" : "data2",
+    "location" : "/flow1/data2/",
+    "dataFormat" : "File",
+    "recordType" : "StringList",
+    "psType" : "FileOrMem",
+    "instance" : true
+  }, {
+    "name" : "data1trans",
+    "location" : "/flow1/csvtrans/",
+    "dataFormat" : "Line",
+    "recordType" : "StringList",
+    "psType" : "FileOrMem",
+    "instance" : true
+  }, {
+    "name" : "csvmerge",
+    "location" : "/flow1/csvmerge/",
+    "dataFormat" : "Line",
+    "recordType" : "StringList",
+    "psType" : "FileOrMem",
+    "instance" : true
+  } ],
+  "inLets" : [ ],
+  "wfName" : "flow1"
+}

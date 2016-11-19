@@ -1,24 +1,21 @@
-#use hdfs user not oozie user to execute
-oozie_user=dbadmin
-java_home=/usr/lib/jvm/java-1.8.0/
+#use hdfs user to execute
+bdap_dir=/bdap-VVERSIONN
 
-#make lib
-$java_home/bin/jar -uf bdap.engine-VERSION.jar etlengine.properties
 
 #copy lib
-hdfs dfs -rm -r /user/$oozie_user/share/lib/preload/lib
-hdfs dfs -mkdir -p /user/$oozie_user/share/lib/preload/lib
+hdfs dfs -rm -r ${bdap_dir}/engine/lib
+hdfs dfs -mkdir -p ${bdap_dir}/engine/lib
 
-for f in lib/*.jar
-do 
-	hdfs dfs -copyFromLocal -f $f /user/$oozie_user/share/lib/preload/$f
+for f in ../lib/*.jar
+do
+	hdfs dfs -copyFromLocal -f $f ${bdap_dir}/engine/lib/`basename $f`
 done
 
-hdfs dfs -rm -r /user/$oozie_user/preload/jars
-hdfs dfs -mkdir -p /user/$oozie_user/preload/jars
-hdfs dfs -copyFromLocal -f bdap.common-VERSION.jar /user/$oozie_user/preload/jars/
-hdfs dfs -copyFromLocal -f bdap.engine-VERSION.jar /user/$oozie_user/preload/jars/
+#copy cfg files
+hdfs dfs -rm -r ${bdap_dir}/cfg
+hdfs dfs -mkdir -p ${bdap_dir}/cfg
 
-#copy schema file
-hdfs dfs -mkdir -p /preload/schema/
-hdfs dfs -copyFromLocal -f schema/logschema.txt /preload/schema/
+for f in ../cfg/*
+do
+	hdfs dfs -copyFromLocal -f $f ${bdap_dir}/cfg/`basename $f`
+done

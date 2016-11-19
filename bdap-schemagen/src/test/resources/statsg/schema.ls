@@ -1,0 +1,4 @@
+{
+  "attrNameMap" : { },
+  "attrTypeMap" : { }
+}

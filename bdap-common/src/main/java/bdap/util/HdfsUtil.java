@@ -38,6 +38,7 @@ public class HdfsUtil {
 		}
 	}
 	
+	
 	public static boolean writeDfsFile(FileSystem fs, String path, byte[] content){
 		FSDataOutputStream out = null;
 		try {

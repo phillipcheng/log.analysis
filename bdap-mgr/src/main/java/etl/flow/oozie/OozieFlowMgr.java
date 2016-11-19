@@ -17,6 +17,7 @@ import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import bdap.util.XmlUtil;
 import dv.util.RequestUtil;
+import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.mgr.FileType;
 import etl.flow.mgr.FlowMgr;
@@ -31,12 +32,25 @@ public class OozieFlowMgr extends FlowMgr{
 	public static final Logger logger = LogManager.getLogger(OozieFlowMgr.class);
 	private String dateTimePattern;
 	
-	private String getDir(FileType ft, String projectName, OozieConf oc){
+	//projectDir is hdfsDir
+	private String getDir(FileType ft, String projectDir, String flowName, OozieConf oc){
+		String nameNodePath = oc.getNameNode();
+		if (nameNodePath.endsWith("/")){
+			nameNodePath = nameNodePath.substring(0, nameNodePath.length() - 1);
+		}
+		String hdfsDir = projectDir;
+		if (hdfsDir.endsWith("/")){
+			hdfsDir = hdfsDir.substring(0, hdfsDir.length() - 1);
+		}
+		if (hdfsDir.startsWith("/")){
+			hdfsDir = hdfsDir.substring(1);
+		}
 		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
-				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || ft==FileType.log4j){
-			return String.format("%s/user/%s/%s/lib/", oc.getNameNode(), oc.getUserName(), projectName);
+				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || 
+				ft==FileType.log4j || ft == FileType.logicSchema){
+			return String.format("%s/%s/%s/lib/", nameNodePath, hdfsDir, flowName);
 		}else if (ft == FileType.oozieWfXml || ft == FileType.oozieCoordXml){
-			return String.format("%s/user/%s/%s/", oc.getNameNode(), oc.getUserName(), projectName);
+			return String.format("%s/%s/%s/", nameNodePath, hdfsDir, flowName);
 		}else{
 			logger.error("file type not supported:%s", ft);
 			return null;
@@ -73,14 +87,10 @@ public class OozieFlowMgr extends FlowMgr{
 		return new InMemFile(FileType.oozieCoordXml, coordFile, content);
 	}
 	
-	private bdap.xml.config.Configuration getBodyConf(OozieConf oc, String projectName, String flowName){
+	//return common properties: nameNode, jobTracker, queue, username, useSystem
+	private bdap.xml.config.Configuration getCommonConf(OozieConf oc){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
 		{
-			bdap.xml.config.Configuration.Property propUserName = new bdap.xml.config.Configuration.Property();
-			propUserName.setName(OozieConf.key_user_name);
-			propUserName.setValue(oc.getUserName());
-			bodyConf.getProperty().add(propUserName);
-		}{
 			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
 			propNameNode.setName(OozieConf.key_nameNode);
 			propNameNode.setValue(oc.getNameNode());
@@ -96,45 +106,132 @@ public class OozieFlowMgr extends FlowMgr{
 			queueName.setValue(oc.getQueueName());
 			bodyConf.getProperty().add(queueName);
 		}{
-			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
-			oozieLibPath.setName(OozieConf.key_oozieLibPath);
-			oozieLibPath.setValue(oc.getOozieLibPath());
-			bodyConf.getProperty().add(oozieLibPath);
+			bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
+			propWfAppPath.setName(OozieConf.key_user_name);
+			propWfAppPath.setValue(oc.getUserName());
+			bodyConf.getProperty().add(propWfAppPath);
 		}{
 			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
 			oozieLibPath.setName(OozieConf.key_useSystemPath);
 			oozieLibPath.setValue("true");
 			bodyConf.getProperty().add(oozieLibPath);
+		}
+		return bodyConf;
+	}
+	/*
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/
+	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
+	note: ${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
+	 */
+	private bdap.xml.config.Configuration getWfConf(OozieConf oc, String projectDir, String flowName){
+		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
+		{
+			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
+			oozieLibPath.setName(OozieConf.key_oozieLibPath);
+			oozieLibPath.setValue(oc.getOozieLibPath());
+			bodyConf.getProperty().add(oozieLibPath);
 		}{
 			bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
 			propWfAppPath.setName(OozieConf.key_oozieWfAppPath);
-			propWfAppPath.setValue(String.format("%s/user/%s/%s/%s_workflow.xml", oc.getNameNode(), oc.getUserName(), projectName, flowName));
+			String dir = getDir(FileType.oozieWfXml, projectDir, flowName, oc);
+			propWfAppPath.setValue(String.format("%s%s_workflow.xml", dir, flowName));
 			bodyConf.getProperty().add(propWfAppPath);
 		}
 		return bodyConf;
 	}
+	
+	/*
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/,${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/
+	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_coordinator.xml
+	workflowAppUri=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
+	flowName=test1
+	duration=15
+	start=2016-09-21T08:40Z
+	end=2020-10-27T09:00Z
+	*/
+	private bdap.xml.config.Configuration getCoordConf(OozieConf oc, CoordConf cc, String projectDir, String flowName){
+		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
+		{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			String projectLibPath = getDir(FileType.thirdpartyJar, projectDir, flowName, oc);
+			property.setName(OozieConf.key_oozieLibPath);
+			property.setValue(String.format("%s,%s", oc.getOozieLibPath(), projectLibPath));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName(OozieConf.key_oozieCoordinateAppPath);
+			property.setValue(cc.getCoordPath());
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("workflowAppUri");
+			String dir = getDir(FileType.oozieWfXml, projectDir, flowName, oc);
+			property.setValue(String.format("%s%s_workflow.xml", dir, flowName));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("flowName");
+			property.setValue(flowName);
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("duration");
+			property.setValue(String.valueOf(cc.getDuration()));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("start");
+			property.setValue(String.valueOf(cc.getStartTime()));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("end");
+			property.setValue(String.valueOf(cc.getEndTime()));
+			bodyConf.getProperty().add(property);
+		}
+		return bodyConf;
+	}
 
-	//deploy all the in-mem files and execute the workflow
-	public void deploy(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
+	//deploy all the in-mem files
+	public boolean deployFlowFromXml(String projectDir, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
 		deployFiles.add(super.genEnginePropertyFile(ec));
 		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 		for (InMemFile im:deployFiles){
-			String dir = getDir(im.getFileType(), projectName, oc);
+			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
 			HdfsUtil.writeDfsFile(fs, path, im.getContent());
 		}
+		return true;
 	}
 	
-	//deploy all the in-mem files and execute the workflow
-	public String deployAndRun(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
-		deploy(projectName, flowName, deployFiles, oc, ec);
-		//start the job
+	//generate the wf.xml, action.properties, etlengine.propertis, and deploy it
+	@Override
+	public boolean deployFlowFromJson(String projectDir, Flow flow, FlowServerConf fsconf, EngineConf ec) {
+		List<InMemFile> imFiles = new ArrayList<InMemFile>();
+		//gen wf xml
+		InMemFile wfXml = genWfXml(flow, null, false);
+		imFiles.add(wfXml);
+		//gen action.properties
+		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
+		imFiles.addAll(actionPropertyFiles);
+		//gen etlengine.properties
+		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
+		imFiles.add(enginePropertyFile);
+		//deploy to the server
+		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fsconf, ec);
+		return true;
+	}
+	
+	@Override
+	public String executeFlow(String projectDir, String flowName, OozieConf oc, EngineConf ec){
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration bodyConf = getBodyConf(oc, projectName, flowName);
-		String body = XmlUtil.marshalToString(bodyConf, "configuration");
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc);
+		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
+		commonConf.getProperty().addAll(wfConf.getProperty());
+		String body = XmlUtil.marshalToString(commonConf, "configuration");
 		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
 		logger.info(String.format("post result:%s", result));
 		Map<String, String> vm = JsonUtil.fromJsonString(result, HashMap.class);
@@ -145,63 +242,31 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 	}
 	
-	//transform the flow to workflow.xml, actionX.properties, then deploy and run
 	@Override
-	public String execute(String projectName, Flow flow, List<InMemFile> imFiles, 
-			FlowServerConf fsconf, EngineConf ec, String startNode, String instanceId) {
-		OozieConf oc = (OozieConf)fsconf;
-		//generate wf.xml
-		boolean useInstanceId = instanceId==null? false:true;
-		if (imFiles==null){
-			imFiles = new ArrayList<InMemFile>();
-		}
-		InMemFile wfXml = genWfXml(flow, startNode, useInstanceId);
-		imFiles.add(wfXml);
-		//gen action.properties
-		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
-		imFiles.addAll(actionPropertyFiles);
-		String newInstanceId = deployAndRun(projectName, flow.getName(), imFiles, oc, ec);
-		return newInstanceId;
-	}
-	
-	@Override
-	public boolean deploy(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec) {
-		OozieConf oc = (OozieConf)fsconf;
-		List<InMemFile> imFiles = new ArrayList<InMemFile>();
-		//gen wf xml
-		InMemFile wfXml = genWfXml(flow, null, false);
-		imFiles.add(wfXml);
-		//gen coord xml
-		InMemFile coordXml = genCoordXml(flow);
-		imFiles.add(coordXml);
-		//gen action.properties
-		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
-		imFiles.addAll(actionPropertyFiles);
-		//gen etlengine.properties
-		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
-		imFiles.add(enginePropertyFile);
-		//deploy to the server
-		uploadFiles(projectName, imFiles.toArray(new InMemFile[]{}), fsconf, ec);
+	public String executeCoordinator(String projectDir, String flowName, OozieConf oc, EngineConf ec, CoordConf cc){
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
-		bdap.xml.config.Configuration bodyConf = getBodyConf(oc, projectName, flow.getName());
-		bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
-		propWfAppPath.setName(OozieConf.key_oozieCoordinateAppPath);
-		propWfAppPath.setValue(String.format("%s/user/%s/%s/%s_coordinator.xml", oc.getNameNode(), oc.getUserName(), projectName, flow.getName()));
-		bodyConf.getProperty().add(propWfAppPath);
-		String body = XmlUtil.marshalToString(bodyConf, "configuration");
-		RequestUtil.post(jobSumbitUrl, headMap, body);
-		return true;
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc);
+		bdap.xml.config.Configuration coordConf = getCoordConf(oc, cc, projectDir, flowName);
+		commonConf.getProperty().addAll(coordConf.getProperty());
+		String body = XmlUtil.marshalToString(commonConf, "configuration");
+		String ret = RequestUtil.post(jobSumbitUrl, headMap, body);
+		Map<String, String> vm = JsonUtil.fromJsonString(ret, HashMap.class);
+		if (vm!=null){
+			return vm.get("id");
+		}else{
+			return null;
+		}
 	}
 
 	@Override
-	public void uploadFiles(String projectName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
+	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
 		OozieConf oc = (OozieConf) fsconf;
 		//deploy to the server
 		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 		for (InMemFile im:files){
-			String dir = getDir(im.getFileType(), projectName, oc);
+			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
 			logger.info(String.format("copy to %s", path));
 			HdfsUtil.writeDfsFile(fs, path, im.getContent());

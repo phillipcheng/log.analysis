@@ -263,7 +263,7 @@ public class SchemaGenerator {
 			}
 			
 		} else {
-			System.out.println("Usage: java -jar schema-generator-VERSION.jar <path of schema definition csv file> [db schema]");
+			System.out.println("Usage: java -jar schema-generator-VVERSIONN.jar <path of schema definition csv file> [db schema]");
 		}
 	}
 

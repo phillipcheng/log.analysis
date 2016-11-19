@@ -1,0 +1,1735 @@
+{
+  "attrNameMap" : {
+    "STAT_GROUP_905" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_001_NUMBER_OF_LOCAL_CONTEXTS", "_002_NUMBER_OF_LOCAL_KBS_IN_USE", "_003_NUMBER_OF_LOCAL_KBS_PUT", "_004_NUMBER_OF_LOCAL_KBS_GOT", "_008_NUMBER_OF_REMOTE_KBS_PUT", "_009_NUMBER_OF_REMOTE_KBS_GOT", "_014_REMOTE_CTX_REQUESTS_SENT", "_015_REMOTE_CTX_REQUESTS_RECEIVED", "_016_NUMBER_OF_CREATES", "_017_NUMBER_OF_PUTS", "_018_NUMBER_OF_GETS", "_019_NUMBER_OF_RELEASES", "_021_NUMBER_OF_LOCKS", "_022_NUMBER_OF_UNLOCKS", "_031_CTX_POOL_SIZE_KBS", "_032_CTX_POOL_FREE_SIZE_KBS", "_033_CTX_POOL_FREE", "_034_CTX_POOL_USED", "_026_NUMBER_OF_LOCK_DELAYS" ],
+    "STAT_GROUP_902" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_020_INQ__TOTAL_QUEUE_COUNT", "_021_APPQ__TOTAL_QUEUE_COUNT", "_022_OUTQ__TOTAL_QUEUE_COUNT", "_023_INQ__MAX_QUEUE_COUNT", "_024_APPQ__MAX_QUEUE_COUNT", "_025_OUTQ__MAX_QUEUE_COUNT", "_026_INQ__TOTAL_QUEUE_TIME_MICRO_SECS", "_027_APPQ__TOTAL_QUEUE_TIME", "_028_OUTQ__TOTAL_QUEUE_TIME", "_029_INQ__AVG_TIME_IN_QUEUE_MICRO_SECS", "_030_APPQ__AVG_TIME_IN_QUEUE_MICRO_SECS", "_031_OUTQ__AVG_TIME_IN_QUEUE_MICRO_SECS", "_035_INQ__TOTAL_DAILY_MSG_COUNT", "_036_APPQ__TOTAL_DAILY_MSG_COUNT", "_037_OUTQ__TOTAL_DAILY_MSG_COUNT", "_038_INQ__TOTAL_DAILY_QUEUE_TIME", "_039_APPQ__TOTAL_DAILY_QUEUE_TIME", "_040_OUTQ__TOTAL_DAILY_QUEUE_TIME" ],
+    "STAT_GROUP_790" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_015_RCR_BYTES_IN_USE" ],
+    "STAT_GROUP_020" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_002_NUMBER_OF_LDAP_CLIENT_REQUESTS_RECEIVED_BY_THE_GATEWAY", "_005_NUMBER_OF_SUCCESSFUL_RESPONSE_MESSAGES_SENT_TO_LDAP_CLIENT" ],
+    "STAT_GROUP_492" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_001_RECEIVE_X_COUNT", "_007_INBOUND_UNIT_DATA_MESSAGES", "_018_N_UNITDATA_MESSAGES_SENT_TO_HOST", "_019_OUTBOUND_UNIT_DATA_MESSAGES", "_056_INBOUND_EXTENDED_UNIT_DATA_MESSAGES", "_070_MSUS_REASSEMBLED", "_071_REASSEMBLY_TIMER_STARTED", "_072_REASSEMBLY_TIMER_STOPPED", "_054_OUTBOUND_EXTENDED_UNIT_DATA_MESSAGES", "_068_MSUS_SEGMENTED" ],
+    "STAT_GROUP_490" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_024_DATA_MESSAGES_SENT_TO_NETWORK", "_025_DATA_MESSAGES_RECEIVED_FROM_NETWORK", "_045_TERMINATING_MSUS", "_046_THROUGHSWITCHED_MSUS", "_048_TERMINATING_MSU_OCTETS", "_049_THROUGHSWITCHED_MSU_OCTETS", "_052_DURATION_OF_LINK_AVAILABILITY", "_078_SCTP_RX_WINDOWLOCAL_LOW_WATER_MARK", "_079_SCTP_RX_WINDOWLOCAL_CURRENT_VALUE", "_080_SCTP_RX_WINDOWREMOTE_LOW_WATER_MARK", "_081_SCTP_RX_WINDOWREMOTE_CURRENT_VALUE", "_086_SCTP_TXED_SACK_DUPLICATE_CHUNKS", "_087_SCTP_TXED_SACK_MAX_DUPLICATE_CHUNKS_PER_SACK", "_085_SCTP_RXED_SACK_MAX_MISSING_CHUNKS_PER_SACK", "_084_SCTP_RXED_SACK_MISSING_CHUNKS", "_092_M3UA_RECEIVED_SCONS", "_044_ORIGINATING_MSUS", "_047_ORIGINATING_MSU_OCTETS", "_088_SCTP_RXED_SACK_DUPLICATE_CHUNKS", "_089_SCTP_RXED_SACK_MAX_DUPLICATE_CHUNKS_PER_SACK", "_083_SCTP_TXED_SACK_MAX_MISSING_CHUNKS_PER_SACK", "_082_SCTP_TXED_SACK_MISSING_CHUNKS" ],
+    "STAT_GROUP_024" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_001_SSL_NUMBER_OF_SUCCESSFUL_SOCKET_CONNECTIONS", "_006_SSL_NUMBER_OF_SESSION_TIMEOUTS" ],
+    "STAT_GROUP_022" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_001_MESSAGES_RECEIVED_FROM_THE_PDE_FRAMEWORK", "_021_NUMBER_OF_SOCKET_CONNECTIONS_RELEASED", "_002_MESASGES_SENT_TO_THE_PDE_FRAMEWORK", "_004_SUCCESSFUL_REQUESTS_TO_WSS_SERVER", "_006_RESPONSES_RECEIVED_FROM_THE_WSS_SERVER", "_008_SUCCESS_RESPONSES_RECEIVED_FROM_THE_WSS_SERVER", "_023_NUMBER_OF_SUCCESSFUL_RECEIVES_ON_SOCKET", "_024_NUMBER_OF_SUCCESSFUL_SOCKET_SENDS", "_027_NUMBER_OF_TIMEOUTS_DUE_TO_SOCKET_INACTIVITY", "_028_WSSGWSWSSWSSGW_MINIMUM_TRANSPORT_TIME_MS", "_029_WSSGWSWSSWSSGW_MAXIMUM_TRANSPORT_TIME_MS", "_030_WSSGWSWSSWSSGW_CUMULATIVE_TRANSPORT_TIME_MS", "_037_FWWSSGW_MAXIMUM_TRANSPORT_TIME_MS", "_038_FWWSSGW_CUMULATIVE_TRANSPORT_TIME_MS", "_020_NUMBER_OF_SOCKET_CONNECTIONS_ESTABLISHED", "_036_FWWSSGW_MINIMUM_TRANSPORT_TIME_MS", "_009_NUMBER_OF_WSS_MESSAGE_TIMEOUTS" ],
+    "STAT_GROUP_021" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_010_NUMBER_OF_LDAP_CLIENT_REQUESTS_DISPATCHED_TO_SERVER_INSTANCE", "_016_NUMBER_OF_SUCCESSFUL_LDAP_SERVER_REQUESTS_LAUNCHED", "_018_NUMBER_OF_SUCCESSFUL_LDAP_SERVER_REQUEST_COMPLETIONS", "_021_NUMBER_OF_LDAP_REQUEST_TIMEOUTS_WHILE_IN_SERVER_QUEUE", "_002_NUMBER_OF_SUCCESSFUL_LDAP_SERVER_BINDS", "_004_NUMBER_OF_SUCCESSFUL_LDAP_SERVER_UNBINDS", "_009_NUMBER_OF_LDAP_SERVER_DEACTIVATIONS_DUE_TO_IDLE_TIMER" ],
+    "STAT_GROUP_600" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_051_RESERVED", "_053_RESERVED", "_001_MESSAGE_BUNDLES_SENT_BY_IOAIN_TO_ROUTER", "_002_MESSAGES_SENT_BY_IOAIN_TO_ROUTER", "_005_MESSAGE_BUNDLES_RECEIVED_BY_IOAOUT_FROM_ROUTER", "_006_MESSAGES_RECEIVED_BY_IOAOUT_FROM_ROUTER", "_009_MESSAGE_BUNDLES_RECEIVED_BY_IOAIN_FROM_DLC", "_010_MESSAGES_RECEIVED_BY_IOAIN_FROM_DLC", "_011_MESSAGE_BUNDLES_SENT_BY_IOAOUT_TO_DLC", "_012_MESSAGES_SENT_BY_IOAOUT_TO_DLC", "_016_DLC_GROUP_OUTPUT_FLUSHES_BY_IOAOUT", "_023_MESSAGES_RECEIVED_BY_IOAIN_CONSUMED_BY_IOAIN", "_040_RESERVED", "_052_RESERVED" ],
+    "STAT_GROUP_017" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_005_MESSAGES_SENT_TO_PDEFW_CALL_PROCESSING_APPLICATION", "_007_MESSAGES_RECEIVED_FROM_PDEFW_CALL_PROCESSING_APPLICATION", "_017_MESSAGES_RECEIVED_FROM_LDAP_CLIENT_GATEWAY", "_018_MESSAGES_SENT_TO_LDAP_CLIENT_GATEWAY", "_019_FAILURES_ATTEMPTING_TO_SEND_TO_LDAP_CLIENT_GATEWAY", "_020_LDAP_REQUEST_HIGH_WATER_MARK", "_001_MESSAGES_RECEIVED_FROM_TCPIP", "_003_MESSAGES_SENT_TO_TCPIP", "_008_SESSIONS_ESTABLISHED", "_009_SESSIONS_RELEASED", "_012_SOCKET_INACTIVITY_TIMEOUT", "_022_TOTAL_RECOVERY_STATE_COUNT", "_023_RECOVERY_STATE_COUNT", "_024_TOTAL_FAILURE_FREQUENCY_EXCEEDED" ],
+    "STAT_GROUP_016" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_001_NEW_SESSION_REGISTRATION_REQUESTS", "_006_SESSION_HIGH_WATER_MARK", "_009_PDM_SESSION_HIGH_WATER_MARK" ],
+    "STAT_GROUP_015" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_002_AA_FW_TO_AUTHAGENT_MAXIMUM_TRANSPORT_TIME_MS", "_003_AA_FW_TO_AUTHAGENT_CUMULATIVE_TRANSPORT_TIME_MS", "_004_AA_FW_TO_AUTHAGENT_AUTHENTICATION_REQUESTS_RECEIVED", "_005_AA_AUTHAGENT_TO_FW_RESPONSES_SENT", "_014_AA_AUTHAGENT_TO_LDAP_GATEWAY_AUTHENTICATION_REQUESTS_SENT", "_015_AA_LDAP_GATEWAY_TO_AUTHAGENT_AUTHENTICATION_RESPONSES_RCVD", "_007_FW_AUTHAGENT_TO_FW_MAXIMUM_TRANSPORT_TIME_MS", "_009_FW_AUTHAGENT_TO_FW_AUTHENTICATION_RESPONSES_RECEIVED", "_024_FW_FW_TO_AAA_MINIMUM_ROUNDTRIP_TRANSPORT_TIME_MS", "_025_FW_FW_TO_AAA_MAXIMUM_ROUNDTRIP_TRANSPORT_TIME_MS", "_026_FW_FW_TO_AAA_CUMULATIVE_ROUNDTRIP_TRANSPORT_TIME_MS", "_013_GW_AUTHAGENT_TO_LDAP_GATEWAY_AUTHENTICATION_REQUESTS_RCVD", "_019_GW_LDAP_GWAY_TO_AAA_MINIMUM_ROUNDTRIP_TRANSPORT_TIME_MS", "_020_GW_LDAP_GWAY_TO_AAA_MAXIMUM_ROUNDTRIP_TRANSPORT_TIME_MS", "_021_GW_LDAP_GWAY_TO_AAA_CUMULATIVE_ROUNDTRIP_TRANSPORT_TIMEMS", "_022_GW_LDAP_GATEWAY_TO_AAA_AUTHENTICATION_REQUESTS_SENT", "_023_GW_LDAP_GATEWAY_TO_AAA_AUTHENTICATION_RESPONSES_RECEIVED", "_001_AA_FW_TO_AUTHAGENT_MINIMUM_TRANSPORT_TIME_MS", "_008_FW_AUTHAGENT_TO_FW_CUMULATIVE_TRANSPORT_TIME_MS", "_017_AA_LDAP_GATEWAY_TO_AUTHAGENT_MAXIMUM_TRANSPORT_TIME_MS", "_018_AA_LDAP_GATEWAY_TO_AUTHAGENT_CUMULATIVE_TRANSPORT_TIME_MS", "_011_GW_AUTHAGENT_TO_LDAP_GATEWAY_MAXIMUM_TRANSPORT_TIME_MS", "_012_GW_AUTHAGENT_TO_LDAP_GATEWAY_CUMULATIVE_TRANSPORT_TIME_MS" ],
+    "STAT_GROUP_014" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_008_WARN_MSGS_RECEIVED", "_001_TOTAL_TCAP_MSGS_RECEIVED", "_002_GPOSREQ_MSGS_RECEIVED", "_003_TOTAL_VALID_TCAP_MSGS_RECEIVED", "_004_SMDPP_MSGS_SENT", "_005_SMDPP_MSGS_RECEIVED", "_006_GPOSREQRRMSGSSENT", "_020_VALID_AFLT_FIXES", "_022_VALID_GPS_ONLY_FIXES", "_024_VALID_HYBRID_FIXES", "_026_VALID_CELLSECTOR_RTD_FIXES", "_028_VALID_CELLSECTOR_FIXES", "_034_VALID_MIXED_CS_FIXES", "_039_DEFAULT_FIXES", "_080_TTFF_VALID_AFLT_FIXES_CUMULATIVE_MILLISECONDS", "_082_TTFF_VALID_GPSONLY_FIXES_CUMULATIVE_MILLISECONDS", "_084_TTFF_VALID_HYBRID_FIXES_CUMULATIVE_MILLISECONDS", "_087_TTFF_VALID_CS_RTD_FIXES_CUMULATIVE_MILLISECONDS", "_088_TTFF_VALID_CS_FIXES_CUMULATIVE_MILLISECONDS", "_094_TTFF_VALID_MIXED_CS_FIXES_CUMULATIVE_MILLISECONDS", "_099_TTFF_DEFAULT_FIXES_CUMULATIVE_MILLISECONDS", "_500_SMDPP_RR_SENT", "_501_SMDPP_RR_RECEIVED", "_502_TOTAL_TCAP_MESSAGES_SENT", "_040_VALID_MIXED_MODE_FIXES", "_100_TTFF_VALID_MIXED_MODE_FIXES_CUMULATIVE_MILLISECONDS", "_633_SMS_CAUSE_CODE_33_RECEIVED_RESULTING_IN_SMDPP_RETRY", "_552_TOTAL_NUM_BASE_STATION_LOOKUP_FAILURES", "_032_VALID_BS_REGION_FIXES", "_092_TTFF_VALID_BS_REGION_FIXES_CUMULATIVE_MILLISECONDS", "_543_TOTAL_NUM_GPOSREQ_LEVEL_1S", "_602_SMS_CAUSE_CODE_2_RECEIVED_RESULTING_IN_SMDPP_RETRY", "_698_SMS_CAUSE_CODE_98_RECEIVED_RESULTING_IN_SMDPP_RETRY", "_665_SMS_CAUSE_CODE_65_RECEIVED_RESULTING_IN_SMDPP_RETRY", "_881_FW_TO_WSS_MINIMUM_ROUNDTRIP_TRANSPORT_TIME_MS", "_882_FW_TO_WSS_MAXIMUM_ROUNDTRIP_TRANSPORT_TIME_MS", "_878_WSS_GATEWAY_TO_FW_MINIMUM_TRANSPORT_TIME_MS", "_879_WSS_GATEWAY_TO_FW_MAXIMUM_TRANSPORT_TIME_MS", "_038_VALID_EXTERNAL_FIXES", "_098_TTFF_EXTERNAL_FIXES_CUMULATIVE_MILLISECONDS", "_516_MO_OVER_IP_MESSAGES_SENT", "_520_MOP_OVER_IP_MESSAGES_RECEIVED", "_527_AUTHREQ_SENT", "_528_AUTHRESP_SUCCESSFUL", "_534_STARTDELIVERDATA_RECEIVED_OVER_NONTRUSTED_PORT", "_862_NUMBER_OF_PDM_SESSIONS", "_864_AUTHAGENT_RESPONSES_SUCCESSFUL", "_867_EBS_BSA_DELETE_SUCCESS", "_869_EBS_BSA_ADD_SUCCESS", "_871_NUMBER_OF_EBS_CLM_MESSAGES", "_884_AUTHAGENT_RESPONSE_RECEIVED", "_515_MO_OVER_IP_MESSAGES_RECEIVED", "_533_STARTDELIVERDATA_RECEIVED_OVER_TRUSTED_PORT", "_863_AUTHAGENT_REQUESTS_SENT", "_865_AUTHAGENT_RESPONSES_FAILED", "_872_NUMBER_OF_EBS_UPPPM_MESSAGES", "_876_NUMBER_OF_EBS_WSS_RESPONSES", "_877_NUMBER_OF_EBS_WSS_REQUESTS", "_883_FW_TO_WSS_CUMULATIVE_ROUNDTRIP_TRANSPORT_TIME_MS", "_880_WSS_GATEWAY_TO_FW_CUMULATIVE_TRANSPORT_TIME_MS", "_531_LB_TOTAL_REQUESTS_RECEIVED", "_866_AUTHAGENT_RESPONSE_TIMED_OUT", "_529_AUTHRESP_FAILURE", "_875_NUMBER_OF_EBS_WSS_TIMEOUTS", "_530_AUTHRESP_TIMED_OUT", "_544_TOTAL_NUM_GPOSREQ_LEVEL_2S" ],
+    "STAT_GROUP_900" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_001_XMM_POOL_SIZE", "_002_XMM_POOL_FREE_WORDS", "_003_XMM_POOL_FREE", "_004_XMM_POOL_USED", "_070_TOTAL_TRANSACTIONS_FORWARDED", "_077_TOTAL_MESSAGES_RECEIVED_BY_MESSAGE_FORWARDER", "_080_APPLICATION_MESSAGES_FORWARDED_TO_CPU_1", "_173_SIGNALTIMEOUT__TOTAL_POPPED", "_241_FOR_INTERNAL_USE_ONLY", "_020_INQ__TOTAL_QUEUE_COUNT", "_021_APPQ__TOTAL_QUEUE_COUNT", "_022_OUTQ__TOTAL_QUEUE_COUNT", "_023_INQ__MAX_QUEUE_COUNT", "_024_APPQ__MAX_QUEUE_COUNT", "_025_OUTQ__MAX_QUEUE_COUNT", "_026_INQ__TOTAL_QUEUE_TIME_MICRO_SECS", "_027_APPQ__TOTAL_QUEUE_TIME", "_028_OUTQ__TOTAL_QUEUE_TIME", "_029_INQ__AVG_TIME_IN_QUEUE_MICRO_SECS", "_030_APPQ__AVG_TIME_IN_QUEUE_MICRO_SECS", "_031_OUTQ__AVG_TIME_IN_QUEUE_MICRO_SECS", "_035_INQ__TOTAL_DAILY_MSG_COUNT", "_036_APPQ__TOTAL_DAILY_MSG_COUNT", "_037_OUTQ__TOTAL_DAILY_MSG_COUNT", "_038_INQ__TOTAL_DAILY_QUEUE_TIME", "_039_APPQ__TOTAL_DAILY_QUEUE_TIME", "_040_OUTQ__TOTAL_DAILY_QUEUE_TIME", "_072_TOTAL_CONTEXTS_FORWARDED", "_113_CONTEXT_BUFFERS_FORWARDED_TO_CPU_2", "_114_CONTEXT_BUFFERS_FORWARDED_TO_CPU_3", "_130_TOTAL_MESSAGES_RECEIVED_BY_MESSAGE_RECEIVER", "_137_TOTAL_MESSAGES_RECEIVED_FROM_CPU_0", "_139_TOTAL_MESSAGES_RECEIVED_FROM_CPU_2", "_140_TOTAL_MESSAGES_RECEIVED_FROM_CPU_3", "_112_CONTEXT_BUFFERS_FORWARDED_TO_CPU_1", "_138_TOTAL_MESSAGES_RECEIVED_FROM_CPU_1", "_081_APPLICATION_MESSAGES_FORWARDED_TO_CPU_2", "_082_APPLICATION_MESSAGES_FORWARDED_TO_CPU_3", "_079_APPLICATION_MESSAGES_FORWARDED_TO_CPU_0", "_083_APPLICATION_MESSAGES_FORWARDED_TO_CPU_4", "_084_APPLICATION_MESSAGES_FORWARDED_TO_CPU_5", "_085_APPLICATION_MESSAGES_FORWARDED_TO_CPU_6", "_086_APPLICATION_MESSAGES_FORWARDED_TO_CPU_7", "_141_TOTAL_MESSAGES_RECEIVED_FROM_CPU_4", "_142_TOTAL_MESSAGES_RECEIVED_FROM_CPU_5", "_143_TOTAL_MESSAGES_RECEIVED_FROM_CPU_6", "_144_TOTAL_MESSAGES_RECEIVED_FROM_CPU_7", "_117_CONTEXT_BUFFERS_FORWARDED_TO_CPU_6", "_118_CONTEXT_BUFFERS_FORWARDED_TO_CPU_7", "_116_CONTEXT_BUFFERS_FORWARDED_TO_CPU_5", "_115_CONTEXT_BUFFERS_FORWARDED_TO_CPU_4", "_006_STAT_POOL_SIZE", "_007_STAT_POOL_FREE_WORDS", "_008_STAT_HIGH_WATERMARK", "_011_XMM_OUTPOOL_SIZE", "_012_XMM_OUTPOOL_FREE_WORDS", "_013_XMM_OUTPOOL_FREE", "_176_RESERVED", "_177_RESERVED" ],
+    "STAT_GROUP_800" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_100_CPU_00_USECS_OF_CPU_BURN", "_101_CPU_01_USECS_OF_CPU_BURN", "_102_CPU_02_USECS_OF_CPU_BURN", "_103_CPU_03_USECS_OF_CPU_BURN", "_104_CPU_04_USECS_OF_CPU_BURN", "_105_CPU_05_USECS_OF_CPU_BURN", "_106_CPU_06_USECS_OF_CPU_BURN", "_107_CPU_07_USECS_OF_CPU_BURN" ],
+    "STAT_GROUP_018" : [ "COLLECT_DATETIME", "SITE", "CPUID", "_001_PRIMARY_FEED_PACKETS_RECEIVED", "_004_BACKUP_FEED_PACKETS_RECEIVED", "_007_WARN_MESSAGES_CACHED" ]
+  },
+  "attrTypeMap" : {
+    "STAT_GROUP_905" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_902" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_790" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_020" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_492" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_490" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_024" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_022" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_021" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_600" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_017" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_016" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_015" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_014" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_900" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_800" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ],
+    "STAT_GROUP_018" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    } ]
+  }
+}

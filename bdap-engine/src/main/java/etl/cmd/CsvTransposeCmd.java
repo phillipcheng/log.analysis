@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.CompiledScript;
 
@@ -45,8 +46,10 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	
 	private static final Logger logger = LogManager.getLogger(CsvTransposeCmd.class);
 	
-	//Stor the origin configured table name or splited table name
-	public static final String VAR_NAME_ORIGIN_TABLE_NAME="originTableName";
+	//Store the origin configured table name or splited table name
+	public static final String VAR_NAME_ORIGIN_TABLE_NAME="originTableName";	
+	//the table.field's name in logic schema
+	public static final String VAR_NAME_FIELD_NAME="fieldName";
 	
 	//cfgkey
 	public static final String cfgkey_with_trailing_delimiter = "with.trailing.delimiter";	
@@ -61,13 +64,16 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	//Used only when split.table.fields is not used, to specify the output result table schema
 	public static final String cfgkey_table_name = "table.name";
 	
-	//Use specified fields as table name
+	//Use specified fields as table name, it must be subset of group.fields
 	public static final String cfgkey_split_table_fields = "split.table.fields";
 	
-
 	public static final String cfgkey_table_name_mapping_exp = "table.name.mapping.exp";
 
-	public static final String cfgkey_table_fields_mapping_exp = "table.fields.mapping.exp";
+	//according to it, mapping schema field name, to column.name
+	public static final String cfgkey_field_name_mapping_exp = "field.name.mapping.exp";
+	
+	//To indicate since where position of the table to start the transpose work. E.g. 
+	public static final String cfgkey_table_field_transpose_start_index = "table.field.transpose.start.index";
 	
 	//used to output the result into different files, if not configuration, all expose into single file
 	public static final String cfgkey_output_filename_exp = "output.filename.exp";
@@ -79,10 +85,13 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	private List<Integer> columnNameFieldIdxList=new ArrayList<Integer>();	
 	private List<Integer> columnValueFieldIdxList=new ArrayList<Integer>();		
 	private boolean isSplitTable=false;
+	private int tableFieldTransposeStartIndex=0;
 
 	private CompiledScript outputFileNameCS=null;
 	private CompiledScript tableNameMappingCS=null;
-	private CompiledScript tableFieldsMappingCS=null;
+	private CompiledScript fieldNameMappingCS=null;
+	
+	private Map<String,Map<String,Integer>> transposeFieldLocationList;
 	
 	public CsvTransposeCmd(){
 		super();
@@ -102,6 +111,10 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		setMrMode(MRMode.line);
 		this.withTrailingDelimiter=getCfgBoolean(cfgkey_with_trailing_delimiter, false);
 		this.groupFieldList=IdxRange.parseString(getCfgString(cfgkey_group_fields, null));
+		if(super.getCfgString(cfgkey_table_field_transpose_start_index, null)==null){
+			throw new IllegalArgumentException(String.format("table.field.transpose.start.index is mandatory"));			
+		}
+		this.tableFieldTransposeStartIndex=super.getCfgInt(cfgkey_table_field_transpose_start_index, 0);
 		
 		String outputFilenameExp=super.getCfgString(cfgkey_output_filename_exp, null);
 		if(outputFilenameExp!=null){
@@ -118,6 +131,9 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		if(columnNameFieldIdxArray==null || columnNameFieldIdxArray.length==0){
 			throw new IllegalArgumentException(String.format("column.name.fields parameter is mandatory"));
 		}
+		if(columnNameFieldIdxArray.length>1){
+			throw new IllegalArgumentException(String.format("column.name.fields only accept 1 parameter"));
+		}
 		
 		//Read column value field index
 		String[] columnValueFieldIdxArray = super.getCfgStringArray(cfgkey_column_value_fields);
@@ -128,6 +144,9 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		}
 		if(columnValueFieldIdxArray==null || columnValueFieldIdxArray.length==0){
 			throw new IllegalArgumentException(String.format("column.value.fields parameter is mandatory"));
+		}
+		if(columnValueFieldIdxArray.length>1){
+			throw new IllegalArgumentException(String.format("column.value.fields only accept 1 parameter"));
 		}
 		
 		//Validate the size of column.name.fields and column.value.fields must same
@@ -144,10 +163,9 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		}else{
 			this.tableName = super.getCfgString(cfgkey_table_name,null);
 			
-//			if(this.tableName==null){
-//				throw new IllegalArgumentException(String.format("Eithr of column.name.field.tables or split.table.fields is required"));
-//			}
-			
+			if(this.tableName==null){
+				throw new IllegalArgumentException(String.format("Either of column.name.field.tables or split.table.fields is required"));
+			}
 		}
 		
 		//Read table name mapping expression
@@ -156,12 +174,34 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 			tableNameMappingCS=ScriptEngineUtil.compileScript(tableNameMappingExp);
 		}
 		
-		//Read table -> fields mapping expression
-		String tableFieldsMappingExp = this.getCfgString(cfgkey_table_fields_mapping_exp, null);
-		if (tableFieldsMappingExp != null) {
-			tableFieldsMappingCS = ScriptEngineUtil.compileScript(tableFieldsMappingExp);
-		}else{
-			throw new IllegalArgumentException(String.format("table.fields.mapping.exp is mandatory"));
+		//Read field name mapping expression and construct index
+		String fieldNameMappingExp = this.getCfgString(cfgkey_field_name_mapping_exp, null);
+		if (fieldNameMappingExp != null) {
+			this.fieldNameMappingCS = ScriptEngineUtil.compileScript(fieldNameMappingExp);
+		}
+//		else{
+//			throw new IllegalArgumentException(String.format("table.fields.mapping.exp is mandatory"));
+//		}
+		
+		transposeFieldLocationList=new ConcurrentHashMap<String,Map<String,Integer>>();		
+		for(String tn:logicSchema.getAttrNameMap().keySet()){
+			List<String> attrNameList=logicSchema.getAttrNames(tn);
+			Map<String,Integer> fieldPosition=transposeFieldLocationList.get(tn);
+			if(fieldPosition==null){
+				fieldPosition=new ConcurrentHashMap<String,Integer>();
+				transposeFieldLocationList.put(tn, fieldPosition);
+			}
+			
+			for(int idx=tableFieldTransposeStartIndex;idx<attrNameList.size();idx++){
+				if(fieldNameMappingCS!=null){
+					getSystemVariables().put(this.VAR_NAME_FIELD_NAME, attrNameList.get(idx));
+					String mappedFieldName=ScriptEngineUtil.eval(fieldNameMappingCS, getSystemVariables());
+					fieldPosition.put(mappedFieldName, idx-tableFieldTransposeStartIndex);
+				}else{
+					fieldPosition.put(attrNameList.get(idx), idx-tableFieldTransposeStartIndex);
+				}
+				
+			}
 		}
 	}
 	
@@ -186,7 +226,7 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		}
 		getSystemVariables().put(ColOp.VAR_NAME_FIELDS, fields);
 		
-		//Calculate table name
+		//Calculate table name,the realTableName is used to find in the schema file.
 		String originTableName;
 		String realTableName;
 		if(isSplitTable){
@@ -211,42 +251,22 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		//Get grouped columns
 		String groupedColumns=buildString(csvRecord,groupFieldList,",");
 		
-		//Calculate number of grouped columns
-		int numberOfGroupedColumns=0;
-		for(IdxRange idxRange:groupFieldList){
-			int start=idxRange.getStart();
-			int end=idxRange.getEnd();
-			if(end==-1){
-				end=csvRecord.size()-1;
-			}
-			numberOfGroupedColumns=numberOfGroupedColumns+(end-start+1);
-		}
-		
-		//Read table field
-		List<List<String>> tableFieldGroupList=new ArrayList<List<String>>();
-		int numberOfTransposeColumns=0;
-		String fieldsStr=ScriptEngineUtil.eval(tableFieldsMappingCS, super.getSystemVariables());
-		if(fieldsStr==null || fieldsStr.trim().isEmpty()){
-			logger.info("Cannot find transpose columns definition, drop row:{}",row);
+		//Transpose Preparation
+		if(!logicSchema.hasTable(realTableName)){
+			logger.warn("Table:{} cannot found in schema, drop row:{}", realTableName,row);
 			return null;
 		}
-		
-		String[] fieldGroupArray=fieldsStr.split(";");
-		if(fieldGroupArray!=null && fieldGroupArray.length>0){
-			for(String fieldGroup:fieldGroupArray){
-				String[] fieldArray=fieldGroup.split(",");
-				if(fieldArray!=null){
-					numberOfTransposeColumns=numberOfTransposeColumns+fieldArray.length;
-					tableFieldGroupList.add(Arrays.asList(fieldArray));
-				}
-			}
+		List<String> fieldNameList=logicSchema.getAttrNames(realTableName);
+		int transposeSize=fieldNameList.size()-tableFieldTransposeStartIndex;
+		if(transposeSize<0){
+			logger.warn("Table:{} field transpose start index out of bound, drop row:{}", realTableName,row);
+			return null;
 		}
+		List<String> transposeList=new ArrayList<String>(transposeSize);
+		for(int idx=0;idx<transposeSize;idx++) transposeList.add("");
 		
+		Map<String,Integer> transposeFieldLocation=transposeFieldLocationList.get(realTableName);
 		
-		//Transpose
-		List<String> transposeList=new ArrayList<String>(numberOfTransposeColumns);
-		int fieldGroupIdxOffset=0;
-		for(int i=0;i<numberOfTransposeColumns;i++) transposeList.add("");
 		for(int idx=0;idx<this.columnNameFieldIdxList.size();idx++){
 			int columnNameFieldIdx=this.columnNameFieldIdxList.get(idx);
 			int columnValueFieldIdx=this.columnValueFieldIdxList.get(idx);
@@ -264,23 +284,15 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 			String colValue=csvRecord.get(columnValueFieldIdx);
 			
 			//Locate the column name position in the fields
-			int indexOfColName=-1;
-			List<String> fieldList=tableFieldGroupList.get(idx);
-			for(int i=0;i<fieldList.size();i++){
-				if(fieldList.get(i).equalsIgnoreCase(colName)){
-					indexOfColName=i;
-					break;
-				}
-			}
-			if(indexOfColName==-1){
+			Integer indexOfColName=transposeFieldLocation.get(colName);			
+
+			if(indexOfColName==null){
 				logger.info("Cannot find column:{} in table, drop row:{}",colName, row);
 				return null;
 			}
 			
 			//Transpose
-			transposeList.set(fieldGroupIdxOffset+indexOfColName, colValue);	
-			
-			fieldGroupIdxOffset=fieldGroupIdxOffset+fieldList.size();
+			transposeList.set(indexOfColName, colValue);	
 		}		
 		
 /*		Output 

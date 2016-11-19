@@ -2,14 +2,14 @@ package etl.flow;
 
 import java.util.Objects;
 
-public class Link {
+public class Link implements Comparable<Link>{
 
 	private String fromNodeName;
 	private String toNodeName;
 	private LinkType linkType = LinkType.success;
 
 	public String toString(){
-		return String.format("%s_%s_%d_%d_%s", this.fromNodeName, this.toNodeName);
+		return String.format("%s_%s", this.fromNodeName, this.toNodeName);
 	}
 
 	public Link(){
@@ -65,5 +65,12 @@ public class Link {
 
 	public void setLinkType(LinkType linkType) {
 		this.linkType = linkType;
+	}
+
+	@Override
+	public int compareTo(Link o) {
+		String target = o.getFromNodeName() + "---" + o.getToNodeName();
+		String from = this.getFromNodeName() + "---" + this.getToNodeName();
+		return target.compareTo(from);
 	}
 }

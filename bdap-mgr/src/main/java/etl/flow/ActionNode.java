@@ -23,15 +23,21 @@ public class ActionNode extends Node{
 	private Map<String, String> properties = new LinkedHashMap<String, String>();//preserving the insertion order
 	private List<String> addArgs = new ArrayList<String>();//additional list of arguments
 	
-	@JsonIgnore
-	private ExeType exeType;
-	
 	public ActionNode(){
+	}
+	
+	public ActionNode(String name){
+		super(name);
 	}
 	
 	public ActionNode(String name, ExeType exeType){
 		super(name);
-		this.exeType = exeType;
+		properties.put(key_exe_type, exeType.toString());
+	}
+	
+	public ActionNode(String name, ExeType exeType, InputFormatType ift){
+		this(name, exeType);
+		properties.put(key_input_format, ift.toString());
 	}
 	
 	//for writing test cases to construct action node from existing properties file
@@ -41,6 +47,12 @@ public class ActionNode extends Node{
 		for (String key: map.keySet()){
 			properties.put(key, map.get(key));
 		}
+	}
+	
+	//for writing test cases to construct action node from existing properties file
+	public ActionNode(String name, ExeType exeType, InputFormatType ift, String propertiesFile){
+		this(name, exeType, propertiesFile);
+		properties.put(key_input_format, ift.toString());
 	}
 	
 	@Override
@@ -90,16 +102,6 @@ public class ActionNode extends Node{
 
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
-	}
-
-	@JsonIgnore
-	public ExeType getExeType() {
-		return exeType;
-	}
-
-	@JsonIgnore
-	public void setExeType(ExeType exeType) {
-		this.exeType = exeType;
 	}
 
 	public List<String> getAddArgs() {
