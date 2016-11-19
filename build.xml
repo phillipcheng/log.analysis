@@ -76,9 +76,12 @@
 				<include name="bdap*"/>
 			</fileset>
         </copy>
-		<copy todir="${dist}/mgr/bin"><!-- copy shell-->
+		<copy todir="${dist}/mgr/bin"><!-- copy shell and properties-->
             <fileset dir="${mgr.src}/bin">
             </fileset>
+			<fileset dir="${mgr.src}/src/test/resources">
+				<exclude name="flow1"/>
+			</fileset>
         </copy>
 		<copy todir="${dist}/mgr/cfg"><!-- copy cfg and test case-->
             <fileset dir="${mgr.src}/src/test/resources">

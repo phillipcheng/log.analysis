@@ -1,0 +1,23 @@
+{
+  "test" : {
+    "id" : "test",
+    "directory" : "/Dev/log.analysis/bdap-schemagen/src/test",
+    "elements" : [ {
+      "name" : "FEMTO",
+      "hostname" : "localhost",
+      "ip" : "127.0.0.1"
+    } ],
+    "category" : "OM",
+    "timeZone" : "CST",
+    "cronExpr" : "0/1 * * * * ?",
+    "recursive" : true,
+    "filenameFilterExpr" : "new('org.apache.commons.io.filefilter.WildcardFileFilter', '*.csv')",
+    "filesPerBatch" : 1,
+    "processRecordFile" : "/tmp/process_record",
+    "destServer" : "localhost",
+    "destServerPort" : 22,
+    "destServerUser" : "player",
+    "destServerPass" : "123456",
+    "destServerDirRule" : "`/tmp/${new('java.util.Date')}/${WorkingElement.IP}`"
+  }
+}

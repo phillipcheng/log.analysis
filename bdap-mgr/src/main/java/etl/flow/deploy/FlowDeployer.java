@@ -147,6 +147,12 @@ public class FlowDeployer {
 						fl.add(new InMemFile(FileType.oozieWfXml, path.getFileName().toString(), content));
 					}
 				}
+				stream = Files.newDirectoryStream(directoryPath, "*.schema");
+				for (Path path : stream) {
+				    logger.info(String.format("schema path:%s", path.getFileName().toString()));
+					byte[] content = Files.readAllBytes(path);
+					fl.add(new InMemFile(FileType.logicSchema, path.getFileName().toString(), content));
+				}
 				stream = Files.newDirectoryStream(directoryPath, "*_mapping.properties");
 				for (Path path : stream) {
 				    logger.info(String.format("mapping path:%s", path.getFileName().toString()));
@@ -271,7 +277,7 @@ public class FlowDeployer {
 		System.out.println(String.format("duration unit: minute, min:5"));
 		for (String prj: fd.listProjects()){
 			Collection<String> flows = fd.listFlows(prj);
-			System.out.println(String.format("%s:\n%s", prj, String.join("\n  ", flows)));
+			System.out.println(String.format("%s:\n  %s", prj, String.join("\n  ", flows)));
 		}
 	}
 	/**
