@@ -39,9 +39,9 @@ public abstract class FlowMgr {
 	}
 	
 	public abstract boolean deployFlowFromJson(String projectName, Flow flow, FlowDeployer fd, FlowServerConf fsconf, EngineConf ec) throws Exception;
-	public abstract String executeFlow(String projectDir, String flowName, OozieConf oc, EngineConf ec) throws Exception;
-	public abstract String executeCoordinator(String projectDir, String flowName, OozieConf oc, EngineConf ec, CoordConf cc)  throws Exception;
-	
+	public abstract String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec) throws Exception;
+	public abstract String executeCoordinator(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, CoordConf cc)  throws Exception;
+
 	/**
 	 * update helper jars, mapping.properties
 	 * @param files
@@ -50,6 +50,30 @@ public abstract class FlowMgr {
 	 * @return
 	 */
 	public abstract void uploadFiles(String projectName, String flowName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec);
+	
+	/**
+	 * execute an action node of an existing workflow instance
+	 * @param projectName
+	 * @param flow
+	 * @param imFiles
+	 * @param fsconf
+	 * @param ec
+	 * @param actionNode
+	 * @param instanceId
+	 * @return
+	 */
+	public abstract void executeAction(String projectName, Flow flow, List<InMemFile> imFiles, FlowServerConf fsconf, 
+			EngineConf ec, String actionNode, String instanceId);
+	
+	/**
+	 * get the flow info of submitted instance
+	 * @param projectName
+	 * @param fsconf
+	 * @param instanceId
+	 * @return flow info
+	 */
+	
+	public abstract FlowInfo getFlowInfo(String projectName, FlowServerConf fsconf, String instanceId);
 	
 	/**
 	 * get the flow log of submitted instance
@@ -89,7 +113,7 @@ public abstract class FlowMgr {
 	 * @param nodeName
 	 * @return list of file paths
 	 */
-	public abstract String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	public abstract String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName);
 	
 	/**
 	 * list the action node's output files
@@ -99,15 +123,25 @@ public abstract class FlowMgr {
 	 * @param nodeName
 	 * @return list of file paths
 	 */
-	public abstract String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	public abstract String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName);
 	
 	/**
 	 * get the distributed file
 	 * @param fsconf
 	 * @param filePath
+	 * @return file content (Max file default size: 1MB)
+	 */
+	public abstract InMemFile getDFSFile(EngineConf ec, String filePath);
+	
+
+	/**
+	 * get the distributed file
+	 * @param fsconf
+	 * @param filePath
+	 * @param maxFileSize
 	 * @return file content
 	 */
-	public abstract InMemFile getDFSFile(FlowServerConf fsconf, String filePath);
+	public abstract InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize);
 	
 	//generate json file from java construction
 	public static void genFlowJson(String rootFolder, String projectName, Flow flow){

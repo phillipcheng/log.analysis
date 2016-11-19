@@ -1,9 +1,11 @@
 package etl.flow.oozie;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -11,7 +13,14 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
@@ -21,6 +30,7 @@ import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FileType;
+import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
@@ -31,6 +41,8 @@ import etl.flow.oozie.wf.WORKFLOWAPP;
 public class OozieFlowMgr extends FlowMgr{
 	
 	public static final Logger logger = LogManager.getLogger(OozieFlowMgr.class);
+	private static final int DEFAULT_MAX_FILE_SIZE = 1048576; /* 1MB */
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	private String dateTimePattern;
 	
 	//projectDir is hdfsDir
@@ -226,7 +238,8 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	@Override
-	public String executeFlow(String projectDir, String flowName, OozieConf oc, EngineConf ec){
+	public String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec){
+		OozieConf oc = (OozieConf)fsconf;
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
@@ -245,7 +258,8 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	@Override
-	public String executeCoordinator(String projectDir, String flowName, OozieConf oc, EngineConf ec, CoordConf cc){
+	public String executeCoordinator(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, CoordConf cc){
+		OozieConf oc = (OozieConf)fsconf;
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
@@ -263,6 +277,13 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	@Override
+	public void executeAction(String projectName, Flow flow, List<InMemFile> imFiles, FlowServerConf fsconf,
+			EngineConf ec, String actionNode, String instanceId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
 		OozieConf oc = (OozieConf) fsconf;
 		//deploy to the server
@@ -273,6 +294,55 @@ public class OozieFlowMgr extends FlowMgr{
 			logger.info(String.format("copy to %s", path));
 			HdfsUtil.writeDfsFile(fs, path, im.getContent());
 		}
+	}
+
+	@Override
+	public FlowInfo getFlowInfo(String projectName, FlowServerConf fsconf, String instanceId) {
+		if (instanceId != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobInfoUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			Map<String, Object> flowInfoMap = JsonUtil.fromJsonString(RequestUtil.get(jobInfoUrl, null, 0, headMap), HashMap.class);
+			FlowInfo flowInfo = new FlowInfo();
+			flowInfo.setId(instanceId);
+			flowInfo.setName((String) flowInfoMap.get("appName"));
+			flowInfo.setStatus((String) flowInfoMap.get("status"));
+			DateFormat dtFormat;
+			if (dateTimePattern != null)
+				dtFormat = new SimpleDateFormat(dateTimePattern, Locale.forLanguageTag("en-US"));
+			else
+				dtFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.forLanguageTag("en-US"));
+			String t = (String) flowInfoMap.get("startTime");
+			if (t != null)
+				try {
+					flowInfo.setStartTime(dtFormat.parse(t));
+				} catch (ParseException e) {
+					logger.error(e.getMessage(), e);
+				}
+			t = (String) flowInfoMap.get("endTime");
+			if (t != null)
+				try {
+					flowInfo.setEndTime(dtFormat.parse(t));
+				} catch (ParseException e) {
+					logger.error(e.getMessage(), e);
+				}
+			t = (String) flowInfoMap.get("createdTime");
+			if (t != null)
+				try {
+					flowInfo.setCreatedTime(dtFormat.parse(t));
+				} catch (ParseException e) {
+					logger.error(e.getMessage(), e);
+				}
+			t = (String) flowInfoMap.get("lastModTime");
+			if (t != null)
+				try {
+					flowInfo.setLastModifiedTime(dtFormat.parse(t));
+				} catch (ParseException e) {
+					logger.error(e.getMessage(), e);
+				}
+			return flowInfo;
+		}
+		return null;
 	}
 
 	@Override
@@ -287,9 +357,9 @@ public class OozieFlowMgr extends FlowMgr{
 	public String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
 		if (nodeName != null) {
 			OozieConf oc = (OozieConf)fsconf;
-			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			String jobInfoUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
 			Map<String, String> headMap = new HashMap<String, String>();
-			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobInfoUrl, null, 0, headMap), "actions", ArrayList.class);
 			if (actions != null) {
 				Map<String, Object> action = null;
 				for (Map<String, Object> a: actions) {
@@ -507,7 +577,7 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName) {
 		if (nodeName != null) {
 			OozieConf oc = (OozieConf)fsconf;
 			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
@@ -523,22 +593,130 @@ public class OozieFlowMgr extends FlowMgr{
 				}
 				
 				if (action != null) {
+					String childJobIds[] = null;
+					String url;
+					Object t = action.get("externalChildIDs");
+					if (t != null)
+						childJobIds = t.toString().split(",");
 					
+					if (childJobIds != null) {
+						List<Map<String,Object>> properties;
+						List<String> inputFiles = new ArrayList<String>();
+						for (String id: childJobIds) {
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/conf", oc.getHistoryServer(), id);
+							properties = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "conf.property", ArrayList.class);
+							for (Map<String, Object> prop: properties) {
+								if ("mapreduce.input.fileinputformat.inputdir".equals(prop.get("name"))) {
+									inputFiles.addAll(listDFSDir(ec, (String)prop.get("value")));
+									break;
+								}
+							}
+						}
+						return inputFiles.toArray(EMPTY_STRING_ARRAY);
+					}
 				}
 			}
 		}
-		return null;
+		return EMPTY_STRING_ARRAY;
 	}
 
 	@Override
-	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
-		// TODO Auto-generated method stub
-		return null;
+	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				Map<String, Object> action = null;
+				for (Map<String, Object> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						action = a;
+						break;
+					}
+				}
+				
+				if (action != null) {
+					String childJobIds[] = null;
+					String url;
+					Object t = action.get("externalChildIDs");
+					if (t != null)
+						childJobIds = t.toString().split(",");
+					
+					if (childJobIds != null) {
+						List<Map<String,Object>> properties;
+						List<String> inputFiles = new ArrayList<String>();
+						for (String id: childJobIds) {
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/conf", oc.getHistoryServer(), id);
+							properties = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "conf.property", ArrayList.class);
+							for (Map<String, Object> prop: properties) {
+								if ("mapreduce.output.fileoutputformat.outputdir".equals(prop.get("name"))) {
+									inputFiles.addAll(listDFSDir(ec, (String)prop.get("value")));
+									break;
+								}
+							}
+						}
+						return inputFiles.toArray(EMPTY_STRING_ARRAY);
+					}
+				}
+			}
+		}
+		return EMPTY_STRING_ARRAY;
+	}
+
+	private List<String> listDFSDir(EngineConf ec, String remoteDir) {
+		if (remoteDir != null) {
+			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			try {
+				if (fs.isDirectory(new Path(remoteDir))) {
+					final Function<String, String> FULL_PATH_TRANSFORMER = new Function<String, String>() {
+					    public String apply(String fileName) {
+					    	if (remoteDir.endsWith(Path.SEPARATOR))
+					    		return remoteDir + fileName;
+					    	else
+					    		return remoteDir + Path.SEPARATOR + fileName;
+					    }
+					};
+					return Lists.transform(HdfsUtil.listDfsFile(fs, remoteDir), FULL_PATH_TRANSFORMER);
+				} else {
+					return Lists.newArrayList(remoteDir);
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+			return Collections.emptyList();
+			
+		} else
+			return Collections.emptyList();
 	}
 
 	@Override
-	public InMemFile getDFSFile(FlowServerConf fsconf, String filePath) {
-		// TODO Auto-generated method stub
+	public InMemFile getDFSFile(EngineConf ec, String filePath) {
+		return getDFSFile(ec, filePath, DEFAULT_MAX_FILE_SIZE);
+	}
+	
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize) {
+		if (filePath != null) {
+			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			FSDataInputStream in = null;
+			byte[] buffer = new byte[maxFileSize];
+			int readSize;
+			try {
+				in = fs.open(new Path(filePath));
+				readSize = in.read(buffer, 0, maxFileSize);
+				return new InMemFile(FileType.binaryData, filePath, buffer, readSize);
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			} finally {
+				if (in != null)
+					try {
+						in.close();
+					} catch (IOException e) {
+						logger.error(e.getMessage(), e);
+					}
+			}
+		}
 		return null;
 	}
 

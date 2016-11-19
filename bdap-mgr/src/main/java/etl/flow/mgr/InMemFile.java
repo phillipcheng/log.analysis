@@ -1,5 +1,7 @@
 package etl.flow.mgr;
 
+import java.util.Arrays;
+
 public class InMemFile {
 	private FileType fileType;
 	private String fileName;
@@ -12,6 +14,12 @@ public class InMemFile {
 		this.fileType = fileType;
 		this.fileName = fileName;
 		this.content = content;
+	}
+	
+	public InMemFile(FileType fileType, String fileName, byte[] content, int contentSize){
+		this.fileType = fileType;
+		this.fileName = fileName;
+		this.content = Arrays.copyOf(content, contentSize);
 	}
 	
 	public String toString(){

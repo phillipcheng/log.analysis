@@ -9,4 +9,6 @@ public enum FileType {
 	engineProperty,
 	ftmappingFile, //file<-->table mapping file
 	log4j,
+	textData,
+	binaryData
 }

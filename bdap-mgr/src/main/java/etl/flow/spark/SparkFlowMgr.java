@@ -1,25 +1,28 @@
 package etl.flow.spark;
 
-import java.io.File;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import bdap.util.EngineConf;
 import bdap.util.SystemUtil;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.deploy.FlowDeployer;
+import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
 import etl.flow.mgr.NodeInfo;
-import etl.flow.oozie.OozieConf;
 
 public class SparkFlowMgr extends FlowMgr{
-	
+	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
 
 	@Override
 	public boolean deployFlowFromJson(String prjName, Flow flow, FlowDeployer fd, FlowServerConf fsconf, EngineConf ec) throws Exception{
@@ -52,16 +55,19 @@ public class SparkFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public String executeFlow(String projectDir, String flowName, OozieConf oc, EngineConf ec) {
-		//based on the common spark_workflow.xml, submit the job
+	public String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String executeCoordinator(String projectDir, String flowName, OozieConf oc, EngineConf ec, CoordConf cc) {
+	public String executeCoordinator(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec,
+			CoordConf cc) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	
 
 	@Override
 	public void uploadFiles(String projectName, String flowName, InMemFile[] files, FlowServerConf fsconf,
@@ -89,19 +95,40 @@ public class SparkFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public void executeAction(String projectName, Flow flow, List<InMemFile> imFiles, FlowServerConf fsconf,
+			EngineConf ec, String actionNode, String instanceId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public FlowInfo getFlowInfo(String projectName, FlowServerConf fsconf, String instanceId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId,
+			String nodeName) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public InMemFile getDFSFile(FlowServerConf fsconf, String filePath) {
+	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId,
+			String nodeName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, String filePath) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize) {
 		// TODO Auto-generated method stub
 		return null;
 	}
