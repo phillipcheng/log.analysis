@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.CompiledScript;
+
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +32,6 @@ import etl.engine.OutputType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
-import etl.util.VarType;
 
 import scala.Tuple2;
 
@@ -47,7 +48,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public static final String cfgkey_add_fields="add.fields";
 	
 	private boolean inputEndWithComma=false;
-	private String rowValidation;
+	private CompiledScript rowValidation;
 	private String oldTable;
 	
 	private transient List<String> addFieldsNames;
@@ -74,12 +75,17 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
+		String rowValidationStr;
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
-		rowValidation = super.getCfgString(cfgkey_row_validation, null);
+		rowValidationStr = super.getCfgString(cfgkey_row_validation, null);
 		oldTable = super.getCfgString(cfgkey_old_talbe, null);
 		addFieldsNames = new ArrayList<String>();
 		addFieldsTypes = new ArrayList<String>();
 		colOpList = new ArrayList<ColOp>();
+		
+		// compile the expression to speedup
+		if (rowValidationStr != null && rowValidationStr.length() > 0)
+			rowValidation = ScriptEngineUtil.compileScript(rowValidationStr);
 		
 		//for dynamic trans
 		if (this.logicSchema!=null){
@@ -166,11 +172,13 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
 		//process row validation
 		if (rowValidation!=null){
-			boolean valid = (Boolean) ScriptEngineUtil.eval(rowValidation, VarType.BOOLEAN, super.getSystemVariables());
-			if (!valid) {
-				logger.info("invalid row:" + row);
-				return null;
-			}
+			Object valid = ScriptEngineUtil.evalObject(rowValidation, super.getSystemVariables());
+			if (valid instanceof Boolean) {
+				if (!(Boolean)valid) {
+					logger.info("invalid row:" + row);
+					return null;
+				}
+			} /* If result is not boolean, the expression has no effect */
 		}
 		
 		//process operation
