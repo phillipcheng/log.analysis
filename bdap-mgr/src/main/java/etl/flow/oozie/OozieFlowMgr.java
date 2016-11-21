@@ -28,6 +28,7 @@ import bdap.util.XmlUtil;
 import dv.util.RequestUtil;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
+import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FileType;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
@@ -219,8 +220,7 @@ public class OozieFlowMgr extends FlowMgr{
 	
 	//generate the wf.xml, action.properties, etlengine.propertis, and deploy it
 	@Override
-	public boolean deployFlowFromJson(String projectDir, Flow flow, FlowServerConf fsconf, EngineConf ec) {
-		OozieConf oc = (OozieConf)fsconf;
+	public boolean deployFlowFromJson(String prjName, Flow flow, FlowDeployer fd, FlowServerConf fsconf, EngineConf ec) {
 		List<InMemFile> imFiles = new ArrayList<InMemFile>();
 		//gen wf xml
 		InMemFile wfXml = genWfXml(flow, null, false);
@@ -232,6 +232,7 @@ public class OozieFlowMgr extends FlowMgr{
 		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
+		String projectDir = fd.getProjectHdfsDir(prjName);
 		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fsconf, ec);
 		return true;
 	}

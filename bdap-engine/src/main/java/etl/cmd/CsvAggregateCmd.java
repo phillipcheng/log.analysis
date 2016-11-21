@@ -168,7 +168,10 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		}
 	}
 	
-	//list of keys
+	/**
+	 * support one record can generate multiple csv, so multiple keys, return an array of stuff
+	 * @return
+	 */
 	private List<List<String>> getCsvFields(CSVRecord r, GroupOp groupOp){
 		List<List<String>> keys = new ArrayList<List<String>>();
 		if (groupOp.getExpGroupExpScripts()!=null && groupOp.getExpGroupExpScripts().length>0){

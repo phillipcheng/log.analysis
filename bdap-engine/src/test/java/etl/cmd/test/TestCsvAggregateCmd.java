@@ -12,6 +12,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
+import etl.cmd.CsvAggregateCmd;
+import etl.engine.LogicSchema;
 import etl.util.GroupFun;
 
 public class TestCsvAggregateCmd extends TestETLCmd {
@@ -211,6 +213,38 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		Assert.assertEquals("2016-10-12 10:10:10.0,2016-10-12 10:10:14.999,1", output.get(2));
 		Assert.assertEquals("2016-10-12 10:10:15.0,2016-10-12 10:10:19.999,2", output.get(3));
 		Assert.assertEquals("2016-10-12 10:10:20.0,2016-10-12 10:10:24.999,1", output.get(4));
+	}
+	
+	@Test
+	public void testMergeTableCheckOrder() throws Exception{
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "csvAggrMergeTablesOuterjoinCheckOrder.properties";
+		String[] csvFiles = new String[] {"MyCoreA.do", "MyCoreZ.do"};
+		//prepare schema
+		String schemaFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
+		String schemaFile = "multipleTableCheckOrderSchemas.txt";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
+		
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:\n"+String.join("\n", output));
+		String dt = "2016-03-28T11:05:00+00:00";
+		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
+		String hour = GroupFun.hour(dt, dtformat);
+		String day = GroupFun.day(dt, dtformat);
+		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,114258.0,114258.0,1.0,114258.0,114258.0",
+				hour, day);
+		assertTrue(output.contains(csv));
+		
+		CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + csvtransProp, getDefaultFS(), null);
+		cmd.sgProcess();
+		LogicSchema ls = cmd.getLogicSchema();
+		logger.info(String.format("ls:%s", ls));
+		List<String> mergeAttrNames = ls.getAttrNameMap().get("MyCoreAZMerge_");
+		String expectedNames = "[endTimeHour, endTimeDay, duration, SubNetwork, ManagedElement, Machine, MyCoreA_VS.avePerCoreCpuUsage, "
+				+ "MyCoreA_VS.peakPerCoreCpuUsage, MyCoreZ_MyCore, MyCoreZ_VS.avePerCoreCpuUsage, MyCoreZ_VS.peakPerCoreCpuUsage]";
+		assertTrue(expectedNames.equals(mergeAttrNames.toString()));
+		
 	}
 	
 }

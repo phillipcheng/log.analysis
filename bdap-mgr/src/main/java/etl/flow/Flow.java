@@ -130,6 +130,9 @@ public class Flow extends Node{
 			for (int i:li){
 				ret.add(idxNodeArray[i]);
 			}
+			//remove start and end
+			ret.remove(0);
+			ret.remove(ret.size()-1);
 			return ret;
 		}else{
 			logger.error(String.format("flow is not a dag"));

@@ -14,6 +14,8 @@ import etl.flow.ActionNode;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.Node;
+import etl.flow.deploy.FlowDeployer;
+import etl.flow.oozie.OozieConf;
 
 public abstract class FlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
@@ -36,10 +38,10 @@ public abstract class FlowMgr {
 		return new InMemFile(FileType.engineProperty, EngineConf.file_name, ec.getContent());
 	}
 	
-	public abstract boolean deployFlowFromJson(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec);
-	public abstract String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec);
-	public abstract String executeCoordinator(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, CoordConf cc);
-	
+	public abstract boolean deployFlowFromJson(String projectName, Flow flow, FlowDeployer fd, FlowServerConf fsconf, EngineConf ec) throws Exception;
+	public abstract String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec) throws Exception;
+	public abstract String executeCoordinator(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, CoordConf cc)  throws Exception;
+
 	/**
 	 * update helper jars, mapping.properties
 	 * @param files

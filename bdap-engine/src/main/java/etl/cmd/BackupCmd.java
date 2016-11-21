@@ -39,7 +39,6 @@ public class BackupCmd extends ETLCmd{
 	private String[] fileFolders;
 	private String[] fileFilters;
 	private String destZipFile;
-	private ZipOutputStream zos;
 	
 	public BackupCmd(){
 		super();
@@ -71,12 +70,13 @@ public class BackupCmd extends ETLCmd{
 	public List<String> sgProcess(){
 		List<String> logInfo = new ArrayList<String>();
 		int totalFiles = 0;
+		ZipOutputStream zos = null;
 		try {
 			Path destpath=new Path(destZipFile);
 			FSDataOutputStream fos = fs.create(destpath);
 			zos = new ZipOutputStream(fos);	
 			for (int i = 0; i < fileFolders.length; i++) {
-				int n = zipFolder(fileFolders[i],fileFilters[i]);
+				int n = zipFolder(zos, fileFolders[i],fileFilters[i]);
 				logger.info(String.format("%d files found for fold %s", n, fileFolders[i]));
 				totalFiles +=n;
 			}
@@ -84,7 +84,9 @@ public class BackupCmd extends ETLCmd{
 			logger.error(new ETLLog(this, null, e), e);
 		}finally{
 			try {
-				zos.close();
+				if (zos!=null){
+					zos.close();
+				}
 			} catch(IOException e) {
 				logger.error("Exception closing IO streams ...! ", e);
 			}
@@ -99,7 +101,7 @@ public class BackupCmd extends ETLCmd{
 	 * @param fileFilter
 	 * @return number of files zipped
 	 */
-	public int zipFolder(String dirpath ,String fileFilter) {
+	public int zipFolder(ZipOutputStream zos, String dirpath ,String fileFilter) {
 		try {	
 			List<String> fileNames = new ArrayList<String>();
 			String exp=fileFilter;
@@ -107,18 +109,16 @@ public class BackupCmd extends ETLCmd{
 			if(output instanceof ArrayList){  
 				ArrayList<String> out=(ArrayList<String>)output;
 				fileNames.addAll(out); 
-				zipFiles(dirpath, fileNames);
 			}else if (output instanceof String[]) {
 				String[] out=(String[])output;
 				fileNames.addAll(Arrays.asList(out));
-				zipFiles(dirpath, fileNames);
 			}else if(output instanceof String){
 				String regexp=(String)output;
 				fileNames=filterFiles(regexp, dirpath);
-				zipFiles(dirpath, fileNames);
 			}else{
 				logger.error(String.format("type %s not supported for %s", output, exp));
 			}
+			zipFiles(zos, dirpath, fileNames);
 			return fileNames.size();
 		} catch (Exception e) {
 			logger.error(" ", e);
@@ -147,7 +147,7 @@ public class BackupCmd extends ETLCmd{
 	}
 	
 	//Zips the files followed by remove
-	public void zipFiles(String dirpath, List<String> fileNames){
+	public void zipFiles(ZipOutputStream zos, String dirpath, List<String> fileNames){
 		try {
 			List<String> directoryFiles=new ArrayList<String>();
 			for (String fileName:fileNames){
@@ -160,7 +160,7 @@ public class BackupCmd extends ETLCmd{
 					for (FileStatus stat: listStatus) {
 						directoryFiles.add(stat.getPath().getName());
 					}
-					zipFiles(dirLocation,directoryFiles);
+					zipFiles(zos, dirLocation,directoryFiles);
 					fs.delete(pathDir,false);
 					continue;
 				}   
