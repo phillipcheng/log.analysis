@@ -19,6 +19,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
@@ -101,7 +102,7 @@ public abstract class TestETLCmd {
     }
 	
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
+			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass) throws Exception {
 		try {
 			getFs().delete(new Path(remoteInputFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
@@ -122,11 +123,7 @@ public abstract class TestETLCmd {
 			job.setNumReduceTasks(0);// no reducer
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(NullWritable.class);
-			if (useFileNames){
-				job.setInputFormatClass(FilenameInputFormat.class);
-			}else{
-				FileInputFormat.setInputDirRecursive(job, true);
-			}
+			job.setInputFormatClass(inputFormatClass);
 			FileInputFormat.setInputDirRecursive(job, true);
 			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
@@ -142,7 +139,7 @@ public abstract class TestETLCmd {
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
-			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
+			String staticProperties, String cmdClassName, Class inputFormatClass) throws Exception {
 		try {
 			getFs().delete(new Path(remoteOutputFolder), true);
 			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
@@ -170,11 +167,9 @@ public abstract class TestETLCmd {
 			
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(Text.class);
-			if (useFileNames){
-				job.setInputFormatClass(FilenameInputFormat.class);
-			}else{
-				FileInputFormat.setInputDirRecursive(job, true);
-			}
+			job.setInputFormatClass(inputFormatClass);
+			FileInputFormat.setInputDirRecursive(job, true);
+			
 			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
 				FileInputFormat.addInputPath(job, new Path(rfifs._1));
 			}
@@ -193,6 +188,43 @@ public abstract class TestETLCmd {
 	
 	/**
 	 * 
+	 * @param remoteInputFolder
+	 * @param remoteOutputFolder
+	 * @param staticProperties
+	 * @param inputDataFiles
+	 * @param cmdClassName
+	 * @param useFileNames
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
+		if (useFileNames)
+			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, FilenameInputFormat.class);
+		else
+			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, NLineInputFormat.class);
+	}
+	
+	/**
+	 * 
+	 * @param remoteFolderInputFiles
+	 * @param remoteOutputFolder
+	 * @param staticProperties
+	 * @param cmdClassName
+	 * @param useFileNames
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
+		if (useFileNames)
+			return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, FilenameInputFormat.class);
+		else
+			return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, NLineInputFormat.class);
+	}
+	
+	/**
+	 * 
 	 * @param remoteCfgFolder
 	 * @param remoteInputFolder
 	 * @param remoteOutputFolder
@@ -207,7 +239,10 @@ public abstract class TestETLCmd {
 			String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
 		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
 		rfifs.add(new Tuple2<String, String[]>(remoteInputFolder, inputDataFiles));
-		return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, useFileNames);
+		if (useFileNames)
+			return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, FilenameInputFormat.class);
+		else
+			return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, NLineInputFormat.class);
 	}
 	
 	

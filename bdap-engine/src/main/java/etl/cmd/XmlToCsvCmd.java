@@ -3,6 +3,7 @@ package etl.cmd;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -139,15 +140,26 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 			}
 			//for schema only
 			String xmlFolderExp = super.getCfgString(cfgkey_xml_folder, null);
-			if (xmlFolderExp==null){
-				logger.error(String.format("xml folder can't be null."));
-				return;
+			if (xmlFolderExp!=null){
+				this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
 			}
-			this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
 		}catch(Exception e){
 			logger.info("", e);
 		}
 		
+	}
+	
+	private Document getDocument(String inputXml){
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			InputSource input = new InputSource(new StringReader(inputXml));
+			Document doc = builder.parse(input);
+			return doc;
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
 	}
 	
 	private Document getDocument(Path inputXml){
@@ -249,12 +261,11 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 	}
 	
 	//tableName to csv
-	public List<Tuple2<String, String>> flatMapToPair(String value){
+	public List<Tuple2<String, String>> flatMapToPair(String text){
 		super.init();
 		try {
-			String fileName = value.toString();
-			logger.info(String.format("process %s", fileName));
-			Document mf = getDocument(new Path(fileName));
+			logger.info(String.format("process %s", text));
+			Document mf = getDocument(text);
 			Map<String, String> localDnMap = ParamUtil.parseMapParams((String)FileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
 			NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
 			List<Tuple2<String, String>> retList  = new ArrayList<Tuple2<String, String>>();
@@ -283,7 +294,7 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 					retList.addAll(genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName));
 				}
 			}
-			logger.info(String.format("file:%s generates %d tuple2.", fileName, retList.size()));
+			logger.info(String.format("file:%s generates %d tuple2.", text, retList.size()));
 			return retList;
 		}catch(Exception e){
 			logger.error("", e);
@@ -306,9 +317,9 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 	 * @param row: each row is a xml file name
 	 */
 	@Override
-	public Map<String, Object> mapProcess(long offset, String fileName, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			List<Tuple2<String, String>> pairs = flatMapToPair(fileName);
+			List<Tuple2<String, String>> pairs = flatMapToPair(text);
 			for (Tuple2<String, String> pair: pairs){
 				context.write(new Text(pair._1), new Text(pair._2));
 			}
