@@ -1,6 +1,7 @@
 package etl.flow.oozie;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,14 +23,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import bdap.util.EngineConf;
+import bdap.util.FileType;
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
+import bdap.util.Util;
 import bdap.util.XmlUtil;
 import dv.util.RequestUtil;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.deploy.FlowDeployer;
-import etl.flow.mgr.FileType;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
@@ -705,7 +707,10 @@ public class OozieFlowMgr extends FlowMgr{
 			try {
 				in = fs.open(new Path(filePath));
 				readSize = in.read(buffer, 0, maxFileSize);
-				return new InMemFile(FileType.binaryData, filePath, buffer, readSize);
+				if (FileType.textData.equals(Util.guessFileType(filePath)))
+					return new InMemFile(FileType.textData, filePath, new String(buffer, 0, readSize, Charset.forName("utf8")));
+				else
+					return new InMemFile(FileType.binaryData, filePath, buffer, readSize);
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
 			} finally {
