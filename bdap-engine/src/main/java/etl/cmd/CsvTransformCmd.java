@@ -17,6 +17,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -29,6 +30,7 @@ import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.OutputType;
+import etl.util.CombineWithFileNameTextInputFormat;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
@@ -201,7 +203,14 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			logger.info("skip header:" + row);
 			return null;
 		}
-		String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+		String pathName = null;
+		if (context.getInputSplit() instanceof FileSplit){
+			pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+		}else if (context.getInputSplit() instanceof CombineFileSplit){
+			int idx = row.indexOf(CombineWithFileNameTextInputFormat.filename_value_sep);
+			pathName = row.substring(0, idx);
+			row = row.substring(idx+1);
+		}
 		Tuple2<String, String> ret = mapToPair(pathName, row);
 		retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
 		return retMap;

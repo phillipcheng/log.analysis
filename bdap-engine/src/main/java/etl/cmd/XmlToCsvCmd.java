@@ -196,6 +196,13 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 		return n;
 	}
 	
+	private String nodeListToString(NodeList nl){
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<nl.getLength(); i++){
+			sb.append(nl.item(i).getTextContent()).append(",");
+		}
+		return sb.toString();
+	}
 	/*
 	 * @param: orgAttrs: attrs defined in the schema
 	 * @param: newAttrs: attrs found in xml
@@ -237,6 +244,11 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 					}
 					String[] vs = new String[orgAttrs.size()];
 					NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
+					if (rlist.getLength()>mapping.size()){//the value has fields then the type, schema has not been updated in advance
+						logger.error(String.format("value has more fields then type, schema has to be updated in advance. ldn:%s, type:%s, values:%s", 
+								moldn, mapping, nodeListToString(rlist)));
+						continue;
+					}
 					for (int i=0; i<rlist.getLength(); i++){
 						Node r = getNode(rlist, i);
 						String v = r.getTextContent();
