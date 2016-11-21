@@ -32,13 +32,13 @@ public class FlowTest {
 	
 	private FlowDeployer deployer = new FlowDeployer();
 	
-	//@Test
+	@Test
 	public void installFirstTimeEngine() throws Exception{
 		deployer.installEngine(true);
 	}
 	
 	
-	//@Test
+	@Test
 	public void updateEngine() throws Exception{
 		deployer.installEngine(false);
 	}
