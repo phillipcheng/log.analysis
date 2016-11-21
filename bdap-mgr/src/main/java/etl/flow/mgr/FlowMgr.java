@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
+import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import bdap.util.Util;
@@ -15,7 +16,6 @@ import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.Node;
 import etl.flow.deploy.FlowDeployer;
-import etl.flow.oozie.OozieConf;
 
 public abstract class FlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
