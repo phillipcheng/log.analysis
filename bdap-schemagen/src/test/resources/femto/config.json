@@ -1,0 +1,19 @@
+{
+  "tableId" : {
+    "headerColumnName" : "OM Keys",
+    "comparisonMethod" : "startsWith"
+  },
+  "tableName" : {
+    "headerColumnName" : "OM Groups"
+  },
+  "fields" : [ {
+    "headerColumnName" : "OM Registers",
+    "fieldTypeHeaderColumnName" : "OM Types",
+    "fieldSizeHeaderColumnName" : "OM Size"
+  }, {
+    "headerColumnName" : "OM Indexes",
+    "defaultFieldType" : "string",
+    "multiple" : true,
+    "multipleSeparator" : ","
+  } ]
+}

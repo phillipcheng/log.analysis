@@ -1,0 +1,38 @@
+{
+  "tableId" : {
+    "index" : 0
+  },
+  "fields" : [ {
+    "index" : 1,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  }, {
+    "index" : 2,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  }, {
+    "index" : 3,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  }, {
+    "index" : 4,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  }, {
+    "index" : 5,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  }, {
+    "index" : 6,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  }, {
+    "index" : 7,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  }, {
+    "index" : 8,
+    "defaultFieldType" : "string",
+    "defaultFieldSize" : 64
+  } ]
+}

@@ -20,6 +20,7 @@ public class LogicSchema implements Serializable{
 
 	public static final Logger logger = LogManager.getLogger(LogicSchema.class);
 	
+	private Map<String, String> tableIdNameMap = null; //table-id to table-name mapping
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
 	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping
 
@@ -27,6 +28,7 @@ public class LogicSchema implements Serializable{
 		return String.format("attrNameMap:%s", attrNameMap);
 	}
 	public LogicSchema(){
+		tableIdNameMap = new HashMap<String, String>();
 		attrNameMap = new HashMap<String, List<String>>();
 		attrTypeMap = new HashMap<String, List<FieldType>>();
 	}
@@ -37,6 +39,9 @@ public class LogicSchema implements Serializable{
 			return false;
 		}
 		LogicSchema that = (LogicSchema) obj;
+		if (!Objects.equals(tableIdNameMap, that.getTableIdNameMap())){
+			return false;
+		}
 		if (!Objects.equals(attrNameMap, that.getAttrNameMap())){
 			return false;
 		}
@@ -102,5 +107,11 @@ public class LogicSchema implements Serializable{
 
 	public void setAttrTypeMap(Map<String, List<FieldType>> attrTypeMap) {
 		this.attrTypeMap = attrTypeMap;
+	}
+	public Map<String, String> getTableIdNameMap() {
+		return tableIdNameMap;
+	}
+	public void setTableIdNameMap(Map<String, String> tableIdNameMap) {
+		this.tableIdNameMap = tableIdNameMap;
 	}
 }
