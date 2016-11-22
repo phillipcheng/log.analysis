@@ -1,11 +1,15 @@
 package bdap.util;
 
+import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.PumpStreamHandler;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,5 +53,20 @@ public class SystemUtil {
 			System.out.println(" (error retrieving server host name)");
 		}
 		return ipAddresses;
+	}
+	
+	public static String execCmd(String cmd) {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+		DefaultExecutor executor = new DefaultExecutor();
+		executor.setStreamHandler(streamHandler);
+		CommandLine cmdLine = CommandLine.parse(cmd);
+		try {
+			executor.execute(cmdLine);
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		String ret = outputStream.toString();
+		return ret;
 	}
 }

@@ -3,6 +3,7 @@ package etl.cmd;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -37,10 +39,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import bdap.util.ParamUtil;
 import bdap.util.Util;
+import bdap.util.XmlUtil;
 import etl.util.DBUtil;
 import etl.util.FieldType;
-import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
@@ -139,28 +142,13 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 			}
 			//for schema only
 			String xmlFolderExp = super.getCfgString(cfgkey_xml_folder, null);
-			if (xmlFolderExp==null){
-				logger.error(String.format("xml folder can't be null."));
-				return;
+			if (xmlFolderExp!=null){
+				this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
 			}
-			this.xmlFolder = (String) ScriptEngineUtil.eval(xmlFolderExp, VarType.STRING, super.getSystemVariables());
 		}catch(Exception e){
 			logger.info("", e);
 		}
 		
-	}
-	
-	private Document getDocument(Path inputXml){
-		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			InputSource input = new InputSource(new BufferedReader(new InputStreamReader(fs.open(inputXml))));
-			Document doc = builder.parse(input);
-			return doc;
-		}catch(Exception e){
-			logger.error("", e);
-			return null;
-		}
 	}
 	
 	private String generateTableName(TreeMap<String, String> moldParams){
@@ -184,6 +172,13 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 		return n;
 	}
 	
+	private String nodeListToString(NodeList nl){
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<nl.getLength(); i++){
+			sb.append(nl.item(i).getTextContent()).append(",");
+		}
+		return sb.toString();
+	}
 	/*
 	 * @param: orgAttrs: attrs defined in the schema
 	 * @param: newAttrs: attrs found in xml
@@ -225,6 +220,11 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 					}
 					String[] vs = new String[orgAttrs.size()];
 					NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
+					if (rlist.getLength()>mapping.size()){//the value has fields then the type, schema has not been updated in advance
+						logger.error(String.format("value has more fields then type, schema has to be updated in advance. ldn:%s, type:%s, values:%s", 
+								moldn, mapping, nodeListToString(rlist)));
+						continue;
+					}
 					for (int i=0; i<rlist.getLength(); i++){
 						Node r = getNode(rlist, i);
 						String v = r.getTextContent();
@@ -249,12 +249,11 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 	}
 	
 	//tableName to csv
-	public List<Tuple2<String, String>> flatMapToPair(String value){
+	public List<Tuple2<String, String>> flatMapToPair(String text){
 		super.init();
 		try {
-			String fileName = value.toString();
-			logger.info(String.format("process %s", fileName));
-			Document mf = getDocument(new Path(fileName));
+			logger.info(String.format("process %s", text));
+			Document mf = XmlUtil.getDocument(text);
 			Map<String, String> localDnMap = ParamUtil.parseMapParams((String)FileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
 			NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
 			List<Tuple2<String, String>> retList  = new ArrayList<Tuple2<String, String>>();
@@ -283,7 +282,7 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 					retList.addAll(genData(mi, localDnMap, orgSchemaAttributes, tableAttrNamesList, tableName));
 				}
 			}
-			logger.info(String.format("file:%s generates %d tuple2.", fileName, retList.size()));
+			logger.info(String.format("file:%s generates %d tuple2.", text, retList.size()));
 			return retList;
 		}catch(Exception e){
 			logger.error("", e);
@@ -306,9 +305,9 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 	 * @param row: each row is a xml file name
 	 */
 	@Override
-	public Map<String, Object> mapProcess(long offset, String fileName, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			List<Tuple2<String, String>> pairs = flatMapToPair(fileName);
+			List<Tuple2<String, String>> pairs = flatMapToPair(text);
 			for (Tuple2<String, String> pair: pairs){
 				context.write(new Text(pair._1), new Text(pair._2));
 			}
@@ -346,7 +345,7 @@ public class XmlToCsvCmd extends SchemaETLCmd implements Serializable{
 		try {
 			for (FileStatus inputFile: inputFileNames){
 				logger.debug(String.format("process %s", inputFile));
-				Document mf = getDocument(inputFile.getPath());
+				Document mf = XmlUtil.getDocument(fs, inputFile.getPath());
 				NodeList ml = (NodeList) xpathExpTables.evaluate(mf, XPathConstants.NODESET);
 				for (int i=0; i<ml.getLength(); i++){
 					Node mi = getNode(ml, i);

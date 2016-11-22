@@ -17,6 +17,11 @@
 			<version>VVERSIONN</version>
 		</dependency>
 		<dependency>
+			<groupId>bdap</groupId>
+			<artifactId>bdap.engine</artifactId>
+			<version>VVERSIONN</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>

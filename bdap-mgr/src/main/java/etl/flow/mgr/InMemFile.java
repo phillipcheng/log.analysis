@@ -1,9 +1,14 @@
 package etl.flow.mgr;
 
+import java.util.Arrays;
+
+import bdap.util.FileType;
+
 public class InMemFile {
 	private FileType fileType;
 	private String fileName;
 	private byte[] content;
+	private String textContent;
 	
 	public InMemFile(){
 	}
@@ -14,6 +19,18 @@ public class InMemFile {
 		this.content = content;
 	}
 	
+	public InMemFile(FileType fileType, String fileName, byte[] content, int contentSize){
+		this.fileType = fileType;
+		this.fileName = fileName;
+		this.content = Arrays.copyOf(content, contentSize);
+	}
+	
+	public InMemFile(FileType fileType, String fileName, String textContent) {
+		this.fileType = fileType;
+		this.fileName = fileName;
+		this.textContent = textContent;
+	}
+
 	public String toString(){
 		return String.format("type:%s,name:%s", fileType, fileName);
 	}
@@ -36,6 +53,10 @@ public class InMemFile {
 	public void setContent(byte[] content) {
 		this.content = content;
 	}
-	
-	
+	public String getTextContent() {
+		return textContent;
+	}
+	public void setTextContent(String textContent) {
+		this.textContent = textContent;
+	}
 }

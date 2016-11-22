@@ -24,6 +24,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import bdap.util.HdfsUtil;
+import bdap.util.ParamUtil;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
@@ -31,7 +32,6 @@ import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
 import etl.spark.SparkReciever;
-import etl.util.ParamUtil;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
@@ -114,7 +114,13 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 
 	public List<String> process(long mapKey, String row, Receiver<String> r){
 		logger.info(String.format("param: %s", row));
-		Map<String, String> pm = ParamUtil.parseMapParams(row);
+		
+		Map<String, String> pm = null;
+		try {
+			pm = ParamUtil.parseMapParams(row);
+		}catch(Exception e){
+			logger.error("", e);
+		}
 		if (pm.containsKey(cfgkey_sftp_host)){
 			this.host = pm.get(cfgkey_sftp_host);
 		}

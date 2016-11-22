@@ -23,6 +23,9 @@ public class LogicSchema implements Serializable{
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
 	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping
 
+	public String toString(){
+		return String.format("attrNameMap:%s", attrNameMap);
+	}
 	public LogicSchema(){
 		attrNameMap = new HashMap<String, List<String>>();
 		attrTypeMap = new HashMap<String, List<FieldType>>();

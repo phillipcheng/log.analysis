@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.CompiledScript;
+
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,6 +17,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -27,10 +30,10 @@ import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.OutputType;
+import etl.util.CombineWithFileNameTextInputFormat;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
-import etl.util.VarType;
 
 import scala.Tuple2;
 
@@ -47,7 +50,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public static final String cfgkey_add_fields="add.fields";
 	
 	private boolean inputEndWithComma=false;
-	private String rowValidation;
+	private CompiledScript rowValidation;
 	private String oldTable;
 	
 	private transient List<String> addFieldsNames;
@@ -74,12 +77,17 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.setMrMode(MRMode.line);
+		String rowValidationStr;
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
-		rowValidation = super.getCfgString(cfgkey_row_validation, null);
+		rowValidationStr = super.getCfgString(cfgkey_row_validation, null);
 		oldTable = super.getCfgString(cfgkey_old_talbe, null);
 		addFieldsNames = new ArrayList<String>();
 		addFieldsTypes = new ArrayList<String>();
 		colOpList = new ArrayList<ColOp>();
+		
+		// compile the expression to speedup
+		if (rowValidationStr != null && rowValidationStr.length() > 0)
+			rowValidation = ScriptEngineUtil.compileScript(rowValidationStr);
 		
 		//for dynamic trans
 		if (this.logicSchema!=null){
@@ -166,11 +174,13 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
 		//process row validation
 		if (rowValidation!=null){
-			boolean valid = (Boolean) ScriptEngineUtil.eval(rowValidation, VarType.BOOLEAN, super.getSystemVariables());
-			if (!valid) {
-				logger.info("invalid row:" + row);
-				return null;
-			}
+			Object valid = ScriptEngineUtil.evalObject(rowValidation, super.getSystemVariables());
+			if (valid instanceof Boolean) {
+				if (!(Boolean)valid) {
+					logger.info("invalid row:" + row);
+					return null;
+				}
+			} /* If result is not boolean, the expression has no effect */
 		}
 		
 		//process operation
@@ -193,7 +203,14 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			logger.info("skip header:" + row);
 			return null;
 		}
-		String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+		String pathName = null;
+		if (context.getInputSplit() instanceof FileSplit){
+			pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+		}else if (context.getInputSplit() instanceof CombineFileSplit){
+			int idx = row.indexOf(CombineWithFileNameTextInputFormat.filename_value_sep);
+			pathName = row.substring(0, idx);
+			row = row.substring(idx+1);
+		}
 		Tuple2<String, String> ret = mapToPair(pathName, row);
 		retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
 		return retMap;

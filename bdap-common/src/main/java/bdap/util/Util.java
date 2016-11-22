@@ -92,4 +92,23 @@ public class Util {
 		zin.close();
 		return filecount;
 	}
+	
+	public static FileType guessFileType(String filePath) {
+		if (filePath.endsWith(".csv"))
+			return FileType.textData;
+		else if (filePath.endsWith(".txt"))
+			return FileType.textData;
+		else if (filePath.endsWith(".properties"))
+			return FileType.textData;
+		else if (filePath.endsWith(".xml"))
+			return FileType.textData;
+		else if (filePath.endsWith(".json"))
+			return FileType.textData;
+		else if (filePath.endsWith(".sql"))
+			return FileType.textData;
+		else if (filePath.endsWith(".template"))
+			return FileType.textData;
+		else
+			return FileType.binaryData;
+	}
 }

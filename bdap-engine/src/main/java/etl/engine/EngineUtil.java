@@ -250,7 +250,7 @@ public class EngineUtil {
 		}
 	}
 
-	public void processJavaCmd(ETLCmd cmd){
+	public void processJavaCmd(ETLCmd cmd) throws Exception{
 		Date startTime = new Date();
 		List<String> logoutputs = cmd.sgProcess();
 		Date endTime = new Date();

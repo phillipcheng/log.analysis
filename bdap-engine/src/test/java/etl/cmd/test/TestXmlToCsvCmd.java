@@ -2,15 +2,15 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
-import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import bdap.util.Util;
+import etl.util.XMLInputFormat;
+import scala.Tuple2;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -39,12 +39,14 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 		String remoteSchemaFile = "schemas.txt";
 		
 		//schema
-		getFs().delete(new Path(schemaFolder), true);
-		getFs().mkdirs(new Path(schemaFolder));
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
 		
 		//run cmd
-		super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles, cmdClassName, true);
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(inputFolder, inputFiles));
+		getConf().set("xmlinput.start", "<measInfo>");
+		getConf().set("xmlinput.end", "</measInfo>");
+		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, XMLInputFormat.class);
 		
 		//check results
 		//outputFolder should have the csv file
@@ -52,5 +54,13 @@ public class TestXmlToCsvCmd extends TestETLCmd{
 		logger.info(files);
 		String csvFileName = String.format("%s-r-00000", "MyCore_");
 		assertTrue(files.contains(csvFileName));
+		
+		List<String> contents = HdfsUtil.stringsFromDfsFolder(getFs(), outputFolder);
+		logger.info(String.format("contents:\n%s", String.join("\n", contents)));
+		assertTrue(contents.size()==14);
+		
+		String firstLine = contents.get(0);
+		String[] fields = firstLine.split(",", -1);
+		assertTrue(fields.length==9);
 	}
 }

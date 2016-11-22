@@ -28,7 +28,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>bdap.schemagen.tools.SchemaGenerator</mainClass>
+                  <mainClass>bdap.schemagen.femto.SchemaGenerator</mainClass>
                 </transformer>
               </transformers>
             </configuration>
