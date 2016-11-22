@@ -447,13 +447,13 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			}else{
 				List<Integer> idxList = GroupOp.getIdxInRange(aop.getIdxRangeList(), fieldNum);
 				for (int idx:idxList){
-					float aggrValue=0;
+					double aggrValue=0;
 					if (rl!=null && rl.size()>0){
 						for (CSVRecord r:rl){
 							String strv = r.get(idx);
-							float v =0f;
+							double v =0d;
 							if (!"".equals(strv.trim())){
-								v= Float.parseFloat(strv);
+								v= Double.parseDouble(strv);
 							}
 							if (AggrOperator.sum==op || AggrOperator.avg==op){
 								aggrValue +=v;
@@ -469,7 +469,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 							aggrValue=aggrValue/rl.size();
 						}
 					}
-					aggrValues.add(Float.toString(aggrValue));
+					aggrValues.add(Double.toString(aggrValue));
 				}
 			}
 		}
