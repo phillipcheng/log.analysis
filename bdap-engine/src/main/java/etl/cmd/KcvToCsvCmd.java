@@ -1,7 +1,7 @@
 package etl.cmd;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -120,11 +119,10 @@ public class KcvToCsvCmd extends ETLCmd{
 		super.init();
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
-		Path kcvFile = new Path(row);
 		BufferedReader br = null;
 		try {
 			String line;
-			br=new BufferedReader(new InputStreamReader(fs.open(kcvFile)));
+			br=new BufferedReader(new StringReader(row));
 			String record="";
 			String lastRecord="";
 			boolean found =false; //found a record
