@@ -197,10 +197,6 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 			return recordColumn.equals(itemConfig.getHeaderColumnName());
 	}
 
-	public LogicSchema appendSchema(LogicSchema schema, final Reader reader) {
-		return null;
-	}
-
 	public LogicSchema insertSchema(LogicSchema ls, LogicSchema commonLs) throws Exception {
 		List<String> commonAttrNames;
 		List<FieldType> commonAttrTypes;
