@@ -44,6 +44,40 @@
 				<r p="2">8.27</r>
 			</measValue>
 		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-03-09T07:50:00+00:00"/>
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-00, UUID=dc495c8a-056a-476b-b173-1df5fb4cdab7, MyCore=0">
+				<r p="1">1.51</r>
+				<r p="2">3.02</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-00, UUID=dc495c8a-056a-476b-b173-1df5fb4cdab7, MyCore=1">
+				<r p="1">1.74</r>
+				<r p="2">2.32</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-01, UUID=cabb2a8d-9ba6-4d26-b1e1-941dedd6f7c9, MyCore=0">
+				<r p="1">1.06</r>
+				<r p="2">2.70</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-01, UUID=cabb2a8d-9ba6-4d26-b1e1-941dedd6f7c9, MyCore=1">
+				<r p="1">1.23</r>
+				<r p="2">1.78</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-03-09T07:50:00+00:00"/>
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-SS7-00, UUID=71f978fe-d6f6-4b7a-a709-f60247c7f26a, MyCore=0">
+				<r p="1">2.65</r>
+				<r p="2">4.81</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-SS7-00, UUID=71f978fe-d6f6-4b7a-a709-f60247c7f26a, MyCore=1">
+				<r p="1">5.26</r>
+				<r p="2">6.47</r>
+			</measValue>
+		</measInfo>
 	</measData>
 	<fileFooter>
 		<measCollec endTime="2016-03-09T07:50:00+00:00"/>

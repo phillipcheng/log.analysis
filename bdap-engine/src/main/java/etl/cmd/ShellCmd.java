@@ -17,6 +17,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 
+import bdap.util.ParamUtil;
 import bdap.util.SystemUtil;
 
 import org.apache.commons.exec.CommandLine;
@@ -27,7 +28,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
-import etl.util.ParamUtil;
 import etl.util.StringUtil;
 import scala.Tuple2;
 

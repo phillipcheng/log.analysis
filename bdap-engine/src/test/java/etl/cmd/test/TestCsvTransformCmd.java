@@ -2,20 +2,22 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
-import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.mapreduce.lib.input.CombineTextInputFormat;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import bdap.util.Util;
+import etl.util.CombineWithFileNameTextInputFormat;
+import etl.util.XMLInputFormat;
+import scala.Tuple2;
 
 public class TestCsvTransformCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvTransformCmd.class);
@@ -187,5 +189,24 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		List<String> outputs = HdfsUtil.listDfsFile(super.getFs(), remoteCsvOutputFolder);
 		logger.info(outputs);
 		assertTrue(outputs.contains("part-r-00000"));
+	}
+	
+	@Test
+	public void testCombineFileInputFormat() throws Exception{
+		//
+		String inputFolder = "/test/cfif/input/";
+		String outputFolder = "/test/cfif/output/";
+		
+		String staticCfgName = "csvtrans.cfif.properties";
+		String[] inputFiles = new String[]{
+				"A20160409.0000-20160409.0100_E_000000000_262216704_F4D9FB75EA47_13.csv", 
+				"A20160409.0000-20160409.0100_E_000000000_262216706_F4D9FB75EB2F_13.csv",
+				"A20160409.0000-20160409.0100_E_000000000_262216708_F4D9FB766561_13.csv"};
+		
+		//run cmd
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(inputFolder, inputFiles));
+		List<String> outputs = super.mrTest(rfifs, outputFolder, staticCfgName, testCmdClass, CombineWithFileNameTextInputFormat.class);
+		logger.info(String.format("output:%s\n", String.join("\n", outputs)));
 	}
 }

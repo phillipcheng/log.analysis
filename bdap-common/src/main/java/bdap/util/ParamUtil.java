@@ -1,4 +1,4 @@
-package etl.util;
+package bdap.util;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -11,8 +11,13 @@ public class ParamUtil {
 	
 	public static final String kvSep = "=";
 	public static final String paramSep = ",";
+	
+	public static TreeMap<String, String> parseMapParams(String params) throws Exception{
+		return parseMapParams(params, kvSep, paramSep);
+	}
+	
 	//k1=v1,k2=v2 =>{{k1,v1},{k2,v2}}
-	public static TreeMap<String, String> parseMapParams(String params){
+	public static TreeMap<String, String> parseMapParams(String params, String kvSep, String paramSep) throws Exception{
 		TreeMap<String, String> paramsMap = new TreeMap<String, String>();
 		if (params==null){
 			return paramsMap;
@@ -21,7 +26,7 @@ public class ParamUtil {
 		for (String strParam:strParams){
 			String[] kv = strParam.split(kvSep);
 			if (kv.length<2){
-				logger.error(String.format("wrong param format: %s", params));
+				throw new Exception(String.format("wrong param format: %s", params));
 			}else{
 				paramsMap.put(kv[0].trim(), kv[1].trim());
 			}

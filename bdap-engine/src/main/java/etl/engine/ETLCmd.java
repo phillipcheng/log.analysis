@@ -331,7 +331,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	 * single thread process
 	 * @return list of String user defined log info
 	 */
-	public List<String> sgProcess(){
+	public List<String> sgProcess() throws Exception{
 		logger.error("empty single impl, should not be invoked.");
 		return null;
 	}
