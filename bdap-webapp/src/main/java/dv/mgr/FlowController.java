@@ -93,7 +93,7 @@ public class FlowController {
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/log", method = RequestMethod.GET)
-	String getFlowNodeLog(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
+	InMemFile[] getFlowNodeLog(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
 		this.validateUser(userName);
 		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
 		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
