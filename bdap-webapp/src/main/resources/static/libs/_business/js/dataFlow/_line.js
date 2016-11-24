@@ -40,23 +40,22 @@ var drawFitstPoint = function() {
 		if(templine.firstPoint.length == 0) { //还在没确定第一个点的前提下,画这第一个点
 			templine.firstPoint = "M" + getXYfromTranslate();
 			templine.firstId = selectionId;
-			if(g("#"+selectionId)[0].getAttribute("type")){
-				if(g("#"+selectionId)[0].getAttribute("type").localeCompare("rect")==0){
-					
-					templine.firstPoint = templine.firstPoint.replace("M","");
-					
+			if(g("#" + selectionId)[0].getAttribute("type")) {
+				if(g("#" + selectionId)[0].getAttribute("type").localeCompare("rect") == 0) {
+
+					templine.firstPoint = templine.firstPoint.replace("M", "");
+
 					var temp_x = parseInt(templine.firstPoint.split(",")[0]);
 					var temp_y = parseInt(templine.firstPoint.split(",")[1]);
-					var temp = g("#"+selectionId)[0].getAttribute("args").toString();
-					
-					temp_x += parseInt(temp.split(",")[0])/2;
-					temp_y += parseInt(temp.split(",")[1])/2;
-					
-					templine.firstPoint = " M" + temp_x+","+temp_y;
+					var temp = g("#" + selectionId)[0].getAttribute("args").toString();
+
+					temp_x += parseInt(temp.split(",")[0]) / 2;
+					temp_y += parseInt(temp.split(",")[1]) / 2;
+
+					templine.firstPoint = " M" + temp_x + "," + temp_y;
 				}
 			}
-		
-			
+
 		} else if(templine.firstId.localeCompare(selectionId) != 0) {
 			//确定画线了
 
@@ -68,21 +67,21 @@ var drawFitstPoint = function() {
 
 			templine.endId = selectionId;
 			templine.endPoint = " L" + getXYfromTranslate();
-			
-			if(g("#"+selectionId)[0].getAttribute("type").localeCompare("rect")==0){
-				
-				templine.endPoint = templine.endPoint.replace(" L","");
-				
+
+			if(g("#" + selectionId)[0].getAttribute("type").localeCompare("rect") == 0) {
+
+				templine.endPoint = templine.endPoint.replace(" L", "");
+
 				var temp_x = parseInt(templine.endPoint.split(",")[0]);
 				var temp_y = parseInt(templine.endPoint.split(",")[1]);
-				var temp = g("#"+selectionId)[0].getAttribute("args").toString();
-				
-				temp_x += parseInt(temp.split(",")[0])/2;
-				temp_y += parseInt(temp.split(",")[1])/2;
-				
-				templine.endPoint = " L" + temp_x+","+temp_y;
+				var temp = g("#" + selectionId)[0].getAttribute("args").toString();
+
+				temp_x += parseInt(temp.split(",")[0]) / 2;
+				temp_y += parseInt(temp.split(",")[1]) / 2;
+
+				templine.endPoint = " L" + temp_x + "," + temp_y;
 			}
-			
+
 			var tempId = "path_" + templine.firstId + "_" + templine.endId;
 
 			var o = {};
@@ -93,7 +92,7 @@ var drawFitstPoint = function() {
 			o.endPoint = templine.endPoint;
 			o.endId = templine.endId;
 			o.autoMiddle = 0;
-			
+
 			linesLists.push(o);
 
 			d3.select("#svg_line").append("path")
@@ -104,7 +103,7 @@ var drawFitstPoint = function() {
 				.attr("marker-start", "url(#arrow)")
 				.attr("marker-end", "url(#arrow)")
 				.attr("ondblclick", "doubleClickLine()");
-			
+
 			addInputAndOutput(o);
 			drawInputAndOutput(o.firstId);
 			drawInputAndOutput(o.endId);
@@ -150,7 +149,9 @@ var getXYfromTranslate = function(txt) {
 		var temp = d3.select("#" + selectionId).attr("transform");
 		if(temp.toString().length > 0) {
 			temp = temp.replace("translate", "");
-			temp = temp.substring(0, temp.indexOf("scale"));
+			if(temp.indexOf("scale") > -1) {
+				temp = temp.substring(0, temp.indexOf("scale"));
+			}
 			temp = temp.replace("(", "");
 			temp = temp.replace(")", "");
 			return temp;
