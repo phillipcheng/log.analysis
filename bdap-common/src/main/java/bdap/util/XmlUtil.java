@@ -27,6 +27,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 public class XmlUtil {
@@ -135,5 +137,19 @@ public class XmlUtil {
 			logger.error("", e);
 			return null;
 		}
+	}
+	
+	public static Node getNode(NodeList nl, int idx){
+		Node n = nl.item(idx);
+		n.getParentNode().removeChild(n);//for performance
+		return n;
+	}
+	
+	public static String nodeListToString(NodeList nl){
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<nl.getLength(); i++){
+			sb.append(nl.item(i).getTextContent()).append(",");
+		}
+		return sb.toString();
 	}
 }
