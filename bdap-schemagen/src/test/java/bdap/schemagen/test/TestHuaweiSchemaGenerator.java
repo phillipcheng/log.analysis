@@ -15,9 +15,9 @@ import etl.util.DBType;
 import etl.util.SchemaUtils;
 
 public class TestHuaweiSchemaGenerator {
-
+	
 	public static void main(String[] args) throws Exception {
-
+		//system fields for all the tables
 		InputStream in = TestHuaweiSchemaGenerator.class.getResourceAsStream("/huawei/common-schema.json");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf8"));
 		StringBuilder strbuf = new StringBuilder();
@@ -32,15 +32,15 @@ public class TestHuaweiSchemaGenerator {
 			CSVSchemaGenerator g = new CSVSchemaGenerator();
 			
 			/* Generate the measures schema */
-			String path = TestHuaweiSchemaGenerator.class.getResource("/huawei/config.json").getPath();
+			String path = TestHuaweiSchemaGenerator.class.getResource("/huawei/measures-config.json").getPath();
 			if (path.startsWith("/C:/"))
 				path = path.substring(1);
-			Config config = (Config) JsonUtil.fromLocalJsonFile(path, Config.class);
+			Config measureConfig = (Config) JsonUtil.fromLocalJsonFile(path, Config.class);
 
 			in = TestHuaweiSchemaGenerator.class.getResourceAsStream("/huawei/RAN Huawei CounterID to Name Translation Table.csv");
 			reader = new BufferedReader(new InputStreamReader(in, "utf8"));
 
-			LogicSchema ls = g.generate(reader, config);
+			LogicSchema ls = g.generate(reader, measureConfig);
 			System.out.println(ls);
 			
 			reader.close();
@@ -54,17 +54,19 @@ public class TestHuaweiSchemaGenerator {
 			path = TestHuaweiSchemaGenerator.class.getResource("/huawei/dimensions-config.json").getPath();
 			if (path.startsWith("/C:/"))
 				path = path.substring(1);
-			config = (Config) JsonUtil.fromLocalJsonFile(path, Config.class);
+			Config dimensionConfg = (Config) JsonUtil.fromLocalJsonFile(path, Config.class);
 			
 			in = TestHuaweiSchemaGenerator.class.getResourceAsStream("/huawei/TableDimensions.csv");
 			reader = new BufferedReader(new InputStreamReader(in, "utf8"));
 			
-			LogicSchema ls2 = g.generate(reader, config);
+			LogicSchema ls2 = g.generate(reader, dimensionConfg);
 			
+			//generate the merged overall schema
 			ls = g.joinSchema(ls, ls2);
 			
 			JsonUtil.toLocalJsonFile("huawei.schema", ls);
 			
+			//generate sql
 			List<String> ddl = SchemaUtils.genCreateSqlByLogicSchema(ls, "mydb", DBType.VERTICA);
 			if (ddl != null && ddl.size() > 0) {
 				BufferedWriter writer = new BufferedWriter(new FileWriter("huawei.ddl"));
@@ -77,12 +79,9 @@ public class TestHuaweiSchemaGenerator {
 			}
 			
 			System.out.println(ls);
-
 		} finally {
 			reader.close();
 			in.close();
 		}
-
 	}
-
 }
