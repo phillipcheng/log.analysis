@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="MeasDataCollection.xsl"?>
+<measCollecFile xmlns="http://www.3gpp.org/ftp/specs/latest/rel-5/32_series/32401-540.zip#measCollec">
+	<fileHeader fileFormatVersion="32.401 V5.0" vendorName="Alcatel-Lucent" dnPrefix="">
+		<fileSender localDn="SubNetwork=vQDSD0101SGS-L-AL-20,ManagedElement=lcp-1" elementType="GmscServer,Vlr"/>
+		<measCollec beginTime="2016-03-09T07:45:00+00:00"/>
+	</fileHeader>
+	<measData>
+		<managedElement localDn="SubNetwork=vQDSD0101SGS-L-AL-20,ManagedElement=lcp-1" userLabel="" swVersion="R33.11.00"/>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-03-09T07:50:00+00:00"/>
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CDR-01, UUID=a040d711-7ec2-4a5c-be90-6c7f82a3fe21, MyCore=0">
+				<r p="1">2.59</r>
+				<r p="2">9.13</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CDR-01, UUID=a040d711-7ec2-4a5c-be90-6c7f82a3fe21, MyCore=1">
+				<r p="1">2.26</r>
+				<r p="2">8.83</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-03-09T07:50:00+00:00"/>
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measType p="3">VS.xPerCoreCpuUsage</measType>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-00, UUID=dc495c8a-056a-476b-b173-1df5fb4cdab7, MyCore=0">
+				<r p="1">1.51</r>
+				<r p="2">3.02</r>
+				<r p="3">4.02</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-00, UUID=dc495c8a-056a-476b-b173-1df5fb4cdab7, MyCore=1">
+				<r p="1">1.74</r>
+				<r p="2">2.32</r>
+				<r p="3">3.32</r>
+			</measValue>
+		</measInfo>
+		<measInfo>
+			<granPeriod duration="PT300S" endTime="2016-03-09T07:50:00+00:00"/>
+			<measType p="1">VS.avePerCoreCpuUsage</measType>
+			<measType p="2">VS.peakPerCoreCpuUsage</measType>
+			<measType p="3">VS.xPerCoreCpuUsage</measType>
+			<measType p="4">VS.yPerCoreCpuUsage</measType>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-00, UUID=dc495c8a-056a-476b-b173-1df5fb4cdab7, MyCore=0">
+				<r p="1">1.51</r>
+				<r p="2">3.02</r>
+				<r p="3">4.02</r>
+				<r p="4">4.02</r>
+			</measValue>
+			<measValue measObjLdn="Machine=vQDSD0101SGS-L-AL-20-CS-00, UUID=dc495c8a-056a-476b-b173-1df5fb4cdab7, MyCore=1">
+				<r p="1">1.74</r>
+				<r p="2">2.32</r>
+				<r p="3">3.32</r>
+				<r p="4">4.02</r>
+			</measValue>
+		</measInfo>
+		
+	</measData>
+	<fileFooter>
+		<measCollec endTime="2016-03-09T07:50:00+00:00"/>
+	</fileFooter>
+</measCollecFile>
