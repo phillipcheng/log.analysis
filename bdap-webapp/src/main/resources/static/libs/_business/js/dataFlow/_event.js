@@ -59,7 +59,6 @@ document.onmousedown = function(event) {
 
 		if(o.getAttribute("self")) {
 
-
 		} else {
 			//其它
 			selectionId = o.getAttribute("id").toString();
@@ -85,7 +84,7 @@ document.onmousedown = function(event) {
 					selectionId = o.getAttribute("id").toString();
 					o.setAttribute("args", "close");
 					d3.select("#" + selectionId).attr("args", "close");
-				
+
 					d3.select("#" + selectionId).attr("d", "M74,28 L86,28");
 					selectionId = selectionId.replace("pathDatalog_", "g_");
 					openOperationRight();
@@ -93,7 +92,7 @@ document.onmousedown = function(event) {
 					selectionId = o.getAttribute("id").toString();
 					o.setAttribute("args", "open");
 					d3.select("#" + selectionId).attr("args", "open");
-					
+
 					d3.select("#" + selectionId).attr("d", "M74,28 L86,28 M80,23 L80,33");
 					selectionId = selectionId.replace("pathDatalog_", "g_");
 					closeOperationRight();
@@ -103,7 +102,7 @@ document.onmousedown = function(event) {
 					selectionId = o.getAttribute("id").toString();
 					o.setAttribute("args", "close");
 					d3.select("#" + selectionId).attr("args", "close");
-					
+
 					d3.select("#" + selectionId).attr("d", "M74,48 L86,48");
 					selectionId = selectionId.replace("pathLog_", "g_");
 					openOperationRightOther();
@@ -111,17 +110,33 @@ document.onmousedown = function(event) {
 					selectionId = o.getAttribute("id").toString();
 					o.setAttribute("args", "open");
 					d3.select("#" + selectionId).attr("args", "open");
-					
+
 					d3.select("#" + selectionId).attr("d", "M74,48 L86,48 M80,43 L80,53");
 					selectionId = selectionId.replace("pathLog_", "g_");
 					closeOperationRightOther();
 				}
-			} else {
-				//其它
+			} else if(o.getAttribute("self").toString().localeCompare("RUN") == 0) {
+				//run 运行
+				if(o.getAttribute("args").toString().localeCompare("play") == 0) {
+					selectionId = o.getAttribute("id").toString();
+					o.setAttribute("args", "pause");
 
+					d3.select("#" + selectionId).attr("d", "M8,30 L8,50 L28,50 L28,30 Z")
+						.style({
+							fill: "red"
+						});
+				} else if(o.getAttribute("args").toString().localeCompare("pause") == 0) {
+					selectionId = o.getAttribute("id").toString();
+					o.setAttribute("args", "play");
+
+					d3.select("#" + selectionId).attr("d", "M8,30 L8,50 L25,40 Z")
+						.style({
+							fill: "green"
+						})
+				}
 			}
-		}else {
-			
+		} else {
+
 		}
 
 	} else if(o.tagName.toString().localeCompare("rect") == 0) {
@@ -130,7 +145,7 @@ document.onmousedown = function(event) {
 		selectionId = selectionId.replace("rect_", "g_");
 
 		if(o.getAttribute("self")) {
-
+			selectionId = "g" + selectionId.substring(selectionId.indexOf("_"));
 		} else {
 			drawFitstPoint();
 		}
