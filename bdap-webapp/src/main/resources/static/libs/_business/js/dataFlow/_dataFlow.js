@@ -102,7 +102,8 @@ var addNodeToSvg = function() {
 	//g + rect + run
 	d3.select("#g_" + tempId).append("path")
 		.attr("id", "pathRun_" + tempId)
-		.attr("self","run")
+		.attr("self","RUN")
+		.attr("args","play")
 		.attr("d", "M8,30 L8,50 L25,40 Z")
 		.style({
 			fill: "green"
@@ -187,14 +188,23 @@ var addNodeToSvg = function() {
 		"stroke": "orange",
 		"stroke-width": "3"
 	});	
+	
+	//外围的包线
+	d3.select("#g_" + tempId).append("path")
+	.attr("id","pathOuter_"+tempId)
+	.attr("fill", "none")
+	.attr("d","M0,0")
+	.attr("stroke-dasharray","20,10,5,5,5,10")
+	.attr("stroke", "orange")
+	.attr("stroke-width", "3");	
 
 	nodeLists.push({
 		id: "g_" + tempId,
 		type: 'rect',
 		inputs:[],
-		outputs:[],
-		childId:[],
-		positions:[]
+		outputs:[]
+//		childId:[],
+//		positions:[]
 	});
 
 }
