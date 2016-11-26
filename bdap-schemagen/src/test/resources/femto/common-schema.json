@@ -1,6 +1,6 @@
 {
   "attrNameMap" : {
-    "common" : [ "Type", "FemtoType", "CollectionStartTime", "CollectionEndTime", "CSGID", "CellIdentity", "MACID", "BandClass", "Index0", "Index1", "Index2", "Index3", "Index4", "Index5" ]
+    "common" : [ "Type", "FemtoType", "CollectionStartTime", "CollectionEndTime", "CSGID", "CellIdentity", "MACID", "BandClass" ]
   },
   "attrTypeMap" : {
     "common" : [ {
@@ -36,36 +36,6 @@
     }, {
       "type" : "STRING",
       "size" : 32,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "INT",
-      "size" : 0,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "INT",
-      "size" : 0,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "INT",
-      "size" : 0,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "INT",
-      "size" : 0,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "INT",
-      "size" : 0,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "INT",
-      "size" : 0,
       "precision" : 0,
       "scale" : 0
     }, {

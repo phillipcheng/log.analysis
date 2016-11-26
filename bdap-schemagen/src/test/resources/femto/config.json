@@ -12,8 +12,10 @@
     "fieldSizeHeaderColumnName" : "OM Size"
   }, {
     "headerColumnName" : "OM Indexes",
-    "defaultFieldType" : "string",
+    "defaultFieldType" : "int",
     "multiple" : true,
-    "multipleSeparator" : ","
+    "multipleSeparator" : ",",
+    "multipleFixedCount" : 6,
+    "multipleDefaultNamePrefix" : "Index"
   } ]
 }

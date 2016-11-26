@@ -16,3 +16,7 @@ java -jar schema-generator.jar -genfiletablemapping <path> -from <path>
  -join <arg>     Join the schema with another
  -with <arg>     Append/join with the schema json file
  ```
+
+TODO:
+ * Field type mapping: special numeric type needs precision and scale
+ 

@@ -17,11 +17,13 @@ import bdap.schemagen.config.FieldConfig;
 import bdap.schemagen.config.ItemConfig;
 import bdap.schemagen.spi.SchemaGenerator;
 import etl.engine.LogicSchema;
+import etl.util.AggregationType;
 import etl.util.FieldType;
 import etl.util.VarType;
 
 public class CSVSchemaGenerator implements SchemaGenerator {
 	public static final Logger logger = LogManager.getLogger(CSVSchemaGenerator.class);
+	private static final String DEFAULT_NAME_PREFIX = "UNKNOWN_";
 
 	public LogicSchema generate(final Reader reader, Config config) throws Exception {
 		LogicSchema ls = new LogicSchema();
@@ -40,14 +42,18 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 				String currentTableID;
 				String tableID;
 				String tableName;
+				String fieldID;
+				String fieldName;
 				String fieldType;
+				AggregationType fieldAggrType;
 				String t;
 				String[] tmp;
+				String[] tmpID;
 				int fieldSize;
 				List<String> attributes;
 				List<FieldType> attrTypes;
 
-				int k;
+				int k, n;
 				int tableIdIndex = config.getTableId().getIndex();
 				int tableNameIndex;
 				if (config.getTableName() != null)
@@ -100,59 +106,119 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 					if (attributes != null && attrTypes != null) {
 						for (FieldConfig f: config.getFields()) {
 							if (f.getIndex() < record.size()) {
-								if (f.getIndex() != -1 && record.get(f.getIndex()).trim().length() > 0) {
+								if (f.getIdIndex() != -1 && f.getIdIndex() < record.size())
+									fieldID = record.get(f.getIdIndex());
+								else
+									fieldID = null;
+								
+								if (f.getIndex() != -1)
+									fieldName = record.get(f.getIndex());
+								else
+									fieldName = fieldID;
+								
+								if (fieldName != null)
+									fieldName = fieldName.trim();
+								
+								if (fieldID != null)
+									fieldID = fieldID.trim();
+								
+								if (fieldName != null && fieldName.length() > 0) {
+									if (f.getFieldTypeIndex() != -1)
+										fieldType = record.get(f.getFieldTypeIndex());
+									else
+										fieldType = f.getDefaultFieldType();
+									
+									if (f.getFieldSizeIndex() != -1) {
+										try {
+											tmp = record.get(f.getFieldSizeIndex()).split(" ");
+											fieldSize = Integer.parseInt(tmp[0]);
+										} catch (NumberFormatException e) {
+											fieldSize = f.getDefaultFieldSize();
+										}
+									} else {
+										fieldSize = f.getDefaultFieldSize();
+									}
+									
+									if (f.getFieldAggrTypeIndex() != -1)
+										fieldAggrType = toAggregationType(record.get(f.getFieldAggrTypeIndex()), config.getFieldAggrTypeMapping());
+									else
+										fieldAggrType = AggregationType.NONE;
+									
+									/* Field type mapping if exists */
+									if (config.getFieldTypeMapping() != null) {
+										t = config.getFieldTypeMapping().get(fieldType);
+										if (t != null)
+											fieldType = t;
+									}
+									
 									if (f.isMultiple()) {
-										tmp = record.get(f.getIndex()).trim().split(f.getMultipleSeparator());
+										tmp = fieldName.split(f.getMultipleSeparator());
+										if (fieldID != null && fieldID.length() > 0)
+											tmpID = fieldID.split(f.getMultipleSeparator());
+										else
+											tmpID = null;
 										k = 0;
-										while (k < tmp.length) {
-											attributes.add(tmp[k].trim().replaceAll("\\W", "_"));
-											attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType())));
+										
+										if (f.getMultipleFixedCount() != 0)
+											n = f.getMultipleFixedCount();
+										else
+											n = tmp.length;
+										
+										while (k < n) {
+											if (k < tmp.length)
+												fieldName = tmp[k].trim().replaceAll("\\W", "_");
+											else if (f.getMultipleDefaultNamePrefix() != null && f.getMultipleDefaultNamePrefix().length() > 0)
+												fieldName = f.getMultipleDefaultNamePrefix() + k;
+											else
+												fieldName = DEFAULT_NAME_PREFIX + record.getRecordNumber() + "_" + k;
+											attributes.add(fieldName);
+											
+											if (tmpID != null && k < tmpID.length && tmpID[k] != null)
+												ls.getAttrIdNameMap().put(tmpID[k].trim(), fieldName);
+											
+											try {
+												if (fieldType != null) {
+													if ("int".equals(fieldType))
+														attrTypes.add(new FieldType(VarType.NUMERIC, 10, 0, fieldAggrType));
+													else
+														attrTypes.add(new FieldType(VarType.fromValue(fieldType), fieldSize, fieldAggrType));
+												} else {
+													attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType()), fieldAggrType));
+												}
+											} catch (Exception e) {
+												logger.error("Unknown type: {}", fieldType);
+												attrTypes.add(new FieldType(VarType.OBJECT, fieldAggrType));
+											}
+											
 											k++;
 										}
 										
 									} else {
-										attributes.add(record.get(f.getIndex()).trim().replaceAll("\\W", "_"));
-	
-										if (f.getFieldTypeIndex() != -1)
-											fieldType = record.get(f.getFieldTypeIndex());
-										else
-											fieldType = f.getDefaultFieldType();
+										fieldName = fieldName.trim().replaceAll("\\W", "_");
+										attributes.add(fieldName);
 										
-										if (f.getFieldSizeIndex() != -1) {
-											try {
-												tmp = record.get(f.getFieldSizeIndex()).split(" ");
-												fieldSize = Integer.parseInt(tmp[0]);
-											} catch (NumberFormatException e) {
-												fieldSize = f.getDefaultFieldSize();
-											}
-										} else {
-											fieldSize = f.getDefaultFieldSize();
-										}
+										if (fieldID != null && fieldID.length() > 0)
+											ls.getAttrIdNameMap().put(fieldID, fieldName);
 										
-										/* Field type mapping if exists */
-										if (config.getFieldTypeMapping() != null) {
-											t = config.getFieldTypeMapping().get(fieldType);
-											if (t != null)
-												fieldType = t;
-										}
-	
 										try {
 											if (fieldType != null) {
 												if ("int".equals(fieldType))
-													attrTypes.add(new FieldType(VarType.NUMERIC, 10, 0));
+													attrTypes.add(new FieldType(VarType.NUMERIC, 10, 0, fieldAggrType));
 												else
-													attrTypes.add(new FieldType(VarType.fromValue(fieldType), fieldSize));
+													attrTypes.add(new FieldType(VarType.fromValue(fieldType), fieldSize, fieldAggrType));
 											} else {
-												attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType())));
+												attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType()), fieldAggrType));
 											}
 										} catch (Exception e) {
 											logger.error("Unknown type: {}", fieldType);
-											attrTypes.add(new FieldType(VarType.OBJECT));
+											attrTypes.add(new FieldType(VarType.OBJECT, fieldAggrType));
 										}
 									}
+								} else {
+									logger.debug("No field name or ID at index {} or {}", f.getIndex(), f.getIdIndex());
 								}
 							} else {
-								logger.trace("Field index {} is not out of records range", f.getIndex());
+								logger.trace("Field index {} is out of records range", f.getIndex());
 							}
 						}
 					}
@@ -167,6 +233,21 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 		return ls;
 	}
 
+	private AggregationType toAggregationType(String aggrType, Map<String, String> aggrTypeMapping) {
+		if (aggrType != null) {
+			if (aggrTypeMapping != null && aggrTypeMapping.containsKey(aggrType))
+				aggrType = aggrTypeMapping.get(aggrType);
+			try {
+				return aggrType != null && aggrType.length() > 0 ? AggregationType.valueOf(aggrType) : AggregationType.UNKNOWN;
+			} catch (IllegalArgumentException e) {
+				logger.warn("Unrecognized aggregation type: {}", aggrType);
+				return AggregationType.UNKNOWN;
+			}
+		} else {
+			return AggregationType.NONE;
+		}
+	}
+
 	private Config readHeaderRecord(CSVRecord headerRecord, Config config) {
 		int j;
 		for (j = 0; j < headerRecord.size(); j++) {
@@ -178,10 +259,14 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 				for (FieldConfig f: config.getFields()) {
 					if (f.getHeaderColumnName() != null && headerRecord.get(j) != null && headerRecord.get(j).equals(f.getHeaderColumnName()))
 						f.setIndex(j);
+					else if (f.getIdHeaderColumnName() != null && headerRecord.get(j) != null && headerRecord.get(j).equals(f.getIdHeaderColumnName()))
+						f.setIdIndex(j);
 					else if (f.getFieldTypeHeaderColumnName() != null && headerRecord.get(j) != null && headerRecord.get(j).equals(f.getFieldTypeHeaderColumnName()))
 						f.setFieldTypeIndex(j);
 					else if (f.getFieldSizeHeaderColumnName() != null && headerRecord.get(j) != null && headerRecord.get(j).equals(f.getFieldSizeHeaderColumnName()))
 						f.setFieldSizeIndex(j);
+					else if (f.getFieldAggrTypeHeaderColumnName() != null && headerRecord.get(j) != null && headerRecord.get(j).equals(f.getFieldAggrTypeHeaderColumnName()))
+						f.setFieldAggrTypeIndex(j);
 				}
 			}
 		}
