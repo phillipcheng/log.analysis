@@ -6,9 +6,18 @@
     "headerColumnName" : "Table Descript"
   },
   "fields" : [ {
+    "idHeaderColumnName" : "Counter",
     "headerColumnName" : "Field Name",
-    "fieldTypeHeaderColumnName" : "Unit"
+    "fieldTypeHeaderColumnName" : "Unit",
+    "fieldAggrTypeHeaderColumnName" : "Agg"
   } ],
+  "fieldAggrTypeMapping" : {
+    "SUM" : "SUM",
+    "AVG" : "AVG",
+    "COUNT" : "COUNT",
+    "MIN" : "MIN",
+    "MAX" : "MAX"
+  },
   "fieldTypeMapping" : {
     "None" : "string",
     "times" : "int",

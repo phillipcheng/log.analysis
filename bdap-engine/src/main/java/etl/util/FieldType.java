@@ -32,23 +32,41 @@ public class FieldType implements Serializable{
 	private int size;//varchar(size)
 	private int precision;//numeric(precision,scale)
 	private int scale;
+	private AggregationType aggrType;
 	
 	public FieldType(){
+		this.aggrType = AggregationType.NONE;
 	}
 	
 	public FieldType(VarType type){
+		this(type, AggregationType.NONE);
+	}
+	
+	public FieldType(VarType type, AggregationType aggrType){
 		this.type = type;
+		this.aggrType = aggrType;
 	}
 	
 	public FieldType(VarType type, int size){
+		this(type, size, AggregationType.NONE);
+	}
+	
+	public FieldType(VarType type, int size, AggregationType aggrType){
 		this.type = type;
 		this.size = size;
+		this.aggrType = aggrType;
 	}
 	
 	public FieldType(VarType type, int precision, int scale){
+		this(type, precision, scale, AggregationType.NONE);
+	}
+	
+	public FieldType(VarType type, int precision, int scale, AggregationType aggrType){
 		this.type = type;
 		this.precision = precision;
 		this.scale = scale;
+		this.aggrType = aggrType;
+		
 	}
 	
 	@Override
@@ -67,6 +85,9 @@ public class FieldType implements Serializable{
 			return false;
 		}
 		if (scale!=that.getScale()){
+			return false;
+		}
+		if (!aggrType.equals(that.getAggrType())){
 			return false;
 		}
 		return true;
@@ -146,6 +167,12 @@ public class FieldType implements Serializable{
 	}
 	public void setScale(int scale) {
 		this.scale = scale;
+	}
+	public AggregationType getAggrType() {
+		return aggrType;
+	}
+	public void setAggrType(AggregationType aggrType) {
+		this.aggrType = aggrType;
 	}
 	
 	public String toString(){

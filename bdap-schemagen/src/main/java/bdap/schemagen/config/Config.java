@@ -7,6 +7,7 @@ public class Config {
 	private ItemConfig tableName;
 	private FieldConfig[] fields;
 	private Map<String, String> fieldTypeMapping;
+	private Map<String, String> fieldAggrTypeMapping;
 	public ItemConfig getTableId() {
 		return tableId;
 	}
@@ -30,5 +31,11 @@ public class Config {
 	}
 	public void setFieldTypeMapping(Map<String, String> fieldTypeMapping) {
 		this.fieldTypeMapping = fieldTypeMapping;
+	}
+	public Map<String, String> getFieldAggrTypeMapping() {
+		return fieldAggrTypeMapping;
+	}
+	public void setFieldAggrTypeMapping(Map<String, String> fieldAggrTypeMapping) {
+		this.fieldAggrTypeMapping = fieldAggrTypeMapping;
 	}
 }
