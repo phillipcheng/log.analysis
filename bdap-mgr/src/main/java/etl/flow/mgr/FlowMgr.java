@@ -93,7 +93,7 @@ public abstract class FlowMgr {
 	 * @param nodeName
 	 * @return log content
 	 */
-	public abstract String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	public abstract InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
 	
 	/**
 	 * get the action node info of submitted instance

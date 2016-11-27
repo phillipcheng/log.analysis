@@ -45,6 +45,7 @@ public class OozieFlowMgr extends FlowMgr{
 	public static final Logger logger = LogManager.getLogger(OozieFlowMgr.class);
 	private static final int DEFAULT_MAX_FILE_SIZE = 1048576; /* 1MB */
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
+	private static final InMemFile[] EMPTY_LOG_FILES = new InMemFile[0];
 	private String dateTimePattern;
 	
 	//projectDir is hdfsDir
@@ -356,7 +357,7 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
 		if (nodeName != null) {
 			OozieConf oc = (OozieConf)fsconf;
 			String jobInfoUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
@@ -374,7 +375,7 @@ public class OozieFlowMgr extends FlowMgr{
 				if (action != null) {
 					String launcherJobId = null;
 					String childJobIds[] = null;
-					StringBuilder strbuf = new StringBuilder();
+					List<InMemFile> logFiles = new ArrayList<InMemFile>();
 					ArrayList<Map<String, Object>> jobAttempts;
 					String url;
 					Object t;
@@ -390,9 +391,9 @@ public class OozieFlowMgr extends FlowMgr{
 						jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
 						
 						for (Map<String, Object> a: jobAttempts) {
-							appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
-							appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
-							appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+							appendLog(logFiles, a.get("logsLink") + "/stderr?start=0");
+							appendLog(logFiles, a.get("logsLink") + "/stdout?start=0");
+							appendLog(logFiles, a.get("logsLink") + "/syslog?start=0");
 						}
 					}
 					
@@ -409,9 +410,9 @@ public class OozieFlowMgr extends FlowMgr{
 							jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
 							
 							for (Map<String, Object> a: jobAttempts) {
-								appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
-								appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
-								appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+								appendLog(logFiles, a.get("logsLink") + "/stderr?start=0");
+								appendLog(logFiles, a.get("logsLink") + "/stdout?start=0");
+								appendLog(logFiles, a.get("logsLink") + "/syslog?start=0");
 							}
 							
 							/* Task attempts */
@@ -427,9 +428,9 @@ public class OozieFlowMgr extends FlowMgr{
 													oc.getHistoryServer(), nodeAddressToId(fsconf, (String)taskAttempt.get("nodeHttpAddress")),
 													(String)taskAttempt.get("assignedContainerId"), (String)taskAttempt.get("id"), user);
 
-											appendLog(strbuf, url + "/stderr?start=0");
-											appendLog(strbuf, url + "/stdout?start=0");
-											appendLog(strbuf, url + "/syslog?start=0");
+											appendLog(logFiles, url + "/stderr?start=0");
+											appendLog(logFiles, url + "/stdout?start=0");
+											appendLog(logFiles, url + "/syslog?start=0");
 										}
 									}
 								}
@@ -437,11 +438,11 @@ public class OozieFlowMgr extends FlowMgr{
 						}
 					}
 					
-					return strbuf.toString();
+					return logFiles.toArray(EMPTY_LOG_FILES);
 				}
 			}
 		}
-		return "";
+		return EMPTY_LOG_FILES;
 	}
 	
 	private String nodeAddressToId(FlowServerConf fsconf, String nodeAddress) {
@@ -459,7 +460,7 @@ public class OozieFlowMgr extends FlowMgr{
 		return "";
 	}
 
-	private void appendLog(StringBuilder strbuf, String url) {
+	private void appendLog(List<InMemFile> logFiles, String url) {
 		Map<String, String> headMap = new HashMap<String, String>();
 		String log = RequestUtil.get(url, null, 0, headMap);
 		int logStart = log.indexOf("<pre>");
@@ -468,12 +469,12 @@ public class OozieFlowMgr extends FlowMgr{
 			log = log.substring(logStart + 5, logEnd);
 		else
 			log = "";
-		strbuf.append(url);
-		strbuf.append("\n");
-		strbuf.append("------------------------------------------\n");
-		strbuf.append(log);
-		strbuf.append("------------------------------------------\n");
-		strbuf.append("------------------------------------------\n");
+		
+		InMemFile logFile = new InMemFile();
+		logFile.setFileName(url);
+		logFile.setFileType(FileType.textData);
+		logFile.setTextContent(log);
+		logFiles.add(logFile);
 	}
 
 	@Override

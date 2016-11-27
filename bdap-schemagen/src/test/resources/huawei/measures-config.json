@@ -1,0 +1,63 @@
+{
+  "tableId" : {
+    "headerColumnName" : "Table"
+  },
+  "tableName" : {
+    "headerColumnName" : "Table Descript"
+  },
+  "fields" : [ {
+    "idHeaderColumnName" : "Counter",
+    "headerColumnName" : "Field Name",
+    "fieldTypeHeaderColumnName" : "Unit",
+    "fieldAggrTypeHeaderColumnName" : "Agg"
+  } ],
+  "fieldAggrTypeMapping" : {
+    "SUM" : "SUM",
+    "AVG" : "AVG",
+    "COUNT" : "COUNT",
+    "MIN" : "MIN",
+    "MAX" : "MAX"
+  },
+  "fieldTypeMapping" : {
+    "None" : "string",
+    "times" : "int",
+    "time" : "int",
+    "Times/Hour" : "int",
+    "times/second" : "int",
+    "per mill" : "int",
+    "per million" : "int",
+    "packet" : "int",
+    "piece" : "int",
+    "cell" : "int",
+    "frame" : "int",
+    "dB" : "int",
+    "dBm" : "int",
+    "byte" : "int",
+    "microsecond" : "int",
+    "s" : "int",
+    "ms" : "int",
+    "bps" : "int",
+    "entries" : "int",
+    "Erl" : "int",
+    "bit" : "int",
+    "kbit" : "int",
+    "kB" : "int",
+    "MB" : "int",
+    "kWh" : "int",
+    "bit/s" : "int",
+    "packet/s" : "int",
+    "byte/s" : "int",
+    "kbit/s" : "int",
+    "kB/s" : "int",
+    "MB/s" : "int",
+    "kbit*kbit/s" : "int",
+    "kilo packets" : "int",
+    "kilo packets per second" : "int",
+    "number" : "numeric",
+    "kilo-number" : "numeric",
+    "0.001number" : "numeric",
+    "%" : "float",
+    "ip address" : "string",
+    "CDRs" : "int"
+  }
+}

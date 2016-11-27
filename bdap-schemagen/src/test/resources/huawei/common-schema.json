@@ -1,0 +1,23 @@
+{
+  "attrNameMap" : {
+    "common" : [ "ManagedElement", "StartTime", "EndTime" ]
+  },
+  "attrTypeMap" : {
+    "common" : [ {
+      "type" : "STRING",
+      "size" : 1,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    } ]
+  }
+}
