@@ -78,7 +78,8 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		String remoteSchemaFile = "schemas.txt";
 		
 		//schema
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
+		getFs().delete(new Path(schemaFolder + remoteSchemaFile), true);
+		//getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
 		getFs().delete(new Path(sqlFile), true);
 		
 		//run cmd
@@ -96,7 +97,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		assertTrue(files.contains(csvFileName));
 		
 		List<String> sqlContents = HdfsUtil.stringsFromDfsFile(getFs(), sqlFile);
-		assertTrue(sqlContents.size()==2);
+		assertTrue(sqlContents.size()==3);
 		assertTrue(sqlContents.contains("alter table sgsiwf.MyCore_ add column VS_xPerCoreCpuUsage numeric(15,5)"));
 		assertTrue(sqlContents.contains("alter table sgsiwf.MyCore_ add column VS_yPerCoreCpuUsage numeric(15,5)"));
 	}
