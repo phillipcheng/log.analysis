@@ -306,6 +306,37 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 	//outer join by table name
 	public LogicSchema outerJoinSchema(LogicSchema left, LogicSchema right) throws Exception {
 		LogicSchema output = new LogicSchema();
+		if (left != null) {
+			output.getTableIdNameMap().putAll(left.getTableIdNameMap());
+			output.getAttrIdNameMap().putAll(left.getAttrIdNameMap());
+			output.getAttrNameMap().putAll(left.getAttrNameMap());
+			output.getAttrTypeMap().putAll(left.getAttrTypeMap());
+		}
+		if (right != null) {
+			List<String> attrNames;
+			List<FieldType> attrTypes;
+			String tableName;
+			
+			for (Map.Entry<String, String> entry : right.getTableIdNameMap().entrySet()) {
+				tableName = output.getTableIdNameMap().get(entry.getKey());
+				attrNames = right.getAttrNames(entry.getValue());
+				attrTypes = right.getAttrTypes(entry.getValue());
+				if (tableName != null) {
+					output.getAttrNames(tableName).addAll(0, attrNames);
+					output.getAttrTypes(tableName).addAll(0, attrTypes);
+				} else {
+					output.getTableIdNameMap().put(entry.getKey(), entry.getValue());
+					output.getAttrNameMap().put(tableName, attrNames);
+					output.getAttrTypeMap().put(tableName, attrTypes);
+				}
+			}
+			
+			/* Try to add the attribute ID-name map */
+			for (Map.Entry<String, String> entry : right.getAttrIdNameMap().entrySet()) {
+				if (!output.getAttrIdNameMap().containsKey(entry.getKey()))
+					output.getAttrIdNameMap().put(entry.getKey(), entry.getValue());
+			}
+		}
 		return output;
 	}
 }
