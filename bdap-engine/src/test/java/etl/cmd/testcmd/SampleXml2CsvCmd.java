@@ -22,6 +22,7 @@ import bdap.util.ParamUtil;
 import bdap.util.XmlUtil;
 import etl.cmd.dynschema.DynamicSchemaCmd;
 import etl.cmd.dynschema.DynamicTable;
+import etl.engine.LogicSchema;
 import etl.util.FieldType;
 import etl.util.VarType;
 
@@ -84,7 +85,7 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 	}
 	
 	@Override
-	public DynamicTable getDynamicTable(String input) {
+	public DynamicTable getDynamicTable(String input, LogicSchema ls) {
 		try {
 			Document mf = XmlUtil.getDocument(input);
 			Map<String, String> localDnMap = ParamUtil.parseMapParams((String)fileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));

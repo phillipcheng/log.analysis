@@ -78,21 +78,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		this.dbPrefix = super.getCfgString(cfgkey_db_prefix, null);
 		this.getSystemVariables().put(VAR_DB_PREFIX, dbPrefix);
 		logger.info(String.format("schemaFile: %s", schemaFile));
-		if (this.schemaFile!=null){
-			try{
-				Path schemaFilePath = new Path(schemaFile);
-				if (fs.exists(schemaFilePath)){
-					schemaFileName = schemaFilePath.getName();
-					this.logicSchema = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, schemaFile, LogicSchema.class);
-				}else{
-					this.logicSchema = new LogicSchema();
-					logger.warn(String.format("schema file %s not exists.", schemaFile));
-				}
-				this.getSystemVariables().put(VAR_LOGIC_SCHEMA, logicSchema);
-			}catch(Exception e){
-				logger.error("", e);
-			}
-		}
+		fetchLogicSchema();
 		String createSqlExp = super.getCfgString(cfgkey_create_sql, null);
 		if (createSqlExp!=null)
 			this.createTablesSqlFileName = (String) ScriptEngineUtil.eval(createSqlExp, VarType.STRING, super.getSystemVariables());
@@ -110,6 +96,24 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		String strOutputType = super.getCfgString(cfgkey_output_type, null);
 		if (strOutputType!=null){
 			outputType = OutputType.valueOf(strOutputType);
+		}
+	}
+	
+	public void fetchLogicSchema(){
+		if (this.schemaFile!=null){
+			try{
+				Path schemaFilePath = new Path(schemaFile);
+				if (fs.exists(schemaFilePath)){
+					schemaFileName = schemaFilePath.getName();
+					this.logicSchema = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, schemaFile, LogicSchema.class);
+				}else{
+					this.logicSchema = new LogicSchema();
+					logger.warn(String.format("schema file %s not exists.", schemaFile));
+				}
+				this.getSystemVariables().put(VAR_LOGIC_SCHEMA, logicSchema);
+			}catch(Exception e){
+				logger.error("", e);
+			}
 		}
 	}
 	

@@ -23,6 +23,7 @@ import scala.Tuple2;
 //
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
+import etl.engine.LogicSchema;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 
@@ -32,6 +33,8 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	public static final String cfgkey_process_type="process.type";
 	
 	public static final Logger logger = LogManager.getLogger(DynamicSchemaCmd.class);
+	
+	public static final Object lock = new Object(); //same JVM locker
 	
 	private DynSchemaProcessType processType = DynSchemaProcessType.genCsv;
 	
@@ -77,7 +80,11 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				if (values!=null){
 					v = values[j];
 				}
-				newAttrTypes.add(DBUtil.guessDBType(v));
+				if (dt.getTypes()==null){
+					newAttrTypes.add(DBUtil.guessDBType(v));
+				}else{
+					newAttrTypes.add(dt.getTypes().get(j));
+				}
 			}
 		}
 		if (newAttrNames.size()>0){
@@ -92,8 +99,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	private void updateSchema(DynamicTable dt){
 		UpdatedTable ut = checkSchemaUpdate(dt);
 		if (ut!=null){
-			//lock
-			//re-check
 			List<String> createTableSqls = new ArrayList<String>();
 			if (logicSchema.getAttrNames(ut.name)!=null){//update table
 				//gen update sql
@@ -111,57 +116,69 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 			}
 			//gen copys.sql for reference
 			super.updateDynSchema(createTableSqls);
-			//finally unlock
 		}
 	}
 	
-	public abstract DynamicTable getDynamicTable(String input);
+	public abstract DynamicTable getDynamicTable(String input, LogicSchema ls) throws Exception;
 	
 	//tableName to csv
 	public List<Tuple2<String, String>> flatMapToPair(String text){
 		super.init();
 		try {
-			DynamicTable dt = getDynamicTable(text);
+			DynamicTable dt = getDynamicTable(text, this.logicSchema);
 			if (this.processType == DynSchemaProcessType.checkSchema || this.processType==DynSchemaProcessType.both){
-				updateSchema(dt);
+				UpdatedTable ut = checkSchemaUpdate(dt);
+				if (ut!=null){//needs update
+					logger.info(String.format("detect update, going to lock, in table %s", dt.getName()));
+					synchronized(lock){//get the lock
+						super.fetchLogicSchema();//re-fetch
+						dt = getDynamicTable(text, this.logicSchema);
+						ut = checkSchemaUpdate(dt);//re-check
+						if (ut!=null){
+							updateSchema(dt);
+						}
+					}
+				}
 			}
 			if (this.processType == DynSchemaProcessType.genCsv || this.processType==DynSchemaProcessType.both){
 				//geneate csv
 				List<Tuple2<String, String>> retList = new ArrayList<Tuple2<String, String>>();
 				String tableName = dt.getName();
 				List<String> orgAttrs = logicSchema.getAttrNames(tableName);
-				List<String> newAttrs = dt.getFieldNames();
-				//gen new attr to old attr idx mapping
-				Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();
-				for (int i=0; i<orgAttrs.size(); i++){
-					String attr = orgAttrs.get(i);
-					int idx = newAttrs.indexOf(attr);
-					if (idx!=-1){
-						mapping.put(idx, i);
+				if (orgAttrs!=null){
+					List<String> newAttrs = dt.getFieldNames();
+					//gen new attr to old attr idx mapping
+					Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();
+					for (int i=0; i<orgAttrs.size(); i++){
+						String attr = orgAttrs.get(i);
+						int idx = newAttrs.indexOf(attr);
+						if (idx!=-1){
+							mapping.put(idx, i);
+						}
 					}
-				}
-				//gen csv
-				if (dt.getValues()!=null && dt.getValues().size()>0){
-					String[] fieldValues = dt.getValues().get(0);
-					if (fieldValues.length>mapping.size()){
-						logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, values:%s", 
-								tableName, mapping, Arrays.asList(fieldValues)));
+					//gen csv
+					if (dt.getValues()!=null && dt.getValues().size()>0){
+						String[] fieldValues = dt.getValues().get(0);
+						if (fieldValues.length>mapping.size()){
+							logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, values:%s", 
+									tableName, mapping, Arrays.asList(fieldValues)));
+							return null;
+						}
+						for (int k=0; k<dt.getValues().size(); k++){
+							fieldValues = dt.getValues().get(k);
+							String[] vs = new String[orgAttrs.size()];
+							for (int i=0; i<fieldValues.length; i++){
+								String v = fieldValues[i];
+								int idx = mapping.get(i);
+								vs[idx]=v;
+							}
+							String csv = Util.getCsv(Arrays.asList(vs), false);
+							retList.add(new Tuple2<String, String>(tableName, csv));
+						}
+						return retList;
+					}else{
 						return null;
 					}
-					for (int k=0; k<dt.getValues().size(); k++){
-						fieldValues = dt.getValues().get(k);
-						String[] vs = new String[orgAttrs.size()];
-						for (int i=0; i<fieldValues.length; i++){
-							String v = fieldValues[i];
-							int idx = mapping.get(i);
-							vs[idx]=v;
-						}
-						String csv = Util.getCsv(Arrays.asList(vs), false);
-						retList.add(new Tuple2<String, String>(tableName, csv));
-					}
-					return retList;
-				}else{
-					return null;
 				}
 			}
 			return null;
@@ -189,8 +206,10 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
 			List<Tuple2<String, String>> pairs = flatMapToPair(text);
-			for (Tuple2<String, String> pair: pairs){
-				context.write(new Text(pair._1), new Text(pair._2));
+			if (pairs!=null){
+				for (Tuple2<String, String> pair: pairs){
+					context.write(new Text(pair._1), new Text(pair._2));
+				}
 			}
 		}catch(Exception e){
 			logger.error("", e);

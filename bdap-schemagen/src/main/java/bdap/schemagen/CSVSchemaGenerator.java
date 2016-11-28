@@ -303,23 +303,9 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 		return ls;
 	}
 
-	public LogicSchema joinSchema(LogicSchema ls, LogicSchema additionalLs) throws Exception {
-		if (additionalLs != null) {
-			List<String> attrNames;
-			List<FieldType> attrTypes;
-			String tableName;
-			for (Map.Entry<String, String> entry : additionalLs.getTableIdNameMap().entrySet()) {
-				tableName = ls.getTableIdNameMap().get(entry.getKey());
-				if (tableName != null) {
-					attrNames = additionalLs.getAttrNames(entry.getValue());
-					ls.getAttrNames(tableName).addAll(0, attrNames);
-					attrTypes = additionalLs.getAttrTypes(entry.getValue());
-					ls.getAttrTypes(tableName).addAll(0, attrTypes);
-				} else {
-					logger.error("Can't find table name in left logic schema for table ID: {}!", entry.getKey());
-				}
-			}
-		}
-		return ls;
+	//outer join by table name
+	public LogicSchema outerJoinSchema(LogicSchema left, LogicSchema right) throws Exception {
+		LogicSchema output = new LogicSchema();
+		return output;
 	}
 }

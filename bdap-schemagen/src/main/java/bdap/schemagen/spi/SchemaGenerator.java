@@ -8,5 +8,5 @@ import etl.engine.LogicSchema;
 public interface SchemaGenerator {
 	public LogicSchema generate(final Reader reader, Config config) throws Exception;
 	public LogicSchema insertSchema(LogicSchema ls, LogicSchema commonLs) throws Exception;
-	public LogicSchema joinSchema(LogicSchema ls, LogicSchema additionalLs) throws Exception;
+	public LogicSchema outerJoinSchema(LogicSchema ls, LogicSchema additionalLs) throws Exception;
 }

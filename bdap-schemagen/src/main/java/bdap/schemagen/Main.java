@@ -88,7 +88,7 @@ public class Main {
 			LogicSchema schema = (LogicSchema) JsonUtil.fromLocalJsonFile(line.getOptionValue("join"), LogicSchema.class);
 			LogicSchema additionalSchema = (LogicSchema) JsonUtil.fromLocalJsonFile(line.getOptionValue("with"), LogicSchema.class);
 			CSVSchemaGenerator g = new CSVSchemaGenerator();
-			schema = g.joinSchema(schema, additionalSchema);
+			schema = g.outerJoinSchema(schema, additionalSchema);
 			JsonUtil.toLocalJsonFile(line.getOptionValue("join"), schema);
 			
 		} else if (line.hasOption("append")) {
