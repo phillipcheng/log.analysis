@@ -119,11 +119,16 @@ public class FlowDeployer {
     }
     
     public void installEngine(boolean clean) throws Exception {
+    	DirectoryStream<Path> stream = null;
     	if (clean){
     		fs.delete(new org.apache.hadoop.fs.Path(platformRemoteLib), true);
     	}
     	//copy lib
-    	DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(String.format("%s%s", platformLocalDist, File.separator+"lib")), "bdap*.jar");
+    	if (clean){
+    		stream = Files.newDirectoryStream(Paths.get(String.format("%s%s", platformLocalDist, File.separator+"lib")), "*.jar");
+    	}else{
+    		stream = Files.newDirectoryStream(Paths.get(String.format("%s%s", platformLocalDist, File.separator+"lib")), "bdap*.jar");
+    	}
     	installPlatformLib(stream);
     	//copy conf
     	byte[] coordinateXmlContent = Files.readAllBytes(Paths.get(String.format("%s%s", platformLocalDist, "\\cfg\\coordinator.xml")));

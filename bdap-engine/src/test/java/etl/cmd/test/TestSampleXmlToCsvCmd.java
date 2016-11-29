@@ -74,12 +74,10 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		
 		String staticCfgName = "xml2csv2.properties";
 		String[] inputFiles = new String[]{"dynschema_test1_data2.xml"};
-		String localSchemaFile = "dynschema_test1_schemas.txt";
 		String remoteSchemaFile = "schemas.txt";
 		
 		//schema
 		getFs().delete(new Path(schemaFolder + remoteSchemaFile), true);
-		//getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
 		getFs().delete(new Path(sqlFile), true);
 		
 		//run cmd
