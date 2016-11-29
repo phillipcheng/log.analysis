@@ -25,7 +25,6 @@ import etl.flow.NodeLet;
 import etl.flow.PersistType;
 import etl.flow.StartNode;
 import etl.flow.deploy.FlowDeployer;
-import etl.flow.test.oozie.TestOozieFlow;
 
 public class FlowTest {
 	public static final Logger logger = LogManager.getLogger(FlowTest.class);
@@ -36,7 +35,6 @@ public class FlowTest {
 	public void installFirstTimeEngine() throws Exception{
 		deployer.installEngine(true);
 	}
-	
 	
 	@Test
 	public void updateEngine() throws Exception{
