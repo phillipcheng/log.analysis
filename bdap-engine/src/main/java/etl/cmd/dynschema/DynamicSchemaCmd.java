@@ -19,26 +19,22 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-
 import scala.Tuple2;
 //
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBUtil;
-import etl.util.DistributedLock;
 import etl.util.FieldType;
 
 public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final String cfgkey_zookeeper_connstr="zookeeper.servers";
 	public static final String cfgkey_process_type="process.type";
-	public static final String cfgkey_lock_path="lock.path";
 	
 	public static final Logger logger = LogManager.getLogger(DynamicSchemaCmd.class);
 	
-	private DistributedLock lock = null; // distributed lock (by zookeeper)
+	public static final Object lock = new Object(); //same JVM locker
 	
 	private DynSchemaProcessType processType = DynSchemaProcessType.genCsv;
 	
@@ -54,15 +50,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
 		this.processType = DynSchemaProcessType.valueOf(super.getCfgString(cfgkey_process_type, DynSchemaProcessType.genCsv.toString()));
-		String zkConnStr = super.getCfgString(cfgkey_zookeeper_connstr, null);
-		String lockPath = super.getCfgString(cfgkey_lock_path, null);
-		if (zkConnStr != null && lockPath != null)
-			try {
-				this.lock = new DistributedLock(zkConnStr, lockPath, null);
-			} catch (Exception e) {
-				logger.error(e.getMessage(), e);
-				this.lock = null;
-			}
 	}
 	
 	//the added field names and types
@@ -143,18 +130,12 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				UpdatedTable ut = checkSchemaUpdate(dt);
 				if (ut!=null){//needs update
 					logger.info(String.format("detect update, going to lock, in table %s", dt.getName()));
-					if (lock != null) {
-						try {
-							lock.lock(); //get the lock
-							super.fetchLogicSchema();//re-fetch
-							dt = getDynamicTable(text, this.logicSchema);
-							ut = checkSchemaUpdate(dt);//re-check
-							if (ut!=null){
-								updateSchema(dt);
-							}
-							
-						} finally {
-							lock.unlock();
+					synchronized(lock){//get the lock
+						super.fetchLogicSchema();//re-fetch
+						dt = getDynamicTable(text, this.logicSchema);
+						ut = checkSchemaUpdate(dt);//re-check
+						if (ut!=null){
+							updateSchema(dt);
 						}
 					}
 				}
