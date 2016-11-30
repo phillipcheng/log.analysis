@@ -24,6 +24,8 @@ import etl.util.VarType;
 public class CSVSchemaGenerator implements SchemaGenerator {
 	public static final Logger logger = LogManager.getLogger(CSVSchemaGenerator.class);
 	private static final String DEFAULT_NAME_PREFIX = "UNKNOWN_";
+	private static final int DEFAULT_NUMERIC_PRECISION = 37;
+	private static final int DEFAULT_NUMERIC_SCALE = 15;
 
 	public LogicSchema generate(final Reader reader, Config config) throws Exception {
 		LogicSchema ls = new LogicSchema();
@@ -188,6 +190,8 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 												if (fieldType != null) {
 													if ("int".equals(fieldType))
 														attrTypes.add(new FieldType(VarType.NUMERIC, 10, 0, fieldAggrType));
+													else if ("numeric".equals(fieldType.substring(0, fieldType.length() > 7 ? 7 : fieldType.length())))
+														attrTypes.add(new FieldType(VarType.NUMERIC, getPrecision(fieldType), getScale(fieldType), fieldAggrType));
 													else
 														attrTypes.add(new FieldType(VarType.fromValue(fieldType), fieldSize, fieldAggrType));
 												} else {
@@ -216,6 +220,8 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 											if (fieldType != null) {
 												if ("int".equals(fieldType))
 													attrTypes.add(new FieldType(VarType.NUMERIC, 10, 0, fieldAggrType));
+												else if ("numeric".equals(fieldType.substring(0, fieldType.length() > 7 ? 7 : fieldType.length())))
+													attrTypes.add(new FieldType(VarType.NUMERIC, getPrecision(fieldType), getScale(fieldType), fieldAggrType));
 												else
 													attrTypes.add(new FieldType(VarType.fromValue(fieldType), fieldSize, fieldAggrType));
 											} else {
@@ -243,6 +249,42 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 				parser.close();
 		}
 		return ls;
+	}
+
+	private int getScale(String fieldType) {
+		String t = fieldType.substring(7);
+		t = t.trim();
+		if (t.startsWith("(") && t.endsWith(")")) {
+			int index = t.indexOf(",");
+			if (index != -1)
+				try {
+					return Integer.parseInt(t.substring(index + 1, t.length() - 1));
+				} catch (Exception e) {
+					logger.debug(e.getMessage(), e);
+					return DEFAULT_NUMERIC_SCALE;
+				}
+			else
+				return DEFAULT_NUMERIC_SCALE;
+		} else {
+			return DEFAULT_NUMERIC_SCALE;
+		}
+	}
+
+	private int getPrecision(String fieldType) {
+		String t = fieldType.substring(7);
+		if (t.startsWith("(") && t.endsWith(")")) {
+			int index = t.indexOf(",");
+			if (index == -1)
+				index = t.indexOf(")");
+			try {
+				return Integer.parseInt(t.substring(1, index).trim());
+			} catch (Exception e) {
+				logger.debug(e.getMessage(), e);
+				return DEFAULT_NUMERIC_PRECISION;
+			}
+		} else {
+			return DEFAULT_NUMERIC_PRECISION;
+		}
 	}
 
 	private AggregationType toAggregationType(String aggrType, Map<String, String> aggrTypeMapping) {
@@ -337,6 +379,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 					output.getAttrNames(tableName).addAll(0, attrNames);
 					output.getAttrTypes(tableName).addAll(0, attrTypes);
 				} else {
+					tableName = entry.getValue(); /* Table name is right schema's */
 					output.getTableIdNameMap().put(entry.getKey(), entry.getValue());
 					output.getAttrNameMap().put(tableName, attrNames);
 					output.getAttrTypeMap().put(tableName, attrTypes);
