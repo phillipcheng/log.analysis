@@ -1,5 +1,6 @@
 package etl.cmd;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ import java.util.Vector;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.streaming.receiver.Receiver;
@@ -34,7 +34,6 @@ import etl.engine.ETLCmd;
 import etl.spark.SparkReciever;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
-import scala.Tuple2;
 
 public class SftpCmd extends ETLCmd implements SparkReciever{
 	private static final long serialVersionUID = 1L;
@@ -48,6 +47,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public static final String cfgkey_sftp_user = "sftp.user";
 	public static final String cfgkey_sftp_pass = "sftp.pass";
 	public static final String cfgkey_sftp_folder = "sftp.folder";
+	public static final String cfgkey_sftp_folder_recursive = "sftp.folder.recursive";
 	public static final String cfgkey_file_filter="file.filter";
 	public static final String cfgkey_sftp_get_retry = "sftp.getRetryTimes";
 	public static final String cfgkey_sftp_get_retry_wait = "sftp.getRetryWait";
@@ -68,6 +68,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private String pass;
 	private String[] fromDirs;
 	private String fileFilter = "*";
+	private boolean recursive;
 	private int sftpGetRetryCount;
 	private int sftpGetRetryWait;
 	private int sftpConnectRetryCount;
@@ -96,6 +97,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		this.user = super.getCfgString(cfgkey_sftp_user, null);
 		this.pass = super.getCfgString(cfgkey_sftp_pass, null);
 		this.fromDirs = super.getCfgStringArray(cfgkey_sftp_folder);
+		this.recursive = super.getCfgBoolean(cfgkey_sftp_folder_recursive, false);
 		String fileFilterExp = super.getCfgString(cfgkey_file_filter, null);
 		if (fileFilterExp!=null){
 			this.fileFilter = (String) ScriptEngineUtil.eval(fileFilterExp, VarType.STRING, super.getSystemVariables());
@@ -136,6 +138,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		if (pm.containsKey(cfgkey_sftp_folder)) {
 			this.fromDirs = new String[]{pm.get(cfgkey_sftp_folder)};
 		}
+		if (pm.containsKey(cfgkey_sftp_folder_recursive)) {
+			this.recursive = Boolean.parseBoolean(pm.get(cfgkey_sftp_folder_recursive));
+		}
 		if (pm.containsKey(cfgkey_file_filter)) {
 			String fileFilterExp = pm.get(cfgkey_file_filter);
 			if (fileFilterExp!=null){
@@ -160,10 +165,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		
 		Session session = null;
 		ChannelSftp sftpChannel = null;
-		int getRetryCntTemp = 1;
 		int sftConnectRetryCntTemp = 1;
-		OutputStream fsos = null;
-		InputStream is = null;
 		List<String> files = new ArrayList<String>();
 		try {
 			// connect
@@ -190,73 +192,15 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 					sftConnectRetryCntTemp++;
 				}
 			}
-
-			int numProcessed=0;
 			channel.connect();
 			sftpChannel = (ChannelSftp) channel;
-			boolean workflag=true;
 			for (String fromDir:fromDirs){
-				if (!fromDir.endsWith(separator)){
-					fromDir += separator;
-				}
-				logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
-				sftpChannel.cd(fromDir);
-				Vector<LsEntry> v = sftpChannel.ls(fileFilter);
-				if (workflag){
-					for (LsEntry entry : v) {
-						if (!entry.getAttrs().isDir()){
-							String srcFile = fromDir + entry.getFilename();
-							String fileNorm = entry.getFilename().replace(",", "_");
-							String destFile = incomingFolder + fileNorm;
-							if (this.sftpNamesOnly){
-								logger.info(String.format("find file %s", srcFile));
-								files.add(srcFile);
-							}else{
-								logger.info(String.format("put file to %s from %s", destFile, srcFile));
-								getRetryCntTemp = 1;// reset the count to 1 for every file
-								while (getRetryCntTemp <= sftpGetRetryCount) {
-									try {
-										fsos = fs.create(new Path(destFile));
-										is = sftpChannel.get(srcFile);
-										IOUtils.copy(is, fsos);
-										break;
-									} catch (Exception e) {
-										logger.error("Exception during transferring the file.", e);
-										if (getRetryCntTemp == sftpGetRetryCount) {
-											logger.info("Copying" + srcFile + "failed Retried for maximum times");
-											break;
-										}
-										getRetryCntTemp++;
-										logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
-										Thread.sleep(this.sftpGetRetryWait);
-									} finally {
-										if (fsos != null) {
-											fsos.close();
-										}
-										if (is != null) {
-											is.close();
-										}
-									}
-								}
-								// deleting file one by one if sftp.clean is enabled
-								if (sftpClean) {
-									logger.info("Deleting file:" + srcFile);
-									sftpChannel.rm(srcFile);
-								}
-								files.add(destFile);
-								if (r!=null){//give to receiver
-									r.store(destFile);
-								}
-							}
-							numProcessed++;
-							if (this.fileLimit>0 && numProcessed>=this.fileLimit){
-								logger.info(String.format("file limit %d reached, stop processing.", numProcessed));
-								workflag=false;
-								break;
-							}
-						}
-					}
-				}
+				files.addAll(
+					dirCopy(sftpChannel, fromDir, incomingFolder, 0, r)
+				);
+				
+				if (this.fileLimit>0 && files.size()>=this.fileLimit)
+					break;
 			}
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);
@@ -282,6 +226,102 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		}
 	}
 	
+	private List<String> dirCopy(ChannelSftp sftpChannel, String fromDir, String toDir, int numProcessed, Receiver<String> r) throws SftpException {
+		List<String> files = new ArrayList<String>();
+		OutputStream fsos = null;
+		InputStream is = null;
+		int getRetryCntTemp = 1;
+		List<String> dirCopiedFiles;
+		
+		if (!fromDir.endsWith(separator)){
+			fromDir += separator;
+		}
+
+		if (!toDir.endsWith(separator)){
+			toDir += separator;
+		}
+		
+		logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
+		sftpChannel.cd(fromDir);
+		Vector<LsEntry> v = sftpChannel.ls(fileFilter);
+		
+		for (LsEntry entry : v) {
+			if (!entry.getAttrs().isDir()){
+				String srcFile = fromDir + entry.getFilename();
+				String fileNorm = entry.getFilename().replace(",", "_");
+				String destFile = toDir + fileNorm;
+				if (this.sftpNamesOnly){
+					logger.info(String.format("find file %s", srcFile));
+					files.add(srcFile);
+				}else{
+					logger.info(String.format("put file to %s from %s", destFile, srcFile));
+					getRetryCntTemp = 1;// reset the count to 1 for every file
+					while (getRetryCntTemp <= sftpGetRetryCount) {
+						try {
+							fsos = fs.create(new Path(destFile));
+							is = sftpChannel.get(srcFile);
+							IOUtils.copy(is, fsos);
+							break;
+						} catch (Exception e) {
+							logger.error("Exception during transferring the file.", e);
+							if (getRetryCntTemp == sftpGetRetryCount) {
+								logger.info("Copying" + srcFile + "failed Retried for maximum times");
+								break;
+							}
+							getRetryCntTemp++;
+							logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
+							try {
+								Thread.sleep(this.sftpGetRetryWait);
+							} catch (InterruptedException e1) {
+								logger.error(e.getMessage(), e);
+							}
+						} finally {
+							if (fsos != null) {
+								try {
+									fsos.close();
+								} catch (IOException e) {
+									logger.error(e.getMessage(), e);
+								}
+							}
+							if (is != null) {
+								try {
+									is.close();
+								} catch (IOException e) {
+									logger.error(e.getMessage(), e);
+								}
+							}
+						}
+					}
+					// deleting file one by one if sftp.clean is enabled
+					if (sftpClean) {
+						logger.info("Deleting file:" + srcFile);
+						sftpChannel.rm(srcFile);
+					}
+					files.add(destFile);
+					if (r!=null){//give to receiver
+						r.store(destFile);
+					}
+				}
+				numProcessed++;
+				if (this.fileLimit>0 && numProcessed>=this.fileLimit){
+					logger.info(String.format("file limit %d reached, stop processing.", numProcessed));
+					break;
+				}
+			} else if (this.recursive) {
+				dirCopiedFiles=dirCopy(sftpChannel, fromDir + entry.getFilename(), toDir + entry.getFilename(), numProcessed, r);
+				files.addAll(
+					dirCopiedFiles
+				);
+				numProcessed+=dirCopiedFiles.size();
+				if (this.fileLimit>0 && numProcessed>=this.fileLimit){
+					logger.info(String.format("file limit %d reached, stop processing.", numProcessed));
+					break;
+				}
+			}
+		}
+		return files;
+	}
+
 	@Override
 	public void sparkRecieve(Receiver<String> r) {
 		process(0, null, r);
