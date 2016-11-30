@@ -4,20 +4,20 @@ import java.util.List;
 
 import etl.util.FieldType;
 
-public class DynamicTable {
+public class DynamicTableSchema {
 	
 	private String name;
 	private List<String> fieldNames;
-	private List<String[]> values;
+	private String[] valueSample;
 	private List<FieldType> types;//if this is not set, guess it from values
 	
-	public DynamicTable(String name, List<String> fieldNames, List<String[]> values){
+	public DynamicTableSchema(String name, List<String> fieldNames, String[] values){
 		this.name = name;
 		this.fieldNames = fieldNames;
-		this.values = values;
+		this.setValueSample(values);
 	}
 	
-	public DynamicTable(String name, List<String> fieldNames, List<String[]> values, List<FieldType> types){
+	public DynamicTableSchema(String name, List<String> fieldNames, String[] values, List<FieldType> types){
 		this(name, fieldNames, values);
 		this.types = types;
 	}
@@ -28,25 +28,26 @@ public class DynamicTable {
 	public List<String> getFieldNames() {
 		return fieldNames;
 	}
-	public List<String[]> getValues() {
-		return values;
-	}
 	public void setName(String name) {
 		this.name = name;
 	}
 	public void setFieldNames(List<String> fieldNames) {
 		this.fieldNames = fieldNames;
 	}
-	public void setValues(List<String[]> values) {
-		this.values = values;
-	}
-
 	public List<FieldType> getTypes() {
 		return types;
 	}
 
 	public void setTypes(List<FieldType> types) {
 		this.types = types;
+	}
+
+	public String[] getValueSample() {
+		return valueSample;
+	}
+
+	public void setValueSample(String[] valueSample) {
+		this.valueSample = valueSample;
 	}
 
 }

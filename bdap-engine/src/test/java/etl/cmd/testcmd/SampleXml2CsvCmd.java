@@ -21,7 +21,7 @@ import org.w3c.dom.NodeList;
 import bdap.util.ParamUtil;
 import bdap.util.XmlUtil;
 import etl.cmd.dynschema.DynamicSchemaCmd;
-import etl.cmd.dynschema.DynamicTable;
+import etl.cmd.dynschema.DynamicTableSchema;
 import etl.engine.LogicSchema;
 import etl.util.FieldType;
 import etl.util.VarType;
@@ -43,6 +43,7 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 	private transient XPathExpression xpathExpTableObjDesc;
 	private transient XPathExpression xpathExpTableAttrNames;
 	private transient XPathExpression xpathExpTableRows;
+	private transient XPathExpression xpathExpTableFirstRow;
 	private transient XPathExpression[] xpathExpTableSystemAttrs;//table level
 	private transient XPathExpression xpathExpTableRowValues;
 
@@ -63,6 +64,7 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 			xpathExpTableObjDesc = xpath.compile("./@measObjLdn");
 			xpathExpTableAttrNames = xpath.compile("./measType");
 			xpathExpTableRows = xpath.compile("./measValue");
+			xpathExpTableFirstRow = xpath.compile("./measValue[1]");
 			xpathExpTableRowValues = xpath.compile("./r");
 		}catch(Exception e){
 			logger.error("", e);
@@ -85,7 +87,7 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 	}
 	
 	@Override
-	public DynamicTable getDynamicTable(String input, LogicSchema ls) {
+	public DynamicTableSchema getDynamicTable(String input, LogicSchema ls) {
 		try {
 			Document mf = XmlUtil.getDocument(input);
 			Map<String, String> localDnMap = ParamUtil.parseMapParams((String)fileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
@@ -105,6 +107,53 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 			tableAttrNamesList.addAll(0, moldParams.keySet());
 			tableAttrNamesList.addAll(0, tableLvlSystemFieldNames);
 			tableAttrNamesList.addAll(0, fileLvlSystemFieldNames);
+			//sample values
+			String[] vs0 = null;
+			List<String> tableLvlSystemAttValues = new ArrayList<String>();
+			for (XPathExpression exp:xpathExpTableSystemAttrs){
+				tableLvlSystemAttValues.add((String) exp.evaluate(mi, XPathConstants.STRING));
+			}
+			Node mv = (Node) xpathExpTableFirstRow.evaluate(mi, XPathConstants.NODE);
+			try{
+				List<String> fieldValues = new ArrayList<String>();
+				//system values
+				for (String v:tableLvlSystemAttValues){
+					fieldValues.add(v);
+				}
+				for (String n:fileLvlSystemFieldNames){
+					fieldValues.add(localDnMap.get(n));	
+				}
+				//dimension values
+				moldn = (String) xpathExpTableObjDesc.evaluate(mv, XPathConstants.STRING);
+				TreeMap<String, String> kvs = ParamUtil.parseMapParams(moldn);
+				for (String v:kvs.values()){
+					fieldValues.add(v);
+				}
+				NodeList rlist = (NodeList) xpathExpTableRowValues.evaluate(mv, XPathConstants.NODESET);
+				for (int i=0; i<rlist.getLength(); i++){
+					Node r = XmlUtil.getNode(rlist, i);
+					String v = r.getTextContent();
+					fieldValues.add(v);
+				}
+				vs0 = fieldValues.toArray(new String[]{});
+			}catch(Exception e){
+				logger.error(String.format("exception: mv:%s", mv.getTextContent()), e);
+			}
+			return new DynamicTableSchema(tableName, tableAttrNamesList, vs0);
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	@Override
+	public List<String[]> getValues(String input) {
+		try {
+			Document mf = XmlUtil.getDocument(input);
+			Map<String, String> localDnMap = ParamUtil.parseMapParams((String)fileLvlSystemAttrsXpath.evaluate(mf, XPathConstants.STRING));
+			Node mi = (Node) xpathExpTable.evaluate(mf, XPathConstants.NODE);
+			Node mv0 = (Node)xpathExpTableRow0.evaluate(mi, XPathConstants.NODE);
+			String moldn = (String) xpathExpTableObjDesc.evaluate(mv0, XPathConstants.STRING);
 			//values
 			List<String[]> rowValues = new ArrayList<String[]>();
 			List<String> tableLvlSystemAttValues = new ArrayList<String>();
@@ -142,7 +191,7 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 					continue;
 				}
 			}
-			return new DynamicTable(tableName, tableAttrNamesList, rowValues);
+			return rowValues;
 		}catch(Exception e){
 			logger.error("", e);
 			return null;

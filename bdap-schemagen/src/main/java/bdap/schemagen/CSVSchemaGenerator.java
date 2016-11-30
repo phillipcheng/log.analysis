@@ -87,6 +87,9 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 							tableName = record.get(tableNameIndex);
 							if (tableName != null && tableName.length() > 0) {
 								tableName = tableName.replaceAll("\\W", "_");
+								if (Character.isDigit(tableName.charAt(0))){//avoid leading digit for table name
+									tableName="_" + tableName;
+								}
 							}
 						}
 
@@ -171,7 +174,12 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 												fieldName = f.getMultipleDefaultNamePrefix() + k;
 											else
 												fieldName = DEFAULT_NAME_PREFIX + record.getRecordNumber() + "_" + k;
+											//change fieldName if necessary to avoid duplication
+											while (attributes.contains(fieldName)){
+												fieldName = "_" + fieldName;
+											}
 											attributes.add(fieldName);
+											
 											
 											if (tmpID != null && k < tmpID.length && tmpID[k] != null)
 												ls.getAttrIdNameMap().put(tmpID[k].trim(), fieldName);
@@ -195,6 +203,10 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 										
 									} else {
 										fieldName = fieldName.trim().replaceAll("\\W", "_");
+										//change fieldName if necessary to avoid duplication
+										while (attributes.contains(fieldName)){
+											fieldName = "_" + fieldName;
+										}
 										attributes.add(fieldName);
 										
 										if (fieldID != null && fieldID.length() > 0)
@@ -210,7 +222,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 												attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType()), fieldAggrType));
 											}
 										} catch (Exception e) {
-											logger.error("Unknown type: {}", fieldType);
+											logger.error("Unknown type: {}", fieldType, fieldID, fieldName);
 											attrTypes.add(new FieldType(VarType.OBJECT, fieldAggrType));
 										}
 									}
