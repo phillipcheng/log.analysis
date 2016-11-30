@@ -51,6 +51,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	private DynSchemaProcessType processType = DynSchemaProcessType.genCsv;
 	private LockType lockType = LockType.zookeeper;
 	private String zookeeperUrl=null;
+	private int batchSize=200;
 	
 	public DynamicSchemaCmd(){
 		super();
@@ -78,23 +79,23 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		List<FieldType> attrTypes;
 	}
 	
-	private UpdatedTable checkSchemaUpdate(DynamicTable dt){
+	private UpdatedTable checkSchemaUpdate(DynamicTableSchema dt){
 		String tableName = dt.getName();
 		UpdatedTable ut = new UpdatedTable();
 		ut.name = tableName;
 		List<String> orgSchemaAttributes = logicSchema.getAttrNames(tableName);
 		//check new attribute
 		List<String> curAttrNames = dt.getFieldNames();
-		String[] values = null;
-		if (dt.getValues()!=null && dt.getValues().size()>0){
-			values = dt.getValues().get(0);
-		}
+		String[] values = dt.getValueSample();
 		List<String> newAttrNames = new ArrayList<String>();
 		List<FieldType> newAttrTypes = new ArrayList<FieldType>();
 		for (int j=0; j<curAttrNames.size(); j++){
-			String mtc = curAttrNames.get(j);
-			if (orgSchemaAttributes==null || !orgSchemaAttributes.contains(mtc)){
-				newAttrNames.add(mtc);
+			String attrName = curAttrNames.get(j);
+			if (orgSchemaAttributes==null || !orgSchemaAttributes.contains(attrName)){
+				if (Character.isDigit(attrName.charAt(0))){
+					attrName = "_" + attrName;
+				}
+				newAttrNames.add(attrName);
 				String v = null;
 				if (values!=null){
 					v = values[j];
@@ -115,7 +116,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 	}
 	
-	private void updateSchema(DynamicTable dt){
+	private void updateSchema(DynamicTableSchema dt){
 		UpdatedTable ut = checkSchemaUpdate(dt);
 		if (ut!=null){
 			List<String> createTableSqls = new ArrayList<String>();
@@ -128,6 +129,9 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				
 			}else{//new table
 				//gen create sql
+				if (Character.isDigit(ut.name.charAt(0))){
+					ut.name = "_" + ut.name;
+				}
 				createTableSqls.add(DBUtil.genCreateTableSql(ut.attrNames, ut.attrTypes, ut.name, dbPrefix, super.getDbtype()));
 				//update to logic schema
 				logicSchema.updateTableAttrs(ut.name, ut.attrNames);
@@ -138,8 +142,9 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 	}
 	
-	public abstract DynamicTable getDynamicTable(String input, LogicSchema ls) throws Exception;
-	
+	public abstract DynamicTableSchema getDynamicTable(String input, LogicSchema ls) throws Exception;
+	public abstract List<String[]> getValues(int batchSize) throws Exception;
+	public abstract int getValuesLength() throws Exception;
 	
 	public static int CONNECTION_TIMEOUT = 30000;
 	public static class CountdownWatcher implements Watcher {
@@ -198,9 +203,9 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
         }
     }
 	
-	private DynamicTable updateLogicSchema(String text) throws Exception {
+	private DynamicTableSchema updateLogicSchema(String text) throws Exception {
 		super.fetchLogicSchema();//re-fetch
-		DynamicTable dt = getDynamicTable(text, this.logicSchema);
+		DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
 		if (checkSchemaUpdate(dt)!=null){//re-check
 			updateSchema(dt);
 		}
@@ -210,36 +215,58 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	private WriteLock getZookeeperLock() throws Exception {
 		CountdownWatcher watcher = new CountdownWatcher();
 		ZooKeeper zk = new ZooKeeper(this.zookeeperUrl, CONNECTION_TIMEOUT, watcher);
-		WriteLock leader = new WriteLock(zk, super.schemaFile, null);
-		return leader;
+		WriteLock lock = new WriteLock(zk, super.schemaFile, null);
+		return lock;
+	}
+	
+	public List<String> updateAttrName(List<String> attrNames){
+		List<String> outAttrNames = new ArrayList<String>();
+		for (String attrName:attrNames){
+			if (Character.isDigit(attrName.charAt(0))){
+				outAttrNames.add("_"+attrName);
+			}else{
+				outAttrNames.add(attrName);
+			}
+		}
+		return outAttrNames;
 	}
 	
 	//tableName to csv
-	public List<Tuple2<String, String>> flatMapToPair(String text){
+	public List<Tuple2<String, String>> flatMapToPair(String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		try {
-			DynamicTable dt = getDynamicTable(text, this.logicSchema);
+			DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
 			if (this.processType == DynSchemaProcessType.checkSchema || this.processType==DynSchemaProcessType.both){
 				UpdatedTable ut = checkSchemaUpdate(dt);
 				if (ut!=null){//needs update
 					logger.info(String.format("detect update needed, lock the schema for table %s", dt.getName()));
 					//get the lock
 					if (this.lockType==LockType.zookeeper){
-						WriteLock lock = getZookeeperLock();
-						if (lock.lock()){
-							while (!lock.isOwner()){
-								logger.warn("wait to be the owner of the schema to change %s", dt.getName());
-								Thread.sleep(1000);
-							}
+						boolean finished=false;
+						int maxWait = 10000;
+						int curWait=0;
+						while (!finished){
+							WriteLock lock = getZookeeperLock();
 							try {
-								logger.warn("I am the owner of the schema to change %s", dt.getName());
-								dt = updateLogicSchema(text);
+								if (lock.lock()){
+									while (!lock.isOwner() && curWait<maxWait){
+										Thread.sleep(1000);
+										curWait+=1000;
+										logger.error(String.format("wait to get lock for %s, %d", dt.getName(), curWait));
+									}
+									if (curWait<maxWait){
+										dt = updateLogicSchema(text);
+										finished = true;
+									}
+								}else{
+									logger.error(String.format("get lock failed for %s", dt.getName()));
+								}
 							}finally{
 								lock.unlock();
-								logger.warn("release the lock for schema to change %s", dt.getName());
+								lock.close();
+								lock.getZookeeper().close();
+								logger.warn(String.format("release the lock for schema to change %s", dt.getName()));
 							}
-						}else{
-							logger.error("get lock failed for %s", dt.getName());
 						}
 					}else if (this.lockType==LockType.jvm){
 						synchronized(jvmLock){
@@ -257,7 +284,8 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				String tableName = dt.getName();
 				List<String> orgAttrs = logicSchema.getAttrNames(tableName);
 				if (orgAttrs!=null){
-					List<String> newAttrs = dt.getFieldNames();
+					List<String> newAttrsFromFile = dt.getFieldNames();
+					List<String> newAttrs = updateAttrName(newAttrsFromFile);
 					//gen new attr to old attr idx mapping
 					Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();
 					for (int i=0; i<orgAttrs.size(); i++){
@@ -268,15 +296,18 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 						}
 					}
 					//gen csv
-					if (dt.getValues()!=null && dt.getValues().size()>0){
-						String[] fieldValues = dt.getValues().get(0);
-						if (fieldValues.length>mapping.size()){
-							logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, values:%s", 
-									tableName, mapping, Arrays.asList(fieldValues)));
-							return null;
-						}
-						for (int k=0; k<dt.getValues().size(); k++){
-							fieldValues = dt.getValues().get(k);
+					String[] fieldValues = dt.getValueSample();
+					if (fieldValues.length>mapping.size()){
+						logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, values:%s", 
+								tableName, mapping, Arrays.asList(fieldValues)));
+						return null;
+					}
+					int num = getValuesLength();
+					int bn = num%batchSize==0?num/batchSize:num/batchSize+1;
+					for (int j=0; j<bn; j++){
+						List<String[]> vslist = getValues(batchSize);
+						for (int k=0; k<vslist.size(); k++){
+							fieldValues = vslist.get(k);
 							String[] vs = new String[orgAttrs.size()];
 							for (int i=0; i<fieldValues.length; i++){
 								String v = fieldValues[i];
@@ -284,19 +315,22 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 								vs[idx]=v;
 							}
 							String csv = Util.getCsv(Arrays.asList(vs), false);
-							retList.add(new Tuple2<String, String>(tableName, csv));
+							if (context!=null){
+								context.write(new Text(tableName), new Text(csv));
+							}else{
+								retList.add(new Tuple2<String, String>(tableName, csv));
+							}
 						}
+					}
+					if (context==null){
 						return retList;
-					}else{
-						return null;
 					}
 				}
 			}
-			return null;
 		}catch(Exception e){
 			logger.error("", e);
-			return null;
 		}
+		return null;
 	}
 	
 	@Override
@@ -306,7 +340,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-				return flatMapToPair(t).iterator();
+				return flatMapToPair(t, null).iterator();
 			}
 		});
 		return ret;
@@ -318,7 +352,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	@Override
 	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			List<Tuple2<String, String>> pairs = flatMapToPair(text);
+			List<Tuple2<String, String>> pairs = flatMapToPair(text, context);
 			if (pairs!=null){
 				for (Tuple2<String, String> pair: pairs){
 					context.write(new Text(pair._1), new Text(pair._2));

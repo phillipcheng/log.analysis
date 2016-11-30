@@ -169,7 +169,7 @@ public class FlowDeployer {
 	}
 	
 	//action properties should prefix with action. mapping properties should suffix with mapping.properties
-	private List<InMemFile> getDeploymentUnits(String folder, String[] jarPaths, boolean fromJson){
+	private List<InMemFile> getDeploymentUnits(String folder, String[] jarPaths, boolean fromJson, boolean skipSchema){
 		List<InMemFile> fl = new ArrayList<InMemFile>();
 		Path directoryPath = Paths.get(folder);
 		try {
@@ -189,11 +189,13 @@ public class FlowDeployer {
 						fl.add(new InMemFile(FileType.oozieWfXml, path.getFileName().toString(), content));
 					}
 				}
-				stream = Files.newDirectoryStream(directoryPath, "*.schema");
-				for (Path path : stream) {
-				    logger.info(String.format("schema path:%s", path.getFileName().toString()));
-					byte[] content = Files.readAllBytes(path);
-					fl.add(new InMemFile(FileType.logicSchema, path.getFileName().toString(), content));
+				if (!skipSchema){
+					stream = Files.newDirectoryStream(directoryPath, "*.schema");
+					for (Path path : stream) {
+					    logger.info(String.format("schema path:%s", path.getFileName().toString()));
+						byte[] content = Files.readAllBytes(path);
+						fl.add(new InMemFile(FileType.logicSchema, path.getFileName().toString(), content));
+					}
 				}
 				stream = Files.newDirectoryStream(directoryPath, "*_mapping.properties");
 				for (Path path : stream) {
@@ -221,14 +223,14 @@ public class FlowDeployer {
 		return fl;
 	}
 	
-	private void deploy(String projectName, String flowName, String[] jars, boolean fromJson, EngineType et) throws Exception{
+	private void deploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
 		String localProjectFolder = this.projectLocalDirMap.get(projectName);
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		SparkFlowMgr sfm = new SparkFlowMgr();
 		if (!fromJson){
 			List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s", localProjectFolder, flowName), 
-					jars, fromJson);
+					jars, fromJson, skipSchema);
 			logger.info(String.format("files deployed:%s", deployFiles));
 			ofm.deployFlowFromXml(hdfsProjectFolder, flowName, deployFiles, getOC(), getEC());
 		}else{
@@ -242,15 +244,15 @@ public class FlowDeployer {
 		}
 	}
 	
-	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson, EngineType et) {
+	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) {
 		try {
 			if (localDeploy){		
-				deploy(projectName, flowName, jars, fromJson, et);
+				deploy(projectName, flowName, jars, fromJson, skipSchema, et);
 			}else{
 				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
 				ugi.doAs(new PrivilegedExceptionAction<Void>() {
 						public Void run() throws Exception {
-							deploy(projectName, flowName, jars, fromJson, et);
+							deploy(projectName, flowName, jars, fromJson, skipSchema, et);
 							return null;
 						}
 					});
@@ -258,6 +260,10 @@ public class FlowDeployer {
 		}catch(Exception e){
 			logger.error("", e);
 		}
+	}
+	
+	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson,EngineType et) {
+		runDeploy(projectName, flowName, jars, fromJson, false, et);
 	}
 	
 	private String execute(String projectName, String flowName){

@@ -23,7 +23,7 @@ public class ParamUtil {
 			for (String strParam:strParams){
 				String[] kv = strParam.split(kvSep);
 				if (kv.length<2){
-					throw new Exception(String.format("wrong param format: %s", params));
+					logger.warn(String.format("wrong param format: %s", params));
 				}else{
 					paramsMap.put(kv[0].trim(), kv[1].trim());
 				}
