@@ -12,12 +12,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.junit.Test;
+
+import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
 import etl.util.DBType;
 import etl.util.DBUtil;
 
 public class TestLoadDatabaseCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestLoadDatabaseCmd.class);
+	public static final String testCmdClass="etl.cmd.LoadDataCmd";
 	
 	public String getResourceSubFolder(){
 		return "loadcsv/";
@@ -151,5 +154,41 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 				}
 			});
 		}
+	}
+	
+	@Test
+	public void testLoadDataMR() throws Exception{
+		String staticCfgName = "loadcsvmr.properties";
+		String remoteCsvInputFolder = "/test/loadcsv/input/";
+		String remoteCsvOutputFolder = "/test/loadcsv/output/";
+		String schemaFolder="/test/loadcsv/schema/";
+		String localSchemaFileName = "multipleTableSchemas.txt";
+		String[] csvFileNames = new String[]{"MyCore_.csv", "MyCore1_.csv"};
+		
+		//generate all the data files
+		getFs().delete(new Path(remoteCsvInputFolder), true);
+		getFs().delete(new Path(remoteCsvOutputFolder), true);
+		getFs().delete(new Path(schemaFolder), true);
+		//
+		getFs().mkdirs(new Path(remoteCsvInputFolder));
+		getFs().mkdirs(new Path(remoteCsvOutputFolder));
+		getFs().mkdirs(new Path(schemaFolder));
+		//copy schema file
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		//copy csv file
+		for (String csvFileName: csvFileNames){
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+		}
+		
+		LoadDataCmd cmd = new LoadDataCmd("wf1", "wfid1", this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		
+		List<String> output = super.mrTest(remoteCsvInputFolder, remoteCsvOutputFolder, staticCfgName, csvFileNames, testCmdClass, true);
+		logger.info("Output is:"+output);
+		
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), "/test/loadcsv/output");
+		//assert
+		logger.info(fl);
 	}
 }
