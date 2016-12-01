@@ -1,11 +1,11 @@
 package etl.util;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spark_project.guava.base.Objects;
 
 import etl.engine.SafeSimpleDateFormat;
 
@@ -74,7 +74,7 @@ public class FieldType implements Serializable{
 			return false;
 		}
 		FieldType that = (FieldType)obj;
-		if (!Objects.equal(that.getType(), type)){
+		if (!Objects.equals(that.getType(), type)){
 			return false;
 		}
 		if (size!=that.getSize()){

@@ -6,8 +6,10 @@ import etl.util.FieldType;
 
 public class DynamicTableSchema {
 	
+	private String id;
 	private String name;
 	private List<String> fieldNames;
+	private List<String> fieldIds;
 	private String[] valueSample;
 	private List<FieldType> types;//if this is not set, guess it from values
 	
@@ -17,9 +19,11 @@ public class DynamicTableSchema {
 		this.setValueSample(values);
 	}
 	
-	public DynamicTableSchema(String name, List<String> fieldNames, String[] values, List<FieldType> types){
+	public DynamicTableSchema(String id, String name, List<String> fieldIds, List<String> fieldNames, String[] values, List<FieldType> types){
 		this(name, fieldNames, values);
 		this.types = types;
+		this.id=id;
+		this.fieldIds=fieldIds;
 	}
 	
 	public String getName() {
@@ -48,6 +52,22 @@ public class DynamicTableSchema {
 
 	public void setValueSample(String[] valueSample) {
 		this.valueSample = valueSample;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public List<String> getFieldIds() {
+		return fieldIds;
+	}
+
+	public void setFieldIds(List<String> fieldIds) {
+		this.fieldIds = fieldIds;
 	}
 
 }

@@ -1,7 +1,7 @@
 package etl.engine;
 
 public enum ProcessMode {
-	MRProcess,
-	SingleProcess,
-	Both
+	Map,
+	Reduce,
+	Single,
 }

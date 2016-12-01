@@ -29,7 +29,7 @@ public class CmdReciever extends Receiver<String> {
 		super(storageLevel);
 		this.sleepSeconds = sleepSeconds;
 		cmd = EngineUtil.getInstance().getCmd(cmdClassName, cfgProperties, wfName, null, 
-				defaultFs, null, ProcessMode.SingleProcess);
+				defaultFs, null, ProcessMode.Single);
 	}
 
 	@Override

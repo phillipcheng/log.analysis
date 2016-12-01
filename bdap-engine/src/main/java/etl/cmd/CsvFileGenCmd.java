@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.hadoop.fs.Path;
 
+import etl.engine.ProcessMode;
 import etl.util.FieldType;
 import etl.util.VarType;
 
@@ -55,16 +56,20 @@ public class CsvFileGenCmd extends SchemaETLCmd{
 	}
 	
 	public CsvFileGenCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs) {
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvFileGenCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public CsvFileGenCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs) {
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs) {
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.tableNames = super.getCfgStringArray(cfgkey_table_names);
 		this.outputFolder = super.getCfgString(cfgkey_output_folder, null);
 		if (this.outputFolder==null){

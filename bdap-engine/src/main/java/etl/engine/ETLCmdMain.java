@@ -65,7 +65,7 @@ public class ETLCmdMain {
 				otherArgs = Arrays.copyOfRange(args, mandatoryArgNum+1, args.length);
 			}
 			ETLCmd cmd = EngineUtil.getInstance().getCmd(strCmdClassNames, strStaticCfgs, wfName, wfid, defaultFs, 
-					otherArgs, ProcessMode.SingleProcess);
+					otherArgs, ProcessMode.Single);
 			int exeInterval=0;
 			int exeSeconds=0;
 			if (otherArgs!=null){

@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Lists;
 
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
@@ -45,16 +46,19 @@ public class CsvSplitCmd extends ETLCmd {
 	private CompiledScript splitKeysReduce;
 	
 	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs,
-			String[] otherArgs) {
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		
 		splitKeys = IdxRange.parseString(getCfgString(SPLIT_KEYS, null));
 		splitKeysOmit = getCfgBoolean(SPLIT_KEYS_OMIT, false);
