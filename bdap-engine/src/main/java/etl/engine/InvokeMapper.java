@@ -27,7 +27,7 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 			String defaultFs = context.getConfiguration().get("fs.defaultFS");
 			logger.info(String.format("input file:%s, cmdClassName:%s, wfid:%s, staticConfigFile:%s, %s", inputdir, strCmdClassNames, wfid, 
 					strStaticConfigFiles, defaultFs));
-			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.MRProcess);
+			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.Map);
 		}
 	}
 	

@@ -4,6 +4,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.spark.SparkUtil;
 
 public class SaveDataCmd extends ETLCmd {
@@ -18,12 +19,16 @@ public class SaveDataCmd extends ETLCmd {
 	}
 	
 	public SaveDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public SaveDataCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		logTmpDir = this.getPc().getString(cfg_log_tmp_dir);
 	}
 	

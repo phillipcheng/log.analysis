@@ -187,18 +187,7 @@ public class EngineUtil {
 		}
 		
 		for (int i=0; i<cmds.length; i++){
-			try {
-				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String[].class).
-						newInstance(wfName, wfid, staticCfgFiles[i], defaultFs, otherArgs);
-				cmds[i].setPm(pm);
-			}catch(Throwable t){
-				if (cmds[i]!=null){
-					logger.error(new ETLLog(cmds[i], null, t), t);
-				}else{
-					logger.error("", t);
-				}
-				return null;
-			}
+			cmds[i] = getCmd(cmdClassNames[i], staticCfgFiles[i], wfName, wfid, defaultFs, otherArgs, pm);
 		}
 		return cmds;
 	}
@@ -208,8 +197,8 @@ public class EngineUtil {
 		ETLCmd cmd = null;
 		try {
 			cmd = (ETLCmd) Class.forName(cmdClassName).getConstructor(String.class, String.class, String.class, 
-					String.class, String[].class).newInstance(wfName, wfid, configFile, defaultFs, otherArgs);
-			cmd.setPm(pm);
+					String.class, String[].class, ProcessMode.class).
+					newInstance(wfName, wfid, configFile, defaultFs, otherArgs, pm);
 		}catch(Throwable t){
 			if (cmd!=null){
 				logger.error(new ETLLog(cmd, null, t), t);

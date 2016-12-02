@@ -33,6 +33,7 @@ import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
 import etl.engine.LockType;
 import etl.engine.LogicSchema;
+import etl.engine.ProcessMode;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.zookeeper.lock.WriteLock;
@@ -53,17 +54,16 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	private String zookeeperUrl=null;
 	private int batchSize=200;
 	
-	public DynamicSchemaCmd(){
-		super();
-	}
-	
-	public DynamicSchemaCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
-	}
-	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, false);
+		boolean loadSchema = true;
+		if (pm == ProcessMode.Reduce){
+			loadSchema = false;
+		}
+		if (loadSchema){
+			super.loadSchema(this.zookeeperUrl);
+		}
 		this.processType = DynSchemaProcessType.valueOf(super.getCfgString(cfgkey_process_type, DynSchemaProcessType.genCsv.toString()));
 		this.lockType = LockType.valueOf(super.getCfgString(cfgkey_lock_type, LockType.zookeeper.toString()));
 		this.zookeeperUrl = super.getCfgString(cfgkey_zookeeper_url, null);
@@ -71,11 +71,17 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 			logger.error(String.format("must specify %s for locktype:%s", cfgkey_zookeeper_url, lockType));
 		}
 	}
-	
+
+	public abstract DynamicTableSchema getDynamicTable(String input, LogicSchema ls) throws Exception;
+	public abstract List<String[]> getValues(int batchSize) throws Exception;
+	public abstract int getValuesLength() throws Exception;
+
 	//the added field names and types
 	class UpdatedTable{
+		String id;
 		String name;
 		List<String> attrNames;
+		List<String> attrIds;
 		List<FieldType> attrTypes;
 	}
 	
@@ -83,19 +89,21 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		String tableName = dt.getName();
 		UpdatedTable ut = new UpdatedTable();
 		ut.name = tableName;
+		ut.id = dt.getId();
 		List<String> orgSchemaAttributes = logicSchema.getAttrNames(tableName);
 		//check new attribute
 		List<String> curAttrNames = dt.getFieldNames();
+		List<String> curAttrIds = dt.getFieldIds();
 		String[] values = dt.getValueSample();
 		List<String> newAttrNames = new ArrayList<String>();
+		List<String> newAttrIds = new ArrayList<String>();
 		List<FieldType> newAttrTypes = new ArrayList<FieldType>();
 		for (int j=0; j<curAttrNames.size(); j++){
 			String attrName = curAttrNames.get(j);
+			String attrId = curAttrIds.get(j);
 			if (orgSchemaAttributes==null || !orgSchemaAttributes.contains(attrName)){
-				if (Character.isDigit(attrName.charAt(0))){
-					attrName = "_" + attrName;
-				}
 				newAttrNames.add(attrName);
+				newAttrIds.add(attrId);
 				String v = null;
 				if (values!=null){
 					v = values[j];
@@ -109,6 +117,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 		if (newAttrNames.size()>0){
 			ut.attrNames=newAttrNames;
+			ut.attrIds=newAttrIds;
 			ut.attrTypes=newAttrTypes;
 			return ut;
 		}else{
@@ -116,119 +125,22 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 	}
 	
-	private void updateSchema(DynamicTableSchema dt){
-		UpdatedTable ut = checkSchemaUpdate(dt);
-		if (ut!=null){
-			List<String> createTableSqls = new ArrayList<String>();
-			if (logicSchema.getAttrNames(ut.name)!=null){//update table
-				//gen update sql
-				createTableSqls.addAll(DBUtil.genUpdateTableSql(ut.attrNames, ut.attrTypes, ut.name, dbPrefix, super.getDbtype()));
-				//update schema
-				logicSchema.addAttributes(ut.name, ut.attrNames);
-				logicSchema.addAttrTypes(ut.name, ut.attrTypes);
-				
-			}else{//new table
-				//gen create sql
-				if (Character.isDigit(ut.name.charAt(0))){
-					ut.name = "_" + ut.name;
-				}
-				createTableSqls.add(DBUtil.genCreateTableSql(ut.attrNames, ut.attrTypes, ut.name, dbPrefix, super.getDbtype()));
-				//update to logic schema
-				logicSchema.updateTableAttrs(ut.name, ut.attrNames);
-				logicSchema.updateTableAttrTypes(ut.name, ut.attrTypes);
-			}
-			//gen copys.sql for reference
-			super.updateDynSchema(createTableSqls);
-		}
-	}
-	
-	public abstract DynamicTableSchema getDynamicTable(String input, LogicSchema ls) throws Exception;
-	public abstract List<String[]> getValues(int batchSize) throws Exception;
-	public abstract int getValuesLength() throws Exception;
-	
-	public static int CONNECTION_TIMEOUT = 30000;
-	public static class CountdownWatcher implements Watcher {
-        // XXX this doesn't need to be volatile! (Should probably be final)
-        volatile CountDownLatch clientConnected;
-        volatile boolean connected;
-
-        public CountdownWatcher() {
-            reset();
-        }
-        synchronized public void reset() {
-            clientConnected = new CountDownLatch(1);
-            connected = false;
-        }
-        synchronized public void process(WatchedEvent event) {
-            if (event.getState() == KeeperState.SyncConnected ||
-                event.getState() == KeeperState.ConnectedReadOnly) {
-                connected = true;
-                notifyAll();
-                clientConnected.countDown();
-            } else {
-                connected = false;
-                notifyAll();
-            }
-        }
-        synchronized public boolean isConnected() {
-            return connected;
-        }
-        synchronized public void waitForConnected(long timeout)
-            throws InterruptedException, TimeoutException
-        {
-            long expire = System.currentTimeMillis() + timeout;
-            long left = timeout;
-            while(!connected && left > 0) {
-                wait(left);
-                left = expire - System.currentTimeMillis();
-            }
-            if (!connected) {
-                throw new TimeoutException("Did not connect");
-
-            }
-        }
-        synchronized public void waitForDisconnected(long timeout)
-            throws InterruptedException, TimeoutException
-        {
-            long expire = System.currentTimeMillis() + timeout;
-            long left = timeout;
-            while(connected && left > 0) {
-                wait(left);
-                left = expire - System.currentTimeMillis();
-            }
-            if (connected) {
-                throw new TimeoutException("Did not disconnect");
-
-            }
-        }
-    }
-	
 	private DynamicTableSchema updateLogicSchema(String text) throws Exception {
 		super.fetchLogicSchema();//re-fetch
 		DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
-		if (checkSchemaUpdate(dt)!=null){//re-check
-			updateSchema(dt);
+		UpdatedTable ut = checkSchemaUpdate(dt);
+		if (ut!=null){//re-check
+			Map<String, String> tableNameIdMap = new HashMap<String, String>();
+			Map<String, List<String>> attrNamesMap = new HashMap<String, List<String>>();
+			Map<String, List<String>> attrIdsMap = new HashMap<String, List<String>>();
+			Map<String, List<FieldType>> attrTypesMap =new HashMap<String, List<FieldType>>();
+			tableNameIdMap.put(ut.name, ut.id);
+			attrNamesMap.put(ut.name, ut.attrNames);
+			attrIdsMap.put(ut.name, ut.attrIds);
+			attrTypesMap.put(ut.name, ut.attrTypes);
+			super.updateSchema(tableNameIdMap, attrIdsMap, attrNamesMap, attrTypesMap);
 		}
 		return dt;
-	}
-	
-	private WriteLock getZookeeperLock() throws Exception {
-		CountdownWatcher watcher = new CountdownWatcher();
-		ZooKeeper zk = new ZooKeeper(this.zookeeperUrl, CONNECTION_TIMEOUT, watcher);
-		WriteLock lock = new WriteLock(zk, super.schemaFile, null);
-		return lock;
-	}
-	
-	public List<String> updateAttrName(List<String> attrNames){
-		List<String> outAttrNames = new ArrayList<String>();
-		for (String attrName:attrNames){
-			if (Character.isDigit(attrName.charAt(0))){
-				outAttrNames.add("_"+attrName);
-			}else{
-				outAttrNames.add(attrName);
-			}
-		}
-		return outAttrNames;
 	}
 	
 	//tableName to csv
@@ -245,8 +157,9 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 						boolean finished=false;
 						int maxWait = 10000;
 						int curWait=0;
+						int foreverWait=0;
 						while (!finished){
-							WriteLock lock = getZookeeperLock();
+							WriteLock lock = super.getZookeeperLock(this.zookeeperUrl);
 							try {
 								if (lock.lock()){
 									while (!lock.isOwner() && curWait<maxWait){
@@ -259,13 +172,15 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 										finished = true;
 									}
 								}else{
-									logger.error(String.format("get lock failed for %s", dt.getName()));
+									Thread.sleep(1000);
+									foreverWait++;
+									if (foreverWait%10==0){
+										logger.warn(String.format("get lock failed for %s for %d seconds", dt.getName(), foreverWait*10));
+									}
 								}
 							}finally{
-								lock.unlock();
-								lock.close();
-								lock.getZookeeper().close();
-								logger.warn(String.format("release the lock for schema to change %s", dt.getName()));
+								super.releaseLock(lock);
+								//logger.warn(String.format("release the lock for schema to change %s", dt.getName()));
 							}
 						}
 					}else if (this.lockType==LockType.jvm){
@@ -284,8 +199,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				String tableName = dt.getName();
 				List<String> orgAttrs = logicSchema.getAttrNames(tableName);
 				if (orgAttrs!=null){
-					List<String> newAttrsFromFile = dt.getFieldNames();
-					List<String> newAttrs = updateAttrName(newAttrsFromFile);
+					List<String> newAttrs = dt.getFieldNames();
 					//gen new attr to old attr idx mapping
 					Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();
 					for (int i=0; i<orgAttrs.size(); i++){

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../libs/bootstrap/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow_dashboard.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow/dataFlow.css" />
+
+		<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
+		<script type="text/javascript" src="../libs/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="../libs/d3/d3.js"></script>
+
+		<script type="text/javascript" src="../libs/_business/js/dataFlow/init.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow/controller.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow/app.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow/outer.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/dataFlow/dataFlow.js"></script>
+	</head>
+
+	<body>
+
+		<!--
+			导航 #f57c00
+		-->
+		<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+			<div class="container-fluid" style="background: #f57c00;">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="#">Design Panel</a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="_node.start();">start</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="_node.end();">end</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="_node.ActionOne();">ActionOne</a>
+						</li>	
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="_node.ActionFlow()">ActionFlow</a>
+						</li>						
+						<!--<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">action 类型 <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li>
+									<a href="javasctipt:;" onclick="addNewNodeType('ActionOne')">Action One</a>
+								</li>
+								<li>
+									<a href="javasctipt:;" onclick="addNewNodeType('ActionTwo')">Action Two</a>
+								</li>
+								<li class="divider"></li>
+								<li>
+									<a href="javasctipt:;" onclick="addNewNodeType('ActionThree')">Action Three</a>
+								</li>
+							</ul>
+						</li>-->
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12" style="height: 95vh;">
+					<!--
+                    	作者：---
+                    	时间：2016-11-12
+                    	描述：中间部份
+                   -->
+					<!--<ul class="nav nav-tabs" role="tablist">
+						<li role="presentation" class="active">
+							<a href="#home" role="tab" data-toggle="tab">Flow Editer</a>
+						</li>
+						<li role="presentation">
+							<a href="#profile" role="tab" data-toggle="tab">Profile</a>
+						</li>
+						<li role="presentation">
+							<a href="#messages" role="tab" data-toggle="tab">Messages</a>
+						</li>
+						<li role="presentation">
+							<a href="#settings" role="tab" data-toggle="tab">Settings</a>
+						</li>
+					</ul>-->
+<!--					<div class="tab-content">-->
+						<div style="height:100%;border: solid #269ABC 2px;border-radius: 15px;" role="tabpanel" class="tab-pane active" id="home">
+							<div id="display">
+								<svg id="svg">
+									<defs>
+										<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
+											<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #269ABC;" />
+										</marker>
+										<marker id="circle" markerWidth="4" markerHeight="4" refx="2" refy="2">
+											<circle cx="2" cy="2" r="2" stroke="none" fill="#f00" onclick="init()" />
+										</marker>
+									</defs>
+
+								</svg>
+								<!--<div id="divoperation" class="divoperation">
+
+								</div>-->
+							</div>
+						</div>
+						<!--<div role="tabpanel" class="tab-pane" id="profile">Profile...</div>
+						<div role="tabpanel" class="tab-pane" id="messages">Messages...</div>
+						<div role="tabpanel" class="tab-pane" id="settings">Settings...</div>-->
+					<!--</div>-->
+				</div>
+
+			</div>
+		</div>
+		<script>
+			init();
+		</script>
+	</body>
+
+</html>

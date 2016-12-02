@@ -21,6 +21,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
+import etl.engine.ProcessMode;
 
 public class EvtBasedMsgParseCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(EvtBasedMsgParseCmd.class);
@@ -49,16 +50,20 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	}
 	
 	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.line);
 		eventIdx = super.getCfgInt(cfgkey_evt_idx, -1);
 		String[] evtTypes = super.getCfgStringArray(cfgkey_evt_types);

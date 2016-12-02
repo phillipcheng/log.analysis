@@ -24,6 +24,7 @@ import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.OutputType;
+import etl.engine.ProcessMode;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 
@@ -98,16 +99,20 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	}
 	
 	public CsvTransposeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvTransposeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public CsvTransposeCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		setMrMode(MRMode.line);
 		this.withTrailingDelimiter=getCfgBoolean(cfgkey_with_trailing_delimiter, false);
 		this.groupFieldList=IdxRange.parseString(getCfgString(cfgkey_group_fields, null));
