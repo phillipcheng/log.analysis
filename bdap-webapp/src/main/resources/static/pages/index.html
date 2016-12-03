@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>DEMO</title>
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/bootstrap/easyui.css" />
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/icon.css" />
+<link href="../libs/_pagelib/css/default.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript" src='../libs/_pagelib/js/outlook.js'>
+	
+</script>
+<script type="text/javascript">
+	var _menus = {
+		"menus" : []
+	};
+	//设置登录窗口
+	function openPwd() {
+		$('#w').window({
+			title : 'update password',
+			width : 350,
+			modal : true,
+			shadow : true,
+			closed : true,
+			height : 160,
+			resizable : false
+		});
+	}
+	//关闭登录窗口
+	function closePwd() {
+		$('#w').window('close');
+	}
+
+	//修改密码
+	function serverLogin() {
+		var $newpass = $('#txtNewPass');
+		var $rePass = $('#txtRePass');
+
+		if ($newpass.val() == '') {
+			msgShow('Tips', 'please input password.', 'warning');
+			return false;
+		}
+		if ($rePass.val() == '') {
+			msgShow('Tips', 'please input password again.', 'warning');
+			return false;
+		}
+
+		if ($newpass.val() != $rePass.val()) {
+			msgShow('Tips', 'twice password is different.', 'warning');
+			return false;
+		}
+
+		$.post('ashx/editpassword?newpass=' + $newpass.val(),
+				function(msg) {
+					if (msg == 'true') {
+						msgShow('Tips', 'password update successfully.<br>your current password: '
+								+ $newpass.val(), 'info');
+					} else {
+						msgShow('Tips', 'password update fail. please try again.', 'error');
+					}
+					$newpass.val('');
+					$rePass.val('');
+					close();
+				})
+
+	}
+
+	$(function() {
+
+		openPwd();
+
+		$('#editpass').click(function() {
+			$('#w').window('open');
+		});
+
+		$('#btnEp').click(function() {
+			serverLogin();
+		})
+
+		$('#btnCancel').click(function() {
+			closePwd();
+		})
+
+		$('#loginOut').click(function() {
+			$.messager.confirm('Tips', 'Do you want to logout?', function(r) {
+				if (r) {
+					location.href = 'ashx/loginout';
+				}
+			});
+		})
+	});
+</script>
+
+</head>
+<body class="easyui-layout" style="overflow-y: hidden" scroll="no">
+	<noscript>
+		<div
+			style="position: absolute; z-index: 100000; height: 2046px; top: 0px; left: 0px; width: 100%; background: white; text-align: center;">
+			<img src="../libs/_pagelib/images/noscript.gif" alt='sorry, please check script support.' />
+		</div>
+	</noscript>
+	<div region="north" split="true" border="false"
+		style="overflow: hidden; height: 30px; background: url(../libs/_pagelib/images/layout-browser-hd-bg.gif) #7f99be repeat-x center 50%; line-height: 20px; color: #fff; font-family: Verdana, 微软雅黑, 黑体">
+		<span style="float: right; padding-right: 20px;" class="head">welcome
+			admin&nbsp;&nbsp;<a href="#" id="editpass">update password</a> &nbsp;&nbsp;<a href="#" id="loginOut">logout</a>
+		</span> <span style="padding-left: 10px; font-size: 16px;"><img
+			src="../libs/_pagelib/images/blocks.gif" width="20" height="20" align="absmiddle" />
+			Manager System</span>
+	</div>
+	<div region="west" hide="true" split="true" title="Navigation Menu"
+		style="width: 180px;margin:0px;" id="west">
+		<div id="nav" class="easyui-accordion" fit="true" border="false">
+			<!--  导航内容 -->
+			<!-- <ul>
+				<li>
+					<div>
+						<a href="javascript:void(0)" ref="testid"  rel="login.html">
+							<span class="nav">test navigation</span>
+						</a>
+					</div>
+				</li>
+			</ul> -->
+			
+		</div>
+
+	</div>
+	<div id="mainPanle" region="center"
+		style="background: #eee; overflow-y: hidden">
+		<div id="tabs" class="easyui-tabs" fit="true" border="false">
+			<div title="welcome"
+				style="padding: 20px; overflow: hidden; color: red;"></div>
+		</div>
+	</div>
+
+
+	<!--修改密码窗口-->
+	<div id="w" class="easyui-window" title="update password" collapsible="false"
+		minimizable="false" maximizable="false" icon="icon-save"
+		style="width: 350px; height: 150px; padding: 5px; background: #fafafa;">
+		<div class="easyui-layout" fit="true">
+			<div region="center" border="false"
+				style="padding: 10px; background: #fff; border: 1px solid #ccc;">
+				<table cellpadding=3>
+					<tr>
+						<td>new password：</td>
+						<td><input id="txtNewPass" type="password" class="txt01" /></td>
+					</tr>
+					<tr>
+						<td>confirm password：</td>
+						<td><input id="txtRePass" type="password" class="txt01" /></td>
+					</tr>
+				</table>
+			</div>
+			<div region="south" border="false"
+				style="text-align: right; height: 30px; line-height: 30px;">
+				<a id="btnEp" class="easyui-linkbutton" icon="icon-ok"
+					href="javascript:void(0)"> yes</a> <a id="btnCancel"
+					class="easyui-linkbutton" icon="icon-cancel"
+					href="javascript:void(0)">cancel</a>
+			</div>
+		</div>
+	</div>
+
+	<div id="mm" class="easyui-menu" style="width: 150px;">
+		<div id="mm-tabupdate">refresh</div>
+		<div class="menu-sep"></div>
+		<div id="mm-tabclose">close</div>
+		<div id="mm-tabcloseall">close all</div>
+		<div id="mm-tabcloseother">close others</div>
+		<div class="menu-sep"></div>
+		<div id="mm-tabcloseright">close right others</div>
+		<div id="mm-tabcloseleft">close left others</div>
+		<div class="menu-sep"></div>
+		<div id="mm-exit">logout</div>
+	</div>
+
+
+</body>
+</html>

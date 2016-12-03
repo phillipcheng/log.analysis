@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.util.CombineWithFileNameTextInputFormat;
-import etl.util.XMLInputFormat;
+import etl.util.XmlInputFormat;
 import scala.Tuple2;
 
 public class TestCsvTransformCmd extends TestETLCmd {
@@ -93,9 +93,9 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans.telecom.properties";
 		String csvFile = "telecom.csv";
 		
-		List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, new String[]{csvFile}, 
 				testCmdClass, false);
-		logger.info("Output is:"+output);
+		logger.info("Output is:\n"+String.join("\n", output));
 		String row1 = output.get(0);
 		String[] row1fields = row1.split(",",-1);
 		assertTrue(row1fields.length==6);

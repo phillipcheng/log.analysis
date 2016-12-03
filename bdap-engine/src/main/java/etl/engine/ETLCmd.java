@@ -22,9 +22,7 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
 import etl.spark.SparkProcessor;
@@ -68,7 +66,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 
 	private transient Configuration conf;
 	
-	private ProcessMode pm = ProcessMode.SingleProcess;
+	private ProcessMode pm = ProcessMode.Single;
 	private MRMode mrMode = MRMode.file;
 	private boolean sendLog = true;//command level send log flag
 	
@@ -80,95 +78,18 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public ETLCmd(){
 	}
 	
+	public ETLCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
+	}
+	
 	public ETLCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	public ETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
-	public boolean cfgContainsKey(String key){
-		String realKey = key;
-		if (prefix!=null){
-			realKey = prefix+"."+key;
-		}
-		return pc.containsKey(realKey);
-	}
-	
-	public Iterator<String> getCfgKeys(){
-		if (prefix!=null){
-			String realPrefix = prefix+".";
-			return pc.getKeys(realPrefix);
-		}else{
-			return pc.getKeys();
-		}
-	}
-	
-	public Object getCfgProperty(String key){
-		String realKey = key;
-		if (prefix!=null){
-			realKey = prefix+"."+key;
-		}
-		if (pc.containsKey(realKey)){
-			return pc.getProperty(realKey);
-		}else{
-			return pc.getProperty(key);
-		}
-	}
-	
-	public boolean getCfgBoolean(String key, boolean defaultValue){
-		String realKey = key;
-		if (prefix!=null){
-			realKey = prefix+"."+key;
-		}
-		if (pc.containsKey(realKey)){
-			return pc.getBoolean(realKey, defaultValue);
-		}else{
-			return pc.getBoolean(key, defaultValue);
-		}
-	}
-	
-	public int getCfgInt(String key, int defaultValue){
-		String realKey = key;
-		if (prefix!=null){
-			realKey = prefix+"."+key;
-		}
-		if (pc.containsKey(realKey)){
-			return pc.getInt(realKey, defaultValue);
-		}else{
-			return pc.getInt(key, defaultValue);
-		}
-	}
-	
-	public String getCfgString(String key, String defaultValue){
-		String realKey = key;
-		if (prefix!=null){
-			realKey = prefix+"."+key;
-		}
-		pc.setDelimiterParsingDisabled(true);
-		String v=null;
-		if (pc.containsKey(realKey)){
-			v = pc.getString(realKey, defaultValue);
-		}else{
-			v = pc.getString(key, defaultValue);
-		}
-		pc.setDelimiterParsingDisabled(false);
-		return v;
-	}
-	
-	//return 0 length array if not found
-	public String[] getCfgStringArray(String key){
-		String realKey = key;
-		if (prefix!=null){
-			realKey = prefix+"."+key;
-		}
-		if (pc.containsKey(realKey)){
-			return pc.getStringArray(realKey);
-		}else{
-			return pc.getStringArray(key);
-		}
-	}
 	/**
 	 * @param wfName
 	 * @param wfid
@@ -177,15 +98,17 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	 * @param defaultFs
 	 * @param otherArgs
 	 */
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs) {
+	public void init(String wfName, String wfid, String staticCfg, String prefix, 
+			String defaultFs, String[] otherArgs, ProcessMode pm) {
 		this.wfName = wfName;
 		this.wfid = wfid;
 		this.staticCfg = staticCfg;
 		this.defaultFs = defaultFs;
 		this.otherArgs = otherArgs;
 		this.prefix = prefix;
-		logger.info(String.format("wfName:%s, wfid:%s, cfg:%s, prefix:%s, defaultFs:%s, otherArgs:%s", 
-				wfName, wfid, staticCfg, prefix, defaultFs, otherArgs!=null?Arrays.asList(otherArgs):"null"));
+		this.pm = pm;
+		logger.info(String.format("wfName:%s, wfid:%s, cfg:%s, prefix:%s, defaultFs:%s, otherArgs:%s, processMode:%s", 
+				wfName, wfid, staticCfg, prefix, defaultFs, otherArgs!=null?Arrays.asList(otherArgs):"null", pm));
 		try {
 			String fs_key = "fs.defaultFS";
 			conf = new Configuration();
@@ -214,12 +137,12 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	public void init(){
 		if (fs==null){
-			init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+			init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		}
 	}
 	
 	public void reinit(){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 	}
 	
 	public Map<String, Object> getSystemVariables(){
@@ -357,19 +280,95 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 				new VarDef(VAR_NAME_PATH_NAME, VarType.STRING)};
 	}
 	
+	public boolean cfgContainsKey(String key){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		return pc.containsKey(realKey);
+	}
+	
+	public Iterator<String> getCfgKeys(){
+		if (prefix!=null){
+			String realPrefix = prefix+".";
+			return pc.getKeys(realPrefix);
+		}else{
+			return pc.getKeys();
+		}
+	}
+	
+	public Object getCfgProperty(String key){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getProperty(realKey);
+		}else{
+			return pc.getProperty(key);
+		}
+	}
+	
+	public boolean getCfgBoolean(String key, boolean defaultValue){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getBoolean(realKey, defaultValue);
+		}else{
+			return pc.getBoolean(key, defaultValue);
+		}
+	}
+	
+	public int getCfgInt(String key, int defaultValue){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getInt(realKey, defaultValue);
+		}else{
+			return pc.getInt(key, defaultValue);
+		}
+	}
+	
+	public String getCfgString(String key, String defaultValue){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		pc.setDelimiterParsingDisabled(true);
+		String v=null;
+		if (pc.containsKey(realKey)){
+			v = pc.getString(realKey, defaultValue);
+		}else{
+			v = pc.getString(key, defaultValue);
+		}
+		pc.setDelimiterParsingDisabled(false);
+		return v;
+	}
+	
+	//return 0 length array if not found
+	public String[] getCfgStringArray(String key){
+		String realKey = key;
+		if (prefix!=null){
+			realKey = prefix+"."+key;
+		}
+		if (pc.containsKey(realKey)){
+			return pc.getStringArray(realKey);
+		}else{
+			return pc.getStringArray(key);
+		}
+	}
+	
 	///
 
 	public Configuration getHadoopConf(){
 		return conf;
 	}
 	
-	public ProcessMode getPm() {
-		return pm;
-	}
 
-	public void setPm(ProcessMode pm) {
-		this.pm = pm;
-	}
 	
 	public MRMode getMrMode() {
 		return mrMode;

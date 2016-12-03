@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -50,16 +51,20 @@ public class FileNameUpdateCmd extends ETLCmd {
 	}
 	
 	public FileNameUpdateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public FileNameUpdateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public FileNameUpdateCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		incomingFolder =super.getCfgString(cfgkey_incoming_folder, null);
 		fileNameExp =super.getCfgString(cfgkey_file_name, null);
 		headlines=super.getCfgInt(cfgkey_headlines, 10);

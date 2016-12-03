@@ -22,6 +22,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
 
@@ -40,12 +41,16 @@ public class CsvFilterCmd extends ETLCmd {
 	}
 	
 	public CsvFilterCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvFilterCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		String filterExpStr = super.getCfgString(cfgkey_filter_exp, null);
 		if (filterExpStr!=null){
 			filterExp = ScriptEngineUtil.compileScript(filterExpStr);

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -20,6 +21,20 @@ import org.apache.hadoop.fs.Path;
 
 public class Util {
 	public static final Logger logger = LogManager.getLogger(Util.class);
+	
+	public static List<int[]> createBatch(int batchSize, int totalSize){
+		List<int[]> batches = new ArrayList<int[]>();
+		int n = totalSize/batchSize;
+		int bn = totalSize%batchSize==0?n:n+1;
+		for (int i=0; i<bn; i++){
+			if (i!=bn-1){//not last one
+				batches.add(new int[]{i*batchSize, (i+1)*batchSize-1});
+			}else{
+				batches.add(new int[]{i*batchSize, totalSize-1});
+			}
+		}
+		return batches;
+	}
 	
 	public static String getCsv(List<String> csv, boolean newline){
 		StringBuffer sb = new StringBuffer();

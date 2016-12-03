@@ -1,4 +1,4 @@
-java -jar ..\target\schema.gen-VVERSIONN.jar -gen huawei.schema -from "..\src\test\resources\huawei\RAN Huawei CounterID to Name Translation Table.csv" -by ..\src\test\resources\huawei\config.json
+java -jar ..\target\schema.gen-VVERSIONN.jar -gen huawei.schema -from "..\src\test\resources\huawei\RAN Huawei CounterID to Name Translation Table.csv" -by ..\src\test\resources\huawei\measures-config.json
 java -jar ..\target\schema.gen-VVERSIONN.jar -gen huawei-dimensions.schema -from ..\src\test\resources\huawei\TableDimensions.csv -by ..\src\test\resources\huawei\dimensions-config.json
 java -jar ..\target\schema.gen-VVERSIONN.jar -join huawei.schema -with huawei-dimensions.schema
 java -jar ..\target\schema.gen-VVERSIONN.jar -append huawei.schema -with ..\src\test\resources\huawei\common-schema.json

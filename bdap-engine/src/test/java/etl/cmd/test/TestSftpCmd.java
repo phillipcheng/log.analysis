@@ -216,4 +216,37 @@ public class TestSftpCmd extends TestETLCmd {
 			assertTrue(false);
 		}
 	}
+	
+	@Test
+	public void testRecursive() {
+		try {
+			String cfg = "sftp_recursive.properties";
+			String fileName0 = "RTDB_ACCESS.friday";
+			String fileName1 = "RTDB_ACCESS.monday";
+			String fileName2 = "source1";
+			String fileName3 = "source2";
+			
+			SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
+			String ftpFolder = StringUtil.commonPath(cmd.getFromDirs());
+			String incomingFolder = cmd.getIncomingFolder();
+			getFs().delete(new Path(incomingFolder), true);
+			getFs().mkdirs(new Path(incomingFolder));
+			
+			FileUtils.deleteDirectory(new File(ftpFolder));
+			FileUtils.copyDirectory(new File(super.getLocalFolder()+"data"), new File(ftpFolder));
+			List<String> ret = cmd.sgProcess();
+			logger.info(ret);
+			
+			//assertion
+			List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
+			logger.info(fl);
+			assertTrue(fl.size() == 4);
+			assertTrue(fl.contains(fileName0) || fl.contains(fileName1));
+			assertTrue(fl.contains(fileName2) || fl.contains(fileName3));
+			
+		}catch(Exception e){
+			logger.error("", e);
+			assertTrue(false);
+		}
+	}
 }

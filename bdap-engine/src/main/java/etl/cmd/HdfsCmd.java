@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -26,16 +27,20 @@ public class HdfsCmd extends ETLCmd{
 	}
 	
 	public HdfsCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public HdfsCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public HdfsCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		String[] rmFolderExps = super.getCfgStringArray(cfg_key_rm_folders);
 		rmFolders = new String[rmFolderExps.length];
 		for (int i=0; i<rmFolderExps.length; i++){

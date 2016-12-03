@@ -83,7 +83,7 @@ public class SparkFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
 		// TODO Auto-generated method stub
 		return null;
 	}

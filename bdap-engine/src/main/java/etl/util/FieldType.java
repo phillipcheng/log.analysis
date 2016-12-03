@@ -1,11 +1,11 @@
 package etl.util;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spark_project.guava.base.Objects;
 
 import etl.engine.SafeSimpleDateFormat;
 
@@ -32,23 +32,40 @@ public class FieldType implements Serializable{
 	private int size;//varchar(size)
 	private int precision;//numeric(precision,scale)
 	private int scale;
+	private AggregationType aggrType;
 	
 	public FieldType(){
+		this.aggrType = AggregationType.NONE;
+	}
+	
+	public FieldType(VarType type, AggregationType aggrType){
+		this.type = type;
+		this.aggrType = aggrType;
 	}
 	
 	public FieldType(VarType type){
-		this.type = type;
+		this(type, AggregationType.NONE);
 	}
 	
-	public FieldType(VarType type, int size){
+	public FieldType(VarType type, int size, AggregationType aggrType){
 		this.type = type;
 		this.size = size;
+		this.aggrType = aggrType;
+	}
+
+	public FieldType(VarType type, int size){
+		this(type, size, AggregationType.NONE);
 	}
 	
-	public FieldType(VarType type, int precision, int scale){
+	public FieldType(VarType type, int precision, int scale, AggregationType aggrType){
 		this.type = type;
 		this.precision = precision;
 		this.scale = scale;
+		this.aggrType = aggrType;
+	}
+	
+	public FieldType(VarType type, int precision, int scale){
+		this(type, precision, scale, AggregationType.NONE);
 	}
 	
 	@Override
@@ -57,7 +74,7 @@ public class FieldType implements Serializable{
 			return false;
 		}
 		FieldType that = (FieldType)obj;
-		if (!Objects.equal(that.getType(), type)){
+		if (!Objects.equals(that.getType(), type)){
 			return false;
 		}
 		if (size!=that.getSize()){
@@ -67,6 +84,9 @@ public class FieldType implements Serializable{
 			return false;
 		}
 		if (scale!=that.getScale()){
+			return false;
+		}
+		if (!aggrType.equals(that.getAggrType())){
 			return false;
 		}
 		return true;
@@ -146,6 +166,12 @@ public class FieldType implements Serializable{
 	}
 	public void setScale(int scale) {
 		this.scale = scale;
+	}
+	public AggregationType getAggrType() {
+		return aggrType;
+	}
+	public void setAggrType(AggregationType aggrType) {
+		this.aggrType = aggrType;
 	}
 	
 	public String toString(){
