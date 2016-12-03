@@ -198,7 +198,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 													attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType()), fieldAggrType));
 												}
 											} catch (Exception e) {
-												logger.error("Unknown type: {}", fieldType);
+												logger.error(String.format("Unknown type: %s", fieldType),e);
 												attrTypes.add(new FieldType(VarType.OBJECT, fieldAggrType));
 											}
 											
@@ -228,7 +228,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 												attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType()), fieldAggrType));
 											}
 										} catch (Exception e) {
-											logger.error("Unknown type: {}", fieldType, fieldID, fieldName);
+											logger.error("Unknown type: {}", fieldType, fieldID, fieldName, e);
 											attrTypes.add(new FieldType(VarType.OBJECT, fieldAggrType));
 										}
 									}
