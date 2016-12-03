@@ -8,25 +8,136 @@ body {
 svg {
 	width: 98%;
 	height: 580px;
-	background-image: url(../../img/dataFlow_background.jpg);
+	/*	background-image: url(../../img/dataFlow_background.jpg);*/
 }
 
-svg g:hover{
-	cursor: pointer;
+svg g:hover {
+	/*cursor: pointer;*/
 }
 
 
+/*svg rect {
+	fill: rgb(238, 238, 238);
+	stroke: rgb(166, 166, 166)
+}
 
-rect:hover{
+svg rect:hover{
+	stroke-width: 3;
+	stroke:red
+}
+
+svg rect:hover~circle{
+	fill: red
+}*/
+
+.startNode {
+	fill: rgb(238, 238, 238)
+}
+
+.startNode~text {
+	fill: black;
+	font-family: 'Roboto', sans-serif;
+}
+
+.endNode {
+	fill: rgb(238, 238, 238)
+}
+
+.endNode~text {
+	fill: black;
+	font-family: 'Roboto', sans-serif;
+}
+
+.rectNodeG {}
+
+.rectNodeG>rect {
+	fill: rgb(238, 238, 238);
+}
+
+.rectNodeG>text {
+	fill: black;
+	font-family: 'Roboto', sans-serif;
+}
+
+.rectNodeG>circle {
+	fill: rgb(238, 238, 238);
+}
+
+.rectNodeG>path {
+	stroke: rgb(238, 238, 238);
+	stroke-width: 0;
+}
+
+.rectNodeG:hover>rect {
+	stroke: red;
+	stroke-width: 2;
+}
+
+.rectNodeG:hover>circle {
+	fill: rgb(255, 0, 0);
+}
+
+.rectNodeG:hover>path {
+	stroke: rgb(255, 255, 255);
+	stroke-width: 2;
+}
+
+.rectNodeGSelected {}
+
+.rectNodeGSelected>rect {
+	stroke: red;
+	stroke-width: 2;
+	fill: rgb(238, 238, 238);
+}
+
+.rectNodeGSelected>circle {
+	fill: rgb(255, 0, 0);
+}
+
+.rectNodeGSelected>text {
+	fill: black;
+	font-family: 'Roboto', sans-serif;
+}
+
+.rectNodeGSelected>path {
+	stroke: rgb(255, 255, 255);
+	stroke-width: 2;
+}
+
+.rectNodePlay {
+	fill: green;
+}
+
+.rectNodeStop {
+	fill: orangered;
+}
+
+.rectNodeGMax {
 	
 }
+
+.rectNodeGMax>rect {
+	stroke: red;
+	stroke-width: 2;
+	fill: rgb(238, 238, 238);
+}
+
+.rectNodeGMax>circle {
+	fill: rgb(255, 0, 0);
+}
+
+.rectNodeGMax>path {
+	stroke: rgb(255, 255, 255);
+	stroke-width: 4;
+}
+
 
 #display {
 	width: 100%;
 	height: 600px;
 	margin-left: 5px;
 	margin-top: 5px;
-	overflow:auto;
+	overflow: auto;
 }
 
 .divoperation {
@@ -39,15 +150,16 @@ rect:hover{
 	border: solid 3px #269ABC;
 	border-radius: 5px;
 	top: 50px;
-	left:950px;
-	transition:width , left 0.5s;
-}
-.divoperation:hover{
-	width: 900px;
-	left:350px;
+	left: 950px;
+	transition: width, left 0.5s;
 }
 
-#divlog{
+.divoperation:hover {
+	width: 900px;
+	left: 350px;
+}
+
+#divlog {
 	width: 800px;
 	height: 250px;
 	background-color: wheat;
@@ -55,10 +167,10 @@ rect:hover{
 	border-radius: 5px;
 	position: absolute;
 	z-index: 10;
-	top:100px;
-	left:200px;
+	top: 100px;
+	left: 200px;
 }
 
-.list-group-item:hover{
+.list-group-item:hover {
 	cursor: pointer;
 }
