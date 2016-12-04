@@ -52,7 +52,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		
 		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 		cmd.sgProcess();
-		List<String> sqls = cmd.getCopysqls();
+		List<String> sqls = cmd.getSgCopySql();
 		DBUtil.executeSqls(cmd.getDropSqls(), cmd.getPc());
 		String hdfsroot = cmd.getPc().getString("hdfs.webhdfs.root");
 		String dbuser = cmd.getPc().getString("db.user");
@@ -112,7 +112,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
 		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 		cmd.sgProcess();
-		List<String> sqls = cmd.getCopysqls();
+		List<String> sqls = cmd.getSgCopySql();
 		DBUtil.executeSqls(cmd.getDropSqls(), cmd.getPc());
 
 		String hdfsroot = cmd.getPc().getString("hdfs.webhdfs.root");

@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import etl.util.XMLInputFormat;
+import etl.util.XmlInputFormat;
 import scala.Tuple2;
 
 //log4j2
@@ -46,7 +46,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		rfifs.add(new Tuple2<String, String[]>(inputFolder, inputFiles));
 		getConf().set("xmlinput.start", "<measInfo>");
 		getConf().set("xmlinput.end", "</measInfo>");
-		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, XMLInputFormat.class);
+		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, XmlInputFormat.class);
 		
 		//check results
 		//outputFolder should have the csv file
@@ -85,7 +85,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		rfifs.add(new Tuple2<String, String[]>(inputFolder, inputFiles));
 		getConf().set("xmlinput.start", "<measInfo>");
 		getConf().set("xmlinput.end", "</measInfo>");
-		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, XMLInputFormat.class);
+		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, XmlInputFormat.class);
 		
 		//check results
 		//outputFolder should have the csv file

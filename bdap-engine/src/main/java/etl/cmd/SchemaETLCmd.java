@@ -311,15 +311,15 @@ public abstract class SchemaETLCmd extends ETLCmd{
 					logger.error(String.format("id:%s and name:%s for table %s not matching.", attrIds, newAttrs, newTable));
 				}
 			}
-			if (!logicSchema.hasTable(newTable)){//new table
-				if (tNameToIdMap!=null){
-					String tid = tNameToIdMap.get(newTable);
-					if (tid!=null){
-						logicSchema.getTableIdNameMap().put(tid, newTable);
-					}else{
-						logger.error(String.format("the id for table:%s is null.", newTable));
-					}
+			if (tNameToIdMap!=null){
+				String tid = tNameToIdMap.get(newTable);
+				if (tid!=null){
+					logicSchema.getTableIdNameMap().put(tid, newTable);
+				}else{
+					logger.error(String.format("the id for table:%s is null.", newTable));
 				}
+			}
+			if (!logicSchema.hasTable(newTable)){//new table
 				logicSchema.updateTableAttrs(newTable, newAttrs);
 				logicSchema.updateTableAttrTypes(newTable, newTypes);
 				schemaUpdated = true;
@@ -328,14 +328,9 @@ public abstract class SchemaETLCmd extends ETLCmd{
 						dbPrefix, getDbtype()));
 			}else{//update existing table
 				List<String> existNewAttrs = logicSchema.getAttrNames(newTable);
-				List<FieldType> existNewAttrTypes = logicSchema.getAttrTypes(newTable);
 				if (existNewAttrs.containsAll(newAttrs)){//
-					//do nothing
+					logger.error(String.format("update nothing for %s", newTable));
 				}else{
-					newAttrs.removeAll(existNewAttrs);
-					newTypes.removeAll(existNewAttrTypes);
-					logger.info(String.format("exist attrs for table %s:%s", newTable, existNewAttrs));
-					logger.info(String.format("new attrs for table %s:%s", newTable, newAttrs));
 					//update schema, happens only when the schema is updated by external force
 					logicSchema.addAttributes(newTable, newAttrs);
 					logicSchema.addAttrTypes(newTable, newTypes);

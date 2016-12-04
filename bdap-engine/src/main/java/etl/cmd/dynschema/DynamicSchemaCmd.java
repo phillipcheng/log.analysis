@@ -57,18 +57,25 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, false);
-		boolean loadSchema = true;
-		if (pm == ProcessMode.Reduce){
-			loadSchema = false;
-		}
-		if (loadSchema){
-			super.loadSchema(this.zookeeperUrl);
-		}
 		this.processType = DynSchemaProcessType.valueOf(super.getCfgString(cfgkey_process_type, DynSchemaProcessType.genCsv.toString()));
 		this.lockType = LockType.valueOf(super.getCfgString(cfgkey_lock_type, LockType.zookeeper.toString()));
 		this.zookeeperUrl = super.getCfgString(cfgkey_zookeeper_url, null);
 		if (this.lockType==LockType.zookeeper && this.zookeeperUrl==null){
 			logger.error(String.format("must specify %s for locktype:%s", cfgkey_zookeeper_url, lockType));
+		}
+		if (processType==DynSchemaProcessType.genCsv){
+			this.lockType=LockType.none;
+		}
+		boolean loadSchema = true;
+		if (pm == ProcessMode.Reduce){
+			loadSchema = false;
+		}
+		if (loadSchema){
+			if (lockType == LockType.zookeeper){
+				super.loadSchema(this.zookeeperUrl);
+			}else{
+				super.loadSchema(null);
+			}
 		}
 	}
 
@@ -201,7 +208,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				if (orgAttrs!=null){
 					List<String> newAttrs = dt.getFieldNames();
 					//gen new attr to old attr idx mapping
-					Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();
+					Map<Integer,Integer> mapping = new HashMap<Integer, Integer>();//mapping.size == newAttrs.size
 					for (int i=0; i<orgAttrs.size(); i++){
 						String attr = orgAttrs.get(i);
 						int idx = newAttrs.indexOf(attr);
@@ -211,10 +218,12 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 					}
 					//gen csv
 					String[] fieldValues = dt.getValueSample();
-					if (fieldValues.length>mapping.size()){
-						logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, values:%s", 
-								tableName, mapping, Arrays.asList(fieldValues)));
-						return null;
+					if (this.processType!=DynSchemaProcessType.genCsv){
+						if (fieldValues.length>mapping.size()){
+							logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, values:%s", 
+									tableName, mapping, Arrays.asList(fieldValues)));
+							return null;
+						}
 					}
 					int num = getValuesLength();
 					int bn = num%batchSize==0?num/batchSize:num/batchSize+1;
@@ -224,9 +233,11 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 							fieldValues = vslist.get(k);
 							String[] vs = new String[orgAttrs.size()];
 							for (int i=0; i<fieldValues.length; i++){
-								String v = fieldValues[i];
-								int idx = mapping.get(i);
-								vs[idx]=v;
+								if (mapping.containsKey(i)){
+									String v = fieldValues[i];
+									int idx = mapping.get(i);
+									vs[idx]=v;
+								}
 							}
 							String csv = Util.getCsv(Arrays.asList(vs), false);
 							if (context!=null){
@@ -284,12 +295,9 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	@Override
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String[]> rets = new ArrayList<String[]>();
 		for (Text v: values){
-			//logger.info(String.format("v:%s", v.toString()));
-			String[] ret = new String[]{v.toString(), null, key.toString()};
-			rets.add(ret);
+			mos.write(new Text(v.toString()), null, key.toString());
 		}
-		return rets;
+		return null;
 	}
 }

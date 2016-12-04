@@ -42,7 +42,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public static final String VAR_CSV_FILE="csvFileName";
 	public static final String VAR_TABLE_NAME="tableName";
 	
-	private String webhdfsRoot;
+	private String webhdfsRoot="";
 	private String userName;
 	private String csvFile;
 	private String loadSql;
@@ -50,7 +50,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	
 	private transient CompiledScript csCsvFile;
 	private transient CompiledScript csLoadSql;
-	private transient List<String> copysqls;
+	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
 	
 	public LoadDataCmd(){
 		super();
@@ -73,7 +73,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		
 		this.csvFile = super.getCfgString(cfgkey_csvfile, null);
-		this.webhdfsRoot = super.getCfgString(cfgkey_webhdfs, null);
+		this.webhdfsRoot = super.getCfgString(cfgkey_webhdfs, "");
 		this.userName = super.getCfgString(DBUtil.key_db_user, null);
 		this.loadSql = super.getCfgString(cfgkey_load_sql, null);
 		logger.info(String.format("load sql:%s", loadSql));
@@ -91,7 +91,6 @@ public class LoadDataCmd extends SchemaETLCmd{
 		}else{
 			logger.warn(String.format("loadSql is not specified."));
 		}
-		copysqls = new ArrayList<String>();
 	}
 	
 	private List<String> prepareTableCopySQLs(String tableName, String[] files) {
@@ -131,6 +130,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	
 	@Override
 	public List<String> sgProcess() {
+		List<String> copysqls = new ArrayList<String>();
 		if (this.getFs()==null) init();
 		List<String> logInfo = new ArrayList<String>();
 		try{
@@ -167,6 +167,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 			int rowsAdded = DBUtil.executeSqls(copysqls, super.getPc());
 			logInfo.add(rowsAdded+"");
 		}
+		sgCopySql = copysqls;
 		
 		return  logInfo;
 	}
@@ -193,14 +194,17 @@ public class LoadDataCmd extends SchemaETLCmd{
 	
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
+		List<String> copysqls = new ArrayList<String>();
 		List<String[]> ret = new ArrayList<String[]>();
+		String[] files = toFiles(values);
+		logger.info(String.format("in reduce for key:%s, we need to load file:%s", key.toString(), Arrays.toString(files)));
 		if (NO_TABLE_CONFIGURED.equals(key.toString()))
 			copysqls.addAll(
-				prepareTableCopySQLs(null, toFiles(values))
+				prepareTableCopySQLs(null, files)
 			);
 		else
 			copysqls.addAll(
-				prepareTableCopySQLs(key.toString(), toFiles(values))
+				prepareTableCopySQLs(key.toString(), files)
 			);
 		if (super.getDbtype()!=DBType.NONE){
 			int rowsAdded = DBUtil.executeSqls(copysqls, super.getPc());
@@ -223,12 +227,12 @@ public class LoadDataCmd extends SchemaETLCmd{
 		return true;
 	}
 
-	public List<String> getCopysqls() {
-		return copysqls;
+	public List<String> getSgCopySql() {
+		return sgCopySql;
 	}
 
-	public void setCopysqls(List<String> copysqls) {
-		this.copysqls = copysqls;
+	public void setSgCopySql(List<String> sgCopySql) {
+		this.sgCopySql = sgCopySql;
 	}
 
 }

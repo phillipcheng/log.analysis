@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.util.CombineWithFileNameTextInputFormat;
-import etl.util.XMLInputFormat;
+import etl.util.XmlInputFormat;
 import scala.Tuple2;
 
 public class TestCsvTransformCmd extends TestETLCmd {
