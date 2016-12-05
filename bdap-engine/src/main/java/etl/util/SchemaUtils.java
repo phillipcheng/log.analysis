@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
@@ -98,11 +100,26 @@ public class SchemaUtils {
 				if (attrTypes != null)
 					return attrTypes;
 				else
-					throw new CacheItemNotFoundException("No attributes for table: " + tableName);
+					throw new CacheItemNotFoundException("No attribute types for table: " + tableName);
 			} else
 				throw new CacheItemNotFoundException("No such schema file for table: " + tableName);
 		}
 	}
+	
+	private static class AttrNameRemovalListener implements RemovalListener<String, List<String>> {
+		public void onRemoval(RemovalNotification<String, List<String>> notification) {
+			logger.warn("Attribute removed: {}", notification);
+		}
+	}
+	
+	private static class AttrTypeRemovalListener implements RemovalListener<String, List<FieldType>> {
+		public void onRemoval(RemovalNotification<String, List<FieldType>> notification) {
+			logger.warn("Attribute type removed: {}", notification);
+		}
+	}
+	
+	private final static AttrNameRemovalListener ATTR_NAME_REMOVAL_LISTENER = new AttrNameRemovalListener();
+	private final static AttrTypeRemovalListener ATTR_TYPE_REMOVAL_LISTENER = new AttrTypeRemovalListener();
 	
 	public static LogicSchema fromLocalJsonPath(String path, Class<? extends LogicSchema> clazz) {
 		File p = new File(path);
@@ -111,10 +128,10 @@ public class SchemaUtils {
 				path = path + File.separator;
 			LogicSchema index = (LogicSchema) JsonUtil.fromLocalJsonFile(path + SCHEMA_INDEX_FILENAME, clazz);
 			AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(null, path, clazz);
-			Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().build(attrNameCacheLoader);
+			Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().removalListener(ATTR_NAME_REMOVAL_LISTENER).build(attrNameCacheLoader);
 			index.setAttrNameMap(new CacheMap<List<String>>(attrNameCache));
 			AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(null, path, clazz);
-			Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().build(attrTypeCacheLoader);
+			Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
 			index.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
 			return index;
 			

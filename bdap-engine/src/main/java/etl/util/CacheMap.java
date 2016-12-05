@@ -28,11 +28,11 @@ public class CacheMap<T> implements Map<String, T> {
 	}
 
 	public boolean containsKey(Object key) {
-		throw new UnsupportedOperationException("Not implemented!");
+		return cache.asMap().containsKey(key);
 	}
 
 	public boolean containsValue(Object value) {
-		throw new UnsupportedOperationException("Not implemented!");
+		return cache.asMap().containsValue(value);
 	}
 	
 	public T get(Object key) {
@@ -61,7 +61,10 @@ public class CacheMap<T> implements Map<String, T> {
 	}
 
 	public void putAll(Map<? extends String, ? extends T> m) {
-		throw new UnsupportedOperationException("Not implemented!");
+		if (m != null)
+			for (Map.Entry<? extends String, ? extends T> e: m.entrySet()) {
+				cache.put(e.getKey(), e.getValue());
+			}
 	}
 
 	public void clear() {
@@ -69,15 +72,15 @@ public class CacheMap<T> implements Map<String, T> {
 	}
 
 	public Set<String> keySet() {
-		throw new UnsupportedOperationException("Not implemented!");
+		return cache.asMap().keySet();
 	}
 
 	public Collection<T> values() {
-		throw new UnsupportedOperationException("Not implemented!");
+		return cache.asMap().values();
 	}
 
 	public Set<java.util.Map.Entry<String, T>> entrySet() {
-		throw new UnsupportedOperationException("Not implemented!");
+		return cache.asMap().entrySet();
 	}
 
 }
