@@ -20,16 +20,8 @@ import etl.util.VarType;
 public class TestCSVSchemaGenerator {
 
 	public static void main(String[] args) throws Exception {
-
-		InputStream in = TestCSVSchemaGenerator.class.getResourceAsStream("/femto/common-schema.json");
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf8"));
-		StringBuilder strbuf = new StringBuilder();
-		String str;
-		while ((str = reader.readLine()) != null) {
-			strbuf.append(str);
-		}
-		reader.close();
-		in.close();
+		InputStream in;
+		BufferedReader reader;
 		
 		in = TestCSVSchemaGenerator.class.getResourceAsStream("/femto/sFemto_OMRT_20150923.csv");
 		reader = new BufferedReader(new InputStreamReader(in, "utf8"));
@@ -61,7 +53,10 @@ public class TestCSVSchemaGenerator {
 			LogicSchema ls = g.generate(reader, config);
 			System.out.println(ls);
 			
-			LogicSchema commonLs = (LogicSchema) JsonUtil.fromJsonString(strbuf.toString(), LogicSchema.class);
+			String path = TestCSVSchemaGenerator.class.getResource("/femto/common-schema.json").getPath();
+			if (path.startsWith("/C:/"))
+				path = path.substring(1);
+			LogicSchema commonLs = SchemaUtils.fromLocalJsonPath(path, LogicSchema.class);
 			
 			g.insertSchema(ls, commonLs);
 			
