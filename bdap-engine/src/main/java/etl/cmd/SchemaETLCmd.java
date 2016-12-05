@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -218,7 +219,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 				Path schemaFilePath = new Path(schemaFile);
 				if (fs.exists(schemaFilePath)){
 					schemaFileName = schemaFilePath.getName();
-					this.logicSchema = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, schemaFile, LogicSchema.class);
+					this.logicSchema = SchemaUtils.fromRemoteJsonPath(fs, schemaFile, LogicSchema.class);
 				}else{
 					this.logicSchema = new LogicSchema();
 					logger.warn(String.format("schema file %s not exists.", schemaFile));
@@ -241,13 +242,13 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	//return loginfo
-	private List<String> flushLogicSchemaAndSql(List<String> createTableSqls){
+	private List<String> flushLogicSchemaAndSql(List<String> createTableSqls) throws Exception {
 		if (createTableSqls.size()>0){
 			//update/create create-table-sql
 			logger.info(String.format("create/update table sqls are:%s", createTableSqls));
 			HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, createTableSqls);
 			//update logic schema file
-			HdfsUtil.toDfsJsonFile(fs, this.schemaFile, logicSchema);
+			SchemaUtils.toRemoteJsonPath(fs, this.schemaFile, fs.isDirectory(new Path(this.schemaFile)), logicSchema, Collections.emptyMap());
 			//execute the sql
 			if (dbtype != DBType.NONE){
 				DBUtil.executeSqls(createTableSqls, super.getPc());
@@ -342,7 +343,12 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			}
 		}
 		if (schemaUpdated){
-			return flushLogicSchemaAndSql(createTableSqls);
+			try {
+				return flushLogicSchemaAndSql(createTableSqls);
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+				return null;
+			}
 		}else{
 			return null;
 		}
