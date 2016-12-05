@@ -62,7 +62,7 @@ public class LogicSchema implements Serializable{
 	}
 	
 	public boolean hasTable(String tableName){
-		return attrNameMap.containsKey(tableName);
+		return tableIdNameMap.containsValue(tableName);
 	}
 	
 	@JsonIgnore
