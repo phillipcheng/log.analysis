@@ -278,7 +278,8 @@ public class SchemaUtils {
 	
 	public static List<String> genCreateSqlByLogicSchema(LogicSchema ls, String dbSchema, DBType dbtype){
 		List<String> sqls = new ArrayList<String>();
-		for (String tn: ls.getAttrNameMap().keySet()){
+		for (String tid: ls.getTableIdNameMap().keySet()){
+			String tn = ls.getTableIdNameMap().get(tid);
 			List<String> attrNames = ls.getAttrNames(tn);
 			List<FieldType> attrTypes = ls.getAttrTypes(tn);
 			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbSchema, dbtype);

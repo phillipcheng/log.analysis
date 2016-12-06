@@ -226,6 +226,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 						}
 					}
 					int num = getValuesLength();
+					logger.info(String.format("we have %d rows.", num));
 					int bn = num%batchSize==0?num/batchSize:num/batchSize+1;
 					for (int j=0; j<bn; j++){
 						List<String[]> vslist = getValues(batchSize);
@@ -276,6 +277,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	 */
 	@Override
 	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
+		logger.info(String.format("offset:%d, input text size:%s", offset, text.length()));
 		try {
 			List<Tuple2<String, String>> pairs = flatMapToPair(text, context);
 			if (pairs!=null){

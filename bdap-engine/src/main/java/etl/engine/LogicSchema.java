@@ -21,6 +21,7 @@ public class LogicSchema implements Serializable{
 	public static final Logger logger = LogManager.getLogger(LogicSchema.class);
 	
 	private Map<String, String> tableIdNameMap = null; //table-id to table-name mapping
+	private transient Map<String, String> tableNameIdMap=new HashMap<String, String>();//reverse mapping test name duplication
 	private Map<String, String> attrIdNameMap = null; //attribute-id to attribute-name mapping
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
 	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping
@@ -138,5 +139,12 @@ public class LogicSchema implements Serializable{
 	}
 	public void setIndex(boolean index) {
 		this.index = index;
+	}
+	@JsonIgnore
+	public Map<String, String> getTableNameIdMap() {
+		return tableNameIdMap;
+	}
+	public void setTableNameIdMap(Map<String, String> tableNameIdMap) {
+		this.tableNameIdMap = tableNameIdMap;
 	}
 }
