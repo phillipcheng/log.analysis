@@ -48,7 +48,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		getConf().set("xmlinput.end", "</measInfo>");
 		getConf().set("xmlinput.row.start", "<measValue");
 		getConf().set("xmlinput.row.end", "</measValue>");
-		getConf().set("xmlinput.row.max.number", "2");
+		getConf().set("xmlinput.row.max.number", "3");
 		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, XmlInputFormat.class);
 		
 		//check results
