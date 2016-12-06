@@ -400,9 +400,15 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	public String getPathName(Mapper<LongWritable, Text, Text, Text>.Context context){
-		String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
-		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		return pathName;
+		if (context.getInputSplit() instanceof FileSplit){
+			String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+			this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+			return pathName;
+		}else{
+			logger.warn(String.format("can't get path from split:%s", context.getInputSplit().getClass()));
+			return null;
+		}
+		
 	}
 
 	//

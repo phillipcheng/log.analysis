@@ -2,9 +2,12 @@ package bdap.schemagen;
 
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -79,6 +82,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 				attributes = null;
 				attrTypes = null;
 				currentTableID = "";
+				Set<String> attributeLCNameToIdMap = null;//attribute lower case name set
 
 				while (i.hasNext()) {
 					record = i.next();
@@ -87,6 +91,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 						/* ADD new table schema */
 						attrIds = new ArrayList<String>();
 						attributes = new ArrayList<String>();
+						attributeLCNameToIdMap = new HashSet<String>();
 						attrTypes = new ArrayList<FieldType>();
 						tableName = null;
 						if (tableNameIndex != -1) {
@@ -98,17 +103,23 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 								}
 							}
 						}
-
+						
 						if (tableName != null && tableName.length() > 0) {
+							if (ls.getTableNameIdMap().containsKey(tableName.toLowerCase())){
+								//duplicated table name, different id, update name
+								tableName = tableName + '_' + tableID;
+							}
 							ls.getAttrIdMap().put(tableName, attrIds);
 							ls.addAttributes(tableName, attributes);
 							ls.addAttrTypes(tableName, attrTypes);
 							ls.getTableIdNameMap().put(tableID, tableName);
+							ls.getTableNameIdMap().put(tableName.toLowerCase(), tableID);
 						} else {
 							ls.getAttrIdMap().put(tableID, attrIds);
 							ls.addAttributes(tableID, attributes);
 							ls.addAttrTypes(tableID, attrTypes);
 							ls.getTableIdNameMap().put(tableID, tableID);
+							ls.getTableNameIdMap().put(tableName.toLowerCase(), tableID);
 						}
 						
 						currentTableID = tableID;
@@ -183,10 +194,11 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 											else
 												fieldName = DEFAULT_NAME_PREFIX + record.getRecordNumber() + "_" + k;
 											//change fieldName if necessary to avoid duplication
-											while (attributes.contains(fieldName)){
+											while (attributeLCNameToIdMap.contains(fieldName.toLowerCase())){
 												fieldName = "_" + fieldName;
 											}
 											attributes.add(fieldName);
+											attributeLCNameToIdMap.add(fieldName.toLowerCase());
 											
 											if (tmpID != null && k < tmpID.length && tmpID[k] != null) {
 												fieldID = tmpID[k].trim();
@@ -216,10 +228,11 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 									} else {
 										fieldName = fieldName.trim().replaceAll("\\W", "_");
 										//change fieldName if necessary to avoid duplication
-										while (attributes.contains(fieldName)){
+										while (attributeLCNameToIdMap.contains(fieldName.toLowerCase())){
 											fieldName = "_" + fieldName;
 										}
 										attributes.add(fieldName);
+										attributeLCNameToIdMap.add(fieldName.toLowerCase());
 										
 										if (fieldID != null && fieldID.length() > 0) {
 											ls.getAttrIdNameMap().put(fieldID, fieldName);
