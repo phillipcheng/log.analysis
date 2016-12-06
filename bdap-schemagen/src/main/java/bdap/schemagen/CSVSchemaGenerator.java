@@ -119,7 +119,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 							ls.addAttributes(tableID, attributes);
 							ls.addAttrTypes(tableID, attrTypes);
 							ls.getTableIdNameMap().put(tableID, tableID);
-							ls.getTableNameIdMap().put(tableName.toLowerCase(), tableID);
+							ls.getTableNameIdMap().put(tableID.toLowerCase(), tableID);
 						}
 						
 						currentTableID = tableID;

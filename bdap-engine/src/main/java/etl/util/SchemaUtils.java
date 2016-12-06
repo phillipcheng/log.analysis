@@ -58,10 +58,12 @@ public class SchemaUtils {
 		private FileSystem fs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
-		public AttrNameCacheLoader(FileSystem fs, String path, Class<? extends LogicSchema> clazz) {
+		private Map<String, String> attrIdNameMap;
+		public AttrNameCacheLoader(FileSystem fs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
 			this.fs = fs;
 			this.path = path;
 			this.clazz = clazz;
+			this.attrIdNameMap = attrIdNameMap;
 		}
 		public List<String> load(String tableName) throws Exception {
 			LogicSchema schema;
@@ -71,6 +73,10 @@ public class SchemaUtils {
 				schema = (LogicSchema) JsonUtil.fromLocalJsonFile(path + tableName + "." + SCHEMA_FILENAME_EXTENSION, clazz);
 			if (schema != null) {
 				List<String> attributes = schema.getAttrNames(tableName);
+				
+				/* Load the attribute Id name map into the index schema */
+				attrIdNameMap.putAll(schema.getAttrIdNameMap());
+				
 				if (attributes != null)
 					return attributes;
 				else
@@ -84,10 +90,12 @@ public class SchemaUtils {
 		private FileSystem fs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
-		public AttrTypeCacheLoader(FileSystem fs, String path, Class<? extends LogicSchema> clazz) {
+		private Map<String, String> attrIdNameMap;
+		public AttrTypeCacheLoader(FileSystem fs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
 			this.fs = fs;
 			this.path = path;
 			this.clazz = clazz;
+			this.attrIdNameMap = attrIdNameMap;
 		}
 		public List<FieldType> load(String tableName) throws Exception {
 			LogicSchema schema;
@@ -97,6 +105,10 @@ public class SchemaUtils {
 				schema = (LogicSchema) JsonUtil.fromLocalJsonFile(path + tableName + "." + SCHEMA_FILENAME_EXTENSION, clazz);
 			if (schema != null) {
 				List<FieldType> attrTypes = schema.getAttrTypes(tableName);
+				
+				/* Load the attribute Id name map into the index schema */
+				attrIdNameMap.putAll(schema.getAttrIdNameMap());
+				
 				if (attrTypes != null)
 					return attrTypes;
 				else
@@ -127,10 +139,10 @@ public class SchemaUtils {
 			if (!path.endsWith(File.separator))
 				path = path + File.separator;
 			LogicSchema index = (LogicSchema) JsonUtil.fromLocalJsonFile(path + SCHEMA_INDEX_FILENAME, clazz);
-			AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(null, path, clazz);
+			AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(null, path, clazz, index.getAttrIdNameMap());
 			Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().removalListener(ATTR_NAME_REMOVAL_LISTENER).build(attrNameCacheLoader);
 			index.setAttrNameMap(new CacheMap<List<String>>(attrNameCache));
-			AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(null, path, clazz);
+			AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(null, path, clazz, index.getAttrIdNameMap());
 			Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
 			index.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
 			return index;
@@ -147,10 +159,10 @@ public class SchemaUtils {
 				if (!path.endsWith(Path.SEPARATOR))
 					path = path + Path.SEPARATOR;
 				LogicSchema index = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, path + SCHEMA_INDEX_FILENAME, clazz);
-				AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(fs, path, clazz);
+				AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(fs, path, clazz, index.getAttrIdNameMap());
 				Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().build(attrNameCacheLoader);
 				index.setAttrNameMap(new CacheMap<List<String>>(attrNameCache));
-				AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(fs, path, clazz);
+				AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(fs, path, clazz, index.getAttrIdNameMap());
 				Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().build(attrTypeCacheLoader);
 				index.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
 				return index;
