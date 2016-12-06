@@ -120,13 +120,13 @@ public class SchemaUtils {
 	
 	private static class AttrNameRemovalListener implements RemovalListener<String, List<String>> {
 		public void onRemoval(RemovalNotification<String, List<String>> notification) {
-			logger.warn("Attribute removed: {}", notification);
+			logger.debug("Attribute removed: {}", notification);
 		}
 	}
 	
 	private static class AttrTypeRemovalListener implements RemovalListener<String, List<FieldType>> {
 		public void onRemoval(RemovalNotification<String, List<FieldType>> notification) {
-			logger.warn("Attribute type removed: {}", notification);
+			logger.debug("Attribute type removed: {}", notification);
 		}
 	}
 	
@@ -140,10 +140,10 @@ public class SchemaUtils {
 				path = path + File.separator;
 			LogicSchema index = (LogicSchema) JsonUtil.fromLocalJsonFile(path + SCHEMA_INDEX_FILENAME, clazz);
 			AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(null, path, clazz, index.getAttrIdNameMap());
-			Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().removalListener(ATTR_NAME_REMOVAL_LISTENER).build(attrNameCacheLoader);
+			Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_NAME_REMOVAL_LISTENER).build(attrNameCacheLoader);
 			index.setAttrNameMap(new CacheMap<List<String>>(attrNameCache));
 			AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(null, path, clazz, index.getAttrIdNameMap());
-			Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
+			Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
 			index.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
 			return index;
 			
@@ -160,10 +160,10 @@ public class SchemaUtils {
 					path = path + Path.SEPARATOR;
 				LogicSchema index = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, path + SCHEMA_INDEX_FILENAME, clazz);
 				AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(fs, path, clazz, index.getAttrIdNameMap());
-				Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().build(attrNameCacheLoader);
+				Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_NAME_REMOVAL_LISTENER).build(attrNameCacheLoader);
 				index.setAttrNameMap(new CacheMap<List<String>>(attrNameCache));
 				AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(fs, path, clazz, index.getAttrIdNameMap());
-				Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().build(attrTypeCacheLoader);
+				Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
 				index.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
 				return index;
 				
