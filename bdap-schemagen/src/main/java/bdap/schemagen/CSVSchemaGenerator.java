@@ -2,7 +2,6 @@ package bdap.schemagen;
 
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -369,14 +368,36 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 			commonAttrNames = null;
 			commonAttrTypes = null;
 		}
-		if (ls != null && commonAttrNames != null)
-			for (List<String> attrs: ls.getAttrNameMap().values()) {
-				attrs.addAll(0, commonAttrNames);
+		if (ls != null && commonAttrNames != null) {
+			if (ls.getTableIdNameMap().size() > 0) {
+				List<String> attrs;
+				for (String tableName: ls.getTableIdNameMap().values()) {
+					attrs = ls.getAttrNames(tableName);
+					if (attrs != null)
+						attrs.addAll(0, commonAttrNames);
+				}
+			} else {
+				for (List<String> attrs: ls.getAttrNameMap().values()) {
+					attrs.addAll(0, commonAttrNames);
+				}
 			}
+		}
 		if (ls != null && commonAttrTypes != null)
-			for (List<FieldType> attrTypes: ls.getAttrTypeMap().values()) {
-				attrTypes.addAll(0, commonAttrTypes);
+			if (ls.getTableIdNameMap().size() > 0) {
+				List<FieldType> attrTypes;
+				for (String tableName: ls.getTableIdNameMap().values()) {
+					attrTypes = ls.getAttrTypes(tableName);
+					if (attrTypes != null)
+						attrTypes.addAll(0, commonAttrTypes);
+				}
+				
+			} else {
+				for (List<FieldType> attrTypes: ls.getAttrTypeMap().values()) {
+					attrTypes.addAll(0, commonAttrTypes);
+				}
 			}
+		if (ls != null && commonLs.getAttrIdNameMap() != null)
+			ls.getAttrIdNameMap().putAll(commonLs.getAttrIdNameMap());
 		if (ls != null && ls instanceof GenLogicSchema && commonLs instanceof GenLogicSchema &&
 				((GenLogicSchema)commonLs).getAttrIdMap().containsKey("common")) {
 			List<String> commonAttrIds;
@@ -396,7 +417,6 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 		
 		if (left != null) {
 			output.getTableIdNameMap().putAll(left.getTableIdNameMap());
-			output.getAttrIdNameMap().putAll(left.getAttrIdNameMap());
 			if (left.getTableIdNameMap().size() > 0) {
 				for (String tableName: left.getTableIdNameMap().values()) {
 					attrNames = left.getAttrNames(tableName);
@@ -414,6 +434,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 				output.getAttrNameMap().putAll(left.getAttrNameMap());
 				output.getAttrTypeMap().putAll(left.getAttrTypeMap());
 			}
+			output.getAttrIdNameMap().putAll(left.getAttrIdNameMap());
 			if (left instanceof GenLogicSchema)
 				output.getAttrIdMap().putAll(((GenLogicSchema) left).getAttrIdMap());
 		}

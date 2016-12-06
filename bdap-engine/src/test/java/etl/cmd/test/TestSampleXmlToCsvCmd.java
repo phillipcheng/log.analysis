@@ -46,6 +46,9 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		rfifs.add(new Tuple2<String, String[]>(inputFolder, inputFiles));
 		getConf().set("xmlinput.start", "<measInfo>");
 		getConf().set("xmlinput.end", "</measInfo>");
+		getConf().set("xmlinput.row.start", "<measValue");
+		getConf().set("xmlinput.row.end", "</measValue>");
+		getConf().set("xmlinput.row.max.number", "2");
 		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, XmlInputFormat.class);
 		
 		//check results

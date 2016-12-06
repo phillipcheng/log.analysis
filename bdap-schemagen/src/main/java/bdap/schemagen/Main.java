@@ -182,12 +182,12 @@ public class Main {
 	private static LogicSchema createFinalLogicSchema(LogicSchema schema) {
 		LogicSchema finalSchema = new LogicSchema();
 		if (schema != null) {
-			finalSchema.setAttrIdNameMap(schema.getAttrIdNameMap());
-			finalSchema.setAttrNameMap(schema.getAttrNameMap());
-			finalSchema.setAttrTypeMap(schema.getAttrTypeMap());
+			finalSchema.getAttrIdNameMap().putAll(schema.getAttrIdNameMap());
+			finalSchema.getAttrNameMap().putAll(schema.getAttrNameMap());
+			finalSchema.getAttrTypeMap().putAll(schema.getAttrTypeMap());
 			finalSchema.setIndex(schema.isIndex());
-			finalSchema.setTableIdNameMap(schema.getTableIdNameMap());
+			finalSchema.getTableIdNameMap().putAll(schema.getTableIdNameMap());
 		}
-		return schema;
+		return finalSchema;
 	}
 }
