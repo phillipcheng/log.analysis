@@ -312,14 +312,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 					logger.error(String.format("id:%s and name:%s for table %s not matching.", attrIds, newAttrs, newTable));
 				}
 			}
-			if (tNameToIdMap!=null){
-				String tid = tNameToIdMap.get(newTable);
-				if (tid!=null){
-					logicSchema.getTableIdNameMap().put(tid, newTable);
-				}else{
-					logger.error(String.format("the id for table:%s is null.", newTable));
-				}
-			}
+			
 			if (!logicSchema.hasTable(newTable)){//new table
 				logicSchema.updateTableAttrs(newTable, newAttrs);
 				logicSchema.updateTableAttrTypes(newTable, newTypes);
@@ -339,6 +332,16 @@ public abstract class SchemaETLCmd extends ETLCmd{
 					//generate alter table
 					createTableSqls.addAll(DBUtil.genUpdateTableSql(newAttrs, newTypes, newTable, 
 							dbPrefix, getDbtype()));
+				}
+			}
+
+			if (tNameToIdMap!=null){
+				/* Update the table id -> table name mapping */
+				String tid = tNameToIdMap.get(newTable);
+				if (tid!=null){
+					logicSchema.getTableIdNameMap().put(tid, newTable);
+				}else{
+					logger.error(String.format("the id for table:%s is null.", newTable));
 				}
 			}
 		}
