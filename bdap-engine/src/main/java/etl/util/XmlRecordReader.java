@@ -104,15 +104,15 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		value.append(headerBuf, 0, headerBuf.length);
 		
 		do {
-			if (readUntilMatch(dataIn, startTag, i > 0)) {
-				try {
+			try {
+				if (readUntilMatch(dataIn, startTag, i > 0)) {
 					if (readUntilMatch(dataIn, endTag, true)) {
 						value.append(buffer.getData(), 0, buffer.getLength());
 						i = i + 1;
 					}
-				} finally {
-					buffer.reset();
 				}
+			} finally {
+				buffer.reset();
 			}
 		} while (dataIn.getPos() < dataIn.getEnd() && i < count);
 
