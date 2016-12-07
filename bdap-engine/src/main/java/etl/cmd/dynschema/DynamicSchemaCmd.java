@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeoutException;
-
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,11 +19,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.Watcher.Event.KeeperState;
-import org.apache.zookeeper.ZooKeeper;
-
 import scala.Tuple2;
 //
 import bdap.util.Util;
@@ -52,7 +44,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	private DynSchemaProcessType processType = DynSchemaProcessType.genCsv;
 	private LockType lockType = LockType.zookeeper;
 	private String zookeeperUrl=null;
-	private int batchSize=200;
 	
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
@@ -80,8 +71,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 
 	public abstract DynamicTableSchema getDynamicTable(String input, LogicSchema ls) throws Exception;
-	public abstract List<String[]> getValues(int batchSize) throws Exception;
-	public abstract int getValuesLength() throws Exception;
+	public abstract List<String[]> getValues() throws Exception;
 
 	//the added field names and types
 	class UpdatedTable{
@@ -101,30 +91,37 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		//check new attribute
 		List<String> curAttrNames = dt.getFieldNames();
 		List<String> curAttrIds = dt.getFieldIds();
-		String[] values = dt.getValueSample();
 		List<String> newAttrNames = new ArrayList<String>();
 		List<String> newAttrIds = new ArrayList<String>();
 		List<FieldType> newAttrTypes = new ArrayList<FieldType>();
-		for (int j=0; j<curAttrNames.size(); j++){
+		for (int j=0; j<curAttrNames.size(); j++){//for every attr
 			String attrName = curAttrNames.get(j);
-			String attrId = curAttrIds.get(j);
 			if (orgSchemaAttributes==null || !orgSchemaAttributes.contains(attrName)){
 				newAttrNames.add(attrName);
-				newAttrIds.add(attrId);
-				String v = null;
-				if (values!=null){
-					v = values[j];
+				if (curAttrIds!=null){
+					String attrId = curAttrIds.get(j);
+					newAttrIds.add(attrId);
 				}
-				if (dt.getTypes()==null){
+				FieldType ft = null;
+				if (dt.getTypes()!=null && j<dt.getTypes().size()){
+					ft = dt.getTypes().get(j);
+				}
+				if (ft==null){
+					String v = null;
+					if (dt.getValueSample()!=null){
+						v = dt.getValueSample()[j];
+					}
 					newAttrTypes.add(DBUtil.guessDBType(v));
 				}else{
-					newAttrTypes.add(dt.getTypes().get(j));
+					newAttrTypes.add(ft);
 				}
 			}
 		}
 		if (newAttrNames.size()>0){
 			ut.attrNames=newAttrNames;
-			ut.attrIds=newAttrIds;
+			if (curAttrIds!=null){
+				ut.attrIds=newAttrIds;
+			}
 			ut.attrTypes=newAttrTypes;
 			return ut;
 		}else{
@@ -139,11 +136,14 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		if (ut!=null){//re-check
 			Map<String, String> tableNameIdMap = new HashMap<String, String>();
 			Map<String, List<String>> attrNamesMap = new HashMap<String, List<String>>();
-			Map<String, List<String>> attrIdsMap = new HashMap<String, List<String>>();
+			Map<String, List<String>> attrIdsMap = null;
 			Map<String, List<FieldType>> attrTypesMap =new HashMap<String, List<FieldType>>();
 			tableNameIdMap.put(ut.name, ut.id);
 			attrNamesMap.put(ut.name, ut.attrNames);
-			attrIdsMap.put(ut.name, ut.attrIds);
+			if (ut.attrIds!=null){
+				attrIdsMap = new HashMap<String, List<String>>();
+				attrIdsMap.put(ut.name, ut.attrIds);
+			}
 			attrTypesMap.put(ut.name, ut.attrTypes);
 			super.updateSchema(tableNameIdMap, attrIdsMap, attrNamesMap, attrTypesMap);
 		}
@@ -217,35 +217,30 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 						}
 					}
 					//gen csv
-					String[] fieldValues = dt.getValueSample();
+					int fieldNum = dt.getFieldNames().size();
 					if (this.processType!=DynSchemaProcessType.genCsv){
-						if (fieldValues.length>mapping.size()){
-							logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, values:%s", 
-									tableName, mapping, Arrays.asList(fieldValues)));
+						if (fieldNum>mapping.size()){
+							logger.error(String.format("more value then type, schema not updated. table:%s, fields:%s, real field num:%d", 
+									tableName, mapping, fieldNum));
 							return null;
 						}
 					}
-					int num = getValuesLength();
-					logger.info(String.format("we have %d rows.", num));
-					int bn = num%batchSize==0?num/batchSize:num/batchSize+1;
-					for (int j=0; j<bn; j++){
-						List<String[]> vslist = getValues(batchSize);
-						for (int k=0; k<vslist.size(); k++){
-							fieldValues = vslist.get(k);
-							String[] vs = new String[orgAttrs.size()];
-							for (int i=0; i<fieldValues.length; i++){
-								if (mapping.containsKey(i)){
-									String v = fieldValues[i];
-									int idx = mapping.get(i);
-									vs[idx]=v;
-								}
+					List<String[]> vslist = getValues();
+					for (int k=0; k<vslist.size(); k++){
+						String[] fieldValues = vslist.get(k);
+						String[] vs = new String[orgAttrs.size()];
+						for (int i=0; i<fieldValues.length; i++){
+							if (mapping.containsKey(i)){
+								String v = fieldValues[i];
+								int idx = mapping.get(i);
+								vs[idx]=v;
 							}
-							String csv = Util.getCsv(Arrays.asList(vs), false);
-							if (context!=null){
-								context.write(new Text(tableName), new Text(csv));
-							}else{
-								retList.add(new Tuple2<String, String>(tableName, csv));
-							}
+						}
+						String csv = Util.getCsv(Arrays.asList(vs), false);
+						if (context!=null){
+							context.write(new Text(tableName), new Text(csv));
+						}else{
+							retList.add(new Tuple2<String, String>(tableName, csv));
 						}
 					}
 					if (context==null){
@@ -277,7 +272,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	 */
 	@Override
 	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
-		logger.info(String.format("offset:%d, input text size:%s", offset, text.length()));
 		try {
 			List<Tuple2<String, String>> pairs = flatMapToPair(text, context);
 			if (pairs!=null){
