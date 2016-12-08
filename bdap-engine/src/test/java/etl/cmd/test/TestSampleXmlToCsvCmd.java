@@ -68,7 +68,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 	}
 	
 	@Test
-	public void test2() throws Exception{
+	public void testSchemaUpdate() throws Exception{
 		//
 		String inputFolder = "/test/dynschemacmd/input/";
 		String outputFolder = "/test/dynschemacmd/output/";
@@ -98,6 +98,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		assertTrue(files.contains(csvFileName));
 		
 		List<String> sqlContents = HdfsUtil.stringsFromDfsFile(getFs(), sqlFile);
+		logger.info(String.format("sqls:\n%s", String.join("\n", sqlContents)));
 		assertTrue(sqlContents.size()==3);
 		assertTrue(sqlContents.contains("alter table sgsiwf.MyCore_ add column VS_xPerCoreCpuUsage numeric(15,5)"));
 		assertTrue(sqlContents.contains("alter table sgsiwf.MyCore_ add column VS_yPerCoreCpuUsage numeric(15,5)"));
