@@ -74,13 +74,13 @@ public class FlowController {
 		EngineConf ec = new EngineConf();
 		ec.getPropertiesConf().setProperty(EngineConf.cfgkey_defaultFs, "hdfs://127.0.0.1:19000");
 		try {
-			flowMgr.executeFlow("project1", flowId, oc, ec);
+			String flowInstanceId = flowMgr.executeFlow("project1", flowId, oc, ec);
 			HttpHeaders httpHeaders = new HttpHeaders();
-			return new ResponseEntity<>(null, httpHeaders, HttpStatus.CREATED);
+			return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			HttpHeaders httpHeaders = new HttpHeaders();
-			return new ResponseEntity<>(null, httpHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<String>(e.getMessage(), httpHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
