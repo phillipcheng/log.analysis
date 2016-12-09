@@ -2,6 +2,8 @@ package dv.mgr;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,7 @@ import etl.flow.oozie.OozieConf;
 @RestController
 @RequestMapping("/{userName}/flow")
 public class FlowController {
+	public static final Logger logger = LogManager.getLogger(FlowController.class);
 	
 	@Autowired
 	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr) {
@@ -60,6 +63,25 @@ public class FlowController {
 	FlowEntity getFlow(@PathVariable String userName, @PathVariable String flowId) {
 		this.validateUser(userName);
 		return this.flowRepository.findOne(flowId);
+	}
+	
+	@RequestMapping(value = "/{flowId}", method = RequestMethod.POST)
+	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
+		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
+		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
+		oc.setHistoryServer("http://localhost:19888");
+		oc.setRmWebApp("http://localhost:8088");
+		EngineConf ec = new EngineConf();
+		ec.getPropertiesConf().setProperty(EngineConf.cfgkey_defaultFs, "hdfs://127.0.0.1:19000");
+		try {
+			String flowInstanceId = flowMgr.executeFlow("project1", flowId, oc, ec);
+			HttpHeaders httpHeaders = new HttpHeaders();
+			return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			HttpHeaders httpHeaders = new HttpHeaders();
+			return new ResponseEntity<String>(e.getMessage(), httpHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}", method = RequestMethod.GET)
