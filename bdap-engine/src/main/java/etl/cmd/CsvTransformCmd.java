@@ -51,7 +51,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public static final String cfgkey_add_fields="add.fields";
 	
 	private boolean inputEndWithComma=false;
-	private CompiledScript rowValidation;
+	private transient CompiledScript rowValidation;
 	private String oldTable;
 	
 	private transient List<String> addFieldsNames;

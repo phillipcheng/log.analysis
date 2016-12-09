@@ -14,9 +14,9 @@ import bdap.util.PropertiesUtil;
 
 public class ActionNode extends Node{
 	
-	public static final String key_exe_type="exe.type";//
-	public static final String key_cmd_class="cmd.class";
-	public static final String key_input_format="input.format";
+	public static final String key_exe_type="exe.type";//etl.flow.ExeType
+	public static final String key_cmd_class="cmd.class";//the fully qualified class name of the cmd
+	public static final String key_input_format="input.format"; //etl.flow.InputFormatType
 	
 	public static List<String> sysProperties = null;
 	
