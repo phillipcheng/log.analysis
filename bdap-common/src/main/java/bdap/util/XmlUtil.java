@@ -108,7 +108,7 @@ public class XmlUtil {
 			Document doc = builder.parse(input);
 			return doc;
 		}catch(Exception e){
-			logger.error("", e);
+			logger.error(String.format("wrong input:%s", inputXml), e);
 			return null;
 		}
 	}

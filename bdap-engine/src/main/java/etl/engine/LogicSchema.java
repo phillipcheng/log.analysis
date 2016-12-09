@@ -21,9 +21,15 @@ public class LogicSchema implements Serializable{
 	public static final Logger logger = LogManager.getLogger(LogicSchema.class);
 	
 	private Map<String, String> tableIdNameMap = null; //table-id to table-name mapping
+	private transient Map<String, String> tableNameIdMap=new HashMap<String, String>();//reverse mapping test name duplication
 	private Map<String, String> attrIdNameMap = null; //attribute-id to attribute-name mapping
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
 	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping
+	
+	/* To support logic schema with one table per schema file
+	 *   If index = true, this is only the index of schemas, will lazy-load the table schema
+	 */
+	private boolean index;
 
 	public String toString(){
 		return String.format("attrNameMap:%s", attrNameMap);
@@ -57,7 +63,8 @@ public class LogicSchema implements Serializable{
 	}
 	
 	public boolean hasTable(String tableName){
-		return attrNameMap.containsKey(tableName);
+		return (tableIdNameMap != null && tableIdNameMap.containsValue(tableName)) ||
+				(attrNameMap != null && attrNameMap.containsKey(tableName));
 	}
 	
 	@JsonIgnore
@@ -113,6 +120,7 @@ public class LogicSchema implements Serializable{
 	public void setAttrTypeMap(Map<String, List<FieldType>> attrTypeMap) {
 		this.attrTypeMap = attrTypeMap;
 	}
+	
 	public Map<String, String> getTableIdNameMap() {
 		return tableIdNameMap;
 	}
@@ -125,5 +133,19 @@ public class LogicSchema implements Serializable{
 	}
 	public void setAttrIdNameMap(Map<String, String> attrIdNameMap) {
 		this.attrIdNameMap = attrIdNameMap;
+	}
+	
+	public boolean isIndex() {
+		return index;
+	}
+	public void setIndex(boolean index) {
+		this.index = index;
+	}
+	@JsonIgnore
+	public Map<String, String> getTableNameIdMap() {
+		return tableNameIdMap;
+	}
+	public void setTableNameIdMap(Map<String, String> tableNameIdMap) {
+		this.tableNameIdMap = tableNameIdMap;
 	}
 }

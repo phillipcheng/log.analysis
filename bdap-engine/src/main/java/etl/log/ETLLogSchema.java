@@ -43,7 +43,7 @@ public class ETLLogSchema {
 			
 		}
 		JsonUtil.toLocalJsonFile("logschema.txt", ls);
-		LogicSchema ls2 = (LogicSchema) JsonUtil.fromLocalJsonFile("logschema.txt", LogicSchema.class);
+		LogicSchema ls2 = SchemaUtils.fromLocalJsonPath("logschema.txt", LogicSchema.class);
 		assertTrue(ls2.equals(ls));
 	}
 	

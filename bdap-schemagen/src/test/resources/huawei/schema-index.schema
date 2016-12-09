@@ -1,0 +1,11 @@
+{
+  "tableIdNameMap" : {
+    "67109493" : "GCU_Measurement",
+    "83888237" : "IN_Event_Measurement"
+  },
+  "attrIdNameMap" : { },
+  "attrNameMap" : { },
+  "attrTypeMap" : { },
+  "index" : true,
+  "attrIdMap" : { }
+}

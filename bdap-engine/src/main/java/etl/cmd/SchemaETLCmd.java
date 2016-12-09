@@ -4,8 +4,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeoutException;
 
 import javax.script.CompiledScript;
 
@@ -18,12 +21,17 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
 import etl.engine.OutputType;
+import etl.engine.ProcessMode;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
@@ -31,6 +39,7 @@ import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
+import etl.zookeeper.lock.WriteLock;
 
 public abstract class SchemaETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -60,38 +69,25 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	
 	private DBType dbtype = DBType.NONE;
 	
-	public SchemaETLCmd(){
-	}
-	
-	public SchemaETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
-	}
-	
-	public SchemaETLCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
-	}
+	public static int ZK_CONNECTION_TIMEOUT = 120000;//2 minutes
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, true);
+	}
+	/**
+	 * Additional parameters:
+	 * @param loadSchema: if true, load the schema in init
+	 * @param zkUrl: if not null, lock before reade
+	 */
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, 
+			ProcessMode pm, boolean loadSchema){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.schemaFile = super.getCfgString(cfgkey_schema_file, null);
 		this.dbPrefix = super.getCfgString(cfgkey_db_prefix, null);
 		this.getSystemVariables().put(VAR_DB_PREFIX, dbPrefix);
-		logger.info(String.format("schemaFile: %s", schemaFile));
-		if (this.schemaFile!=null){
-			try{
-				Path schemaFilePath = new Path(schemaFile);
-				if (fs.exists(schemaFilePath)){
-					schemaFileName = schemaFilePath.getName();
-					this.logicSchema = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, schemaFile, LogicSchema.class);
-				}else{
-					this.logicSchema = new LogicSchema();
-					logger.warn(String.format("schema file %s not exists.", schemaFile));
-				}
-				this.getSystemVariables().put(VAR_LOGIC_SCHEMA, logicSchema);
-			}catch(Exception e){
-				logger.error("", e);
-			}
+		if (loadSchema){
+			loadSchema(null);
 		}
 		String createSqlExp = super.getCfgString(cfgkey_create_sql, null);
 		if (createSqlExp!=null)
@@ -113,6 +109,128 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		}
 	}
 	
+	protected void loadSchema(String zkUrl){
+		logger.info(String.format("start load schemaFile: %s", schemaFile));
+		if (zkUrl!=null){
+			WriteLock lock=null;
+			boolean finished=false;
+			while(!finished){
+				try {
+					lock = this.getZookeeperLock(zkUrl);
+					if (lock.lock()){
+						while (!lock.isOwner()){
+							Thread.sleep(1000);
+						}
+						fetchLogicSchema();
+						finished=true;
+					}else{
+						Thread.sleep(1000);
+					}
+				}catch(Exception e){
+					logger.error("", e);
+				}finally{
+					try {
+						this.releaseLock(lock);
+					}catch(Exception e){
+						logger.error("", e);
+					}
+				}
+			}
+		}else{
+			fetchLogicSchema();
+		}
+		logger.info(String.format("end load schemaFile: %s", schemaFile));
+	}
+	
+	public static class CountdownWatcher implements Watcher {
+        // XXX this doesn't need to be volatile! (Should probably be final)
+        volatile CountDownLatch clientConnected;
+        volatile boolean connected;
+
+        public CountdownWatcher() {
+            reset();
+        }
+        synchronized public void reset() {
+            clientConnected = new CountDownLatch(1);
+            connected = false;
+        }
+        synchronized public void process(WatchedEvent event) {
+            if (event.getState() == KeeperState.SyncConnected ||
+                event.getState() == KeeperState.ConnectedReadOnly) {
+                connected = true;
+                notifyAll();
+                clientConnected.countDown();
+            } else {
+                connected = false;
+                notifyAll();
+            }
+        }
+        synchronized public boolean isConnected() {
+            return connected;
+        }
+        synchronized public void waitForConnected(long timeout)
+            throws InterruptedException, TimeoutException
+        {
+            long expire = System.currentTimeMillis() + timeout;
+            long left = timeout;
+            while(!connected && left > 0) {
+                wait(left);
+                left = expire - System.currentTimeMillis();
+            }
+            if (!connected) {
+                throw new TimeoutException("Did not connect");
+
+            }
+        }
+        synchronized public void waitForDisconnected(long timeout)
+            throws InterruptedException, TimeoutException
+        {
+            long expire = System.currentTimeMillis() + timeout;
+            long left = timeout;
+            while(connected && left > 0) {
+                wait(left);
+                left = expire - System.currentTimeMillis();
+            }
+            if (connected) {
+                throw new TimeoutException("Did not disconnect");
+
+            }
+        }
+    }
+	
+	protected WriteLock getZookeeperLock(String zookeeperUrl) throws Exception {
+		CountdownWatcher watcher = new CountdownWatcher();
+		ZooKeeper zk = new ZooKeeper(zookeeperUrl, ZK_CONNECTION_TIMEOUT, watcher);
+		WriteLock lock = new WriteLock(zk, this.schemaFile, null);
+		return lock;
+	}
+	
+	protected void releaseLock(WriteLock lock) throws Exception{
+		if (lock!=null){
+			lock.unlock();
+			lock.close();
+			lock.getZookeeper().close();
+		}
+	}
+	
+	public void fetchLogicSchema(){
+		if (this.schemaFile!=null){
+			try{
+				Path schemaFilePath = new Path(schemaFile);
+				if (fs.exists(schemaFilePath)){
+					schemaFileName = schemaFilePath.getName();
+					this.logicSchema = SchemaUtils.fromRemoteJsonPath(fs, schemaFile, LogicSchema.class);
+				}else{
+					this.logicSchema = new LogicSchema();
+					logger.warn(String.format("schema file %s not exists.", schemaFile));
+				}
+				this.getSystemVariables().put(VAR_LOGIC_SCHEMA, logicSchema);
+			}catch(Exception e){
+				logger.error("", e);
+			}
+		}
+	}
+	
 	@Override
 	public VarDef[] getCfgVar(){
 		return (VarDef[]) ArrayUtils.addAll(super.getCfgVar(), new VarDef[]{});
@@ -124,13 +242,13 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	//return loginfo
-	public List<String> updateDynSchema(List<String> createTableSqls){
+	private List<String> flushLogicSchemaAndSql(List<String> createTableSqls) throws Exception {
 		if (createTableSqls.size()>0){
 			//update/create create-table-sql
 			logger.info(String.format("create/update table sqls are:%s", createTableSqls));
 			HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, createTableSqls);
 			//update logic schema file
-			HdfsUtil.toDfsJsonFile(fs, this.schemaFile, logicSchema);
+			SchemaUtils.toRemoteJsonPath(fs, this.schemaFile, fs.isDirectory(new Path(this.schemaFile)), logicSchema, Collections.emptyMap());
 			//execute the sql
 			if (dbtype != DBType.NONE){
 				DBUtil.executeSqls(createTableSqls, super.getPc());
@@ -160,42 +278,80 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			logger.error("", e);
 		}
 	}
-	public List<String> updateSchema(Map<String, List<String>> attrsMap, Map<String, List<FieldType>> attrTypesMap){
+	
+	public List<String> updateSchema(Map<String, List<String>> attrNamesMap, Map<String, List<FieldType>> attrTypesMap){
+		return updateSchema(null, null, attrNamesMap, attrTypesMap);
+	}
+	
+	/**
+	 * @param tIdToNameMap: table id to name map
+	 * @param tnToattrIdsMap: table name to attr id list map
+	 * @param attrNamesMap: table name to attr name list map
+	 * @param attrTypesMap: table name to attr type list map
+	 * @return
+	 */
+	public List<String> updateSchema(Map<String, String> tNameToIdMap, Map<String, List<String>> tnToattrIdsMap, 
+			Map<String, List<String>> attrNamesMap, Map<String, List<FieldType>> attrTypesMap){
 		boolean schemaUpdated = false;
 		List<String> createTableSqls = new ArrayList<String>();
-		for (String newTable: attrsMap.keySet()){
-			List<String> newAttrs = attrsMap.get(newTable);
+		for (String newTable: attrNamesMap.keySet()){
+			List<String> newAttrs = attrNamesMap.get(newTable);
 			List<FieldType> newTypes = attrTypesMap.get(newTable);
-			if (!logicSchema.hasTable(newTable)){
-				//update schema
+			if (tnToattrIdsMap!=null){
+				List<String> attrIds = tnToattrIdsMap.get(newTable);
+				if (attrIds!=null && attrIds.size()==newAttrs.size()){
+					for (int i=0; i<attrIds.size(); i++){
+						String attrId = attrIds.get(i);
+						if (attrId!=null){
+							logicSchema.getAttrIdNameMap().put(attrIds.get(i), newAttrs.get(i));
+						}else{
+							logger.error(String.format("id for field:%s is null.", newAttrs.get(i)));
+						}
+					}
+				}else{
+					logger.error(String.format("id:%s and name:%s for table %s not matching.", attrIds, newAttrs, newTable));
+				}
+			}
+			
+			if (!logicSchema.hasTable(newTable)){//new table
 				logicSchema.updateTableAttrs(newTable, newAttrs);
 				logicSchema.updateTableAttrTypes(newTable, newTypes);
 				schemaUpdated = true;
 				//generate create table
 				createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, 
 						dbPrefix, getDbtype()));
-			}else{
+			}else{//update existing table
 				List<String> existNewAttrs = logicSchema.getAttrNames(newTable);
-				List<FieldType> existNewAttrTypes = logicSchema.getAttrTypes(newTable);
 				if (existNewAttrs.containsAll(newAttrs)){//
-					//do nothing
+					logger.error(String.format("update nothing for %s", newTable));
 				}else{
-					logger.info(String.format("exist attrs for table %s:%s", newTable, existNewAttrs));
-					logger.info(String.format("new attrs for table %s:%s", newTable, newAttrs));
 					//update schema, happens only when the schema is updated by external force
-					logicSchema.updateTableAttrs(newTable, newAttrs);
-					logicSchema.updateTableAttrTypes(newTable, newTypes);
+					logicSchema.addAttributes(newTable, newAttrs);
+					logicSchema.addAttrTypes(newTable, newTypes);
 					schemaUpdated = true;
 					//generate alter table
-					newAttrs.removeAll(existNewAttrs);
-					newTypes.removeAll(existNewAttrTypes);
 					createTableSqls.addAll(DBUtil.genUpdateTableSql(newAttrs, newTypes, newTable, 
 							dbPrefix, getDbtype()));
 				}
 			}
+
+			if (tNameToIdMap!=null){
+				/* Update the table id -> table name mapping */
+				String tid = tNameToIdMap.get(newTable);
+				if (tid!=null){
+					logicSchema.getTableIdNameMap().put(tid, newTable);
+				}else{
+					logger.error(String.format("the id for table:%s is null.", newTable));
+				}
+			}
 		}
 		if (schemaUpdated){
-			return updateDynSchema(createTableSqls);
+			try {
+				return flushLogicSchemaAndSql(createTableSqls);
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+				return null;
+			}
 		}else{
 			return null;
 		}
@@ -244,9 +400,15 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	public String getPathName(Mapper<LongWritable, Text, Text, Text>.Context context){
-		String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
-		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		return pathName;
+		if (context.getInputSplit() instanceof FileSplit){
+			String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+			this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+			return pathName;
+		}else{
+			logger.warn(String.format("can't get path from split:%s", context.getInputSplit().getClass()));
+			return null;
+		}
+		
 	}
 
 	//

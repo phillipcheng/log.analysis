@@ -23,20 +23,18 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.Util;
 
-import org.apache.spark.api.java.function.Function;
-
 import etl.cmd.transform.AggrOp;
 import etl.cmd.transform.AggrOps;
 import etl.cmd.transform.GroupOp;
 import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
+import etl.engine.ProcessMode;
 import etl.util.FieldType;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
@@ -96,16 +94,20 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	}
 	
 	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public CsvAggregateCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
 		aoMapMap = new HashMap<String, AggrOps>();
 		groupKeysMap = new HashMap<String, GroupOp>();
@@ -334,7 +336,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	}
 
 	//tableKey.aggrKeys,aggrValues
-	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value){
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
@@ -342,19 +344,19 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			CSVParser parser = CSVParser.parse(row, CSVFormat.DEFAULT);
 			List<CSVRecord> csvl = parser.getRecords();
 			String oldTableName = SINGLE_TABLE;
-			for (CSVRecord r: csvl){
-				GroupOp groupKeys = null;
-				if (oldTables==null){
-					groupKeys = groupKeysMap.get(SINGLE_TABLE);
+			GroupOp groupKeys = null;
+			if (oldTables==null){
+				groupKeys = groupKeysMap.get(SINGLE_TABLE);
+			}else{
+				if (groupKeysMap.containsKey(tableName)){
+					oldTableName = tableName;
+					groupKeys = groupKeysMap.get(tableName);
 				}else{
-					if (groupKeysMap.containsKey(tableName)){
-						oldTableName = tableName;
-						groupKeys = groupKeysMap.get(tableName);
-					}else{
-						logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), tableName));
-						break;
-					}
+					logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), tableName));
+					return ret;
 				}
+			}
+			for (CSVRecord r: csvl){
 				String v = row;
 				if (!mergeTable){
 					List<List<String>> keys = getCsvFields(r, groupKeys);
@@ -362,7 +364,11 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 						oKey.add(0, oldTableName);
 						String newKey = Util.getCsv(oKey, false);
 						logger.debug(String.format("key:%s, value:%s", newKey, v));
-						ret.add(new Tuple2<String, String>(newKey, v));
+						if (context==null){
+							ret.add(new Tuple2<String, String>(newKey, v));
+						}else{
+							context.write(new Text(newKey), new Text(v));
+						}
 					}
 				}else{
 					List<String> newTableNames = oldnewTableMap.get(tableName);
@@ -373,7 +379,11 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 							okey.add(0, newTableName);
 							String newKey = Util.getCsv(okey, false);
 							logger.debug(String.format("key:%s, value:%s", newKey, v));
-							ret.add(new Tuple2<String, String>(newKey, v));
+							if (context==null){
+								ret.add(new Tuple2<String, String>(newKey, v));
+							}else{
+								context.write(new Text(newKey), new Text(v));
+							}
 						}
 					}
 				}
@@ -405,7 +415,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
 						((FileSplit) context.getInputSplit()).getPath().getName()));
 			}else{
-				List<Tuple2<String, String>> it = flatMapToPair(tableName, row);
+				List<Tuple2<String, String>> it = flatMapToPair(tableName, row, context);
 				for (Tuple2<String,String> t : it){
 					context.write(new Text(t._1), new Text(t._2));
 				}
@@ -453,7 +463,11 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 							String strv = r.get(idx);
 							double v =0d;
 							if (!"".equals(strv.trim())){
-								v= Double.parseDouble(strv);
+								try {
+									v= Double.parseDouble(strv);
+								}catch(Exception e){
+									v=0d;//do nothing, if failed to parse, treat as 0
+								}
 							}
 							if (AggrOperator.sum==op || AggrOperator.avg==op){
 								aggrValue +=v;
@@ -566,7 +580,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			private static final long serialVersionUID = 1L;
 			@Override
 			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-				List<Tuple2<String, String>> ret = flatMapToPair(t._1, t._2);
+				List<Tuple2<String, String>> ret = flatMapToPair(t._1, t._2, null);
 				return ret.iterator();
 			}
 		});

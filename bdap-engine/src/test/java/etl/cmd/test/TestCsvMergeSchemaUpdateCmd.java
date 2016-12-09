@@ -14,6 +14,7 @@ import etl.cmd.CsvMergeCmd;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.DBUtil;
+import etl.util.SchemaUtils;
 
 public class TestCsvMergeSchemaUpdateCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvMergeSchemaUpdateCmd.class);
@@ -48,7 +49,7 @@ public class TestCsvMergeSchemaUpdateCmd extends TestETLCmd {
 		DBUtil.executeSqls(dropSqls, cmd.getPc());
 		
 		//check the schema updated
-		LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
+		LogicSchema ls = SchemaUtils.fromRemoteJsonPath(getFs(), schemaFolder + schemaFile, LogicSchema.class);
 		String newTableName = "MyCoreMerge_";
 		assertTrue(ls.hasTable(newTableName));
 		List<String> attrs = ls.getAttrNames(newTableName);

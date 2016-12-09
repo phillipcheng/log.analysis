@@ -7,10 +7,15 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
+
 
 public class TestShowIps {
 
+	public static final Logger logger = LogManager.getLogger(TestShowIps.class);
+	
 	@Test
     public void testShowIps() {
         try {

@@ -20,6 +20,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
+import etl.engine.ProcessMode;
 
 //key colon value format to csv
 public class KcvToCsvCmd extends ETLCmd{
@@ -45,12 +46,16 @@ public class KcvToCsvCmd extends ETLCmd{
 	}
 	
 	public KcvToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public KcvToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.file);
 		String strVal = super.getCfgString(cfgkey_record_start, null);
 		if (strVal!=null){

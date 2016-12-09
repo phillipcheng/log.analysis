@@ -30,6 +30,7 @@ import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.OutputType;
+import etl.engine.ProcessMode;
 import etl.util.CombineWithFileNameTextInputFormat;
 import etl.util.DBUtil;
 import etl.util.FieldType;
@@ -66,16 +67,20 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	}
 	
 	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.line);
 		String rowValidationStr;
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
@@ -119,7 +124,6 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	@Override
 	public List<String> sgProcess(){
 		List<String> attrs = logicSchema.getAttrNames(this.oldTable);
-		List<String> createTableSqls = new ArrayList<String>();
 		List<String> addFns = new ArrayList<String>();
 		List<FieldType> addFts = new ArrayList<FieldType>();
 		for (int i=0; i<addFieldsNames.size(); i++){
@@ -132,11 +136,11 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			}
 		}
 		if (addFns.size()>0){
-			logicSchema.addAttributes(oldTable, addFns);
-			logicSchema.addAttrTypes(oldTable, addFts);
-			createTableSqls.addAll(DBUtil.genUpdateTableSql(addFns, addFts, oldTable, 
-					dbPrefix, super.getDbtype()));
-			return super.updateDynSchema(createTableSqls);
+			Map<String, List<String>> attrsMap = new HashMap<String, List<String>>();
+			Map<String, List<FieldType>> attrTypesMap =new HashMap<String, List<FieldType>>();
+			attrsMap.put(oldTable, addFns);
+			attrTypesMap.put(oldTable, addFts);
+			return super.updateSchema(attrsMap, attrTypesMap);
 		}else{
 			return null;
 		}

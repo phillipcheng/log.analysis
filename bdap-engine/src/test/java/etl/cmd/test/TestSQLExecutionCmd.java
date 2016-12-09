@@ -12,7 +12,7 @@ public class TestSQLExecutionCmd extends TestETLCmd{
 	private static final String cmdClassName = "etl.cmd.SQLExecutionCmd";
 
 	@Test
-	public void testSgProcess() throws Exception{
+	public void testSgProcess() throws Exception {
 		String staticCfgName = "conf.properties";
 		String wfid="wfid1";
 		

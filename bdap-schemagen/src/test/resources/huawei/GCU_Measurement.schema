@@ -1,0 +1,110 @@
+{
+  "tableIdNameMap" : { },
+  "attrIdNameMap" : {
+    "67195748" : "VS_GCU_CPUPORT_RX_UCPKTS",
+    "67204339" : "VS_GCU_MSGLOAD_MEAN",
+    "67194447" : "VS_GCU_CPULOAD_MAX",
+    "67195755" : "VS_GCU_CPUPORT_TX_ERRPKTS",
+    "67204336" : "VS_GCU_CPULOAD_MEAN",
+    "67195754" : "VS_GCU_CPUPORT_RX_ERRPKTS",
+    "67195753" : "VS_GCU_CPUPORT_TX_BCPKTS",
+    "67204338" : "VS_GCU_CPULOAD_LESS",
+    "67195752" : "VS_GCU_CPUPORT_RX_BCPKTS",
+    "67204337" : "VS_GCU_CPULOAD_OVER",
+    "67195751" : "VS_GCU_CPUPORT_TX_MCPKTS",
+    "67195750" : "VS_GCU_CPUPORT_RX_MCPKTS",
+    "67194452" : "VS_GCU_MSGLOAD_MAX",
+    "67195749" : "VS_GCU_CPUPORT_TX_UCPKTS"
+  },
+  "attrNameMap" : {
+    "GCU_Measurement" : [ "VS_GCU_CPULOAD_MAX", "VS_GCU_MSGLOAD_MAX", "VS_GCU_CPUPORT_RX_UCPKTS", "VS_GCU_CPUPORT_TX_UCPKTS", "VS_GCU_CPUPORT_RX_MCPKTS", "VS_GCU_CPUPORT_TX_MCPKTS", "VS_GCU_CPUPORT_RX_BCPKTS", "VS_GCU_CPUPORT_TX_BCPKTS", "VS_GCU_CPUPORT_RX_ERRPKTS", "VS_GCU_CPUPORT_TX_ERRPKTS", "VS_GCU_CPULOAD_MEAN", "VS_GCU_CPULOAD_OVER", "VS_GCU_CPULOAD_LESS", "VS_GCU_MSGLOAD_MEAN" ]
+  },
+  "attrTypeMap" : {
+    "GCU_Measurement" : [ {
+      "type" : "FLOAT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "MAX"
+    }, {
+      "type" : "FLOAT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "MAX"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0,
+      "aggrType" : "SUM"
+    }, {
+      "type" : "FLOAT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "AVG"
+    }, {
+      "type" : "FLOAT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "AVG"
+    }, {
+      "type" : "FLOAT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "AVG"
+    }, {
+      "type" : "FLOAT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "AVG"
+    } ]
+  },
+  "index" : false
+}

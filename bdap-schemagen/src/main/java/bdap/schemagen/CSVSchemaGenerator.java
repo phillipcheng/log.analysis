@@ -2,9 +2,11 @@ package bdap.schemagen;
 
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -15,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import bdap.schemagen.config.Config;
 import bdap.schemagen.config.FieldConfig;
 import bdap.schemagen.config.ItemConfig;
+import bdap.schemagen.datamodel.GenLogicSchema;
 import bdap.schemagen.spi.SchemaGenerator;
 import etl.engine.LogicSchema;
 import etl.util.AggregationType;
@@ -24,9 +27,11 @@ import etl.util.VarType;
 public class CSVSchemaGenerator implements SchemaGenerator {
 	public static final Logger logger = LogManager.getLogger(CSVSchemaGenerator.class);
 	private static final String DEFAULT_NAME_PREFIX = "UNKNOWN_";
+	private static final int DEFAULT_NUMERIC_PRECISION = 37;
+	private static final int DEFAULT_NUMERIC_SCALE = 15;
 
 	public LogicSchema generate(final Reader reader, Config config) throws Exception {
-		LogicSchema ls = new LogicSchema();
+		GenLogicSchema ls = new GenLogicSchema();
 		CSVParser parser = null;
 		try {
 			parser = new CSVParser(reader, CSVFormat.DEFAULT.withTrim());
@@ -50,6 +55,7 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 				String[] tmp;
 				String[] tmpID;
 				int fieldSize;
+				List<String> attrIds;
 				List<String> attributes;
 				List<FieldType> attrTypes;
 
@@ -71,33 +77,48 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 					throw new IllegalArgumentException("Table fields must be configured!");
 				}
 
+				attrIds = null;
 				attributes = null;
 				attrTypes = null;
 				currentTableID = "";
+				Set<String> attributeLCNameToIdMap = null;//attribute lower case name set
 
 				while (i.hasNext()) {
 					record = i.next();
 					tableID = record.get(tableIdIndex);
 					if (tableID != null && tableID.length() > 0 && !currentTableID.equals(tableID)) {
 						/* ADD new table schema */
+						attrIds = new ArrayList<String>();
 						attributes = new ArrayList<String>();
+						attributeLCNameToIdMap = new HashSet<String>();
 						attrTypes = new ArrayList<FieldType>();
 						tableName = null;
 						if (tableNameIndex != -1) {
 							tableName = record.get(tableNameIndex);
 							if (tableName != null && tableName.length() > 0) {
 								tableName = tableName.replaceAll("\\W", "_");
+								if (Character.isDigit(tableName.charAt(0))){//avoid leading digit for table name
+									tableName="_" + tableName;
+								}
 							}
 						}
-
+						
 						if (tableName != null && tableName.length() > 0) {
+							if (ls.getTableNameIdMap().containsKey(tableName.toLowerCase())){
+								//duplicated table name, different id, update name
+								tableName = tableName + '_' + tableID;
+							}
+							ls.getAttrIdMap().put(tableName, attrIds);
 							ls.addAttributes(tableName, attributes);
 							ls.addAttrTypes(tableName, attrTypes);
 							ls.getTableIdNameMap().put(tableID, tableName);
+							ls.getTableNameIdMap().put(tableName.toLowerCase(), tableID);
 						} else {
+							ls.getAttrIdMap().put(tableID, attrIds);
 							ls.addAttributes(tableID, attributes);
 							ls.addAttrTypes(tableID, attrTypes);
 							ls.getTableIdNameMap().put(tableID, tableID);
+							ls.getTableNameIdMap().put(tableID.toLowerCase(), tableID);
 						}
 						
 						currentTableID = tableID;
@@ -171,22 +192,32 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 												fieldName = f.getMultipleDefaultNamePrefix() + k;
 											else
 												fieldName = DEFAULT_NAME_PREFIX + record.getRecordNumber() + "_" + k;
+											//change fieldName if necessary to avoid duplication
+											while (attributeLCNameToIdMap.contains(fieldName.toLowerCase())){
+												fieldName = "_" + fieldName;
+											}
 											attributes.add(fieldName);
+											attributeLCNameToIdMap.add(fieldName.toLowerCase());
 											
-											if (tmpID != null && k < tmpID.length && tmpID[k] != null)
-												ls.getAttrIdNameMap().put(tmpID[k].trim(), fieldName);
+											if (tmpID != null && k < tmpID.length && tmpID[k] != null) {
+												fieldID = tmpID[k].trim();
+												ls.getAttrIdNameMap().put(fieldID, fieldName);
+												attrIds.add(fieldID);
+											}
 											
 											try {
 												if (fieldType != null) {
 													if ("int".equals(fieldType))
 														attrTypes.add(new FieldType(VarType.NUMERIC, 10, 0, fieldAggrType));
+													else if ("numeric".equals(fieldType.substring(0, fieldType.length() > 7 ? 7 : fieldType.length())))
+														attrTypes.add(new FieldType(VarType.NUMERIC, getPrecision(fieldType), getScale(fieldType), fieldAggrType));
 													else
 														attrTypes.add(new FieldType(VarType.fromValue(fieldType), fieldSize, fieldAggrType));
 												} else {
 													attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType()), fieldAggrType));
 												}
 											} catch (Exception e) {
-												logger.error("Unknown type: {}", fieldType);
+												logger.error(String.format("Unknown type: %s", fieldType),e);
 												attrTypes.add(new FieldType(VarType.OBJECT, fieldAggrType));
 											}
 											
@@ -195,22 +226,31 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 										
 									} else {
 										fieldName = fieldName.trim().replaceAll("\\W", "_");
+										//change fieldName if necessary to avoid duplication
+										while (attributeLCNameToIdMap.contains(fieldName.toLowerCase())){
+											fieldName = "_" + fieldName;
+										}
 										attributes.add(fieldName);
+										attributeLCNameToIdMap.add(fieldName.toLowerCase());
 										
-										if (fieldID != null && fieldID.length() > 0)
+										if (fieldID != null && fieldID.length() > 0) {
 											ls.getAttrIdNameMap().put(fieldID, fieldName);
+											attrIds.add(fieldID);
+										}
 										
 										try {
 											if (fieldType != null) {
 												if ("int".equals(fieldType))
 													attrTypes.add(new FieldType(VarType.NUMERIC, 10, 0, fieldAggrType));
+												else if ("numeric".equals(fieldType.substring(0, fieldType.length() > 7 ? 7 : fieldType.length())))
+													attrTypes.add(new FieldType(VarType.NUMERIC, getPrecision(fieldType), getScale(fieldType), fieldAggrType));
 												else
 													attrTypes.add(new FieldType(VarType.fromValue(fieldType), fieldSize, fieldAggrType));
 											} else {
 												attrTypes.add(new FieldType(VarType.fromValue(f.getDefaultFieldType()), fieldAggrType));
 											}
 										} catch (Exception e) {
-											logger.error("Unknown type: {}", fieldType);
+											logger.error("Unknown type: {}", fieldType, fieldID, fieldName, e);
 											attrTypes.add(new FieldType(VarType.OBJECT, fieldAggrType));
 										}
 									}
@@ -231,6 +271,42 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 				parser.close();
 		}
 		return ls;
+	}
+
+	private int getScale(String fieldType) {
+		String t = fieldType.substring(7);
+		t = t.trim();
+		if (t.startsWith("(") && t.endsWith(")")) {
+			int index = t.indexOf(",");
+			if (index != -1)
+				try {
+					return Integer.parseInt(t.substring(index + 1, t.length() - 1));
+				} catch (Exception e) {
+					logger.debug(e.getMessage(), e);
+					return DEFAULT_NUMERIC_SCALE;
+				}
+			else
+				return DEFAULT_NUMERIC_SCALE;
+		} else {
+			return DEFAULT_NUMERIC_SCALE;
+		}
+	}
+
+	private int getPrecision(String fieldType) {
+		String t = fieldType.substring(7);
+		if (t.startsWith("(") && t.endsWith(")")) {
+			int index = t.indexOf(",");
+			if (index == -1)
+				index = t.indexOf(")");
+			try {
+				return Integer.parseInt(t.substring(1, index).trim());
+			} catch (Exception e) {
+				logger.debug(e.getMessage(), e);
+				return DEFAULT_NUMERIC_PRECISION;
+			}
+		} else {
+			return DEFAULT_NUMERIC_PRECISION;
+		}
 	}
 
 	private AggregationType toAggregationType(String aggrType, Map<String, String> aggrTypeMapping) {
@@ -292,34 +368,108 @@ public class CSVSchemaGenerator implements SchemaGenerator {
 			commonAttrNames = null;
 			commonAttrTypes = null;
 		}
-		if (ls != null && commonAttrNames != null)
-			for (List<String> attrs: ls.getAttrNameMap().values()) {
-				attrs.addAll(0, commonAttrNames);
-			}
-		if (ls != null && commonAttrTypes != null)
-			for (List<FieldType> attrTypes: ls.getAttrTypeMap().values()) {
-				attrTypes.addAll(0, commonAttrTypes);
-			}
-		return ls;
-	}
-
-	public LogicSchema joinSchema(LogicSchema ls, LogicSchema additionalLs) throws Exception {
-		if (additionalLs != null) {
-			List<String> attrNames;
-			List<FieldType> attrTypes;
-			String tableName;
-			for (Map.Entry<String, String> entry : additionalLs.getTableIdNameMap().entrySet()) {
-				tableName = ls.getTableIdNameMap().get(entry.getKey());
-				if (tableName != null) {
-					attrNames = additionalLs.getAttrNames(entry.getValue());
-					ls.getAttrNames(tableName).addAll(0, attrNames);
-					attrTypes = additionalLs.getAttrTypes(entry.getValue());
-					ls.getAttrTypes(tableName).addAll(0, attrTypes);
-				} else {
-					logger.error("Can't find table name in left logic schema for table ID: {}!", entry.getKey());
+		if (ls != null && commonAttrNames != null) {
+			if (ls.getTableIdNameMap().size() > 0) {
+				List<String> attrs;
+				for (String tableName: ls.getTableIdNameMap().values()) {
+					attrs = ls.getAttrNames(tableName);
+					if (attrs != null)
+						attrs.addAll(0, commonAttrNames);
+				}
+			} else {
+				for (List<String> attrs: ls.getAttrNameMap().values()) {
+					attrs.addAll(0, commonAttrNames);
 				}
 			}
 		}
+		if (ls != null && commonAttrTypes != null)
+			if (ls.getTableIdNameMap().size() > 0) {
+				List<FieldType> attrTypes;
+				for (String tableName: ls.getTableIdNameMap().values()) {
+					attrTypes = ls.getAttrTypes(tableName);
+					if (attrTypes != null)
+						attrTypes.addAll(0, commonAttrTypes);
+				}
+				
+			} else {
+				for (List<FieldType> attrTypes: ls.getAttrTypeMap().values()) {
+					attrTypes.addAll(0, commonAttrTypes);
+				}
+			}
+		if (ls != null && commonLs.getAttrIdNameMap() != null)
+			ls.getAttrIdNameMap().putAll(commonLs.getAttrIdNameMap());
+		if (ls != null && ls instanceof GenLogicSchema && commonLs instanceof GenLogicSchema &&
+				((GenLogicSchema)commonLs).getAttrIdMap().containsKey("common")) {
+			List<String> commonAttrIds;
+			for (List<String> attrIds: ((GenLogicSchema)ls).getAttrIdMap().values()) {
+				commonAttrIds = ((GenLogicSchema)commonLs).getAttrIdMap().get("common");
+				attrIds.addAll(0, commonAttrIds);
+			}
+		}
 		return ls;
+	}
+
+	//outer join by table name
+	public LogicSchema outerJoinSchema(LogicSchema left, LogicSchema right) throws Exception {
+		GenLogicSchema output = new GenLogicSchema();
+		List<String> attrNames;
+		List<FieldType> attrTypes;
+		
+		if (left != null) {
+			output.getTableIdNameMap().putAll(left.getTableIdNameMap());
+			if (left.getTableIdNameMap().size() > 0) {
+				for (String tableName: left.getTableIdNameMap().values()) {
+					attrNames = left.getAttrNames(tableName);
+					if (attrNames != null)
+						output.addAttributes(tableName, left.getAttrNames(tableName));
+					else
+						output.addAttributes(tableName, new ArrayList<String>());
+					attrTypes = left.getAttrTypes(tableName);
+					if (attrTypes != null)
+						output.addAttrTypes(tableName, left.getAttrTypes(tableName));
+					else
+						output.addAttrTypes(tableName, new ArrayList<FieldType>());
+				}
+			} else {
+				output.getAttrNameMap().putAll(left.getAttrNameMap());
+				output.getAttrTypeMap().putAll(left.getAttrTypeMap());
+			}
+			output.getAttrIdNameMap().putAll(left.getAttrIdNameMap());
+			if (left instanceof GenLogicSchema)
+				output.getAttrIdMap().putAll(((GenLogicSchema) left).getAttrIdMap());
+		}
+		if (right != null) {
+			String tableName;
+			
+			for (Map.Entry<String, String> entry : right.getTableIdNameMap().entrySet()) {
+				tableName = output.getTableIdNameMap().get(entry.getKey());
+				attrNames = right.getAttrNames(entry.getValue());
+				attrTypes = right.getAttrTypes(entry.getValue());
+				if (tableName != null) {
+					output.getAttrNames(tableName).addAll(0, attrNames);
+					output.getAttrTypes(tableName).addAll(0, attrTypes);
+					if (right instanceof GenLogicSchema && ((GenLogicSchema) right).getAttrIdMap().containsKey(tableName)) {
+						if (output.getAttrIdMap().containsKey(tableName))
+							output.getAttrIdMap().get(tableName).addAll(0, ((GenLogicSchema) right).getAttrIdMap().get(tableName));
+						else
+							output.getAttrIdMap().put(tableName, ((GenLogicSchema) right).getAttrIdMap().get(tableName));
+					}
+				} else {
+					tableName = entry.getValue(); /* Table name is right schema's */
+					output.getTableIdNameMap().put(entry.getKey(), entry.getValue());
+					output.getAttrNameMap().put(tableName, attrNames);
+					output.getAttrTypeMap().put(tableName, attrTypes);
+					if (right instanceof GenLogicSchema && ((GenLogicSchema) right).getAttrIdMap().containsKey(tableName))
+						output.getAttrIdMap().put(tableName, ((GenLogicSchema) right).getAttrIdMap().get(tableName));
+				}
+			}
+			
+			/* Try to add the attribute ID-name map */
+			for (Map.Entry<String, String> entry : right.getAttrIdNameMap().entrySet()) {
+				if (!output.getAttrIdNameMap().containsKey(entry.getKey()))
+					output.getAttrIdNameMap().put(entry.getKey(), entry.getValue());
+			}
+		}
+		return output;
 	}
 }
