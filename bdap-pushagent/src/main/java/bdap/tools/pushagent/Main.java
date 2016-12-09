@@ -39,6 +39,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -298,7 +299,7 @@ public class Main implements Job {
 		
 		if (config != null && !config.isEmpty()) {
 			// Grab the Scheduler instance from the Factory
-			Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+			final Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
 	
 			// and start it off
 			scheduler.start();
@@ -306,6 +307,8 @@ public class Main implements Job {
 			JobDetail job = JobBuilder.newJob(Main.class).withIdentity("MainJob", PUSH_AGENT_GROUP).build();
 			Trigger trigger;
 			Element e;
+			
+			scheduler.addJob(job, true);
 			
 			for (DirConfig dc: config.values()) {
 				if ((e = currentElement(dc.getElements())) != null) {
@@ -325,7 +328,7 @@ public class Main implements Job {
 					trigger.getJobDataMap().put(DEST_SERVER_PASS, dc.getDestServerPass());
 					trigger.getJobDataMap().put(DEST_SERVER_DIR_RULE, dc.getDestServerDirRule());
 			
-					scheduler.scheduleJob(job, trigger);
+					scheduler.scheduleJob(trigger);
 				}
 			}
 	
@@ -389,7 +392,8 @@ public class Main implements Job {
 	private static boolean existsJob(Scheduler scheduler) throws Exception {
 		for (String group : scheduler.getJobGroupNames()) {
 			// enumerate each job in group
-			if (scheduler.getJobKeys(GroupMatcher.groupEquals(group)).iterator().hasNext())
+			GroupMatcher<JobKey> m = GroupMatcher.groupEquals(group);
+			if (scheduler.getJobKeys(m).iterator().hasNext())
 				return true;
 		}
 		return false;
