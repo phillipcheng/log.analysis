@@ -15,11 +15,9 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import etl.util.ScriptEngineUtil;
 import etl.util.XmlInputStream;
 
 public class XmlRecordReader implements RecordReader<LongWritable, Text> {
@@ -177,6 +175,10 @@ public class XmlRecordReader implements RecordReader<LongWritable, Text> {
 
 	@Override
 	public void close() throws IOException {
+		if (currentSectionIn != null) {
+			currentSectionIn.close();
+			currentSectionIn = null;
+		}
 		if (buffer != null) {
 			buffer.close();
 			buffer = null;
@@ -234,6 +236,10 @@ public class XmlRecordReader implements RecordReader<LongWritable, Text> {
 				value.append(footerBuf, 0, footerBuf.length);
 				return true;
 			} else if (currentSectionIn != null) {
+				/* Close the previous section input stream */
+				currentSectionIn.close();
+				
+				/* Get the next session input stream */
 				currentSectionIn = nextSection(fsin, startTag, endTag, rowStartTag, rowEndTag);
 				if (currentSectionIn != null) {
 					value.set(header);
