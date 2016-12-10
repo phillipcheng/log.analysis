@@ -11,6 +11,7 @@ import java.nio.file.StandardOpenOption;
 import org.apache.log4j.Logger;
 
 import etl.engine.ETLCmd;
+import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.Node;
 
@@ -47,7 +48,7 @@ public class SparkGenerator {
 		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){\n", className));
 		sb.append("init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);}\n");
 		sb.append("public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){\n");
-		sb.append("super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);}\n");
+		sb.append("super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, etl.engine.ProcessMode.Single);}\n");
 		//gen sgProcess
 		sb.append("public List<String> sgProcess() {\n");
 		sb.append("List<String> retInfo = new ArrayList<String>();\n");
@@ -55,6 +56,8 @@ public class SparkGenerator {
 		sb.append("JavaSparkContext jsc = new JavaSparkContext(conf);\n");
 		//gen cmds
 		List<Node> nodes = flow.getTopoOrder();
+		List<Data> datas = flow.getData();
+		
 		sb.append("jsc.close();\n");
 		sb.append("return retInfo;");
 		sb.append("}\n");

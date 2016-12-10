@@ -236,10 +236,12 @@ public class FlowDeployer {
 		}else{
 			String jsonFile = String.format("%s/%s/%s.json", localProjectFolder, flowName, flowName);
 			Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
-			if (EngineType.oozie==et){
-				ofm.deployFlowFromJson(projectName, flow, this, this.getOC(), this.getEC());
-			}else{
-				sfm.deployFlowFromJson(projectName, flow, this, this.getSSC(), this.getEC());
+			if (flow!=null){
+				if (EngineType.oozie==et){
+					ofm.deployFlowFromJson(projectName, flow, this, this.getOC(), this.getEC());
+				}else{
+					sfm.deployFlowFromJson(projectName, flow, this, this.getSSC(), this.getEC());
+				}
 			}
 		}
 	}
