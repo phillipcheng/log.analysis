@@ -10,9 +10,9 @@ import etl.flow.test.FlowTest;
 import etl.flow.test.oozie.TestOozieFlow;
 
 public class TestSparkFlow {
-public static final Logger logger = LogManager.getLogger(TestOozieFlow.class);
+	public static final Logger logger = LogManager.getLogger(TestOozieFlow.class);
 	
-	private FlowDeployer deployer = new FlowDeployer();
+	private FlowDeployer deployer = new FlowDeployer("testFlow.cloudera.properties");
 	private FlowTest ft = new FlowTest();
 	
 	@Test

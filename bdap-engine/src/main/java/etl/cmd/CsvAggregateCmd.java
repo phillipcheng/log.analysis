@@ -335,8 +335,14 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		super.genSchemaSql(attrsMap, attrTypesMap, lsFile, sqlFile);
 	}
 
-	//tableKey.aggrKeys,aggrValues
-	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
+	/**
+	 * 
+	 * @param tableName: oldTableName or empty
+	 * @param value : tableKey.aggrKeys,aggrValues
+	 * @param context
+	 * @return
+	 */
+	private List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
@@ -490,7 +496,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		return aggrValues;
 	}
 	
-	public Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
+	private Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
 		super.init();
 		String[] kl = key.toString().split(KEY_SEP, -1);
 		String tableName = kl[0];

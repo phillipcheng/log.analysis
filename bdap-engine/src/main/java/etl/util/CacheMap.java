@@ -1,5 +1,6 @@
 package etl.util;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
 import com.google.common.cache.LoadingCache;
 
-public class CacheMap<T> implements Map<String, T> {
+public class CacheMap<T> implements Map<String, T>, Serializable{
 	public static final Logger logger = LogManager.getLogger(CacheMap.class);
 	private Cache<String, T> cache;
 	

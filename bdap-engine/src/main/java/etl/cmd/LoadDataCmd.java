@@ -1,5 +1,6 @@
 package etl.cmd;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,16 +10,25 @@ import java.util.Map;
 
 import javax.script.CompiledScript;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
 
+import bdap.util.HdfsUtil;
 import etl.engine.ProcessMode;
+import etl.spark.RDDMultipleTextOutputFormat;
 import etl.engine.ETLCmd;
 import etl.util.DBType;
 import etl.util.DBUtil;
@@ -32,10 +42,11 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public static final Logger logger = LogManager.getLogger(LoadDataCmd.class);
 	//cfgkey
 	public static final String cfgkey_webhdfs="hdfs.webhdfs.root";
-	public static final String cfgkey_csvfile = "csv.file";
+	public static final String cfgkey_csvfile = "csv.file";//
 	public static final String cfgkey_load_sql = "load.sql";
 	public static final String cfgkey_table_names="table.names";
 	public static final String cfgkey_csv_suffix ="csv.suffix";
+	public static final String cfgkey_dbfile_path="dbfile.path";//for spark to generate dbinput files
 	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
 	public static final String VAR_USERNAME="userName";
@@ -50,6 +61,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	
 	private transient CompiledScript csCsvFile;
 	private transient CompiledScript csLoadSql;
+	private transient CompiledScript csDbInputPath;//for spark to generate dbinput files
 	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
 	
 	public LoadDataCmd(){
@@ -90,6 +102,10 @@ public class LoadDataCmd extends SchemaETLCmd{
 			csLoadSql = ScriptEngineUtil.compileScript(loadSql);
 		}else{
 			logger.warn(String.format("loadSql is not specified."));
+		}
+		String dbInputPath = super.getCfgString(cfgkey_dbfile_path, null);
+		if (dbInputPath!=null){
+			this.csDbInputPath = ScriptEngineUtil.compileScript(dbInputPath);
 		}
 	}
 	
@@ -171,10 +187,8 @@ public class LoadDataCmd extends SchemaETLCmd{
 		
 		return  logInfo;
 	}
-	
-	public Map<String, Object> mapProcess(long offset, String row,
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		Map<String, Object> ret = new HashMap<String, Object>();
+	//return table name to file name mapping
+	private List<Tuple2<String, String>> flatMapToPair(String row){
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
 		if (row.startsWith("hdfs://")) {
 			/* Locate from the root path */
@@ -188,15 +202,20 @@ public class LoadDataCmd extends SchemaETLCmd{
 		}else{
 			vl.add(new Tuple2<String, String>(NO_TABLE_CONFIGURED, row));
 		}
+		return vl;
+	}
+	
+	@Override
+	public Map<String, Object> mapProcess(long offset, String row,
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		List<Tuple2<String, String>> vl = flatMapToPair(row);
 		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
 		return ret;
 	}
 	
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
+	private int reduceByKey(String key, String[] files) throws Exception{
 		List<String> copysqls = new ArrayList<String>();
-		List<String[]> ret = new ArrayList<String[]>();
-		String[] files = toFiles(values);
 		logger.info(String.format("in reduce for key:%s, we need to load file:%s", key.toString(), Arrays.toString(files)));
 		if (NO_TABLE_CONFIGURED.equals(key.toString()))
 			copysqls.addAll(
@@ -207,15 +226,73 @@ public class LoadDataCmd extends SchemaETLCmd{
 				prepareTableCopySQLs(key.toString(), files)
 			);
 		if (super.getDbtype()!=DBType.NONE){
-			int rowsAdded = DBUtil.executeSqls(copysqls, super.getPc());
-			ret.add(new String[]{Integer.toString(rowsAdded), null, ETLCmd.SINGLE_TABLE});
+			return DBUtil.executeSqls(copysqls, super.getPc());
+		}else{
+			return 0;
 		}
+	}
+	
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
+		String[] files = TextItToFiles(values);
+		int rows = reduceByKey(key.toString(), files);
+		List<String[]> ret = new ArrayList<String[]>();
+		ret.add(new String[]{key.toString(), Integer.toString(rows), ETLCmd.SINGLE_TABLE});
 		return ret;
 	}
+	
+	/**
+	 * @param input: tuple of tableName and one line of content
+	 * @param jsc
+	 * @return
+	 */
+	@Override
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+		super.init();
+		
+		String dbInputPath = ScriptEngineUtil.eval(this.csDbInputPath, this.getSystemVariables());
+		try{
+			getFs().delete(new Path(dbInputPath), true);
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), dbInputPath), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
+		JavaPairRDD<String, String> output = input.keys().mapToPair(new PairFunction<String, String, String>(){
+			@Override
+			public Tuple2<String, String> call(String t) throws Exception {
+				return new Tuple2<String, String>(t, String.format("%s%s%s", getDefaultFs(), dbInputPath, t));
+			}
+		});
+		
+		JavaPairRDD<String, String> csvaggr = null;
+		
+		csvaggr = output.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				String[] files = StringItToFiles(t._2);
+				int rows = reduceByKey(t._1, files);
+				return new Tuple2<String, String>(t._1, Integer.toString(rows));
+			}
+		});
+		
+		return csvaggr;
+	}
 
-	private String[] toFiles(Iterable<Text> values) {
+	private String[] TextItToFiles(Iterable<Text> values) {
 		List<String> files = new ArrayList<String>();
 		Iterator<Text> it = values.iterator();
+		while (it.hasNext()) {
+			String v = it.next().toString();
+			files.add(v);
+		}
+		return files.toArray(EMPTY_STRING_ARRAY);
+	}
+	
+	private String[] StringItToFiles(Iterable<String> values) {
+		List<String> files = new ArrayList<String>();
+		Iterator<String> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();
 			files.add(v);
@@ -234,5 +311,4 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public void setSgCopySql(List<String> sgCopySql) {
 		this.sgCopySql = sgCopySql;
 	}
-
 }

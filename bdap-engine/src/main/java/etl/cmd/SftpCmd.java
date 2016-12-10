@@ -96,6 +96,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		String incomingFolderExp = super.getCfgString(cfgkey_incoming_folder, null);
 		if (incomingFolderExp!=null){
 			this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
+			logger.info(String.format("incomingFolder/toFolder:%s", incomingFolder));
 		}
 		this.host = super.getCfgString(cfgkey_sftp_host, null);
 		this.port = super.getCfgInt(cfgkey_sftp_port, 22);

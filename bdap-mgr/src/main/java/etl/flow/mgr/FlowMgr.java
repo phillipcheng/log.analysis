@@ -20,13 +20,17 @@ import etl.flow.deploy.FlowDeployer;
 public abstract class FlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
 	
+	public static String getPropFileName(String nodeName){
+		return String.format("action_%s.properties", nodeName);
+	}
+	
 	//generate the properties files for all the cmd to initiate
 	public List<InMemFile> genProperties(Flow flow){
 		List<InMemFile> propertyFiles = new ArrayList<InMemFile>();
 		for (Node n: flow.getNodes()){
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
-				String propFileName = String.format("action_%s.properties", an.getName());
+				String propFileName = getPropFileName(an.getName());
 				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getUserProperties());
 				propertyFiles.add(new InMemFile(FileType.actionProperty, propFileName, bytes));
 			}
