@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,6 +20,8 @@ import org.apache.curator.framework.recipes.locks.InterProcessLock;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
+import org.apache.hadoop.fs.FileContext;
+import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -45,6 +48,8 @@ import etl.util.VarType;
 
 public abstract class SchemaETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
+	private static final String SCHEMA_TMP_FILENAME_EXTENSION = "tmp";
+	private static final Random RANDOM_GEN = new Random();
 	public static final Logger logger = LogManager.getLogger(SchemaETLCmd.class);
 
 	//cfgkey
@@ -175,6 +180,26 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			logger.error("", e);
 		}
 	}
+	
+	private void safeWriteSchemaFile(String defaultFs, String path, boolean directory, LogicSchema schema) {
+		String originalPath = path;
+		
+		if (!directory) {
+			path = path + "." + SCHEMA_TMP_FILENAME_EXTENSION + "." + RANDOM_GEN.nextLong();
+		}
+		
+		SchemaUtils.toRemoteJsonPath(defaultFs, path, directory, schema, null);
+		
+		/* Rename is atomic operation */
+		if (!directory) {
+			FileContext fsctx = HdfsUtil.getHadoopFsContext(defaultFs);
+			try {
+				fsctx.rename(new Path(path), new Path(originalPath), Options.Rename.OVERWRITE);
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+	}
 
 	private LogicSchema createTableSchema(LogicSchema tableSchema, String schemaFile, String name, List<String> attrIds,
 			List<String> attrNames, List<FieldType> attrTypes, List<String> loginfo) {
@@ -198,7 +223,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		
 		//update logic schema file
 		if (schemaFile != null)
-			SchemaUtils.toRemoteJsonPath(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema, null);
+			safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
 		
 		//execute the sql
 		if (dbtype != DBType.NONE){
@@ -270,7 +295,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			
 			//update logic schema file
 			if (schemaFile != null)
-				SchemaUtils.toRemoteJsonPath(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema, null);
+				safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
 			
 			//execute the sql
 			if (dbtype != DBType.NONE){
@@ -288,7 +313,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		schemaFile = schemaFile + (schemaFile.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR) + SchemaUtils.SCHEMA_INDEX_FILENAME;
 		index.setIndex(true);
 		index.setTableIdNameMap(logicSchema.getTableIdNameMap());
-		SchemaUtils.toRemoteJsonPath(defaultFs, schemaFile, false, index, null);
+		safeWriteSchemaFile(defaultFs, schemaFile, false, index);
 	}
 	
 	private final static class JVMLock extends ReentrantLock implements InterProcessLock {
