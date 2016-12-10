@@ -26,11 +26,15 @@ Below is the example config:
     "destServer" : "localhost",
     "destServerPort" : 22,
     "destServerUser" : "player",
+    "destServerPrvKey" : "/tmp/login.ppk",
     "destServerPass" : "123456",
     "destServerDirRule" : "`/tmp/${new('java.util.Date')}/${WorkingElement.IP}`"
   }
 }
 ```
+
+For the config item - destServerPrvKey, if it's set, the sftp will login with key authentication, the destServerPass will be used as key pass-phrase.
+
 For the config item - destServerDirRule, has below variable context:
 * WorkingElement {Name, Hostname, IP}
 * WorkingDir
