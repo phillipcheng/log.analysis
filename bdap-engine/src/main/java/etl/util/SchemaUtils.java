@@ -56,6 +56,7 @@ public class SchemaUtils {
 	}
 	
 	private static class AttrNameCacheLoader extends CacheLoader<String, List<String>> implements Serializable {
+		private static final long serialVersionUID = 1L;
 		private transient FileSystem fs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
@@ -87,7 +88,8 @@ public class SchemaUtils {
 		}
 	}
 	
-	private static class AttrTypeCacheLoader extends CacheLoader<String, List<FieldType>> implements Serializable{
+	private static class AttrTypeCacheLoader extends CacheLoader<String, List<FieldType>> implements Serializable {
+		private static final long serialVersionUID = 1L;
 		private transient FileSystem fs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
@@ -119,13 +121,17 @@ public class SchemaUtils {
 		}
 	}
 	
-	private static class AttrNameRemovalListener implements RemovalListener<String, List<String>>, Serializable{
+	private static class AttrNameRemovalListener implements RemovalListener<String, List<String>>, Serializable {
+		private static final long serialVersionUID = 1L;
+
 		public void onRemoval(RemovalNotification<String, List<String>> notification) {
 			logger.debug("Attribute removed: {}", notification);
 		}
 	}
 	
 	private static class AttrTypeRemovalListener implements RemovalListener<String, List<FieldType>>, Serializable {
+		private static final long serialVersionUID = 1L;
+
 		public void onRemoval(RemovalNotification<String, List<FieldType>> notification) {
 			logger.debug("Attribute type removed: {}", notification);
 		}
@@ -133,6 +139,68 @@ public class SchemaUtils {
 	
 	private final static AttrNameRemovalListener ATTR_NAME_REMOVAL_LISTENER = new AttrNameRemovalListener();
 	private final static AttrTypeRemovalListener ATTR_TYPE_REMOVAL_LISTENER = new AttrTypeRemovalListener();
+	
+	public static boolean existsLocalJsonPath(String path) {
+		File p = new File(path);
+		try {
+			if (p.exists()) {
+				if (p.isDirectory()) {
+					if (!path.endsWith(File.separator))
+						path = path + File.separator;
+					p = new File(path + SCHEMA_INDEX_FILENAME);
+					return p.exists();
+				} else {
+					return true;
+				}
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return false;
+		}
+	}
+	
+	public static boolean existsRemoteJsonPath(String defaultFs, String path) {
+		Path p = new Path(path);
+		FileSystem fs = HdfsUtil.getHadoopFs(defaultFs);
+		try {
+			if (fs.exists(p)) {
+				if (fs.isDirectory(p)) {
+					if (!path.endsWith(Path.SEPARATOR))
+						path = path + Path.SEPARATOR;
+					p = new Path(path + SCHEMA_INDEX_FILENAME);
+					return fs.exists(p);
+				} else {
+					return true;
+				}
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return false;
+		}
+	}
+
+	public static LogicSchema newLocalInstance(String path) {
+		LogicSchema schema = new LogicSchema();
+		File p = new File(path);
+		schema.setIndex(p.exists() && p.isDirectory());
+		return schema;
+	}
+
+	public static LogicSchema newRemoteInstance(String defaultFs, String path) {
+		LogicSchema schema = new LogicSchema();
+		Path p = new Path(path);
+		FileSystem fs = HdfsUtil.getHadoopFs(defaultFs);
+		try {
+			schema.setIndex(fs.exists(p) && fs.isDirectory(p));
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+		}
+		return schema;
+	}
 	
 	public static LogicSchema fromLocalJsonPath(String path, Class<? extends LogicSchema> clazz) {
 		File p = new File(path);
@@ -218,7 +286,8 @@ public class SchemaUtils {
 		}
 	}
 	
-	public static void toRemoteJsonPath(FileSystem fs, String path, boolean directory, LogicSchema schema, Map<String, List<String>> attrIdMap) {
+	public static void toRemoteJsonPath(String defaultFs, String path, boolean directory, LogicSchema schema, Map<String, List<String>> attrIdMap) {
+		FileSystem fs = HdfsUtil.getHadoopFs(defaultFs);
 		if (directory) {
 			LogicSchema tableSchema;
 			Path p = new Path(path);
@@ -257,6 +326,18 @@ public class SchemaUtils {
 			schema.setIndex(true);
 			HdfsUtil.toDfsJsonFile(fs, path + SCHEMA_INDEX_FILENAME, schema);
 			
+			if (!(schema.getAttrNameMap() instanceof CacheMap)) {
+				AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(defaultFs, path, schema.getClass(), schema.getAttrIdNameMap());
+				Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_NAME_REMOVAL_LISTENER).build(attrNameCacheLoader);
+				schema.setAttrNameMap(new CacheMap<List<String>>(attrNameCache));
+			}
+			
+			if (!(schema.getAttrTypeMap() instanceof CacheMap)) {
+				AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(defaultFs, path, schema.getClass(), schema.getAttrIdNameMap());
+				Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
+				schema.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
+			}
+			
 		} else {
 			HdfsUtil.toDfsJsonFile(fs, path, schema);
 		}
@@ -292,8 +373,7 @@ public class SchemaUtils {
 	
 	public static List<String> genCreateSqlByLogicSchema(LogicSchema ls, String dbSchema, DBType dbtype){
 		List<String> sqls = new ArrayList<String>();
-		for (String tid: ls.getTableIdNameMap().keySet()){
-			String tn = ls.getTableIdNameMap().get(tid);
+		for (String tn: ls.getTableNames()){
 			List<String> attrNames = ls.getAttrNames(tn);
 			List<FieldType> attrTypes = ls.getAttrTypes(tn);
 			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbSchema, dbtype);
