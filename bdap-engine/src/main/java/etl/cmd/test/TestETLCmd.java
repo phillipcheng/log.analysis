@@ -1,6 +1,7 @@
 package etl.cmd.test;
 
 import java.io.File;
+import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
@@ -31,7 +33,7 @@ import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
 import scala.Tuple2;
 
-public abstract class TestETLCmd {
+public abstract class TestETLCmd implements Serializable{
 	public static final Logger logger = LogManager.getLogger(TestETLCmd.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
@@ -49,13 +51,13 @@ public abstract class TestETLCmd {
 	private static String key_oozie_user="oozie.user";
 	
 	
-	private PropertiesConfiguration pc;
+	private transient PropertiesConfiguration pc;
 	
 	private String localFolder = "";
 	private String projectFolder = "";
-	private FileSystem fs;
+	private transient FileSystem fs;
 	private String defaultFS;
-	private Configuration conf;
+	private transient Configuration conf;//v2
 	private boolean testSftp=true;
 	private boolean testKafka=true;
 	private String oozieUser = "";

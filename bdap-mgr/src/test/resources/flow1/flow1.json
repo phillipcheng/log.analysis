@@ -96,35 +96,30 @@
     "location" : "/flow1/sftpcfg/test1.sftp.map.properties",
     "dataFormat" : "Line",
     "recordType" : "StringList",
-    "psType" : "FileOrMem",
     "instance" : false
   }, {
     "name" : "data1",
     "location" : "/flow1/data1/",
     "dataFormat" : "File",
     "recordType" : "StringList",
-    "psType" : "FileOrMem",
     "instance" : true
   }, {
     "name" : "data2",
     "location" : "/flow1/data2/",
     "dataFormat" : "File",
     "recordType" : "StringList",
-    "psType" : "FileOrMem",
     "instance" : true
   }, {
     "name" : "data1trans",
     "location" : "/flow1/csvtrans/",
     "dataFormat" : "Line",
     "recordType" : "StringList",
-    "psType" : "FileOrMem",
     "instance" : true
   }, {
     "name" : "csvmerge",
     "location" : "/flow1/csvmerge/",
     "dataFormat" : "Line",
     "recordType" : "StringList",
-    "psType" : "FileOrMem",
     "instance" : true
   } ],
   "inLets" : [ ],

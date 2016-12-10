@@ -12,9 +12,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import bdap.util.CmdDef;
-import bdap.util.CmdDefMgr;
 import bdap.util.EngineConf;
+import etl.engine.ETLCmd;
 import etl.flow.ActionNode;
 import etl.flow.CoordConf;
 import etl.flow.Data;
@@ -94,9 +93,14 @@ public class OozieGenerator {
 		}
 	}
 	
-	private static CmdDef getCmd(ActionNode an){
-		String cmdClazz = an.getProperties().get(ActionNode.key_cmd_class);
-		return CmdDefMgr.getInstance().getCmdDef(cmdClazz);
+	private static ETLCmd getCmd(ActionNode an) {
+		try{
+			String cmdClazz = an.getProperties().get(ActionNode.key_cmd_class);
+			return (ETLCmd) Class.forName(cmdClazz).newInstance();
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
 	}
 	
 	private static MAPREDUCE genMRAction(Flow flow, ActionNode an, boolean hasInstanceId){
@@ -124,12 +128,12 @@ public class OozieGenerator {
 		mapperClassCp.setName(prop_map_class);
 		mapperClassCp.setValue(EngineConf.mapper_class);
 		pl.add(mapperClassCp);
-		CmdDef cmd = getCmd(an);
+		ETLCmd cmd = getCmd(an);
 		if (cmd==null){
 			logger.error(String.format("%s is not supported.\n%s", an.getName(), an.getProperties()));
 			return null;
 		}
-		if (cmd.isHasReduce()){
+		if (cmd.hasReduce()){
 			CONFIGURATION.Property reducerClassCp = new CONFIGURATION.Property();
 			reducerClassCp.setName(prop_reduce_class);
 			reducerClassCp.setValue(EngineConf.reducer_class);
@@ -213,7 +217,7 @@ public class OozieGenerator {
 		//cmd configuration
 		CONFIGURATION.Property cmdClassNameCp = new CONFIGURATION.Property();
 		cmdClassNameCp.setName(EngineConf.cfgkey_cmdclassname);
-		cmdClassNameCp.setValue(cmd.getClassName());
+		cmdClassNameCp.setValue(cmd.getClass().getName());
 		pl.add(cmdClassNameCp);
 		CONFIGURATION.Property wfNameCp = new CONFIGURATION.Property();
 		wfNameCp.setName(EngineConf.cfgkey_wfName);

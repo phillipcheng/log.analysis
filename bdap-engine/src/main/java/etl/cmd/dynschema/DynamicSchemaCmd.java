@@ -152,6 +152,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	
 	//tableName to csv
 	public List<Tuple2<String, String>> flatMapToPair(String text, Mapper<LongWritable, Text, Text, Text>.Context context){
+		//logger.info(String.format("input got:\n%s", text));
 		super.init();
 		try {
 			DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
@@ -262,6 +263,18 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
 				return flatMapToPair(t, null).iterator();
+			}
+		});
+		return ret;
+	}
+	
+	@Override
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> ret = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String,String>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Iterator<Tuple2<String, String>> call(Tuple2<String,String> t) throws Exception {
+				return flatMapToPair(t._2, null).iterator();
 			}
 		});
 		return ret;
