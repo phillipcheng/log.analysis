@@ -40,6 +40,10 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
     	mos.close();
+    	
+    	if (cmds != null)
+    		for (ETLCmd c: cmds)
+    			c.close();
     }
     
     @Override

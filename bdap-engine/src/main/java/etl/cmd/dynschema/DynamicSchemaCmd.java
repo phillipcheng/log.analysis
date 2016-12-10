@@ -23,51 +23,30 @@ import scala.Tuple2;
 //
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
-import etl.engine.LockType;
 import etl.engine.LogicSchema;
 import etl.engine.ProcessMode;
 import etl.util.DBUtil;
 import etl.util.FieldType;
-import etl.zookeeper.lock.WriteLock;
 
 public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	public static final String cfgkey_process_type="process.type";
-	public static final String cfgkey_lock_type="lock.type";
-	public static final String cfgkey_zookeeper_url="zookeeper.url";
 	
 	public static final Logger logger = LogManager.getLogger(DynamicSchemaCmd.class);
 	
-	public static final Object jvmLock = new Object(); //same JVM locker
-	
 	private DynSchemaProcessType processType = DynSchemaProcessType.genCsv;
-	private LockType lockType = LockType.zookeeper;
-	private String zookeeperUrl=null;
 	
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, false);
+		if (pm == ProcessMode.Reduce)
+			super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, false);
+		else
+			super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, true);
 		this.processType = DynSchemaProcessType.valueOf(super.getCfgString(cfgkey_process_type, DynSchemaProcessType.genCsv.toString()));
-		this.lockType = LockType.valueOf(super.getCfgString(cfgkey_lock_type, LockType.zookeeper.toString()));
-		this.zookeeperUrl = super.getCfgString(cfgkey_zookeeper_url, null);
-		if (this.lockType==LockType.zookeeper && this.zookeeperUrl==null){
-			logger.error(String.format("must specify %s for locktype:%s", cfgkey_zookeeper_url, lockType));
-		}
-		if (processType==DynSchemaProcessType.genCsv){
+		/* if (processType==DynSchemaProcessType.genCsv){
 			this.lockType=LockType.none;
-		}
-		boolean loadSchema = true;
-		if (pm == ProcessMode.Reduce){
-			loadSchema = false;
-		}
-		if (loadSchema){
-			if (lockType == LockType.zookeeper){
-				super.loadSchema(this.zookeeperUrl);
-			}else{
-				super.loadSchema(null);
-			}
-		}
+		} */
 	}
 
 	public abstract DynamicTableSchema getDynamicTable(String input, LogicSchema ls) throws Exception;
@@ -129,75 +108,17 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 	}
 	
-	private DynamicTableSchema updateLogicSchema(String text) throws Exception {
-		super.fetchLogicSchema();//re-fetch
-		DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
-		UpdatedTable ut = checkSchemaUpdate(dt);
-		if (ut!=null){//re-check
-			Map<String, String> tableNameIdMap = new HashMap<String, String>();
-			Map<String, List<String>> attrNamesMap = new HashMap<String, List<String>>();
-			Map<String, List<String>> attrIdsMap = null;
-			Map<String, List<FieldType>> attrTypesMap =new HashMap<String, List<FieldType>>();
-			tableNameIdMap.put(ut.name, ut.id);
-			attrNamesMap.put(ut.name, ut.attrNames);
-			if (ut.attrIds!=null){
-				attrIdsMap = new HashMap<String, List<String>>();
-				attrIdsMap.put(ut.name, ut.attrIds);
-			}
-			attrTypesMap.put(ut.name, ut.attrTypes);
-			super.updateSchema(tableNameIdMap, attrIdsMap, attrNamesMap, attrTypesMap);
-		}
-		return dt;
-	}
-	
 	//tableName to csv
 	public List<Tuple2<String, String>> flatMapToPair(String text, Mapper<LongWritable, Text, Text, Text>.Context context){
-		//logger.info(String.format("input got:\n%s", text));
 		super.init();
 		try {
 			DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
 			if (this.processType == DynSchemaProcessType.checkSchema || this.processType==DynSchemaProcessType.both){
 				UpdatedTable ut = checkSchemaUpdate(dt);
-				if (ut!=null){//needs update
+				if (ut != null) {//needs update
 					logger.info(String.format("detect update needed, lock the schema for table %s", dt.getName()));
-					//get the lock
-					if (this.lockType==LockType.zookeeper){
-						boolean finished=false;
-						int maxWait = 10000;
-						int curWait=0;
-						int foreverWait=0;
-						while (!finished){
-							WriteLock lock = super.getZookeeperLock(this.zookeeperUrl);
-							try {
-								if (lock.lock()){
-									while (!lock.isOwner() && curWait<maxWait){
-										Thread.sleep(1000);
-										curWait+=1000;
-										logger.error(String.format("wait to get lock for %s, %d", dt.getName(), curWait));
-									}
-									if (curWait<maxWait){
-										dt = updateLogicSchema(text);
-										finished = true;
-									}
-								}else{
-									Thread.sleep(1000);
-									foreverWait++;
-									if (foreverWait%10==0){
-										logger.warn(String.format("get lock failed for %s for %d seconds", dt.getName(), foreverWait*10));
-									}
-								}
-							}finally{
-								super.releaseLock(lock);
-								//logger.warn(String.format("release the lock for schema to change %s", dt.getName()));
-							}
-						}
-					}else if (this.lockType==LockType.jvm){
-						synchronized(jvmLock){
-							dt = updateLogicSchema(text);
-						}
-					}else if (this.lockType==LockType.none){
-						dt = updateLogicSchema(text);
-					}
+					
+					updateSchema(ut.id, ut.name, ut.attrIds, ut.attrNames, ut.attrTypes);
 				}
 			}
 			
@@ -254,7 +175,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 		return null;
 	}
-	
+
 	@Override
 	public JavaPairRDD<String, String> sparkVtoKvProcess(JavaRDD<String> input, JavaSparkContext jsc){
 		JavaPairRDD<String, String> ret = input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
