@@ -2,6 +2,7 @@ package etl.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -54,13 +55,13 @@ public class SchemaUtils {
 		}
 	}
 	
-	private static class AttrNameCacheLoader extends CacheLoader<String, List<String>> {
-		private FileSystem fs;
+	private static class AttrNameCacheLoader extends CacheLoader<String, List<String>> implements Serializable {
+		private transient FileSystem fs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
 		private Map<String, String> attrIdNameMap;
-		public AttrNameCacheLoader(FileSystem fs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
-			this.fs = fs;
+		public AttrNameCacheLoader(String defaultFs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
+			this.fs = HdfsUtil.getHadoopFs(defaultFs);
 			this.path = path;
 			this.clazz = clazz;
 			this.attrIdNameMap = attrIdNameMap;
@@ -86,13 +87,13 @@ public class SchemaUtils {
 		}
 	}
 	
-	private static class AttrTypeCacheLoader extends CacheLoader<String, List<FieldType>> {
-		private FileSystem fs;
+	private static class AttrTypeCacheLoader extends CacheLoader<String, List<FieldType>> implements Serializable{
+		private transient FileSystem fs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
 		private Map<String, String> attrIdNameMap;
-		public AttrTypeCacheLoader(FileSystem fs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
-			this.fs = fs;
+		public AttrTypeCacheLoader(String defaultFs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
+			this.fs = HdfsUtil.getHadoopFs(defaultFs);
 			this.path = path;
 			this.clazz = clazz;
 			this.attrIdNameMap = attrIdNameMap;
@@ -118,13 +119,13 @@ public class SchemaUtils {
 		}
 	}
 	
-	private static class AttrNameRemovalListener implements RemovalListener<String, List<String>> {
+	private static class AttrNameRemovalListener implements RemovalListener<String, List<String>>, Serializable{
 		public void onRemoval(RemovalNotification<String, List<String>> notification) {
 			logger.debug("Attribute removed: {}", notification);
 		}
 	}
 	
-	private static class AttrTypeRemovalListener implements RemovalListener<String, List<FieldType>> {
+	private static class AttrTypeRemovalListener implements RemovalListener<String, List<FieldType>>, Serializable {
 		public void onRemoval(RemovalNotification<String, List<FieldType>> notification) {
 			logger.debug("Attribute type removed: {}", notification);
 		}
@@ -152,17 +153,18 @@ public class SchemaUtils {
 		}
 	}
 	
-	public static LogicSchema fromRemoteJsonPath(FileSystem fs, String path, Class<? extends LogicSchema> clazz) {
+	public static LogicSchema fromRemoteJsonPath(String defaultFs, String path, Class<? extends LogicSchema> clazz) {
 		Path p = new Path(path);
 		try {
+			FileSystem fs = HdfsUtil.getHadoopFs(defaultFs);
 			if (fs.isDirectory(p)) {
 				if (!path.endsWith(Path.SEPARATOR))
 					path = path + Path.SEPARATOR;
 				LogicSchema index = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, path + SCHEMA_INDEX_FILENAME, clazz);
-				AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(fs, path, clazz, index.getAttrIdNameMap());
+				AttrNameCacheLoader attrNameCacheLoader = new AttrNameCacheLoader(defaultFs, path, clazz, index.getAttrIdNameMap());
 				Cache<String, List<String>> attrNameCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_NAME_REMOVAL_LISTENER).build(attrNameCacheLoader);
 				index.setAttrNameMap(new CacheMap<List<String>>(attrNameCache));
-				AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(fs, path, clazz, index.getAttrIdNameMap());
+				AttrTypeCacheLoader attrTypeCacheLoader = new AttrTypeCacheLoader(defaultFs, path, clazz, index.getAttrIdNameMap());
 				Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
 				index.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
 				return index;

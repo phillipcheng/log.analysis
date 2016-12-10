@@ -2,9 +2,13 @@ package etl.spark;
 
 import java.util.Map;
 
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import scala.Tuple2;
 
 public interface SparkProcessor {
 	/**

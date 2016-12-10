@@ -10,7 +10,6 @@ public class Data {
 	private String schemaName = null;//reference to schema
 	private InputFormatType dataFormat = InputFormatType.File;//for processing
 	private DataType recordType = DataType.StringList;//for spark io conversion
-	private PersistType psType = PersistType.FileOrMem;
 	
 	private boolean instance = true; //if instance is true, the input path is location/$wfid
 	
@@ -25,20 +24,15 @@ public class Data {
 		this(name, location);
 		this.setDataFormat(dataType);
 	}
-	public Data(String name, String location, InputFormatType dataType, PersistType psType){
+	public Data(String name, String location, InputFormatType dataType, DataType recordType){
 		this(name, location, dataType);
-		this.setPsType(psType);
-	}
-	public Data(String name, String location, InputFormatType dataType, PersistType psType, DataType recordType){
-		this(name, location, dataType, psType);
 		this.recordType = recordType;
 	}
-	public Data(String name, String location, InputFormatType dataType, PersistType psType, boolean instance){
-		this(name, location, dataType, psType);
+	public Data(String name, String location, InputFormatType dataType, boolean instance){
+		this(name, location, dataType);
 		this.instance = instance;
 	}
 	
-
 	@Override
 	public boolean equals(Object obj){
 		if (!(obj instanceof Data)){
@@ -92,14 +86,6 @@ public class Data {
 
 	public void setDataFormat(InputFormatType dataFormat) {
 		this.dataFormat = dataFormat;
-	}
-
-	public PersistType getPsType() {
-		return psType;
-	}
-
-	public void setPsType(PersistType psType) {
-		this.psType = psType;
 	}
 
 	public String getBaseOutput() {

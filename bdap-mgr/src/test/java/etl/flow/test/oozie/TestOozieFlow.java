@@ -15,7 +15,7 @@ import etl.flow.test.FlowTest;
 public class TestOozieFlow {
 	public static final Logger logger = LogManager.getLogger(TestOozieFlow.class);
 	
-	private FlowDeployer deployer = new FlowDeployer();
+	private FlowDeployer deployer = new FlowDeployer("testFlow.cloudera.properties");
 	private FlowTest ft = new FlowTest();
 	
 	
@@ -29,7 +29,8 @@ public class TestOozieFlow {
 	}
 	
 	@Test
-	public void testJsonFlow1(){
+	public void testJsonFlow1() throws Exception{
+		deployer.installEngine(false);
 		String projectName = "project1";
 		String flowName="flow1";
 		ft.initData();

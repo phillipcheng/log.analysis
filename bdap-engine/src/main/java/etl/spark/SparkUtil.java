@@ -1,5 +1,6 @@
 package etl.spark;
 
+import java.util.ArrayList;
 import java.util.List;
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -9,12 +10,20 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.api.java.JavaPairRDD;
 
 import bdap.util.HdfsUtil;
+import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
 
 public class SparkUtil {
 
 	public static final Logger logger = LogManager.getLogger(SparkUtil.class);
 	
+	/**
+	 * @param input, tuple:tableName to one line
+	 * @param defaultFs
+	 * @param dir
+	 * @param wfid
+	 * @return tableName to fileName
+	 */
 	public static void saveByKey(JavaPairRDD<String, String> input, String defaultFs, String dir, String wfid){
 		List<Tuple2<String, Iterable<String>>> datalist = input.groupByKey().collect();
 		for (Tuple2<String, Iterable<String>> data: datalist){
