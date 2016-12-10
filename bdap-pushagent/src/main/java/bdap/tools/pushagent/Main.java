@@ -64,6 +64,7 @@ public class Main implements Job {
 	private static final String DEST_SERVER = "DestServer";
 	private static final String DEST_SERVER_PORT = "DestServerPort";
 	private static final String DEST_SERVER_USER = "DestServerUser";
+	private static final String DEST_SERVER_PRVKEY = "DestServerPrvKey";
 	private static final String DEST_SERVER_PASS = "DestServerPass";
 	private static final String DEST_SERVER_DIR_RULE = "DestServerDirRule";
 	private static final String WORKING_ELEMENT = "WorkingElement";
@@ -112,8 +113,8 @@ public class Main implements Job {
 			}
 			
 			sftpCopy(ctxMap.getString(WORKING_DIR), (IOFileFilter) ctxMap.get(FILENAME_FILTER), ctxMap.getBoolean(RECURSIVE),
-					ctxMap.getInt(FILES_PER_BATCH), fileRecord, processRecordFile,
-					ctxMap.getString(DEST_SERVER), ctxMap.getInt(DEST_SERVER_PORT), ctxMap.getString(DEST_SERVER_USER),
+					ctxMap.getInt(FILES_PER_BATCH), fileRecord, processRecordFile, ctxMap.getString(DEST_SERVER),
+					ctxMap.getInt(DEST_SERVER_PORT), ctxMap.getString(DEST_SERVER_USER), ctxMap.getString(DEST_SERVER_PRVKEY),
 					ctxMap.getString(DEST_SERVER_PASS), (String) destDir);
 		} else {
 			logger.error("No dest dir rule set!");
@@ -121,17 +122,27 @@ public class Main implements Job {
 	}
 
 	private void sftpCopy(String srcDir, IOFileFilter filenameFilter, boolean recursive, int maxFiles, FileRecord fileRecord, String processRecordFile,
-			String destServer, int destServerPort, String destServerUser, String destServerPass, String destDir) {
+			String destServer, int destServerPort, String destServerUser, String destServerPrvKey, String destServerPass, String destDir) {
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int sftConnectRetryCntTemp = 1;
 		try {
 			// connect
 			JSch jsch = new JSch();
+			
+			if (destServerPrvKey != null && destServerPrvKey.length() > 0) {
+				if (destServerPass != null && destServerPass.length() > 0)
+					jsch.addIdentity(destServerPrvKey, destServerPass);
+				else
+					jsch.addIdentity(destServerPrvKey);
+			}
+			
 			Channel channel = null;
 			session = jsch.getSession(destServerUser, destServer, destServerPort);
 			session.setConfig("StrictHostKeyChecking", "no");
-			session.setPassword(destServerPass);
+			
+			if (destServerPrvKey == null || destServerPrvKey.length() == 0)
+				session.setPassword(destServerPass);
 
 			// retry for session connect
 			while (sftConnectRetryCntTemp <= sftpRetryCount) {
@@ -304,7 +315,7 @@ public class Main implements Job {
 			// and start it off
 			scheduler.start();
 	
-			JobDetail job = JobBuilder.newJob(Main.class).withIdentity("MainJob", PUSH_AGENT_GROUP).build();
+			JobDetail job = JobBuilder.newJob(Main.class).withIdentity("MainJob", PUSH_AGENT_GROUP).storeDurably().build();
 			Trigger trigger;
 			Element e;
 			
@@ -325,6 +336,7 @@ public class Main implements Job {
 					trigger.getJobDataMap().put(DEST_SERVER, dc.getDestServer());
 					trigger.getJobDataMap().put(DEST_SERVER_PORT, dc.getDestServerPort());
 					trigger.getJobDataMap().put(DEST_SERVER_USER, dc.getDestServerUser());
+					trigger.getJobDataMap().put(DEST_SERVER_PRVKEY, dc.getDestServerPrvKey());
 					trigger.getJobDataMap().put(DEST_SERVER_PASS, dc.getDestServerPass());
 					trigger.getJobDataMap().put(DEST_SERVER_DIR_RULE, dc.getDestServerDirRule());
 			
