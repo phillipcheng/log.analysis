@@ -46,6 +46,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public static final String cfgkey_sftp_host = "sftp.host";
 	public static final String cfgkey_sftp_port = "sftp.port";
 	public static final String cfgkey_sftp_user = "sftp.user";
+	public static final String cfgkey_sftp_user_prvkey = "sftp.user.prvkey";
 	public static final String cfgkey_sftp_pass = "sftp.pass";
 	public static final String cfgkey_sftp_folder = "sftp.folder";
 	public static final String cfgkey_sftp_folder_recursive = "sftp.folder.recursive";
@@ -66,6 +67,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private String host;
 	private int port;
 	private String user;
+	private String userPrvkey; /* TODO */
 	private String pass;
 	private String[] fromDirs;
 	private String fileFilter = "*";

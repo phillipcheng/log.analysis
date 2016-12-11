@@ -18,7 +18,7 @@ public class HdfsCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(HdfsCmd.class);
 	
 	//cfgkey
-	public static final String cfg_key_rm_folders = "rm.folders";
+	public static final String cfgkey_rm_folders = "rm.folders";
 	
 	private String[] rmFolders;
 	
@@ -41,7 +41,7 @@ public class HdfsCmd extends ETLCmd{
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
-		String[] rmFolderExps = super.getCfgStringArray(cfg_key_rm_folders);
+		String[] rmFolderExps = super.getCfgStringArray(cfgkey_rm_folders);
 		rmFolders = new String[rmFolderExps.length];
 		for (int i=0; i<rmFolderExps.length; i++){
 			rmFolders[i] = (String) ScriptEngineUtil.eval(rmFolderExps[i], VarType.STRING, super.getSystemVariables());

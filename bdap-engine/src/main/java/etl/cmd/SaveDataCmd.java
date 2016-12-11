@@ -10,7 +10,7 @@ import etl.spark.SparkUtil;
 public class SaveDataCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 	//cfgkey
-	public static final String cfg_log_tmp_dir="log.tmp.dir";
+	public static final String cfgkey_log_tmp_dir="log.tmp.dir";
 	
 	private String logTmpDir;
 
@@ -29,7 +29,7 @@ public class SaveDataCmd extends ETLCmd {
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
-		logTmpDir = this.getPc().getString(cfg_log_tmp_dir);
+		logTmpDir = this.getPc().getString(cfgkey_log_tmp_dir);
 	}
 	
 	@Override
