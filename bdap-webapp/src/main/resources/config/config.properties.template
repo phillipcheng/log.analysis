@@ -5,3 +5,5 @@ proxy.port=8080
 #tablea 
 tableau.server.ip=192.238.57.4
 tableau.server.port=80
+
+action.node.cmds.search.packages=etl.cmd

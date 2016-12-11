@@ -1,10 +1,23 @@
 package dv.mgr;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +31,13 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import bdap.util.EngineConf;
 import bdap.util.JsonUtil;
+import bdap.util.PropertiesUtil;
 import dv.UserNotFoundException;
 import dv.db.dao.AccountRepository;
 import dv.db.dao.FlowRepository;
 import dv.db.entity.AccountEntity;
 import dv.db.entity.FlowEntity;
+import etl.engine.ETLCmd;
 import etl.flow.Flow;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
@@ -34,17 +49,67 @@ import etl.flow.oozie.OozieConf;
 @RequestMapping("/{userName}/flow")
 public class FlowController {
 	public static final Logger logger = LogManager.getLogger(FlowController.class);
+	private static final String config = "config/config.properties";
+	private static final String[] SEARCH_PACKAGES = new String[] {"etl.cmd"};
+	private static final String ACTION_NODE_CMDS_SEARCH_PACKAGES = "action.node.cmds.search.packages";
+	private static final String CMD_PARAMETER_PREFIX = "cfgkey_";
+	private String[] searchPackages;
 	
 	@Autowired
 	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr) {
 		this.flowRepository = flowRepository;
 		this.accountRepository = accountRepository;
 		this.flowMgr = flowMgr;
+		
+		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
+		this.searchPackages = pc.getStringArray(ACTION_NODE_CMDS_SEARCH_PACKAGES);
+		if (searchPackages == null || searchPackages.length == 0)
+			searchPackages = SEARCH_PACKAGES;
 	}
 	
 	private final FlowRepository flowRepository;
 	private final AccountRepository accountRepository;
 	private final FlowMgr flowMgr;
+
+	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
+	Map<String, List<String>> getActionNodeCommands() {
+		ClassPathScanningCandidateComponentProvider actionsProvider = new ClassPathScanningCandidateComponentProvider(false);
+		actionsProvider.addIncludeFilter(new AssignableTypeFilter(ETLCmd.class));
+		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
+		List<String> cmdParameters;
+		Set<BeanDefinition> beanDefs;
+		Class<?> cls;
+		Field[] fields;
+		Object obj;
+		for (String pkgPath: searchPackages) {
+			beanDefs = actionsProvider.findCandidateComponents(pkgPath);
+			for (BeanDefinition def: beanDefs) {
+				logger.info(def.getBeanClassName());
+				cmdParameters = new ArrayList<String>();
+				try {
+					cls = Class.forName(def.getBeanClassName());
+					fields = cls.getFields();
+					if (fields != null) {
+						for (Field f: fields) {
+						    if (Modifier.isStatic(f.getModifiers()) && f.getName().startsWith(CMD_PARAMETER_PREFIX)) {
+						        try {
+									obj = FieldUtils.readStaticField(f, true);
+							        if (obj != null)
+							        	cmdParameters.add(obj.toString());
+								} catch (IllegalAccessException e) {
+									logger.error(e.getMessage(), e);
+								}
+						    }
+						}
+					}
+				} catch (ClassNotFoundException e) {
+					logger.error(e.getMessage(), e);
+				}
+				classNames.put(def.getBeanClassName(), cmdParameters);
+			}
+		}
+		return classNames;
+	}
 	
 	@RequestMapping(method = RequestMethod.POST)
 	ResponseEntity<?> add(@PathVariable String userName, @RequestBody Flow input) {

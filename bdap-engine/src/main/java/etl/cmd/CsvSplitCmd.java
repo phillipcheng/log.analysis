@@ -34,9 +34,9 @@ public class CsvSplitCmd extends ETLCmd {
 
 	public static final Logger logger = LogManager.getLogger(CsvSplitCmd.class);
 
-	private static final String SPLIT_KEYS = "split.keys";
-	private static final String SPLIT_KEYS_OMIT = "split.keys.omit";
-	private static final String SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
+	private static final String cfgkey_SPLIT_KEYS = "split.keys";
+	private static final String cfgkey_SPLIT_KEYS_OMIT = "split.keys.omit";
+	private static final String cfgkey_SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
 
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	
@@ -60,10 +60,10 @@ public class CsvSplitCmd extends ETLCmd {
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		
-		splitKeys = IdxRange.parseString(getCfgString(SPLIT_KEYS, null));
-		splitKeysOmit = getCfgBoolean(SPLIT_KEYS_OMIT, false);
+		splitKeys = IdxRange.parseString(getCfgString(cfgkey_SPLIT_KEYS, null));
+		splitKeysOmit = getCfgBoolean(cfgkey_SPLIT_KEYS_OMIT, false);
 		
-		String cfg = getCfgString(SPLIT_KEYS_REDUCE_EXP, null);
+		String cfg = getCfgString(cfgkey_SPLIT_KEYS_REDUCE_EXP, null);
 		if (cfg != null && cfg.length() > 0)
 			splitKeysReduce = ScriptEngineUtil.compileScript(cfg);
 	}
