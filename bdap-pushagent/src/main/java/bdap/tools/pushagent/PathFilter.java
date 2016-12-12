@@ -1,6 +1,8 @@
 package bdap.tools.pushagent;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
@@ -15,6 +17,8 @@ public class PathFilter extends WildcardFileFilter {
 
     // Same here
     private String wildcard;
+    
+    private Path pathBase;
 
     /**
      * Construct a new <code>IOFileFilter</code> specifying whether the
@@ -24,13 +28,19 @@ public class PathFilter extends WildcardFileFilter {
      * @param ignoreCase whether to ignore the case
      */
     public PathFilter(String wildcardmatcher, boolean ignoreCase) {
-        super(wildcardmatcher, ignoreCase ? IOCase.INSENSITIVE : IOCase.SENSITIVE);
-        this.caseSensitivity = ignoreCase ? IOCase.INSENSITIVE : IOCase.SENSITIVE;
-        this.wildcard = wildcardmatcher;
+    	this(File.separator, wildcardmatcher, ignoreCase);
     }
 
 
-    /**
+    public PathFilter(String basePath, String wildcardmatcher, boolean ignoreCase) {
+        super(wildcardmatcher, ignoreCase ? IOCase.INSENSITIVE : IOCase.SENSITIVE);
+        this.caseSensitivity = ignoreCase ? IOCase.INSENSITIVE : IOCase.SENSITIVE;
+        this.wildcard = wildcardmatcher;
+        this.pathBase = Paths.get(basePath);
+	}
+
+
+	/**
      * Checks to see if the filename matches the wildcard.
      *
      * @param dir  the file directory
@@ -38,8 +48,10 @@ public class PathFilter extends WildcardFileFilter {
      * @return true if the full filename matches the wildcard
      */
     public boolean accept(File dir, String name) {
-        String path = new File(dir, name).toString();
-        if (FilenameUtils.wildcardMatch(path, wildcard, caseSensitivity)) {
+    	File f = new File(dir, name);
+        Path pathAbsolute = f.toPath();
+        Path pathRelative = pathBase.relativize(pathAbsolute);
+        if (FilenameUtils.wildcardMatch(pathRelative.toString(), wildcard, caseSensitivity)) {
             return true;
         }
         return false;
@@ -52,8 +64,9 @@ public class PathFilter extends WildcardFileFilter {
      * @return true if the full filename matches the wildcard
      */
     public boolean accept(File file) {
-        String name = file.getPath();
-        if (FilenameUtils.wildcardMatch(name, wildcard, caseSensitivity)) {
+        Path pathAbsolute = file.toPath();
+        Path pathRelative = pathBase.relativize(pathAbsolute);
+        if (FilenameUtils.wildcardMatch(pathRelative.toString(), wildcard, caseSensitivity)) {
             return true;
         }
         return false;

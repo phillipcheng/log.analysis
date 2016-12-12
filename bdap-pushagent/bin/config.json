@@ -11,7 +11,7 @@
     "timeZone" : "GMT",
     "cronExpr" : "0 0/1 * * * ?",
     "recursive" : true,
-    "filenameFilterExpr" : "new('bdap.tools.pushagent.PathFilter', '*.zip')",
+    "filenameFilterExpr" : "new('bdap.tools.pushagent.PathFilter', WorkingDir, '2016*/**.zip', false)",
     "filesPerBatch" : 1,
     "processRecordFile" : "/tmp/omfile_process_record",
     "destServer" : "192.85.247.104",
