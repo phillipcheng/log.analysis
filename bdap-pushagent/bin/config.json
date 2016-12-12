@@ -11,13 +11,13 @@
     "timeZone" : "GMT",
     "cronExpr" : "0 0/1 * * * ?",
     "recursive" : true,
-    "filenameFilterExpr" : "new('bdap.tools.pushagent.PathFilter', WorkingDir, '2016*/**.zip', false)",
+    "filenameFilterExpr" : "new('bdap.tools.pushagent.PathFilter', WorkingDir, '2016*/**', false)",
     "filesPerBatch" : 1,
-    "processRecordFile" : "/tmp/omfile_process_record",
+    "processRecordFile" : "./omfile_process_record",
     "destServer" : "192.85.247.104",
     "destServerPort" : 22,
     "destServerUser" : "dbadmin",
     "destServerPass" : "password",
-    "destServerDirRule" : "`/data/femtocell/omfiles/raw/`"
+    "destServerDirRule" : "`/data/femtocell/omfiles/raw/${WorkingElement.IP}`"
   }
 }
