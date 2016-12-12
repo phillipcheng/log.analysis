@@ -3,7 +3,7 @@
   <parent>
     <artifactId>bdap.parent</artifactId>
     <groupId>bdap</groupId>
-    <version>VVERSIONN</version>
+    <version>r0.3-jdk1.7</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>bdap.pushagent</artifactId>

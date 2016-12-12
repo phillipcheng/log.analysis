@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>bdap</groupId>
 	<artifactId>bdap.parent</artifactId>
-	<version>VVERSIONN</version>
+	<version>r0.3-jdk1.7</version>
 	<name>bdap.parent</name>
 	<packaging>pom</packaging>
 	
@@ -107,8 +107,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.5.1</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>1.7</source>
+					<target>1.7</target>
 					<debug>true</debug>
 					<debuglevel>lines,vars,source</debuglevel>
 				</configuration>
@@ -134,11 +134,6 @@
 	
 	<modules>
 		<module>bdap-common</module>
-		<module>bdap-engine</module>
-		<module>bdap-log</module>
-		<module>bdap-schemagen</module>
 		<module>bdap-pushagent</module>
-		<module>bdap-mgr</module>
-		<module>bdap-webapp</module>
 	</modules>
 </project>

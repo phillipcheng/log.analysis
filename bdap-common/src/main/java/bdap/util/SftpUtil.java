@@ -91,6 +91,7 @@ public class SftpUtil {
 	 * @param localFile/localDir, if this is a directory, then all the files will be ftped to its remote counterpart
 	 * @param remoteFile/remoteDir
 	 */
+	/*
 	public static void sftpFromLocal(String host, int port, String user, String pass, String localFile, String remoteFile){
 		Session session = null;
 		try {
@@ -129,6 +130,7 @@ public class SftpUtil {
 			}
 		}
 	}
+	*/
 	
 	public static List<String> sftpList(String host, int port, String user, String pass, String remoteDir){
 		Session session = null;
