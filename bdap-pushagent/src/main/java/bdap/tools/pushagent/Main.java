@@ -47,14 +47,16 @@ import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
-
-import bdap.util.JsonUtil;
 
 @DisallowConcurrentExecution
 public class Main implements Job {
@@ -64,6 +66,7 @@ public class Main implements Job {
 	private static final String DEST_SERVER = "DestServer";
 	private static final String DEST_SERVER_PORT = "DestServerPort";
 	private static final String DEST_SERVER_USER = "DestServerUser";
+	private static final String DEST_SERVER_PRVKEY = "DestServerPrvKey";
 	private static final String DEST_SERVER_PASS = "DestServerPass";
 	private static final String DEST_SERVER_DIR_RULE = "DestServerDirRule";
 	private static final String WORKING_ELEMENT = "WorkingElement";
@@ -95,7 +98,7 @@ public class Main implements Job {
 				try {
 					in = new FileInputStream(processRecordFile);
 					text = IOUtils.toString(in, Charset.forName("utf8"));
-					fileRecord = JsonUtil.fromJsonString(text, FileRecord.class);
+					fileRecord = fromJsonString(text, FileRecord.class);
 				} catch (Exception e1) {
 					logger.error(e1.getMessage(), e1);
 					fileRecord = new FileRecord();
@@ -112,8 +115,8 @@ public class Main implements Job {
 			}
 			
 			sftpCopy(ctxMap.getString(WORKING_DIR), (IOFileFilter) ctxMap.get(FILENAME_FILTER), ctxMap.getBoolean(RECURSIVE),
-					ctxMap.getInt(FILES_PER_BATCH), fileRecord, processRecordFile,
-					ctxMap.getString(DEST_SERVER), ctxMap.getInt(DEST_SERVER_PORT), ctxMap.getString(DEST_SERVER_USER),
+					ctxMap.getInt(FILES_PER_BATCH), fileRecord, processRecordFile, ctxMap.getString(DEST_SERVER),
+					ctxMap.getInt(DEST_SERVER_PORT), ctxMap.getString(DEST_SERVER_USER), ctxMap.getString(DEST_SERVER_PRVKEY),
 					ctxMap.getString(DEST_SERVER_PASS), (String) destDir);
 		} else {
 			logger.error("No dest dir rule set!");
@@ -121,17 +124,27 @@ public class Main implements Job {
 	}
 
 	private void sftpCopy(String srcDir, IOFileFilter filenameFilter, boolean recursive, int maxFiles, FileRecord fileRecord, String processRecordFile,
-			String destServer, int destServerPort, String destServerUser, String destServerPass, String destDir) {
+			String destServer, int destServerPort, String destServerUser, String destServerPrvKey, String destServerPass, String destDir) {
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		int sftConnectRetryCntTemp = 1;
 		try {
 			// connect
 			JSch jsch = new JSch();
+			
+			if (destServerPrvKey != null && destServerPrvKey.length() > 0) {
+				if (destServerPass != null && destServerPass.length() > 0)
+					jsch.addIdentity(destServerPrvKey, destServerPass);
+				else
+					jsch.addIdentity(destServerPrvKey);
+			}
+			
 			Channel channel = null;
 			session = jsch.getSession(destServerUser, destServer, destServerPort);
 			session.setConfig("StrictHostKeyChecking", "no");
-			session.setPassword(destServerPass);
+			
+			if (destServerPrvKey == null || destServerPrvKey.length() == 0)
+				session.setPassword(destServerPass);
 
 			// retry for session connect
 			while (sftConnectRetryCntTemp <= sftpRetryCount) {
@@ -241,7 +254,7 @@ public class Main implements Job {
 		if (processRecordFile != null && processRecordFile.length() > 0) {
 			fileRecord.setFilePath(entry.getAbsolutePath());
 			fileRecord.setTimestamp(entry.lastModified());
-			String text = JsonUtil.toJsonString(fileRecord);
+			String text = toJsonString(fileRecord);
 			OutputStream output = null;
 			try {
 				output = new FileOutputStream(processRecordFile);
@@ -295,7 +308,7 @@ public class Main implements Job {
 			IOUtils.closeQuietly(in);
 		}
 		
-		Config config = JsonUtil.fromJsonString(configText, Config.class);
+		Config config = fromJsonString(configText, Config.class);
 		
 		if (config != null && !config.isEmpty()) {
 			// Grab the Scheduler instance from the Factory
@@ -304,7 +317,7 @@ public class Main implements Job {
 			// and start it off
 			scheduler.start();
 	
-			JobDetail job = JobBuilder.newJob(Main.class).withIdentity("MainJob", PUSH_AGENT_GROUP).build();
+			JobDetail job = JobBuilder.newJob(Main.class).withIdentity("MainJob", PUSH_AGENT_GROUP).storeDurably().build();
 			Trigger trigger;
 			Element e;
 			
@@ -325,6 +338,7 @@ public class Main implements Job {
 					trigger.getJobDataMap().put(DEST_SERVER, dc.getDestServer());
 					trigger.getJobDataMap().put(DEST_SERVER_PORT, dc.getDestServerPort());
 					trigger.getJobDataMap().put(DEST_SERVER_USER, dc.getDestServerUser());
+					trigger.getJobDataMap().put(DEST_SERVER_PRVKEY, dc.getDestServerPrvKey());
 					trigger.getJobDataMap().put(DEST_SERVER_PASS, dc.getDestServerPass());
 					trigger.getJobDataMap().put(DEST_SERVER_DIR_RULE, dc.getDestServerDirRule());
 			
@@ -397,5 +411,43 @@ public class Main implements Job {
 				return true;
 		}
 		return false;
+	}
+	
+	private static <T> T fromJsonString(String json, Class<T> clazz){
+		return fromJsonString(json, clazz, false);
+	}
+	
+	private static <T> T fromJsonString(String json, Class<T> clazz, boolean useDefaultTyping){
+		ObjectMapper mapper = new ObjectMapper();
+		if (useDefaultTyping){
+			mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		}
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		try {
+			return mapper.readValue(json, clazz);
+		} catch (Exception e) {
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	private static String toJsonString(Object ls){
+		return toJsonString(ls, false);
+	}
+	
+	private static String toJsonString(Object ls, boolean useDefaultTyping){
+		ObjectMapper mapper = new ObjectMapper();
+		if (useDefaultTyping){
+			mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		}
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+		try {
+			String json = ow.writeValueAsString(ls);
+			return json;
+		} catch (JsonProcessingException e) {
+			logger.error("",e );
+			return null;
+		}
 	}
 }
