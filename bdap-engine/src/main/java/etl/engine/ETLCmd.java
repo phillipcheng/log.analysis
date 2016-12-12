@@ -166,13 +166,8 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	@Override
-	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input, JavaSparkContext jsc){
+	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc){
 		logger.error("empty sparkSplitProcess impl, should not be invoked.");
-		return null;
-	}
-	@Override
-	public JavaPairRDD<String, String> sparkVtoKvProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		logger.error("empty sparkVtoKvProcess impl, should not be invoked.");
 		return null;
 	}
 	
@@ -186,8 +181,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		}
 	}
 	
-	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, 
-			Class inputFormatClass){
+	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, Class inputFormatClass){
 		JavaPairRDD<String, String> prdd = null;
 		for (String file:inputfiles.collect()){
 			copyConf();

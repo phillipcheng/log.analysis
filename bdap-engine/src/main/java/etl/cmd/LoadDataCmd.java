@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.script.CompiledScript;
 
@@ -62,6 +64,8 @@ public class LoadDataCmd extends SchemaETLCmd{
 	private transient CompiledScript csCsvFile;
 	private transient CompiledScript csLoadSql;
 	private transient CompiledScript csDbInputPath;//for spark to generate dbinput files
+	private String dbInputPath;
+
 	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
 	
 	public LoadDataCmd(){
@@ -103,9 +107,10 @@ public class LoadDataCmd extends SchemaETLCmd{
 		}else{
 			logger.warn(String.format("loadSql is not specified."));
 		}
-		String dbInputPath = super.getCfgString(cfgkey_dbfile_path, null);
-		if (dbInputPath!=null){
-			this.csDbInputPath = ScriptEngineUtil.compileScript(dbInputPath);
+		String dbInputPathExp = super.getCfgString(cfgkey_dbfile_path, null);
+		if (dbInputPathExp!=null){
+			csDbInputPath = ScriptEngineUtil.compileScript(dbInputPathExp);
+			dbInputPath = ScriptEngineUtil.eval(this.csDbInputPath, this.getSystemVariables());
 		}
 	}
 	
@@ -189,6 +194,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	//return table name to file name mapping
 	private List<Tuple2<String, String>> flatMapToPair(String row){
+		logger.info(String.format("in flatMapToPair row:%s", row));
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
 		if (row.startsWith("hdfs://")) {
 			/* Locate from the root path */
@@ -215,21 +221,22 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	
 	private int reduceByKey(String key, String[] files) throws Exception{
-		List<String> copysqls = new ArrayList<String>();
-		logger.info(String.format("in reduce for key:%s, we need to load file:%s", key.toString(), Arrays.toString(files)));
-		if (NO_TABLE_CONFIGURED.equals(key.toString()))
-			copysqls.addAll(
-				prepareTableCopySQLs(null, files)
-			);
-		else
-			copysqls.addAll(
-				prepareTableCopySQLs(key.toString(), files)
-			);
-		if (super.getDbtype()!=DBType.NONE){
-			return DBUtil.executeSqls(copysqls, super.getPc());
-		}else{
-			return 0;
+		if (this.tableNames!=null && Arrays.asList(this.tableNames).contains(key)){
+			List<String> copysqls = new ArrayList<String>();
+			logger.info(String.format("in reduce for key:%s, we need to load file:%s", key.toString(), Arrays.toString(files)));
+			if (NO_TABLE_CONFIGURED.equals(key.toString()))
+				copysqls.addAll(
+					prepareTableCopySQLs(null, files)
+				);
+			else
+				copysqls.addAll(
+					prepareTableCopySQLs(key.toString(), files)
+				);
+			if (super.getDbtype()!=DBType.NONE){
+				return DBUtil.executeSqls(copysqls, super.getPc());
+			}
 		}
+		return 0;
 	}
 	
 	@Override
@@ -250,8 +257,6 @@ public class LoadDataCmd extends SchemaETLCmd{
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
 		super.init();
-		
-		String dbInputPath = ScriptEngineUtil.eval(this.csDbInputPath, this.getSystemVariables());
 		try{
 			getFs().delete(new Path(dbInputPath), true);
 		}catch(Exception e){
@@ -281,7 +286,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 
 	private String[] TextItToFiles(Iterable<Text> values) {
-		List<String> files = new ArrayList<String>();
+		Set<String> files = new HashSet<String>();
 		Iterator<Text> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();
@@ -291,7 +296,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	
 	private String[] StringItToFiles(Iterable<String> values) {
-		List<String> files = new ArrayList<String>();
+		Set<String> files = new HashSet<String>();
 		Iterator<String> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();
@@ -310,5 +315,13 @@ public class LoadDataCmd extends SchemaETLCmd{
 
 	public void setSgCopySql(List<String> sgCopySql) {
 		this.sgCopySql = sgCopySql;
+	}
+	
+	public String getDbInputPath() {
+		return dbInputPath;
+	}
+
+	public void setDbInputPath(String dbInputPath) {
+		this.dbInputPath = dbInputPath;
 	}
 }

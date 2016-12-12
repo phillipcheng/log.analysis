@@ -18,10 +18,9 @@ public class DynamicTableSchema {
 		this.fieldNames = fieldNames;
 		this.valueSample = values;
 		this.types = types;
-		this.id = name;
 	}
 	
-	public DynamicTableSchema(String id, String name, List<String> fieldIds, List<String> fieldNames, String[] values, List<FieldType> types){
+	public DynamicTableSchema(String id, String name, List<String> fieldIds, List<String> fieldNames, List<FieldType> types){
 		this(name, fieldNames, null, types);
 		this.types = types;
 		this.id=id;

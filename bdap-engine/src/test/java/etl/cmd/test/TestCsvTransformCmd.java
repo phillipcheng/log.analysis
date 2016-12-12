@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.util.CombineWithFileNameTextInputFormat;
+import etl.util.FilenameInputFormat;
 import etl.util.XmlInputFormat;
 import scala.Tuple2;
 
@@ -25,6 +26,19 @@ public class TestCsvTransformCmd extends TestETLCmd {
 
 	public String getResourceSubFolder(){
 		return "csvtrans/";
+	}
+	
+	@Test
+	public void testFilenameInputFormat() throws Exception {
+		String remoteCsvFolder = "/etltest/csvtransform/";
+		String remoteCsvOutputFolder = "/etltest/csvtransformout/";
+		String csvtransProp = "csvtrans-nothing.properties";
+		String[] csvFiles = new String[] {"P111.csv", "P112.csv"};
+		
+		List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, FilenameInputFormat.class);
+		logger.info("Output is:\n" + String.join("\n", output));
+	
+		assertTrue(output.size()==2);
 	}
 	
 	@Test
