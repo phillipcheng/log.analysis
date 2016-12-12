@@ -256,22 +256,10 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 	
 	@Override
-	public JavaPairRDD<String, String> sparkVtoKvProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		JavaPairRDD<String, String> ret = input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> ret = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 			private static final long serialVersionUID = 1L;
 
-			@Override
-			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-				return flatMapToPair(t, null).iterator();
-			}
-		});
-		return ret;
-	}
-	
-	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		JavaPairRDD<String, String> ret = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String,String>, String, String>(){
-			private static final long serialVersionUID = 1L;
 			@Override
 			public Iterator<Tuple2<String, String>> call(Tuple2<String,String> t) throws Exception {
 				return flatMapToPair(t._2, null).iterator();

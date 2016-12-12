@@ -104,7 +104,7 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	//return common properties: nameNode, jobTracker, queue, username, useSystem
-	private bdap.xml.config.Configuration getCommonConf(OozieConf oc){
+	private bdap.xml.config.Configuration getCommonConf(OozieConf oc, String wfName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
 		{
 			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
@@ -131,6 +131,11 @@ public class OozieFlowMgr extends FlowMgr{
 			oozieLibPath.setName(OozieConf.key_useSystemPath);
 			oozieLibPath.setValue("true");
 			bodyConf.getProperty().add(oozieLibPath);
+		}{
+			bdap.xml.config.Configuration.Property flowName = new bdap.xml.config.Configuration.Property();
+			flowName.setName(OozieConf.key_flowName);
+			flowName.setValue(wfName);
+			bodyConf.getProperty().add(flowName);
 		}
 		return bodyConf;
 	}
@@ -246,7 +251,7 @@ public class OozieFlowMgr extends FlowMgr{
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration commonConf = getCommonConf(oc);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
 		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
 		commonConf.getProperty().addAll(wfConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");
@@ -266,7 +271,7 @@ public class OozieFlowMgr extends FlowMgr{
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
-		bdap.xml.config.Configuration commonConf = getCommonConf(oc);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
 		bdap.xml.config.Configuration coordConf = getCoordConf(oc, cc, projectDir, flowName);
 		commonConf.getProperty().addAll(coordConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");

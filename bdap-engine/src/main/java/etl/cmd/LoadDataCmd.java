@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.script.CompiledScript;
 
@@ -189,6 +191,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	//return table name to file name mapping
 	private List<Tuple2<String, String>> flatMapToPair(String row){
+		logger.info(String.format("in flatMapToPair row:%s", row));
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
 		if (row.startsWith("hdfs://")) {
 			/* Locate from the root path */
@@ -281,7 +284,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 
 	private String[] TextItToFiles(Iterable<Text> values) {
-		List<String> files = new ArrayList<String>();
+		Set<String> files = new HashSet<String>();
 		Iterator<Text> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();
@@ -291,7 +294,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	
 	private String[] StringItToFiles(Iterable<String> values) {
-		List<String> files = new ArrayList<String>();
+		Set<String> files = new HashSet<String>();
 		Iterator<String> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();

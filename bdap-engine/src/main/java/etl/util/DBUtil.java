@@ -27,6 +27,9 @@ public class DBUtil {
 	public static final String key_db_loginTimeout="db.loginTimeout";
 
 	private static String normalizeDBFieldName(String fn){
+		if (Character.isDigit(fn.charAt(0))){
+			fn = "_" + fn;
+		}
 		return fn.replaceAll("[ .-]", "_");
 	}
 	
