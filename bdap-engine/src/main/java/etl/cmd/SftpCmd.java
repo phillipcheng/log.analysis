@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.streaming.receiver.Receiver;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -34,12 +33,11 @@ import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
-import etl.spark.SparkReciever;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
 
-public class SftpCmd extends ETLCmd implements SparkReciever{
+public class SftpCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(SftpCmd.class);
@@ -129,8 +127,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		deleteOnly = super.getCfgBoolean(cfgkey_delete_only, false);
 	}
 
-	public List<String> process(long mapKey, String row, Receiver<String> r){
+	public List<String> process(long mapKey, String row){
 		logger.info(String.format("param: %s", row));
+		super.init();
 		
 		Map<String, String> pm = null;
 		try {
@@ -180,7 +179,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		if (pm.containsKey(cfgkey_output_key)){
 			this.outputKey = pm.get(cfgkey_output_key);
 		}
-		logger.info("deleteOnly flag:%d", deleteOnly);
+		logger.info(String.format("deleteOnly flag:%b", deleteOnly));
 		
 		Session session = null;
 		ChannelSftp sftpChannel = null;
@@ -215,7 +214,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 			sftpChannel = (ChannelSftp) channel;
 			for (String fromDir:fromDirs){
 				files.addAll(
-					dirCopy(sftpChannel, fromDir, incomingFolder, 0, r)
+					dirCopy(sftpChannel, fromDir, incomingFolder, 0)
 				);
 				
 				if (this.fileLimit>0 && files.size()>=this.fileLimit)
@@ -243,7 +242,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		return files;
 	}
 	
-	private List<String> dirCopy(ChannelSftp sftpChannel, String fromDir, String toDir, int numProcessed, Receiver<String> r) throws SftpException {
+	private List<String> dirCopy(ChannelSftp sftpChannel, String fromDir, String toDir, int numProcessed) throws SftpException {
 		List<String> files = new ArrayList<String>();
 		OutputStream fsos = null;
 		InputStream is = null;
@@ -321,9 +320,6 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 						}
 					}
 					files.add(destFile);
-					if (r!=null){//give to receiver
-						r.store(destFile);
-					}
 				}
 				numProcessed++;
 				if (this.fileLimit>0 && numProcessed>=this.fileLimit){
@@ -331,7 +327,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 					break;
 				}
 			} else if (this.recursive) {
-				dirCopiedFiles=dirCopy(sftpChannel, fromDir + entry.getFilename(), toDir + entry.getFilename(), numProcessed, r);
+				dirCopiedFiles=dirCopy(sftpChannel, fromDir + entry.getFilename(), toDir + entry.getFilename(), numProcessed);
 				files.addAll(
 					dirCopiedFiles
 				);
@@ -344,15 +340,10 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		}
 		return files;
 	}
-
-	@Override
-	public void sparkRecieve(Receiver<String> r) {
-		process(0, null, r);
-	}
 	
 	@Override
 	public List<String> sgProcess(){
-		List<String> ret = process(0, null, null);
+		List<String> ret = process(0, null);
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");
@@ -363,7 +354,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		//override param
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		List<String> files = process(offset, row, null);
+		List<String> files = process(offset, row);
 		try {
 			for (String file: files){
 				context.write(new Text(outputKey), new Text(file));
@@ -391,7 +382,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		return input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 			@Override
 			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-				List<String> fileList = process(0, t._2, null);
+				List<String> fileList = process(0, t._2);
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 				for (String file:fileList){
 					ret.add(new Tuple2<String,String>(outputKey, file));

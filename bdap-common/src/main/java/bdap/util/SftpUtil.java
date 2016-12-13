@@ -23,7 +23,6 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 public class SftpUtil {
 	public static final Logger logger = LogManager.getLogger(SftpUtil.class);
 	
-	
 	public static Session getSession(String host, int port, String user, String pass){
 		JSch jsch = new JSch();
 		try {
@@ -82,7 +81,7 @@ public class SftpUtil {
 	        }
 	    }
 	}
-	
+
 	/**
 	 * @param host
 	 * @param port
@@ -91,11 +90,11 @@ public class SftpUtil {
 	 * @param localFile/localDir, if this is a directory, then all the files will be ftped to its remote counterpart
 	 * @param remoteFile/remoteDir
 	 */
-	public static void sftpFromLocal(String host, int port, String user, String pass, String localFile, String remoteFile){
+	public static void sftpFromLocal(SftpInfo ftpInfo, String localFile, String remoteFile){
 		Session session = null;
 		try {
 			// connect
-			session = getSession(host, port, user, pass);
+			session = getSession(ftpInfo.ip, ftpInfo.port, ftpInfo.user, ftpInfo.passwd);
 			Channel channel = null;
 			channel = session.openChannel("sftp");
 			channel.connect();

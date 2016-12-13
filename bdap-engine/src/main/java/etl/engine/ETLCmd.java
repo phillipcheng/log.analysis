@@ -53,7 +53,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public static final String VAR_NAME_PATH_NAME="pathname";//including filename
 	
 	public static final String KEY_SEP=",";
-	public static final String SINGLE_TABLE="single.table";
+	public static final String SINGLE_TABLE="singleTable";
 	
 	protected String wfName;//wf template name
 	protected String wfid;
