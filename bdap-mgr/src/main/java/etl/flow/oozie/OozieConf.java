@@ -15,6 +15,8 @@ public class OozieConf implements FlowServerConf {
 	public static final String key_rmWebApp="rmWebApp";
 	public static final String key_historyServer="historyServer";
 	public static final String key_queueName="queueName";
+	public static final String key_flowName="wfName";
+	public static final String key_wfInstanceId="wfInstance";
 	public static final String key_oozieLibPath="oozie.libpath";
 	public static final String key_useSystemPath="oozie.use.system.libpath";
 	public static final String key_oozieWfAppPath="oozie.wf.application.path";
