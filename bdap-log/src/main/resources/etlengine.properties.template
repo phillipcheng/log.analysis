@@ -25,7 +25,7 @@ hdfs.webhdfs.root=http://192.85.247.104:50070/webhdfs/v1
 #hdfs.webhdfs.root=hdfs://127.0.0.1:19000
 
 #load log cmd
-log.tmp.dir= /bdap-VVERSIONN/etllog/
-log.csv.file='/bdap-VVERSIONN/etllog/' + WFID + '/' + tableName
-log.schema.file=/bdap-VVERSIONN/schema/logschema.txt
+log.tmp.dir= /bdap-r0.4.0/etllog/
+log.csv.file='/bdap-r0.4.0/etllog/' + WFID + '/' + tableName
+log.schema.file=/bdap-r0.4.0/schema/logschema.txt
 log.db.prefix=etllog
