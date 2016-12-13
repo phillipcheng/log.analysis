@@ -21,4 +21,7 @@ hdfs.user=dbadmin
 
 platform.remote.lib=/bdap-VVERSIONN/engine/lib
 
+projects=project1
+project1.hdfs.dir=/project1/
+
 action.node.cmds.search.packages=etl.cmd
