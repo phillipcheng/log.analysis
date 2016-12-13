@@ -23,4 +23,9 @@ public class TestSparkFlow {
 		deployer.runDeploy(projectName, flowName, null, true, EngineType.spark);
 		//deployer.runExecute(projectName, flowName);
 	}
+	
+	@Test
+	public void testSparkCmd(){
+		
+	}
 }
