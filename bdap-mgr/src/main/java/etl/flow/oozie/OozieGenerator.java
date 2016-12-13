@@ -85,7 +85,7 @@ public class OozieGenerator {
 			return prop_inputformat_line;
 		}else if (InputFormatType.FileName == ift){
 			return prop_inputformat_filename;
-		}else if (InputFormatType.File == ift){
+		}else if (InputFormatType.Text == ift){
 			return prop_inputformat_textfile;
 		}else{
 			logger.error(String.format("inputformat:%s not supported", ift));

@@ -39,6 +39,7 @@ import dv.db.entity.AccountEntity;
 import dv.db.entity.FlowEntity;
 import etl.engine.ETLCmd;
 import etl.flow.Flow;
+import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.InMemFile;
@@ -56,10 +57,11 @@ public class FlowController {
 	private String[] searchPackages;
 	
 	@Autowired
-	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr) {
+	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr, FlowDeployer flowDeployer) {
 		this.flowRepository = flowRepository;
 		this.accountRepository = accountRepository;
 		this.flowMgr = flowMgr;
+		this.flowDeployer = flowDeployer;
 		
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
 		this.searchPackages = pc.getStringArray(ACTION_NODE_CMDS_SEARCH_PACKAGES);
@@ -70,6 +72,7 @@ public class FlowController {
 	private final FlowRepository flowRepository;
 	private final AccountRepository accountRepository;
 	private final FlowMgr flowMgr;
+	private final FlowDeployer flowDeployer;
 
 	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
 	Map<String, List<String>> getActionNodeCommands() {
@@ -132,12 +135,8 @@ public class FlowController {
 	
 	@RequestMapping(value = "/{flowId}", method = RequestMethod.POST)
 	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
-		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
-		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
-		oc.setHistoryServer("http://localhost:19888");
-		oc.setRmWebApp("http://localhost:8088");
-		EngineConf ec = new EngineConf();
-		ec.getPropertiesConf().setProperty(EngineConf.cfgkey_defaultFs, "hdfs://127.0.0.1:19000");
+		OozieConf oc = flowDeployer.getOC();
+		EngineConf ec = flowDeployer.getEC();
 		try {
 			String flowInstanceId = flowMgr.executeFlow("project1", flowId, oc, ec);
 			HttpHeaders httpHeaders = new HttpHeaders();
@@ -151,73 +150,52 @@ public class FlowController {
 	
 	@RequestMapping(value = "/instances/{instanceId}", method = RequestMethod.GET)
 	FlowInfo getFlowInstance(@PathVariable String userName, @PathVariable String instanceId) {
+		OozieConf oc = flowDeployer.getOC();
 		this.validateUser(userName);
-		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
-		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
-		oc.setHistoryServer("http://localhost:19888");
-		oc.setRmWebApp("http://localhost:8088");
 		return this.flowMgr.getFlowInfo("project1", oc, instanceId);
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/log", method = RequestMethod.GET)
 	String getFlowLog(@PathVariable String userName, @PathVariable String instanceId) {
+		OozieConf oc = flowDeployer.getOC();
 		this.validateUser(userName);
-		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
-		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
-		oc.setHistoryServer("http://localhost:19888");
-		oc.setRmWebApp("http://localhost:8088");
 		return this.flowMgr.getFlowLog("project1", oc, instanceId);
 	}
 
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}", method = RequestMethod.GET)
 	NodeInfo getFlowNode(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
+		OozieConf oc = flowDeployer.getOC();
 		this.validateUser(userName);
-		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
-		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
-		oc.setHistoryServer("http://localhost:19888");
-		oc.setRmWebApp("http://localhost:8088");
 		return this.flowMgr.getNodeInfo("project1", oc, instanceId, nodeName);
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/log", method = RequestMethod.GET)
 	InMemFile[] getFlowNodeLog(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
+		OozieConf oc = flowDeployer.getOC();
 		this.validateUser(userName);
-		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
-		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
-		oc.setHistoryServer("http://localhost:19888");
-		oc.setRmWebApp("http://localhost:8088");
 		return this.flowMgr.getNodeLog("project1", oc, instanceId, nodeName);
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/inputfiles", method = RequestMethod.GET)
 	String[] listFlowNodeInputFiles(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
+		OozieConf oc = flowDeployer.getOC();
+		EngineConf ec = flowDeployer.getEC();
 		this.validateUser(userName);
-		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
-		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
-		oc.setHistoryServer("http://localhost:19888");
-		oc.setRmWebApp("http://localhost:8088");
-		EngineConf ec = new EngineConf();
-		ec.getPropertiesConf().setProperty(EngineConf.cfgkey_defaultFs, "hdfs://127.0.0.1:19000");
 		return this.flowMgr.listNodeInputFiles("project1", oc, ec, instanceId, nodeName);
 	}
 
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/outputfiles", method = RequestMethod.GET)
 	String[] listFlowNodeOutputFiles(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
+		OozieConf oc = flowDeployer.getOC();
+		EngineConf ec = flowDeployer.getEC();
 		this.validateUser(userName);
-		OozieConf oc = new OozieConf("127.0.0.1", 11000, "hdfs://127.0.0.1:19000", "127.0.0.1:8032", "");
-		oc.setOozieLibPath(String.format("%s/user/%s/share/lib/preload/lib/", oc.getNameNode(), oc.getUserName()));
-		oc.setHistoryServer("http://localhost:19888");
-		oc.setRmWebApp("http://localhost:8088");
-		EngineConf ec = new EngineConf();
-		ec.getPropertiesConf().setProperty(EngineConf.cfgkey_defaultFs, "hdfs://127.0.0.1:19000");
 		return this.flowMgr.listNodeOutputFiles("project1", oc, ec, instanceId, nodeName);
 	}
 
 	@RequestMapping(value = "/dfs/**", method = RequestMethod.GET)
 	InMemFile getDFSFile(@PathVariable String userName, HttpServletRequest request) {
 		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-		EngineConf ec = new EngineConf();
-		ec.getPropertiesConf().setProperty(EngineConf.cfgkey_defaultFs, "hdfs://127.0.0.1:19000");
+		EngineConf ec = flowDeployer.getEC();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
 		return this.flowMgr.getDFSFile(ec, filePath);

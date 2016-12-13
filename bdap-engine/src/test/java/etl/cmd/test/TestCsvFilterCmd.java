@@ -10,12 +10,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvFilterCmd;
+import etl.spark.SparkUtil;
 
 public class TestCsvFilterCmd extends TestETLCmd{
 	
@@ -55,15 +57,15 @@ public class TestCsvFilterCmd extends TestETLCmd{
 		JavaSparkContext jsc = new JavaSparkContext(conf);
 		JavaRDD<String> ds = jsc.textFile(super.getLocalFolder()+csvFile);
 		CsvFilterCmd cmd= new CsvFilterCmd(wfName, wfid, super.getLocalFolder()+csvSplitProp, super.getDefaultFS(), null);
-		Map<String, JavaRDD<String>> ret = cmd.sparkSplitProcess(ds, null);
+		JavaPairRDD<String,String> ret = cmd.sparkProcessV2KV(ds, null);
 		String key = "csv";
 		String csvString="csv, abcd, eff";
 		String sesString="ses, dbbd, qqq";
-		JavaRDD<String> csvrdd = ret.get(key);
+		JavaRDD<String> csvrdd = SparkUtil.filterPairRDD(ret, key);
 		assertTrue(csvrdd.collect().contains(csvString));
 		assertTrue(!csvrdd.collect().contains(sesString));
 		key="ses";
-		JavaRDD<String> sesrdd = ret.get(key);
+		JavaRDD<String> sesrdd = SparkUtil.filterPairRDD(ret, key);
 		assertTrue(sesrdd.collect().contains(sesString));
 		assertTrue(!sesrdd.collect().contains(csvString));
 		

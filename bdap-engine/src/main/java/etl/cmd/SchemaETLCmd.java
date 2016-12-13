@@ -77,7 +77,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	protected OutputType outputType = OutputType.multiple;
 	
 	private DBType dbtype = DBType.NONE;
-	private LockType lockType = LockType.zookeeper;
+	private LockType lockType = LockType.jvm;
 	private String zookeeperUrl=null;
 	private CuratorFramework client;
 	
@@ -99,7 +99,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		this.dbPrefix = super.getCfgString(cfgkey_db_prefix, null);
 		this.getSystemVariables().put(VAR_DB_PREFIX, dbPrefix);
 
-		this.lockType = LockType.valueOf(super.getCfgString(cfgkey_lock_type, LockType.zookeeper.toString()));
+		this.lockType = LockType.valueOf(super.getCfgString(cfgkey_lock_type, LockType.jvm.toString()));
 		this.zookeeperUrl = super.getCfgString(cfgkey_zookeeper_url, null);
 		
 		if (this.lockType==LockType.zookeeper && zookeeperUrl != null) {

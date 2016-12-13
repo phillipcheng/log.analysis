@@ -104,7 +104,7 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	//return common properties: nameNode, jobTracker, queue, username, useSystem
-	private bdap.xml.config.Configuration getCommonConf(OozieConf oc){
+	private bdap.xml.config.Configuration getCommonConf(OozieConf oc, String wfName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
 		{
 			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
@@ -131,13 +131,18 @@ public class OozieFlowMgr extends FlowMgr{
 			oozieLibPath.setName(OozieConf.key_useSystemPath);
 			oozieLibPath.setValue("true");
 			bodyConf.getProperty().add(oozieLibPath);
+		}{
+			bdap.xml.config.Configuration.Property flowName = new bdap.xml.config.Configuration.Property();
+			flowName.setName(OozieConf.key_flowName);
+			flowName.setValue(wfName);
+			bodyConf.getProperty().add(flowName);
 		}
 		return bodyConf;
 	}
 	/*
-	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/
-	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
-	note: ${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-r0.3-jdk1.7/lib/
+	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/binfile_workflow.xml
+	note: ${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
 	 */
 	private bdap.xml.config.Configuration getWfConf(OozieConf oc, String projectDir, String flowName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
@@ -157,9 +162,9 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	/*
-	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/,${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/
-	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_coordinator.xml
-	workflowAppUri=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-r0.3-jdk1.7/lib/,${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/lib/
+	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/binfile_coordinator.xml
+	workflowAppUri=${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/binfile_workflow.xml
 	flowName=test1
 	duration=15
 	start=2016-09-21T08:40Z
@@ -246,7 +251,7 @@ public class OozieFlowMgr extends FlowMgr{
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration commonConf = getCommonConf(oc);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
 		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
 		commonConf.getProperty().addAll(wfConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");
@@ -266,7 +271,7 @@ public class OozieFlowMgr extends FlowMgr{
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
-		bdap.xml.config.Configuration commonConf = getCommonConf(oc);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
 		bdap.xml.config.Configuration coordConf = getCoordConf(oc, cc, projectDir, flowName);
 		commonConf.getProperty().addAll(coordConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");

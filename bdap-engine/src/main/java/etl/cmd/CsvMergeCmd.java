@@ -160,12 +160,7 @@ public class CsvMergeCmd extends SchemaETLCmd{
 	}
 		
 	/**
-	 * map function in map-only or map-reduce mode, for map mode: output null for no key or value
-	 * @return map may contains following key:
-	 * ETLCmd.RESULT_KEY_LOG: list of String user defined log info
-	 * ETLCmd.RESULT_KEY_OUTPUT: list of String output
-	 * ETLCmd.RESULT_KEY_OUTPUT_MAP: list of Tuple2<key, value>
-	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
+	 * row: csv
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		int idx=-1;

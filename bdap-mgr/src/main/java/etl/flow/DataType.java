@@ -1,9 +1,9 @@
 package etl.flow;
 
-//for spark io conversion
+//describe each tuple
 public enum DataType {
-	FileName,
-	FileNameList,
-	StringList,
-	KeyValueList,
+	Path,
+	KeyPath,
+	Value,
+	KeyValue,
 }
