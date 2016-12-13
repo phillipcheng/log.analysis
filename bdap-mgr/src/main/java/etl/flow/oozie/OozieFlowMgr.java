@@ -148,9 +148,9 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	/*
-	oozie.libpath=${nameNode}/user/${user.name}/bdap-r0.3-jdk1.7/lib/
-	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/binfile_workflow.xml
-	note: ${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/
+	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
+	note: ${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
 	 */
 	private bdap.xml.config.Configuration getWfConf(OozieConf oc, String projectDir, String flowName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
@@ -170,9 +170,9 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	/*
-	oozie.libpath=${nameNode}/user/${user.name}/bdap-r0.3-jdk1.7/lib/,${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/lib/
-	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/binfile_coordinator.xml
-	workflowAppUri=${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/binfile_workflow.xml
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/,${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/
+	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_coordinator.xml
+	workflowAppUri=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
 	flowName=test1
 	duration=15
 	start=2016-09-21T08:40Z
@@ -249,10 +249,10 @@ public class OozieFlowMgr extends FlowMgr{
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		String projectDir = fd.getProjectHdfsDir(prjName);
-		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fsconf, ec);
+		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fsconf, fd.getFs());
 		return true;
 	}
-	
+
 	@Override
 	public String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec){
 		OozieConf oc = (OozieConf)fsconf;
@@ -319,18 +319,22 @@ public class OozieFlowMgr extends FlowMgr{
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
+	
+	private void uploadFiles(String projectDir, String flowName, InMemFile[] files, FlowServerConf fsconf, FileSystem fs) {
 		OozieConf oc = (OozieConf) fsconf;
 		//deploy to the server
-		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 		for (InMemFile im:files){
 			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
 			logger.info(String.format("copy to %s", path));
 			HdfsUtil.writeDfsFile(fs, path, im.getContent());
 		}
+	}
+
+	@Override
+	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
+		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+		this.uploadFiles(projectDir, flowName, files, fsconf, fs);
 	}
 
 	@Override
@@ -505,6 +509,7 @@ public class OozieFlowMgr extends FlowMgr{
 			log = "";
 		
 		InMemFile logFile = new InMemFile();
+		/* TODO: Log file type STDOUT/ERROR */
 		logFile.setFileName(url);
 		logFile.setFileType(FileType.textData);
 		logFile.setTextContent(log);

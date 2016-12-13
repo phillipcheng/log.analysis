@@ -135,15 +135,22 @@ public class FlowController {
 	
 	@RequestMapping(value = "/{flowId}", method = RequestMethod.POST)
 	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
+		HttpHeaders httpHeaders = new HttpHeaders();
 		OozieConf oc = flowDeployer.getOC();
 		EngineConf ec = flowDeployer.getEC();
+		this.validateUser(userName);
 		try {
-			String flowInstanceId = flowMgr.executeFlow("project1", flowId, oc, ec);
-			HttpHeaders httpHeaders = new HttpHeaders();
-			return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
+			FlowEntity flowEntity = flowRepository.findOne(flowId);
+			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
+				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
+				flowMgr.deployFlowFromJson("project1", flow, flowDeployer, oc, ec);
+				String flowInstanceId = flowMgr.executeFlow("project1", flowId, oc, ec);
+				return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
+			} else {
+				return new ResponseEntity<String>("Flow entity not found or is empty", httpHeaders, HttpStatus.NOT_FOUND);
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			HttpHeaders httpHeaders = new HttpHeaders();
 			return new ResponseEntity<String>(e.getMessage(), httpHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -198,6 +205,7 @@ public class FlowController {
 		EngineConf ec = flowDeployer.getEC();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
+		this.validateUser(userName);
 		return this.flowMgr.getDFSFile(ec, filePath);
 	}
 	
