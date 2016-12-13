@@ -163,10 +163,6 @@ public class OozieGenerator {
 			}
 		}
 			//input properties
-		CONFIGURATION.Property inputFormatCp = new CONFIGURATION.Property();
-		inputFormatCp.setName(prop_inputformat);
-		inputFormatCp.setValue(getInputFormat(InputFormatType.valueOf(an.getProperty(ActionNode.key_input_format))));
-		pl.add(inputFormatCp);
 		CONFIGURATION.Property inputDirsCp = new CONFIGURATION.Property();
 		inputDirsCp.setName(prop_inputdirs);
 		inputDirsCp.setValue(String.join(",", inputDataDirs));

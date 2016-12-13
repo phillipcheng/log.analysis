@@ -51,18 +51,18 @@ public class FlowTest {
 		actionNodes.add(start);
 		actionNodes.add(end);
 		{//sftp action
-			ActionNode sftp = new ActionNode("sftp", ExeType.mr, InputFormatType.Line, wfName+"/action_sftp.properties");
+			ActionNode sftp = new ActionNode("sftp", ExeType.mr, wfName+"/action_sftp.properties");
 			sftp.putProperty(ActionNode.key_cmd_class, "etl.cmd.SftpCmd");
 			sftp.addInLet(new NodeLet("0", "sftp.map"));
 			actionNodes.add(sftp);
 		}{//csv transform action
-			ActionNode csvTrans = new ActionNode("csvtransform", ExeType.mr, InputFormatType.Text, wfName+"/action_csvtransform.properties");
+			ActionNode csvTrans = new ActionNode("csvtransform", ExeType.mr, wfName+"/action_csvtransform.properties");
 			csvTrans.putProperty(ActionNode.key_cmd_class, "etl.cmd.CsvTransformCmd");
 			csvTrans.addInLet(new NodeLet("0", "data1"));
 			csvTrans.addOutLet(new NodeLet("0", "data1trans"));
 			actionNodes.add(csvTrans);
 		}{//csv transform action
-			ActionNode csvMerge = new ActionNode("csvmerge", ExeType.mr, InputFormatType.Text, wfName+"/action_csvmerge.properties");
+			ActionNode csvMerge = new ActionNode("csvmerge", ExeType.mr, wfName+"/action_csvmerge.properties");
 			csvMerge.putProperty(ActionNode.key_cmd_class, "etl.cmd.CsvMergeCmd");
 			csvMerge.addInLet(new NodeLet("0", "data1trans"));
 			csvMerge.addInLet(new NodeLet("1", "data2"));
