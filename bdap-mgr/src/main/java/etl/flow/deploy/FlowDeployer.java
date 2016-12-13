@@ -274,6 +274,12 @@ public class FlowDeployer {
 		return ofm.executeFlow(hdfsProjectFolder, flowName, getOC(), getEC());
 	}
 	
+	private String execute(String projectName, String flowName, String wfId){
+		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
+		OozieFlowMgr ofm = new OozieFlowMgr();
+		return ofm.executeFlow(hdfsProjectFolder, flowName, getOC(), getEC(), wfId);
+	}
+	
 	public String runExecute(String projectName, String flowName) {
 		try {
 			if (localDeploy){		
@@ -283,6 +289,24 @@ public class FlowDeployer {
 				return ugi.doAs(new PrivilegedExceptionAction<String>() {
 						public String run() throws Exception {
 							return execute(projectName, flowName);
+						}
+					});
+			}
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	public String runExecute(String projectName, String flowName, String wfId) {
+		try {
+			if (localDeploy){		
+				return execute(projectName, flowName);
+			}else{
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
+				return ugi.doAs(new PrivilegedExceptionAction<String>() {
+						public String run() throws Exception {
+							return execute(projectName, flowName, wfId);
 						}
 					});
 			}

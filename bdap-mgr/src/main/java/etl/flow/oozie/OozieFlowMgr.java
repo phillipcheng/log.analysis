@@ -139,6 +139,14 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 		return bodyConf;
 	}
+	
+	private bdap.xml.config.Configuration.Property getWfIdConf(String wfId){
+		bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+		property.setName(OozieConf.key_wfInstanceId);
+		property.setValue(wfId);
+		return property;
+	}
+	
 	/*
 	oozie.libpath=${nameNode}/user/${user.name}/bdap-r0.3-jdk1.7/lib/
 	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-r0.3-jdk1.7/binfile/binfile_workflow.xml
@@ -254,6 +262,27 @@ public class OozieFlowMgr extends FlowMgr{
 		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
 		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
 		commonConf.getProperty().addAll(wfConf.getProperty());
+		String body = XmlUtil.marshalToString(commonConf, "configuration");
+		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
+		logger.info(String.format("post result:%s", result));
+		Map<String, String> vm = JsonUtil.fromJsonString(result, HashMap.class);
+		if (vm!=null){
+			return vm.get("id");
+		}else{
+			return null;
+		}
+	}
+	
+	public String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, String wfId){
+		OozieConf oc = (OozieConf)fsconf;
+		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
+		Map<String, String> queryParamMap = new HashMap<String, String>();
+		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
+		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
+		commonConf.getProperty().addAll(wfConf.getProperty());
+		bdap.xml.config.Configuration.Property wfIdProperty = getWfIdConf(wfId);
+		commonConf.getProperty().add(wfIdProperty);
 		String body = XmlUtil.marshalToString(commonConf, "configuration");
 		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
 		logger.info(String.format("post result:%s", result));

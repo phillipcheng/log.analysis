@@ -63,7 +63,7 @@ public class Flow1SparkCmd extends ETLCmd implements Serializable{
 		JavaPairRDD<String,String> data1trans;
 		JavaPairRDD<String,String> data2trans;
 		//
-		JavaPairRDD<String,String> aggrcsvs;
+		JavaPairRDD<String,String> mergeCsvs;
 		
 		SftpCmd sftpCmd = new SftpCmd(getWfName(), getWfid(), "action_sftp.properties", super.getDefaultFs(), null);
 		sftpOutput = sftpCmd.sparkProcessFilesToKV(sftpMap, jsc, TextInputFormat.class);
@@ -77,10 +77,10 @@ public class Flow1SparkCmd extends ETLCmd implements Serializable{
 		data2trans = d2csvTransformCmd.sparkProcessFilesToKV(data2, jsc, TextInputFormat.class).cache();
 		
 		CsvMergeCmd mergeCmd = new CsvMergeCmd(wfName, wfid, "action_csvmerge.properties", defaultFs, null);
-		aggrcsvs = mergeCmd.sparkProcessKeyValue(data1trans.union(data2trans), jsc);
+		mergeCsvs = mergeCmd.sparkProcessKeyValue(data1trans.union(data2trans), jsc);
 		
 		SaveDataCmd saveCmd = new SaveDataCmd(wfName, wfid, "action_csvsave.properties", defaultFs, null);
-		saveCmd.sparkProcessKeyValue(aggrcsvs, jsc);
+		saveCmd.sparkProcessKeyValue(mergeCsvs, jsc);
 		
 		jsc.close();
 		
