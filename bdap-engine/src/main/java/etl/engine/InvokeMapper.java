@@ -33,6 +33,9 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 	
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+    	if (cmds != null)
+    		for (ETLCmd c: cmds)
+    			c.close();
     }
     
 	//for each line of the inputfile, this will be invoked once

@@ -17,8 +17,6 @@ import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 
-import bdap.util.JsonUtil;
-
 public class Test implements JobExecutionContext {
 	private static final String DEST_SERVER = "DestServer";
 	private static final String DEST_SERVER_PORT = "DestServerPort";
@@ -58,7 +56,6 @@ public class Test implements JobExecutionContext {
 		
 		c.put("test", v);
 		
-		System.out.println(JsonUtil.toJsonString(c));
 		System.out.println(new Date());
 		
 		Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();

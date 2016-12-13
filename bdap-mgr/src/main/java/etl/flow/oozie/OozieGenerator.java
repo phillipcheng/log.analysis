@@ -85,7 +85,7 @@ public class OozieGenerator {
 			return prop_inputformat_line;
 		}else if (InputFormatType.FileName == ift){
 			return prop_inputformat_filename;
-		}else if (InputFormatType.File == ift){
+		}else if (InputFormatType.Text == ift){
 			return prop_inputformat_textfile;
 		}else{
 			logger.error(String.format("inputformat:%s not supported", ift));
@@ -163,10 +163,6 @@ public class OozieGenerator {
 			}
 		}
 			//input properties
-		CONFIGURATION.Property inputFormatCp = new CONFIGURATION.Property();
-		inputFormatCp.setName(prop_inputformat);
-		inputFormatCp.setValue(getInputFormat(InputFormatType.valueOf(an.getProperty(ActionNode.key_input_format))));
-		pl.add(inputFormatCp);
 		CONFIGURATION.Property inputDirsCp = new CONFIGURATION.Property();
 		inputDirsCp.setName(prop_inputdirs);
 		inputDirsCp.setValue(String.join(",", inputDataDirs));

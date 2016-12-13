@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.JobConf;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
@@ -77,10 +76,10 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		
 		String staticCfgName = "xml2csv2.properties";
 		String[] inputFiles = new String[]{"dynschema_test1_data2.xml"};
-		String remoteSchemaFile = "schemas.txt";
 		
 		//schema
-		getFs().delete(new Path(schemaFolder + remoteSchemaFile), true);
+		getFs().delete(new Path(schemaFolder + "schema-index.schema"), true);
+		getFs().delete(new Path(schemaFolder + "MyCore_.schema"), true);
 		getFs().delete(new Path(sqlFile), true);
 		
 		//run cmd

@@ -1,6 +1,8 @@
  package etl.engine;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +23,6 @@ public class LogicSchema implements Serializable{
 	public static final Logger logger = LogManager.getLogger(LogicSchema.class);
 	
 	private Map<String, String> tableIdNameMap = null; //table-id to table-name mapping
-	private transient Map<String, String> tableNameIdMap=new HashMap<String, String>();//reverse mapping test name duplication
 	private Map<String, String> attrIdNameMap = null; //attribute-id to attribute-name mapping
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
 	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping
@@ -134,18 +135,21 @@ public class LogicSchema implements Serializable{
 	public void setAttrIdNameMap(Map<String, String> attrIdNameMap) {
 		this.attrIdNameMap = attrIdNameMap;
 	}
+
+	@JsonIgnore
+	public Collection<String> getTableNames() {
+		if (tableIdNameMap != null && tableIdNameMap.size() > 0)
+			return tableIdNameMap.values();
+		else if (attrNameMap != null && attrNameMap.size() > 0)
+			return attrNameMap.keySet();
+		else
+			return Collections.emptyList();
+	}
 	
 	public boolean isIndex() {
 		return index;
 	}
 	public void setIndex(boolean index) {
 		this.index = index;
-	}
-	@JsonIgnore
-	public Map<String, String> getTableNameIdMap() {
-		return tableNameIdMap;
-	}
-	public void setTableNameIdMap(Map<String, String> tableNameIdMap) {
-		this.tableNameIdMap = tableNameIdMap;
 	}
 }

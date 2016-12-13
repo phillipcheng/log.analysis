@@ -1,4 +1,4 @@
-package etl.util;
+package etl.util.mapred;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,12 +10,21 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TaskAttemptContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class XmlRecordReader extends RecordReader<LongWritable, Text> {
+import etl.util.ScriptEngineUtil;
+import etl.util.XmlInputStream;
+
+public class XmlRecordReader implements RecordReader<LongWritable, Text> {
+	public static final Logger logger = LogManager.getLogger(XmlRecordReader.class);
+	
 	public static final String START_TAG_KEY = "xmlinput.start";
 	public static final String END_TAG_KEY = "xmlinput.end";
 	public static final String START_ROW_TAG_KEY = "xmlinput.row.start";
@@ -41,8 +50,15 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 	private LongWritable key = new LongWritable();
 	private Text value = new Text();
 
-	public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
-		Configuration conf = context.getConfiguration();
+	public XmlRecordReader(InputSplit split, JobConf job, Reporter reporter){
+		try {
+			initialize(split, job);
+		}catch(Exception e){
+			logger.error("", e);
+		}
+	}
+	
+	private void initialize(InputSplit split, Configuration conf) throws IOException, InterruptedException {
 		
 		if (conf.get(START_TAG_KEY) != null)
 			startTag = conf.get(START_TAG_KEY).getBytes("utf-8");
@@ -159,59 +175,8 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		return null;
 	}
 
-	public boolean nextKeyValue() throws IOException, InterruptedException {
-		if (this.rowStartTag != null && this.rowEndTag != null) {
-			boolean available;
-			value.set(header);
-			if (currentSectionIn != null)
-				available = nextKeyValue(currentSectionIn, rowStartTag, rowEndTag, sectionHeader, sectionFooter, rowMaxNumber);
-			else
-				available = false;
-			if (available) {
-				byte[] footerBuf = footer.getBytes(Charset.forName("utf8"));
-				value.append(footerBuf, 0, footerBuf.length);
-				return true;
-			} else if (currentSectionIn != null) {
-				/* Close the previous section input stream */
-				currentSectionIn.close();
-				
-				/* Get the next session input stream */
-				currentSectionIn = nextSection(fsin, startTag, endTag, rowStartTag, rowEndTag);
-				if (currentSectionIn != null) {
-					value.set(header);
-					available = nextKeyValue(currentSectionIn, rowStartTag, rowEndTag, sectionHeader, sectionFooter, rowMaxNumber);
-					if (available) {
-						byte[] footerBuf = footer.getBytes(Charset.forName("utf8"));
-						value.append(footerBuf, 0, footerBuf.length);
-						return true;
-					} else {
-						return false;
-					}
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
-		} else {
-			value.clear();
-			return nextKeyValue(fsin, startTag, endTag, header, footer, 1);
-		}
-	}
-
-	public LongWritable getCurrentKey() throws IOException, InterruptedException {
-		return key;
-	}
-
-	public Text getCurrentValue() throws IOException, InterruptedException {
-		return value;
-	}
-
+	@Override
 	public void close() throws IOException {
-		if (currentSectionIn != null) {
-			currentSectionIn.close();
-			currentSectionIn = null;
-		}
 		if (buffer != null) {
 			buffer.close();
 			buffer = null;
@@ -222,6 +187,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		}
 	}
 
+	@Override
 	public float getProgress() throws IOException {
 		return (fsin.getPos() - start) / (float) (end - start);
 	}
@@ -252,5 +218,58 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 			
 			dataIn.setMatching(i != 0);
 		}
+	}
+
+	@Override
+	public boolean next(LongWritable key, Text value) throws IOException {
+		if (this.rowStartTag != null && this.rowEndTag != null) {
+			boolean available;
+			value.set(header);
+			if (currentSectionIn != null)
+				available = nextKeyValue(currentSectionIn, rowStartTag, rowEndTag, sectionHeader, sectionFooter, rowMaxNumber);
+			else
+				available = false;
+			if (available) {
+				byte[] footerBuf = footer.getBytes(Charset.forName("utf8"));
+				value.append(footerBuf, 0, footerBuf.length);
+				return true;
+			} else if (currentSectionIn != null) {
+				currentSectionIn = nextSection(fsin, startTag, endTag, rowStartTag, rowEndTag);
+				if (currentSectionIn != null) {
+					value.set(header);
+					available = nextKeyValue(currentSectionIn, rowStartTag, rowEndTag, sectionHeader, sectionFooter, rowMaxNumber);
+					if (available) {
+						byte[] footerBuf = footer.getBytes(Charset.forName("utf8"));
+						value.append(footerBuf, 0, footerBuf.length);
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		} else {
+			value.clear();
+			return nextKeyValue(fsin, startTag, endTag, header, footer, 1);
+		}
+	}
+
+	@Override
+	public LongWritable createKey() {
+		return key;
+	}
+
+	@Override
+	public Text createValue() {
+		return value;
+	}
+
+	@Override
+	public long getPos() throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

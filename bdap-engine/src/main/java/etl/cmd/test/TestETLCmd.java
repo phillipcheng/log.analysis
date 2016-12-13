@@ -141,7 +141,7 @@ public abstract class TestETLCmd implements Serializable{
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
-			String staticProperties, String cmdClassName, Class inputFormatClass) throws Exception {
+			String staticProperties, String cmdClassName, Class inputFormatClass, int numReducer) throws Exception {
 		try {
 			getFs().delete(new Path(remoteOutputFolder), true);
 			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
@@ -163,6 +163,7 @@ public abstract class TestETLCmd implements Serializable{
 			}
 			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
 			getConf().set("mapreduce.output.textoutputformat.separator", ",");
+			getConf().set("mapreduce.job.reduces", String.valueOf(numReducer));
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(InvokeMapper.class);
 			job.setReducerClass(etl.engine.InvokeReducer.class);
@@ -188,6 +189,10 @@ public abstract class TestETLCmd implements Serializable{
 		return null;
 	}
 	
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class inputFormatClass) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, 1);
+	}
 	/**
 	 * 
 	 * @param remoteInputFolder

@@ -3,10 +3,16 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
-
+    <!-- more bean definitions go here -->
+    
     <bean id="flowMgr" class="etl.flow.oozie.OozieFlowMgr">
     	<property name="dateTimePattern" value="EEE, dd MMM yyyy HH:mm:ss z"/>    
     </bean>
-    <!-- more bean definitions go here -->
+    
+    <bean id="flowDeployer" class="etl.flow.deploy.FlowDeployer">
+    	<constructor-arg>
+    		<value>config/config.properties</value>
+    	</constructor-arg>  
+    </bean>
 
 </beans>
