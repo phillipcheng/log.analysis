@@ -1,5 +1,5 @@
 #use hdfs user to execute
-bdap_dir=/bdap-VVERSIONN
+bdap_dir=/bdap-r0.4.0
 
 
 #copy lib
