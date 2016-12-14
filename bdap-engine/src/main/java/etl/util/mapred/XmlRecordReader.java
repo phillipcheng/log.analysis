@@ -177,6 +177,10 @@ public class XmlRecordReader implements RecordReader<LongWritable, Text> {
 
 	@Override
 	public void close() throws IOException {
+		if (currentSectionIn != null) {
+			currentSectionIn.close();
+			currentSectionIn = null;
+		}
 		if (buffer != null) {
 			buffer.close();
 			buffer = null;
@@ -234,6 +238,9 @@ public class XmlRecordReader implements RecordReader<LongWritable, Text> {
 				value.append(footerBuf, 0, footerBuf.length);
 				return true;
 			} else if (currentSectionIn != null) {
+				/* Close the previous section input stream */
+				currentSectionIn.close();
+				
 				currentSectionIn = nextSection(fsin, startTag, endTag, rowStartTag, rowEndTag);
 				if (currentSectionIn != null) {
 					value.set(header);
