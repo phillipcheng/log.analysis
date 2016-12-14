@@ -744,6 +744,17 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 		return null;
 	}
+	
+	public boolean putDFSFile(EngineConf ec, String filePath, InMemFile file) {
+		if (filePath != null) {
+			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			if (FileType.textData.equals(file.getFileType()))
+				return HdfsUtil.writeDfsFile(fs, filePath, file.getTextContent().getBytes(Charset.forName("utf8")));
+			else
+				return HdfsUtil.writeDfsFile(fs, filePath, file.getContent());
+		} else
+			return false;
+	}
 
 	public String getDateTimePattern() {
 		return dateTimePattern;
