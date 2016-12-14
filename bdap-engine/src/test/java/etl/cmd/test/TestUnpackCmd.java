@@ -26,9 +26,10 @@ public class TestUnpackCmd extends TestETLCmd {
 		String remoteCsvInputFolder = "/etltest/unpack/input/";
 		String remoteCsvOutputFolder = "/etltest/unpack/output/";
 		String unpackProp = "unpack.properties";
-		String[] csvFiles = new String[]{"20160409_BB1.zip", "test.csv"};
+		String[] csvFiles = new String[]{"20160409_BB1.zip", "20160410_AA1.tar.gz", "test.csv"};
 
 		getFs().delete(new Path("/etltest/unpack/output/20160409_BB1"), true);
+		getFs().delete(new Path("/etltest/unpack/output/20160410_AA1"), true);
 		
 		List<String> output = super.mapTest(remoteCsvInputFolder, remoteCsvOutputFolder, unpackProp, csvFiles, testCmdClass, true);
 		logger.info("Output is:"+output);
@@ -42,6 +43,15 @@ public class TestUnpackCmd extends TestETLCmd {
 		logger.info(fl);
 		assertTrue(fl.contains("test.txt"));
 		assertTrue(!fl.contains("test.dat"));
+		
+		fl = HdfsUtil.listDfsFile(getFs(), "/etltest/unpack/output/20160410_AA1/02");
+		logger.info(fl);
+		assertTrue(fl.contains("A20160410.0000-20160410.0100_E_000000000_262216704_F4D9FB75EA47_13.csv"));
+		
+		fl = HdfsUtil.listDfsFile(getFs(), "/etltest/unpack/output/20160410_AA1");
+		logger.info(fl);
+		assertTrue(fl.contains("test2.txt"));
+		assertTrue(!fl.contains("test2.dat"));
 	}
 	
 }
