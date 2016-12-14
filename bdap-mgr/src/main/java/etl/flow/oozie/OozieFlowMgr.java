@@ -749,9 +749,9 @@ public class OozieFlowMgr extends FlowMgr{
 		if (filePath != null) {
 			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 			if (FileType.textData.equals(file.getFileType()))
-				return HdfsUtil.writeDfsFile(fs, filePath, file.getTextContent().getBytes(Charset.forName("utf8")));
+				return HdfsUtil.writeDfsFile(fs, filePath, file.getTextContent().getBytes(Charset.forName("utf8")), false);
 			else
-				return HdfsUtil.writeDfsFile(fs, filePath, file.getContent());
+				return HdfsUtil.writeDfsFile(fs, filePath, file.getContent(), false);
 		} else
 			return false;
 	}

@@ -54,10 +54,10 @@ public class HdfsUtil {
 		}
 	}
 	
-	public static boolean writeDfsFile(FileSystem fs, String path, byte[] content){
+	public static boolean writeDfsFile(FileSystem fs, String path, byte[] content, boolean overwrite){
 		FSDataOutputStream out = null;
 		try {
-			out = fs.create(new Path(path), true);
+			out = fs.create(new Path(path), overwrite);
 			out.write(content);
 		}catch(Exception e){
 			logger.error("",e);
@@ -73,6 +73,11 @@ public class HdfsUtil {
 		}
 		return true;
 	}
+	
+	public static boolean writeDfsFile(FileSystem fs, String path, byte[] content){
+		return writeDfsFile(fs, path, content, true);
+	}
+	
 	public static int writeDfsFile(FileSystem fs, String fileName, Iterable<String> contents){
 		BufferedWriter osw = null;
 		try {
