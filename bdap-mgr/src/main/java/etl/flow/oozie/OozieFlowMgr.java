@@ -354,33 +354,13 @@ public class OozieFlowMgr extends FlowMgr{
 			else
 				dtFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.forLanguageTag("en-US"));
 			String t = (String) flowInfoMap.get("startTime");
-			if (t != null)
-				try {
-					flowInfo.setStartTime(dtFormat.parse(t));
-				} catch (ParseException e) {
-					logger.error(e.getMessage(), e);
-				}
+			flowInfo.setStartTime(t);
 			t = (String) flowInfoMap.get("endTime");
-			if (t != null)
-				try {
-					flowInfo.setEndTime(dtFormat.parse(t));
-				} catch (ParseException e) {
-					logger.error(e.getMessage(), e);
-				}
+			flowInfo.setEndTime(t);
 			t = (String) flowInfoMap.get("createdTime");
-			if (t != null)
-				try {
-					flowInfo.setCreatedTime(dtFormat.parse(t));
-				} catch (ParseException e) {
-					logger.error(e.getMessage(), e);
-				}
+			flowInfo.setCreatedTime(t);
 			t = (String) flowInfoMap.get("lastModTime");
-			if (t != null)
-				try {
-					flowInfo.setLastModifiedTime(dtFormat.parse(t));
-				} catch (ParseException e) {
-					logger.error(e.getMessage(), e);
-				}
+			flowInfo.setLastModifiedTime(t);
 			return flowInfo;
 		}
 		return null;

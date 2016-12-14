@@ -38,8 +38,7 @@ import etl.flow.spark.SparkServerConf;
 public class FlowDeployer {
 
 	public static final Logger logger = LogManager.getLogger(FlowDeployer.class);
-	
-	private static String cfgProperties="testFlow.properties";
+	public static final String defaultCfgProperties = "testFlow.properties";
 	
 	private static String key_platform_local_dist="platform.local.dist"; //all cmd required runtime and compile time libary
 	private static String key_platform_remote_lib="platform.remote.lib";
@@ -51,6 +50,7 @@ public class FlowDeployer {
 	private static String key_hdfs_user="hdfs.user";
 	private static String key_defaultFs="defaultFs";
 	
+	private String cfgProperties=null;
 	private PropertiesConfiguration pc;
 	
 	private String platformLocalDist;
@@ -66,7 +66,8 @@ public class FlowDeployer {
 	private transient Configuration conf;
 	
 	public FlowDeployer(){
-		this(cfgProperties);
+		this(defaultCfgProperties);
+		this.cfgProperties = defaultCfgProperties;
 	}
     public FlowDeployer(String properties) {
     	if (properties!=null){
