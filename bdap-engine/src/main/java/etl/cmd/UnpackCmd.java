@@ -10,6 +10,8 @@ import java.util.Map;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -78,6 +80,10 @@ public class UnpackCmd extends ETLCmd {
 		}
 	}
 
+	public boolean hasReduce() {
+		return false;
+	}
+
 	public Map<String, Object> mapProcess(long offset, String row,
 			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
 		List<String> fileEntries = new ArrayList<String>();
@@ -85,6 +91,8 @@ public class UnpackCmd extends ETLCmd {
 		FSDataInputStream fsIn = null;
 		BufferedInputStream bufIn = null;
 		ArchiveInputStream in = null;
+		BufferedInputStream bufCompIn = null;
+		CompressorInputStream compIn = null;
 		FSDataOutputStream fsOut;
 		ArchiveEntry entry;
 		String destFile;
@@ -97,7 +105,16 @@ public class UnpackCmd extends ETLCmd {
 			try {
 				fsIn = fs.open(path);
 				bufIn = new BufferedInputStream(fsIn);
-				in = new ArchiveStreamFactory().createArchiveInputStream(bufIn);
+				try {
+					compIn = new CompressorStreamFactory().createCompressorInputStream(bufIn);
+					bufCompIn = new BufferedInputStream(compIn);
+					in = new ArchiveStreamFactory().createArchiveInputStream(bufCompIn);
+				} catch (Exception e) {
+					logger.debug(e.getMessage() + " - " + path);
+				}
+				
+				if (in == null)
+					in = new ArchiveStreamFactory().createArchiveInputStream(bufIn);
 				
 				while ((entry = in.getNextEntry()) != null) {
 					if (!entry.isDirectory() && outputFileFilter.accept(null, entry.getName())) {
@@ -117,6 +134,10 @@ public class UnpackCmd extends ETLCmd {
 			} finally {
 				if (in != null)
 					in.close();
+				if (bufCompIn != null)
+					bufCompIn.close();
+				if (compIn != null)
+					compIn.close();
 				if (bufIn != null)
 					bufIn.close();
 				if (fsIn != null)

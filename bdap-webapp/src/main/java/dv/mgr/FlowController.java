@@ -30,6 +30,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import bdap.util.EngineConf;
+import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import dv.UserNotFoundException;
@@ -201,12 +202,23 @@ public class FlowController {
 
 	@RequestMapping(value = "/dfs/**", method = RequestMethod.GET)
 	InMemFile getDFSFile(@PathVariable String userName, HttpServletRequest request) {
+		this.validateUser(userName);
 		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
 		EngineConf ec = flowDeployer.getEC();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
-		this.validateUser(userName);
 		return this.flowMgr.getDFSFile(ec, filePath);
+	}
+
+	@RequestMapping(value = "/dfs/**", method = { RequestMethod.PUT, RequestMethod.POST })
+	boolean putDFSFile(@PathVariable String userName, HttpServletRequest request, @RequestBody String content) {
+		this.validateUser(userName);
+		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+		EngineConf ec = flowDeployer.getEC();
+		if (filePath != null && filePath.contains("/flow/dfs/"))
+			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
+		InMemFile file = new InMemFile(FileType.textData, filePath, content);
+		return flowMgr.putDFSFile(ec, filePath, file);
 	}
 	
 	private void validateUser(String userName) {

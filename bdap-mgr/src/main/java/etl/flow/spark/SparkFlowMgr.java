@@ -133,4 +133,10 @@ public class SparkFlowMgr extends FlowMgr{
 		return null;
 	}
 
+	@Override
+	public boolean putDFSFile(EngineConf ec, String filePath, InMemFile file) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
