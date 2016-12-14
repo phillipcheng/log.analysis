@@ -146,6 +146,15 @@ public abstract class FlowMgr {
 	 * @return file content
 	 */
 	public abstract InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize);
+
+	/**
+	 * put the distributed file
+	 * @param ec
+	 * @param filePath
+	 * @param file
+	 * @return true/false
+	 */
+	public abstract boolean putDFSFile(EngineConf ec, String filePath, InMemFile file);
 	
 	//generate json file from java construction
 	public static void genFlowJson(String rootFolder, String projectName, Flow flow){
