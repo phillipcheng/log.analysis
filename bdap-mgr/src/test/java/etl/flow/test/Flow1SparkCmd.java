@@ -51,10 +51,10 @@ public class Flow1SparkCmd extends ETLCmd implements Serializable{
 		JavaSparkContext jsc = new JavaSparkContext(conf);
 		
 		//data instance is false, generate initial value
-		//record type is Value/Path, generated JavaRDD<String>
-		JavaRDD<String> sftpMap= SparkUtil.fromString("/attmexico/huawei/action.sftp.map.properties", jsc);
+		//record type is Value, generated JavaRDD<String>
+		JavaRDD<String> sftpMap= SparkUtil.fromString("/flow1/sftpcfg/test1.sftp.map.properties", jsc);
 		//when a node has multiple outlet, generate a data variable to use filter against
-		//record type is KeyValue/KeyPath
+		//record type is KeyValue
 		JavaPairRDD<String,String> sftpOutput = null;
 		//
 		JavaRDD<String> data1;
@@ -65,21 +65,21 @@ public class Flow1SparkCmd extends ETLCmd implements Serializable{
 		//
 		JavaPairRDD<String,String> mergeCsvs;
 		
-		SftpCmd sftpCmd = new SftpCmd(getWfName(), getWfid(), "action_sftp.properties", super.getDefaultFs(), null);
+		SftpCmd sftpCmd = new SftpCmd(getWfName(), getWfid(), resFolder + "action_sftp.properties", super.getDefaultFs(), null);
 		sftpOutput = sftpCmd.sparkProcessFilesToKV(sftpMap, jsc, TextInputFormat.class);
 		data1 = SparkUtil.filterPairRDD(sftpOutput, "data1");
 		data2 = SparkUtil.filterPairRDD(sftpOutput, "data2");
 		
-		CsvTransformCmd d1csvTransformCmd = new CsvTransformCmd(wfName, wfid, "action_d1csvtransform.properties", defaultFs, null, ProcessMode.Single);
+		CsvTransformCmd d1csvTransformCmd = new CsvTransformCmd(wfName, wfid, resFolder + "action_d1csvtransform.properties", defaultFs, null, ProcessMode.Single);
 		data1trans = d1csvTransformCmd.sparkProcessFilesToKV(data1, jsc, TextInputFormat.class).cache();
 		
-		CsvTransformCmd d2csvTransformCmd = new CsvTransformCmd(wfName, wfid, "action_d2csvtransform.properties", defaultFs, null, ProcessMode.Single);
+		CsvTransformCmd d2csvTransformCmd = new CsvTransformCmd(wfName, wfid, resFolder + "action_d2csvtransform.properties", defaultFs, null, ProcessMode.Single);
 		data2trans = d2csvTransformCmd.sparkProcessFilesToKV(data2, jsc, TextInputFormat.class).cache();
 		
-		CsvMergeCmd mergeCmd = new CsvMergeCmd(wfName, wfid, "action_csvmerge.properties", defaultFs, null);
+		CsvMergeCmd mergeCmd = new CsvMergeCmd(wfName, wfid, resFolder + "action_csvmerge.properties", defaultFs, null);
 		mergeCsvs = mergeCmd.sparkProcessKeyValue(data1trans.union(data2trans), jsc);
 		
-		SaveDataCmd saveCmd = new SaveDataCmd(wfName, wfid, "action_csvsave.properties", defaultFs, null);
+		SaveDataCmd saveCmd = new SaveDataCmd(wfName, wfid, resFolder + "action_csvsave.properties", defaultFs, null);
 		saveCmd.sparkProcessKeyValue(mergeCsvs, jsc);
 		
 		jsc.close();

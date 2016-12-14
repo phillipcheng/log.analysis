@@ -150,7 +150,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public Tuple2<String, String> mapToPair(String pathName, String value){
 		super.init();
 		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		String tableName = getTableName(pathName);
+		String tableName = getTableNameSetFileName(pathName);
 		String row = value;
 		String output="";
 		
@@ -195,7 +195,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
 		}
 		output = Util.getCsv(items, false);
-		logger.debug("output:" + output);
+		logger.debug(String.format("tableName:%s, output:%s", tableName, output));
 		return new Tuple2<String, String>(tableName, output);
 	}
 	
@@ -223,12 +223,16 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	@Override
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		//write output using the lastpart of the path name.
+		String pathName = key.toString();
+		int lastSep = pathName.lastIndexOf("/");
+		String fileName = pathName.substring(lastSep+1);
 		List<String[]> ret = new ArrayList<String[]>();	
 		Iterator<Text> it = values.iterator();
 		while (it.hasNext()){
 			String v = it.next().toString();
 			if (super.getOutputType()==OutputType.multiple){
-				ret.add(new String[]{v, null, key.toString()});
+				ret.add(new String[]{v, null, fileName.toString()});
 			}else{
 				ret.add(new String[]{v, null, ETLCmd.SINGLE_TABLE});
 			}
@@ -236,7 +240,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		return ret;
 	}
 	
-	//key contain fileName, value is each line
+	//key contain pathName, value is each line
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
 		JavaPairRDD<String, String> mapret = input.mapToPair(new PairFunction<Tuple2<String, String>, String, String>(){

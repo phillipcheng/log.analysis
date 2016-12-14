@@ -510,15 +510,15 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		return sqls;
 	}
 	
-	public String getTableName(String pathName){
+	public String getTableNameSetFileName(String pathName){
 		int lastSep = pathName.lastIndexOf("/");
 		String fileName = pathName.substring(lastSep+1);
 		this.getSystemVariables().put(VAR_NAME_FILE_NAME, fileName);
-		String tableName = fileName;
 		if (expFileTableMap!=null){
-			tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+			return ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+		}else{
+			return pathName;
 		}
-		return tableName;
 	}
 	
 	public String getTableName(Mapper<LongWritable, Text, Text, Text>.Context context){

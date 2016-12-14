@@ -27,10 +27,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
-import etl.cmd.transform.AggrOp;
-import etl.cmd.transform.AggrOps;
 import etl.cmd.transform.GroupOp;
-import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
 import etl.engine.JoinType;
 import etl.engine.MRMode;
@@ -217,6 +214,7 @@ public class CsvMergeCmd extends SchemaETLCmd{
 		if (srcSkipHeader[idx] && offset==0){
 			return retMap;
 		}
+		
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
 		vl.add(new Tuple2<String,String>(ikv._2(), ikv._3()));
 		retMap.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
@@ -312,7 +310,7 @@ public class CsvMergeCmd extends SchemaETLCmd{
 		Iterable<String> is = it2is(values);
 		List<Tuple2<String, String>> kvlist = kvs2kvlist(key.toString(), is);
 		for (Tuple2<String,String> kv:kvlist){
-			mos.write(kv._2, null, kv._1);
+			mos.write(new Text(kv._2), null, kv._1);
 		}
 		return null;
 	}
