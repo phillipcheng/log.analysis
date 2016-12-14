@@ -7,6 +7,8 @@ import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import etl.engine.SafeSimpleDateFormat;
 
 
@@ -74,7 +76,7 @@ public class FieldType implements Serializable{
 			return false;
 		}
 		FieldType that = (FieldType)obj;
-		if (!Objects.equals(that.getType(), type)){
+		if (!Objects.equals(that.getType(), this.getType())){
 			return false;
 		}
 		if (size!=that.getSize()){
@@ -86,7 +88,7 @@ public class FieldType implements Serializable{
 		if (scale!=that.getScale()){
 			return false;
 		}
-		if (!aggrType.equals(that.getAggrType())){
+		if (!Objects.equals(that.getAggrType(), this.getAggrType())){
 			return false;
 		}
 		return true;
@@ -95,6 +97,7 @@ public class FieldType implements Serializable{
 	public FieldType(String str){
 		String[] eles = str.split("[\\(\\),]");
 		String t = eles[0].trim();
+		this.aggrType = AggregationType.NONE;
 		if (TYPE_NUMERIC.equals(t)){
 			if (eles.length==3){
 				this.type = VarType.NUMERIC;
@@ -167,8 +170,18 @@ public class FieldType implements Serializable{
 	public void setScale(int scale) {
 		this.scale = scale;
 	}
+	@JsonIgnore
+	public AggregationType getAggrTypeSafe() {
+		if (aggrType == null)
+			return AggregationType.NONE;
+		else
+			return aggrType;
+	}
 	public AggregationType getAggrType() {
-		return aggrType;
+		if (aggrType != null && AggregationType.NONE.equals(aggrType))
+			return null;
+		else
+			return aggrType;
 	}
 	public void setAggrType(AggregationType aggrType) {
 		this.aggrType = aggrType;
