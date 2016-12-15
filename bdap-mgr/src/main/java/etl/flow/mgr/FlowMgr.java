@@ -3,11 +3,13 @@ package etl.flow.mgr;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
+import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import bdap.util.Util;
@@ -16,6 +18,7 @@ import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.Node;
 import etl.flow.deploy.FlowDeployer;
+import etl.flow.oozie.OozieConf;
 
 public abstract class FlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
@@ -42,19 +45,81 @@ public abstract class FlowMgr {
 		return new InMemFile(FileType.engineProperty, EngineConf.file_name, ec.getContent());
 	}
 	
-	public abstract boolean deployFlowFromJson(String projectName, Flow flow, FlowDeployer fd, FlowServerConf fsconf, EngineConf ec) throws Exception;
-	public abstract String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec) throws Exception;
-	public abstract String executeCoordinator(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, CoordConf cc)  throws Exception;
-
-	/**
-	 * update helper jars, mapping.properties
-	 * @param files
-	 * @param fsconf
-	 * @param ec
-	 * @return
-	 */
-	public abstract void uploadFiles(String projectName, String flowName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec);
+	//projectDir is hdfsDir
+	public String getDir(FileType ft, String projectDir, String flowName, OozieConf oc){
+		String nameNodePath = oc.getNameNode();
+		if (nameNodePath.endsWith("/")){
+			nameNodePath = nameNodePath.substring(0, nameNodePath.length() - 1);
+		}
+		String hdfsDir = projectDir;
+		if (hdfsDir.endsWith("/")){
+			hdfsDir = hdfsDir.substring(0, hdfsDir.length() - 1);
+		}
+		if (hdfsDir.startsWith("/")){
+			hdfsDir = hdfsDir.substring(1);
+		}
+		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
+				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || 
+				ft==FileType.log4j || ft == FileType.logicSchema){
+			return String.format("%s/%s/%s/lib/", nameNodePath, hdfsDir, flowName);
+		}else if (ft == FileType.oozieWfXml || ft == FileType.oozieCoordXml){
+			return String.format("%s/%s/%s/", nameNodePath, hdfsDir, flowName);
+		}else{
+			logger.error("file type not supported:%s", ft);
+			return null;
+		}
+	}
 	
+	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, OozieConf oc, FileSystem fs) {
+		//deploy to the server
+		for (InMemFile im:files){
+			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
+			String path = String.format("%s%s", dir, im.getFileName());
+			logger.info(String.format("copy to %s", path));
+			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+		}
+	}
+	
+	//return common properties: nameNode, jobTracker, queue, username, useSystem
+	public bdap.xml.config.Configuration getCommonConf(OozieConf oc, String wfName){
+		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
+		{
+			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
+			propNameNode.setName(OozieConf.key_nameNode);
+			propNameNode.setValue(oc.getNameNode());
+			bodyConf.getProperty().add(propNameNode);
+		}{
+			bdap.xml.config.Configuration.Property propJobTracker = new bdap.xml.config.Configuration.Property();
+			propJobTracker.setName(OozieConf.key_jobTracker);
+			propJobTracker.setValue(oc.getJobTracker());
+			bodyConf.getProperty().add(propJobTracker);
+		}{
+			bdap.xml.config.Configuration.Property queueName = new bdap.xml.config.Configuration.Property();
+			queueName.setName(OozieConf.key_queueName);
+			queueName.setValue(oc.getQueueName());
+			bodyConf.getProperty().add(queueName);
+		}{
+			bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
+			propWfAppPath.setName(OozieConf.key_user_name);
+			propWfAppPath.setValue(oc.getUserName());
+			bodyConf.getProperty().add(propWfAppPath);
+		}{
+			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
+			oozieLibPath.setName(OozieConf.key_useSystemPath);
+			oozieLibPath.setValue("true");
+			bodyConf.getProperty().add(oozieLibPath);
+		}{
+			bdap.xml.config.Configuration.Property flowName = new bdap.xml.config.Configuration.Property();
+			flowName.setName(OozieConf.key_flowName);
+			flowName.setValue(wfName);
+			bodyConf.getProperty().add(flowName);
+		}
+		return bodyConf;
+	}
+	
+	public abstract boolean deployFlowFromJson(String prjName, Flow flow, FlowDeployer fd) throws Exception;
+	public abstract String executeFlow(String prjName, String flowName, FlowDeployer fd) throws Exception;
+	public abstract String executeCoordinator(String prjName, String flowName, FlowDeployer fd, CoordConf cc)  throws Exception;
 	/**
 	 * execute an action node of an existing workflow instance
 	 * @param projectName

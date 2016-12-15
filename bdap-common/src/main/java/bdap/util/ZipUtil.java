@@ -10,35 +10,50 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class ZipUtil {
+	public static final Logger logger = LogManager.getLogger(ZipUtil.class);
 	
 	public static void makeJar(String output, String inputDir) throws IOException {
 		Manifest manifest = new Manifest();
 		manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 		JarOutputStream target = new JarOutputStream(new FileOutputStream(output), manifest);
-		add(new File("inputDirectory"), target);
+		add(new File(inputDir), target, new File(inputDir));
 		target.close();
 	}
 
-	private static void add(File source, JarOutputStream target) throws IOException {
+	
+	private static void add(File source, JarOutputStream target, File rootDir) throws IOException {
+		
 		BufferedInputStream in = null;
 		try {
 			if (source.isDirectory()) {
 				String name = source.getPath().replace("\\", "/");
+				String root = rootDir.getPath().replace("\\", "/");
 				if (!name.isEmpty()){
 					if (!name.endsWith("/"))
 						name += "/";
-					JarEntry entry = new JarEntry(name);
-					entry.setTime(source.lastModified());
-					target.putNextEntry(entry);
-					target.closeEntry();
+					String entryName = name.substring(root.length()+1);
+					if (entryName.length()>0){
+						JarEntry entry = new JarEntry(entryName);
+						entry.setTime(source.lastModified());
+						target.putNextEntry(entry);
+						logger.info(String.format("add entry:%s", entry));
+						target.closeEntry();
+					}
 				}
 				for (File nestedFile: source.listFiles())
-					add(nestedFile, target);
+					add(nestedFile, target, rootDir);
 				return;
 			}
-
-			JarEntry entry = new JarEntry(source.getPath().replace("\\", "/"));
+			String name = source.getPath().replace("\\", "/");
+			String root = rootDir.getPath().replace("\\", "/");
+			String entryName = name.substring(root.length()+1);
+			JarEntry entry = new JarEntry(entryName);
+			logger.info(String.format("add entry:%s", entry));
 			entry.setTime(source.lastModified());
 			target.putNextEntry(entry);
 			in = new BufferedInputStream(new FileInputStream(source));

@@ -53,6 +53,9 @@ public class ETLCmdMain {
 			String wfName = args[1];
 			String wfid = args[2];
 			String strStaticCfgs = args[3];
+			if (UNUSED.equals(strStaticCfgs)){
+				strStaticCfgs = null;
+			}
 			String defaultFs = null;
 			if (args.length>mandatoryArgNum){//optional defaultFs
 				defaultFs = args[mandatoryArgNum];

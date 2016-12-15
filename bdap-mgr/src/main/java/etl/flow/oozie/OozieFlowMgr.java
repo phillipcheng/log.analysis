@@ -37,7 +37,6 @@ import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
 import etl.flow.mgr.NodeInfo;
-import etl.flow.oozie.coord.COORDINATORAPP;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 
 public class OozieFlowMgr extends FlowMgr{
@@ -48,30 +47,6 @@ public class OozieFlowMgr extends FlowMgr{
 	private static final InMemFile[] EMPTY_LOG_FILES = new InMemFile[0];
 	private String dateTimePattern;
 	
-	//projectDir is hdfsDir
-	private String getDir(FileType ft, String projectDir, String flowName, OozieConf oc){
-		String nameNodePath = oc.getNameNode();
-		if (nameNodePath.endsWith("/")){
-			nameNodePath = nameNodePath.substring(0, nameNodePath.length() - 1);
-		}
-		String hdfsDir = projectDir;
-		if (hdfsDir.endsWith("/")){
-			hdfsDir = hdfsDir.substring(0, hdfsDir.length() - 1);
-		}
-		if (hdfsDir.startsWith("/")){
-			hdfsDir = hdfsDir.substring(1);
-		}
-		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
-				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || 
-				ft==FileType.log4j || ft == FileType.logicSchema){
-			return String.format("%s/%s/%s/lib/", nameNodePath, hdfsDir, flowName);
-		}else if (ft == FileType.oozieWfXml || ft == FileType.oozieCoordXml){
-			return String.format("%s/%s/%s/", nameNodePath, hdfsDir, flowName);
-		}else{
-			logger.error("file type not supported:%s", ft);
-			return null;
-		}
-	}
 	
 	public String genWfXmlFile(Flow flow){
 		return genWfXmlFile(flow, null, false);
@@ -93,51 +68,6 @@ public class OozieFlowMgr extends FlowMgr{
 		//gen flow_workflow.xml and flow_actionX.properties
 		String flowXml = genWfXmlFile(flow, startNode, useInstanceId);
 		return new InMemFile(FileType.oozieWfXml, wfFileName, flowXml.getBytes());
-	}
-	
-	private InMemFile genCoordXml(Flow flow){
-		String coordFile = String.format("%s_coordinate.xml", flow.getName());
-		//gen flow_coordinate.xml
-		COORDINATORAPP coord = OozieGenerator.genCoordXml(flow);
-		byte[] content = XmlUtil.marshalToBytes(coord, "coordinate-app");
-		return new InMemFile(FileType.oozieCoordXml, coordFile, content);
-	}
-	
-	//return common properties: nameNode, jobTracker, queue, username, useSystem
-	private bdap.xml.config.Configuration getCommonConf(OozieConf oc, String wfName){
-		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
-		{
-			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
-			propNameNode.setName(OozieConf.key_nameNode);
-			propNameNode.setValue(oc.getNameNode());
-			bodyConf.getProperty().add(propNameNode);
-		}{
-			bdap.xml.config.Configuration.Property propJobTracker = new bdap.xml.config.Configuration.Property();
-			propJobTracker.setName(OozieConf.key_jobTracker);
-			propJobTracker.setValue(oc.getJobTracker());
-			bodyConf.getProperty().add(propJobTracker);
-		}{
-			bdap.xml.config.Configuration.Property queueName = new bdap.xml.config.Configuration.Property();
-			queueName.setName(OozieConf.key_queueName);
-			queueName.setValue(oc.getQueueName());
-			bodyConf.getProperty().add(queueName);
-		}{
-			bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
-			propWfAppPath.setName(OozieConf.key_user_name);
-			propWfAppPath.setValue(oc.getUserName());
-			bodyConf.getProperty().add(propWfAppPath);
-		}{
-			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
-			oozieLibPath.setName(OozieConf.key_useSystemPath);
-			oozieLibPath.setValue("true");
-			bodyConf.getProperty().add(oozieLibPath);
-		}{
-			bdap.xml.config.Configuration.Property flowName = new bdap.xml.config.Configuration.Property();
-			flowName.setName(OozieConf.key_flowName);
-			flowName.setValue(wfName);
-			bodyConf.getProperty().add(flowName);
-		}
-		return bodyConf;
 	}
 	
 	private bdap.xml.config.Configuration.Property getWfIdConf(String wfId){
@@ -236,7 +166,7 @@ public class OozieFlowMgr extends FlowMgr{
 	
 	//generate the wf.xml, action.properties, etlengine.propertis, and deploy it
 	@Override
-	public boolean deployFlowFromJson(String prjName, Flow flow, FlowDeployer fd, FlowServerConf fsconf, EngineConf ec) {
+	public boolean deployFlowFromJson(String prjName, Flow flow, FlowDeployer fd) {
 		List<InMemFile> imFiles = new ArrayList<InMemFile>();
 		//gen wf xml
 		InMemFile wfXml = genWfXml(flow, null, false);
@@ -245,17 +175,18 @@ public class OozieFlowMgr extends FlowMgr{
 		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
 		imFiles.addAll(actionPropertyFiles);
 		//gen etlengine.properties
-		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
+		InMemFile enginePropertyFile = super.genEnginePropertyFile(fd.getEC());
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		String projectDir = fd.getProjectHdfsDir(prjName);
-		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fsconf, fd.getFs());
+		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fd.getOozieServerConf(), fd.getFs());
 		return true;
 	}
 
 	@Override
-	public String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec){
-		OozieConf oc = (OozieConf)fsconf;
+	public String executeFlow(String prjName, String flowName, FlowDeployer fd){
+		String projectDir = fd.getProjectHdfsDir(prjName);
+		OozieConf oc = fd.getOozieServerConf();
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
@@ -273,8 +204,9 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 	}
 	
-	public String executeFlow(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, String wfId){
-		OozieConf oc = (OozieConf)fsconf;
+	public String executeFlow(String prjName, String flowName, FlowDeployer fd, String wfId){
+		String projectDir = fd.getProjectHdfsDir(prjName);
+		OozieConf oc = fd.getOozieServerConf();
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
@@ -295,8 +227,9 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 	
 	@Override
-	public String executeCoordinator(String projectDir, String flowName, FlowServerConf fsconf, EngineConf ec, CoordConf cc){
-		OozieConf oc = (OozieConf)fsconf;
+	public String executeCoordinator(String prjName, String flowName, FlowDeployer fd, CoordConf cc){
+		String projectDir = fd.getProjectHdfsDir(prjName);
+		OozieConf oc = fd.getOozieServerConf();
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
@@ -318,23 +251,6 @@ public class OozieFlowMgr extends FlowMgr{
 			EngineConf ec, String actionNode, String instanceId) {
 		// TODO Auto-generated method stub
 		
-	}
-	
-	private void uploadFiles(String projectDir, String flowName, InMemFile[] files, FlowServerConf fsconf, FileSystem fs) {
-		OozieConf oc = (OozieConf) fsconf;
-		//deploy to the server
-		for (InMemFile im:files){
-			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
-			String path = String.format("%s%s", dir, im.getFileName());
-			logger.info(String.format("copy to %s", path));
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
-		}
-	}
-
-	@Override
-	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
-		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-		this.uploadFiles(projectDir, flowName, files, fsconf, fs);
 	}
 
 	@Override

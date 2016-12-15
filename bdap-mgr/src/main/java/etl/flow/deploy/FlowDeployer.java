@@ -43,6 +43,7 @@ public class FlowDeployer {
 	private static String key_platform_local_dist="platform.local.dist"; //all cmd required runtime and compile time libary
 	private static String key_platform_remote_lib="platform.remote.lib";
 	private static String key_platform_coordinator_xml="platform.coordinate.xml";
+	private static String key_platform_spark_wfxml="platform.spark.wfxml";
 	private static String key_projects="projects";
 	private static String key_local_dir="local.dir";
 	private static String key_hdfs_dir="hdfs.dir";
@@ -56,6 +57,7 @@ public class FlowDeployer {
 	private String platformLocalDist;
 	private String platformRemoteLib="";
 	private String platformCoordinateXml="";
+	private String platformSparkWfXml="";
 	private Map<String, String> projectLocalDirMap= new HashMap<String, String>();
 	private Map<String, String> projectHdfsDirMap= new HashMap<String, String>();
 	
@@ -84,6 +86,7 @@ public class FlowDeployer {
 		conf.set("fs.defaultFS", defaultFS);
 		platformLocalDist = pc.getString(key_platform_local_dist);
 		platformRemoteLib = pc.getString(key_platform_remote_lib);
+		setPlatformSparkWfXml(pc.getString(key_platform_spark_wfxml));
 		setPlatformCoordinateXml(pc.getString(key_platform_coordinator_xml));
 		hdfsUser = pc.getString(key_hdfs_user);
 		Set<String> ipAddresses = SystemUtil.getMyIpAddresses();
@@ -150,7 +153,7 @@ public class FlowDeployer {
     	return ret;
     }
 	
-	public OozieConf getOC(){
+	public OozieConf getOozieServerConf(){
 		OozieConf oc = new OozieConf(cfgProperties);
 		//set the platform lib path as the oozie lib path
 		oc.setOozieLibPath(String.format("%s%s/", oc.getNameNode(), platformRemoteLib));
@@ -158,9 +161,9 @@ public class FlowDeployer {
 		return oc;
 	}
 	
-	public SparkServerConf getSSC(){
+	public SparkServerConf getSparkServerConf(){
 		SparkServerConf ssc = new SparkServerConf(cfgProperties);
-		
+		ssc.setOozieServerConf(getOozieServerConf());
 		return ssc;
 	}
 	
@@ -233,15 +236,15 @@ public class FlowDeployer {
 			List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s", localProjectFolder, flowName), 
 					jars, fromJson, skipSchema);
 			logger.info(String.format("files deployed:%s", deployFiles));
-			ofm.deployFlowFromXml(hdfsProjectFolder, flowName, deployFiles, getOC(), getEC());
+			ofm.deployFlowFromXml(hdfsProjectFolder, flowName, deployFiles, getOozieServerConf(), getEC());
 		}else{
 			String jsonFile = String.format("%s/%s/%s.json", localProjectFolder, flowName, flowName);
 			Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
 			if (flow!=null){
 				if (EngineType.oozie==et){
-					ofm.deployFlowFromJson(projectName, flow, this, this.getOC(), this.getEC());
+					ofm.deployFlowFromJson(projectName, flow, this);
 				}else{
-					sfm.deployFlowFromJson(projectName, flow, this, this.getSSC(), this.getEC());
+					sfm.deployFlowFromJson(projectName, flow, this);
 				}
 			}
 		}
@@ -265,31 +268,42 @@ public class FlowDeployer {
 		}
 	}
 	
-	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson,EngineType et) {
+	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson, EngineType et) {
 		runDeploy(projectName, flowName, jars, fromJson, false, et);
 	}
 	
-	private String execute(String projectName, String flowName){
-		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
-		OozieFlowMgr ofm = new OozieFlowMgr();
-		return ofm.executeFlow(hdfsProjectFolder, flowName, getOC(), getEC());
+	private String execute(String prjName, String flowName, EngineType et){
+		if (et == EngineType.oozie){
+			OozieFlowMgr ofm = new OozieFlowMgr();
+			return ofm.executeFlow(prjName, flowName, this);
+		}else if (et == EngineType.spark){
+			SparkFlowMgr sfm = new SparkFlowMgr();
+			return sfm.executeFlow(prjName, flowName, this);
+		}else{
+			logger.error(String.format("unsupported engine type:%s", et));
+			return null;
+		}
 	}
 	
-	private String execute(String projectName, String flowName, String wfId){
-		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
-		OozieFlowMgr ofm = new OozieFlowMgr();
-		return ofm.executeFlow(hdfsProjectFolder, flowName, getOC(), getEC(), wfId);
+	private String execute(String prjName, String flowName, String wfId, EngineType et){
+		if (et == EngineType.oozie){
+			OozieFlowMgr ofm = new OozieFlowMgr();
+			return ofm.executeFlow(prjName, flowName, this, wfId);
+		}else{
+			logger.error(String.format("unsupported engine type:%s", et));
+			return null;
+		}
 	}
 	
-	public String runExecute(String projectName, String flowName) {
+	public String runExecute(String projectName, String flowName, EngineType et) {
 		try {
 			if (localDeploy){		
-				return execute(projectName, flowName);
+				return execute(projectName, flowName, et);
 			}else{
 				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
 				return ugi.doAs(new PrivilegedExceptionAction<String>() {
 						public String run() throws Exception {
-							return execute(projectName, flowName);
+							return execute(projectName, flowName, et);
 						}
 					});
 			}
@@ -299,15 +313,15 @@ public class FlowDeployer {
 		}
 	}
 	
-	public String runExecute(String projectName, String flowName, String wfId) {
+	public String runExecute(String projectName, String flowName, String wfId, EngineType et) {
 		try {
 			if (localDeploy){		
-				return execute(projectName, flowName);
+				return execute(projectName, flowName, wfId, et);
 			}else{
 				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
 				return ugi.doAs(new PrivilegedExceptionAction<String>() {
 						public String run() throws Exception {
-							return execute(projectName, flowName, wfId);
+							return execute(projectName, flowName, wfId, et);
 						}
 					});
 			}
@@ -320,7 +334,7 @@ public class FlowDeployer {
 	private String startCoordinator(String projectName, String flowName, CoordConf cc){
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
 		OozieFlowMgr ofm = new OozieFlowMgr();
-		return ofm.executeCoordinator(hdfsProjectFolder, flowName, getOC(), getEC(), cc);
+		return ofm.executeCoordinator(hdfsProjectFolder, flowName, this, cc);
 	}
 	
 	public String runStartCoordinator(String projectName, String flowName, CoordConf cc) {
@@ -378,15 +392,15 @@ public class FlowDeployer {
 		String cmd=args[0];
 		String prjName=args[1];
 		String flowName=args[2];
+		String engineType = args[3];
 		String[] jars=null;
 		if (DeployCmd.deployFlow.toString().equals(cmd)){
-			String engineType = args[3];
 			if (args.length>4){
 				jars = args[4].split(",");
 			}
 			fd.runDeploy(prjName, flowName, jars, false, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runFlow.toString().equals(cmd)){
-			fd.runExecute(prjName, flowName);
+			fd.runExecute(prjName, flowName, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runCoordinator.toString().equals(cmd)){
 			int startIdx=3;
 			String startTime=args[startIdx++];
@@ -420,5 +434,11 @@ public class FlowDeployer {
 	}
 	public void setPlatformLocalDist(String platformLocalDist) {
 		this.platformLocalDist = platformLocalDist;
+	}
+	public String getPlatformSparkWfXml() {
+		return platformSparkWfXml;
+	}
+	public void setPlatformSparkWfXml(String platformSparkWfXml) {
+		this.platformSparkWfXml = platformSparkWfXml;
 	}
 }
