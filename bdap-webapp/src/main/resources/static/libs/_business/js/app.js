@@ -20,7 +20,30 @@ var app = {
 				instance:'true'
 			}
 		});
-		$.each(remoteActionObj, function(k, v) {
+		var temp_remoteActionObj =  {
+		"etl.cmd.CsvTransformCmd": ["input.endwithcomma", "row.validation", "col.op", "old.table", "add.fields", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.SaveDataCmd": ["log.tmp.dir", "vars", "skip.header"],
+		"etl.cmd.ShellCmd": ["key", "command", "vars", "skip.header"],
+		"etl.cmd.SendLogCmd": ["vars", "skip.header"],
+		"etl.cmd.SQLExecutionCmd": ["sql", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.BackupCmd": ["data-history-folder", "file.folder", "file.filter", "vars", "skip.header"],
+		"etl.cmd.CsvFileGenCmd": ["table.names", "output.folder", "file.size", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.HdfsCmd": ["rm.folders", "vars", "skip.header"],
+		"etl.cmd.CsvMergeCmd": ["src.entity", "dest.entity", "src.keys", "src.skipHeader", "join.type", "ret.value", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.LoadDataCmd": ["hdfs.webhdfs.root", "csv.file", "load.sql", "table.names", "csv.suffix", "dbfile.path", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.SftpCmd": ["incoming.folder", "sftp.host", "sftp.port", "sftp.user", "sftp.user.prvkey", "sftp.pass", "sftp.folder", "sftp.folder.recursive", "file.filter", "sftp.getRetryTimes", "sftp.getRetryWait", "sftp.connectRetryTimes", "sftp.connectRetryWait", "sftp.clean", "file.limit", "sftp.names.only", "vars", "skip.header"],
+		"etl.cmd.EvtBasedMsgParseCmd": ["event.idx", "event.types", "message.idx", "message.fields", "vars", "skip.header"],
+		"etl.cmd.KafkaMsgDecodeCmd": ["entity.name", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.CsvTransposeCmd": ["with.trailing.delimiter", "group.fields", "column.name.fields", "column.value.fields", "table.name", "split.table.fields", "table.name.mapping.exp", "field.name.mapping.exp", "table.field.transpose.start.index", "output.filename.exp", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.KcvToCsvCmd": ["record.start", "record.vkexp", "record.fieldnum", "vars", "skip.header"],
+		"etl.cmd.FileNameUpdateCmd": ["incomingFolder", "file.name", "headlines", "taillines", "vars", "skip.header"],
+		"etl.cmd.CsvAggregateCmd": ["input.endwithcomma", "aggr.op", "aggr.groupkey", "aggr.groupkey.exp", "aggr.groupkey.exp.type", "aggr.groupkey.exp.name", "old.table", "new.table", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.CsvSplitCmd": ["vars", "skip.header"],
+		"etl.cmd.KafkaMsgGenCmd": ["entity.name", "entity.exp", "entity.key", "schema.file", "file.table.map", "create.sql", "db.prefix", "db.type", "output.type", "lock.type", "zookeeper.url", "vars", "skip.header"],
+		"etl.cmd.UnpackCmd": ["input.file.filter", "output.file.filter", "vars", "skip.header"],
+		"etl.cmd.CsvFilterCmd": ["filter.exp", "vars", "skip.header"]
+	};
+		$.each(temp_remoteActionObj, function(k, v) {
 			if(k.toString().endsWith(jsonObj.label)) {
 				var ary = new Array();
 				ary.push({
