@@ -53,8 +53,8 @@ var app = {
 		}
 		return this;
 	},
-	setTranslate:function(durations,keytxt,valtxt){
-		d3.select("#" + this.txtId).transition().duration(durations).attr(keytxt,valtxt);
+	setTranslate: function(durations, keytxt, valtxt) {
+		d3.select("#" + this.txtId).transition().duration(durations).attr(keytxt, valtxt);
 		return this;
 	},
 	setS: function(data) {
@@ -231,4 +231,14 @@ var getOffsetTop = function(o) {
 		offset += arguments.callee(o.offsetParent);
 	}
 	return offset;
+}
+
+/**
+ * 展现的内容,包括了三个事件
+ * enter update,exit
+ * @param {Object} data
+ */
+var render = function(data) {
+	d3.select("#svg_node").selectAll("g.actionnode")
+	.data(data).enter().append("g").attr("class","actionnode");
 }
