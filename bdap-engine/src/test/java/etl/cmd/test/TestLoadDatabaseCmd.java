@@ -1,8 +1,14 @@
 package etl.cmd.test;
 
 import static org.junit.Assert.assertTrue;
+
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -10,13 +16,20 @@ import org.apache.hadoop.security.UserGroupInformation;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
+import etl.util.CombineFileNameInputFormat;
 import etl.util.DBType;
 import etl.util.DBUtil;
+import etl.util.FilenameInputFormat;
+import scala.Tuple2;
 
 public class TestLoadDatabaseCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestLoadDatabaseCmd.class);
@@ -157,7 +170,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 	}
 	
 	@Test
-	public void testLoadDataMR() throws Exception{
+	public void testLoadDataMR1Reducer() throws Exception{
 		String staticCfgName = "loadcsvmr.properties";
 		String remoteCsvInputFolder = "/test/loadcsv/input/";
 		String remoteCsvOutputFolder = "/test/loadcsv/output/";
@@ -184,11 +197,87 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		
 		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
 		
-		List<String> output = super.mrTest(remoteCsvInputFolder, remoteCsvOutputFolder, staticCfgName, csvFileNames, testCmdClass, true);
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(remoteCsvInputFolder, csvFileNames));
+		
+		List<String> output = super.mrTest(rfifs, remoteCsvOutputFolder, staticCfgName, testCmdClass, FilenameInputFormat.class);
 		logger.info("Output is:"+output);
 		
 		List<String> fl = HdfsUtil.listDfsFile(getFs(), "/test/loadcsv/output");
 		//assert
 		logger.info(fl);
+	}
+	
+	@Test
+	public void testLoadDataMR5Reducer() throws Exception{
+		String staticCfgName = "loadcsvmr2.properties";
+		String remoteCsvInputFolder = "/test/loadcsv/input/";
+		String remoteCsvOutputFolder = "/test/loadcsv/output/";
+		String schemaFolder="/test/loadcsv/schema/";
+		String localSchemaFileName = "multipleTableSchemas2.txt";
+		String[] csvFileNames = new String[]{"MyCore_.csv", "MyCore1_.csv"};
+		
+		//generate all the data files
+		getFs().delete(new Path(remoteCsvInputFolder), true);
+		getFs().delete(new Path(remoteCsvOutputFolder), true);
+		getFs().delete(new Path(schemaFolder), true);
+		//
+		getFs().mkdirs(new Path(remoteCsvInputFolder));
+		getFs().mkdirs(new Path(remoteCsvOutputFolder));
+		getFs().mkdirs(new Path(schemaFolder));
+		//copy schema file
+		getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		//copy csv file
+		for (String csvFileName: csvFileNames){
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+		}
+		
+		LoadDataCmd cmd = new LoadDataCmd("wf1", "wfid1", this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(remoteCsvInputFolder, csvFileNames));
+		
+		List<String> output = super.mrTest(rfifs, remoteCsvOutputFolder, staticCfgName, testCmdClass, CombineFileNameInputFormat.class, 5);
+		logger.info("Output is:"+output);
+		
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), "/test/loadcsv/output");
+		//assert
+		logger.info(fl);
+	}
+	
+	@Test
+	public void testSpark1() throws Exception{
+		String staticCfgName = "loadcsv.spark.properties";
+		String wfid="wfid1";
+		String localSchemaFileName = "test1_schemas.txt";
+		String csvFileName = "MyCore_.csv";
+		String tableName = "MyCore_";
+
+		String inputFolder = "/test/loadcsv/input/";
+		String schemaFolder="/test/loadcsv/schema/";
+		
+		//copy schema file
+		getFs().delete(new Path(inputFolder), true);
+		getFs().mkdirs(new Path(inputFolder));
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		//run cmd
+		LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		SparkConf conf = new SparkConf().setAppName(wfid).setMaster("local[3]");
+		JavaSparkContext jsc = new JavaSparkContext(conf);
+		JavaRDD<String> lines = jsc.textFile("file:///" + getLocalFolder() + csvFileName);
+		JavaPairRDD<String, String> input = lines.mapToPair(new PairFunction<String,String,String>(){
+			@Override
+			public Tuple2<String, String> call(String t) throws Exception {
+				return new Tuple2<String, String>(tableName, t);
+			}
+		});
+		cmd.sparkProcessKeyValue(input, jsc);
+		//check hdfs
+		String dbFilesFolder = cmd.getDbInputPath();
+		List<String> files = HdfsUtil.listDfsFile(super.getFs(), dbFilesFolder);
+		logger.info(files);
+		assertTrue(files.contains(tableName));
 	}
 }

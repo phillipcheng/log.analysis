@@ -14,8 +14,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -50,7 +53,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public static final String VAR_NAME_PATH_NAME="pathname";//including filename
 	
 	public static final String KEY_SEP=",";
-	public static final String SINGLE_TABLE="single.table";
+	public static final String SINGLE_TABLE="singleTable";
 	
 	protected String wfName;//wf template name
 	protected String wfid;
@@ -151,45 +154,54 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		logger.error("empty spark process impl, should not be invoked.");
+		logger.error("empty sparkProcessKeyValue impl, should not be invoked.");
 		return null;
 	}
+	
 	
 	@Override
 	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		logger.error("empty spark process impl, should not be invoked.");
+		logger.error("empty sparkProcess impl, should not be invoked.");
 		return null;
 	}
 	
 	@Override
-	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		logger.error("empty spark process impl, should not be invoked.");
-		return null;
-	}
-	@Override
-	public JavaPairRDD<String, String> sparkVtoKvProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		logger.error("empty spark process impl, should not be invoked.");
+	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc){
+		logger.error("empty sparkProcessV2KV impl, should not be invoked.");
 		return null;
 	}
 	
-	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc){
+	//copy propertiesConf to jobConf
+	private void copyConf(){
+		Iterator it = pc.getKeys();
+		while (it.hasNext()){
+			String key = (String) it.next();
+			String value = pc.getString(key);
+			this.conf.set(key, value);
+		}
+	}
+	
+	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, Class inputFormatClass){
 		JavaPairRDD<String, String> prdd = null;
 		for (String file:inputfiles.collect()){
-			JavaRDD<String> content = jsc.textFile(file);
+			copyConf();
+			JobConf jobConf = new JobConf(this.getHadoopConf());
+			FileInputFormat.addInputPath(jobConf, new Path(file));
+			JavaPairRDD<LongWritable, Text> content = jsc.hadoopRDD(jobConf, inputFormatClass, LongWritable.class, Text.class);
 			if (skipHeader){
-				String header = content.first();
-				content = content.filter(new Function<String, Boolean>(){
+				content = content.filter(new Function<Tuple2<LongWritable, Text>, Boolean>(){
 					@Override
-					public Boolean call(String v1) throws Exception {
-						return !header.equals(v1);
+					public Boolean call(Tuple2<LongWritable, Text> v1) throws Exception {
+						return v1._1.get()>0;
 					}
 				});
 			};
-			JavaPairRDD<String, String> tprdd = content.mapToPair(new PairFunction<String, String, String>(){
+			JavaPairRDD<String, String> tprdd = content.mapToPair(new PairFunction<Tuple2<LongWritable, Text>, String, String>(){
 				@Override
-				public Tuple2<String, String> call(String t1) throws Exception {
-					return new Tuple2<String, String>(file, t1);
+				public Tuple2<String, String> call(Tuple2<LongWritable, Text> t) throws Exception {
+					return new Tuple2<String, String>(file, t._2.toString());
 				}
+				
 			});
 			if (prdd==null){
 				prdd = tprdd;
@@ -198,28 +210,6 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 			}
 		}
 		return sparkProcessKeyValue(prdd, jsc);
-	}
-	
-	public JavaRDD<String> sparkProcessFilesToV(JavaRDD<String> inputfiles, JavaSparkContext jsc){
-		JavaRDD<String> prdd = null;
-		for (String file:inputfiles.collect()){
-			JavaRDD<String> content = jsc.textFile(file);
-			if (skipHeader){
-				String header = content.first();
-				content = content.filter(new Function<String, Boolean>(){
-					@Override
-					public Boolean call(String v1) throws Exception {
-						return !header.equals(v1);
-					}
-				});
-			};
-			if (prdd==null){
-				prdd = content;
-			}else{
-				prdd = prdd.union(content);
-			}
-		}
-		return sparkProcess(prdd, jsc);
 	}
 	
 	/**

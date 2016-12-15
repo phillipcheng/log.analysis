@@ -14,6 +14,7 @@ public class DirConfig {
 	private String destServer;
 	private int destServerPort;
 	private String destServerUser;
+	private String destServerPrvKey;
 	private String destServerPass;
 	private String destServerDirRule;
 	public String getId() {
@@ -69,6 +70,12 @@ public class DirConfig {
 	}
 	public void setDestServerUser(String destServerUser) {
 		this.destServerUser = destServerUser;
+	}
+	public String getDestServerPrvKey() {
+		return destServerPrvKey;
+	}
+	public void setDestServerPrvKey(String destServerPrvKey) {
+		this.destServerPrvKey = destServerPrvKey;
 	}
 	public String getDestServerPass() {
 		return destServerPass;

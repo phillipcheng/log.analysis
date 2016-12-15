@@ -5,15 +5,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.streaming.receiver.Receiver;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -32,11 +34,11 @@ import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
-import etl.spark.SparkReciever;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
+import scala.Tuple2;
 
-public class SftpCmd extends ETLCmd implements SparkReciever{
+public class SftpCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(SftpCmd.class);
@@ -55,8 +57,10 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public static final String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
 	public static final String cfgkey_sftp_connect_retry_wait = "sftp.connectRetryWait";
 	public static final String cfgkey_sftp_clean = "sftp.clean";
+	public static final String cfgkey_delete_only="delete.only";//just for test
 	public static final String cfgkey_file_limit ="file.limit";
 	public static final String cfgkey_names_only="sftp.names.only";
+	public static final String cfgkey_output_key="output.key";
 	public static final String paramkey_src_file="src.file";
 
 	public static final String separator = "/";
@@ -77,7 +81,9 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	private boolean sftpClean=false;
 	private int fileLimit=0;
 	private boolean sftpNamesOnly = false; //when this is true, we lost the capability to enable the overlap of the multiple SftpCmd to process the same dir.
-
+	private boolean deleteOnly=false;
+	private String outputKey;
+	
 	public SftpCmd(){
 		super();
 	}
@@ -96,6 +102,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		String incomingFolderExp = super.getCfgString(cfgkey_incoming_folder, null);
 		if (incomingFolderExp!=null){
 			this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
+			logger.info(String.format("incomingFolder/toFolder:%s", incomingFolder));
 		}
 		this.host = super.getCfgString(cfgkey_sftp_host, null);
 		this.port = super.getCfgInt(cfgkey_sftp_port, 22);
@@ -117,10 +124,13 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		if (this.sftpNamesOnly){
 			this.sftpClean=false;//when only return name, then the file can't be cleaned since someone is going to get this later and remove it by himself,
 		}
+		this.outputKey = super.getCfgString(cfgkey_output_key, "default");
+		deleteOnly = super.getCfgBoolean(cfgkey_delete_only, false);
 	}
 
-	public List<String> process(long mapKey, String row, Receiver<String> r){
+	public List<String> process(long mapKey, String row){
 		logger.info(String.format("param: %s", row));
+		super.init();
 		
 		Map<String, String> pm = null;
 		try {
@@ -167,6 +177,10 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 				this.incomingFolder = (String) ScriptEngineUtil.eval(incomingFolderExp, VarType.STRING, super.getSystemVariables());
 			}
 		}
+		if (pm.containsKey(cfgkey_output_key)){
+			this.outputKey = pm.get(cfgkey_output_key);
+		}
+		logger.info(String.format("deleteOnly flag:%b", deleteOnly));
 		
 		Session session = null;
 		ChannelSftp sftpChannel = null;
@@ -201,7 +215,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 			sftpChannel = (ChannelSftp) channel;
 			for (String fromDir:fromDirs){
 				files.addAll(
-					dirCopy(sftpChannel, fromDir, incomingFolder, 0, r)
+					dirCopy(sftpChannel, fromDir, incomingFolder, 0)
 				);
 				
 				if (this.fileLimit>0 && files.size()>=this.fileLimit)
@@ -225,13 +239,11 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 				outputList.add(ParamUtil.makeMapParams(argNames, argValues));
 			}
 			HdfsUtil.writeDfsFile(getFs(), String.format("%s%s", this.getIncomingFolder(), String.valueOf(mapKey)), outputList);
-			return outputList;
-		}else{
-			return files;
 		}
+		return files;
 	}
 	
-	private List<String> dirCopy(ChannelSftp sftpChannel, String fromDir, String toDir, int numProcessed, Receiver<String> r) throws SftpException {
+	private List<String> dirCopy(ChannelSftp sftpChannel, String fromDir, String toDir, int numProcessed) throws SftpException {
 		List<String> files = new ArrayList<String>();
 		OutputStream fsos = null;
 		InputStream is = null;
@@ -261,38 +273,40 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 				}else{
 					logger.info(String.format("put file to %s from %s", destFile, srcFile));
 					getRetryCntTemp = 1;// reset the count to 1 for every file
-					while (getRetryCntTemp <= sftpGetRetryCount) {
-						try {
-							fsos = fs.create(new Path(destFile));
-							is = sftpChannel.get(srcFile);
-							IOUtils.copy(is, fsos);
-							break;
-						} catch (Exception e) {
-							logger.error("Exception during transferring the file.", e);
-							if (getRetryCntTemp == sftpGetRetryCount) {
-								logger.info("Copying" + srcFile + "failed Retried for maximum times");
-								break;
-							}
-							getRetryCntTemp++;
-							logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
+					if (!deleteOnly){
+						while (getRetryCntTemp <= sftpGetRetryCount) {
 							try {
-								Thread.sleep(this.sftpGetRetryWait);
-							} catch (InterruptedException e1) {
-								logger.error(e.getMessage(), e);
-							}
-						} finally {
-							if (fsos != null) {
+								fsos = fs.create(new Path(destFile));
+								is = sftpChannel.get(srcFile);
+								IOUtils.copy(is, fsos);
+								break;
+							} catch (Exception e) {
+								logger.error("Exception during transferring the file.", e);
+								if (getRetryCntTemp == sftpGetRetryCount) {
+									logger.info("Copying" + srcFile + "failed Retried for maximum times");
+									break;
+								}
+								getRetryCntTemp++;
+								logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
 								try {
-									fsos.close();
-								} catch (IOException e) {
+									Thread.sleep(this.sftpGetRetryWait);
+								} catch (InterruptedException e1) {
 									logger.error(e.getMessage(), e);
 								}
-							}
-							if (is != null) {
-								try {
-									is.close();
-								} catch (IOException e) {
-									logger.error(e.getMessage(), e);
+							} finally {
+								if (fsos != null) {
+									try {
+										fsos.close();
+									} catch (IOException e) {
+										logger.error(e.getMessage(), e);
+									}
+								}
+								if (is != null) {
+									try {
+										is.close();
+									} catch (IOException e) {
+										logger.error(e.getMessage(), e);
+									}
 								}
 							}
 						}
@@ -300,12 +314,13 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 					// deleting file one by one if sftp.clean is enabled
 					if (sftpClean) {
 						logger.info("Deleting file:" + srcFile);
-						sftpChannel.rm(srcFile);
+						try {
+							sftpChannel.rm(srcFile);
+						}catch(Exception e){
+							logger.error("", e);
+						}
 					}
 					files.add(destFile);
-					if (r!=null){//give to receiver
-						r.store(destFile);
-					}
 				}
 				numProcessed++;
 				if (this.fileLimit>0 && numProcessed>=this.fileLimit){
@@ -313,7 +328,7 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 					break;
 				}
 			} else if (this.recursive) {
-				dirCopiedFiles=dirCopy(sftpChannel, fromDir + entry.getFilename(), toDir + entry.getFilename(), numProcessed, r);
+				dirCopiedFiles=dirCopy(sftpChannel, fromDir + entry.getFilename(), toDir + entry.getFilename(), numProcessed);
 				files.addAll(
 					dirCopiedFiles
 				);
@@ -326,15 +341,10 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 		}
 		return files;
 	}
-
-	@Override
-	public void sparkRecieve(Receiver<String> r) {
-		process(0, null, r);
-	}
 	
 	@Override
 	public List<String> sgProcess(){
-		List<String> ret = process(0, null, null);
+		List<String> ret = process(0, null);
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");
@@ -345,28 +355,42 @@ public class SftpCmd extends ETLCmd implements SparkReciever{
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		//override param
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		List<String> outputList = process(offset, row, null);
+		List<String> files = process(offset, row);
+		try {
+			for (String file: files){
+				context.write(new Text(outputKey), new Text(file));
+			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
 		List<String> logInfo = new ArrayList<String>();
-		logInfo.add(String.valueOf(outputList.size()));
+		logInfo.add(String.valueOf(files.size()));
 		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
 		return retMap;
 	}
 	
-	@Override
-	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		List<String> lines = input.collect();
-		List<String> ret = new ArrayList<String>();
-		for (int i=0; i<lines.size(); i++){
-			String row = lines.get(i);
-			List<String> fileList = process(i, row, null);
-			ret.addAll(fileList);
-		}
-		return jsc.parallelize(ret);
-	}
-	
+
 	@Override
 	public boolean hasReduce(){
 		return false;
+	}
+	
+	/*
+	 * called from sparkProcessFileToKV, key: file Name, v: line value
+	 */
+	@Override
+	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc){
+		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
+			@Override
+			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
+				List<String> fileList = process(0, t);
+				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
+				for (String file:fileList){
+					ret.add(new Tuple2<String,String>(outputKey, file));
+				}
+				return ret.iterator();
+			}
+		});
 	}
 
 	public String[] getFromDirs() {

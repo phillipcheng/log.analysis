@@ -1,6 +1,5 @@
 package etl.cmd;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -9,11 +8,9 @@ import javax.script.CompiledScript;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -88,28 +85,13 @@ public class CsvFilterCmd extends ETLCmd {
 	}
 	
 	@Override
-	public Map<String, JavaRDD<String>> sparkSplitProcess(JavaRDD<String> input, JavaSparkContext jsc){
-		Map<String, JavaRDD<String>> retMap = new HashMap<String, JavaRDD<String>>();
+	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc){
 		JavaPairRDD<String, String> kv = input.mapToPair(new PairFunction<String, String, String>(){
 			@Override
 			public Tuple2<String, String> call(String t) throws Exception {
 				return processRow(t);
 			}
 		});
-		List<String> ks = kv.keys().collect();
-		for (String k: ks){
-			JavaPairRDD<String, String> fv = kv.filter(new Function<Tuple2<String, String>, Boolean>(){
-				@Override
-				public Boolean call(Tuple2<String, String> v1) throws Exception {
-					if (k.equals(v1._1)){
-						return true;
-					}else{
-						return false;
-					}
-				}
-			});
-			retMap.put(k, fv.values());
-		}
-		return retMap;
+		return kv;
 	}
 }

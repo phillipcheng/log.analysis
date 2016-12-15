@@ -10,17 +10,18 @@ public class DynamicTableSchema {
 	private String name;
 	private List<String> fieldNames;
 	private List<String> fieldIds;
-	private String[] valueSample;
+	private String[] valueSample;//used to guess type, if type is not known before hand
 	private List<FieldType> types;//if this is not set, guess it from values
 	
-	public DynamicTableSchema(String name, List<String> fieldNames, String[] values){
+	public DynamicTableSchema(String name, List<String> fieldNames, String[] values, List<FieldType> types){
 		this.name = name;
 		this.fieldNames = fieldNames;
-		this.setValueSample(values);
+		this.valueSample = values;
+		this.types = types;
 	}
 	
-	public DynamicTableSchema(String id, String name, List<String> fieldIds, List<String> fieldNames, String[] values, List<FieldType> types){
-		this(name, fieldNames, values);
+	public DynamicTableSchema(String id, String name, List<String> fieldIds, List<String> fieldNames, List<FieldType> types){
+		this(name, fieldNames, null, types);
 		this.types = types;
 		this.id=id;
 		this.fieldIds=fieldIds;

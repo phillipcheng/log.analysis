@@ -61,6 +61,11 @@
 		    <artifactId>spring-web</artifactId>
 		    <version>4.3.3.RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_2.11</artifactId>
+			<scope>provided</scope>
+		</dependency>
   </dependencies>
   
   <build>

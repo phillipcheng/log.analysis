@@ -48,6 +48,7 @@
 		<copy todir="${dist}/engine/cfg"><!-- copy shell scripts -->
 			<fileset dir="${engine.src}/src/main/resources">
 				<include name="coordinator.xml"/>
+				<include name="sparkcmd_workflow.xml"/>
 			</fileset>
 		</copy>
 		<!-- log module -->

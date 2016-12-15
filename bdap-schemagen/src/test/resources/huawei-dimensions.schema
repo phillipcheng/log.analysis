@@ -1,0 +1,2336 @@
+{
+  "tableIdNameMap" : {
+    "67109391" : "67109391",
+    "82864116" : "82864116",
+    "67109392" : "67109392",
+    "82864114" : "82864114",
+    "67109390" : "67109390",
+    "82864115" : "82864115",
+    "67109395" : "67109395",
+    "67109393" : "67109393",
+    "67109394" : "67109394",
+    "67109553" : "67109553",
+    "67109432" : "67109432",
+    "67109554" : "67109554",
+    "67109433" : "67109433",
+    "67109430" : "67109430",
+    "67109431" : "67109431",
+    "67109437" : "67109437",
+    "67109434" : "67109434",
+    "67109555" : "67109555",
+    "67109435" : "67109435",
+    "67109429" : "67109429",
+    "67109428" : "67109428",
+    "82863953" : "82863953",
+    "67109440" : "67109440",
+    "82863956" : "82863956",
+    "67109443" : "67109443",
+    "67109444" : "67109444",
+    "67109447" : "67109447",
+    "67109448" : "67109448",
+    "67109445" : "67109445",
+    "82864121" : "82864121",
+    "82864000" : "82864000",
+    "67109446" : "67109446",
+    "67109438" : "67109438",
+    "67109439" : "67109439",
+    "82863947" : "82863947",
+    "82833961" : "82833961",
+    "82863949" : "82863949",
+    "67109370" : "67109370",
+    "67109373" : "67109373",
+    "67109495" : "67109495",
+    "67109374" : "67109374",
+    "67109371" : "67109371",
+    "67109493" : "67109493",
+    "67109372" : "67109372",
+    "67109410" : "67109410",
+    "67109377" : "67109377",
+    "82864053" : "82864053",
+    "67109411" : "67109411",
+    "67109378" : "67109378",
+    "67109375" : "67109375",
+    "67109376" : "67109376",
+    "67109535" : "67109535",
+    "67109536" : "67109536",
+    "82864058" : "82864058",
+    "67109412" : "67109412",
+    "67109379" : "67109379",
+    "67109534" : "67109534",
+    "67109413" : "67109413",
+    "67109407" : "67109407",
+    "67109408" : "67109408",
+    "67109405" : "67109405",
+    "67109526" : "67109526",
+    "67109406" : "67109406",
+    "82864171" : "82864171",
+    "82863914" : "82863914",
+    "82863915" : "82863915",
+    "67109380" : "67109380",
+    "67109381" : "67109381",
+    "67109384" : "67109384",
+    "67109385" : "67109385",
+    "67109382" : "67109382",
+    "67109383" : "67109383",
+    "82864185" : "82864185",
+    "67109421" : "67109421",
+    "67109389" : "67109389",
+    "67109422" : "67109422",
+    "67109386" : "67109386",
+    "67109387" : "67109387",
+    "67109420" : "67109420",
+    "82864101" : "82864101",
+    "67109546" : "67109546",
+    "67109425" : "67109425",
+    "82864068" : "82864068",
+    "67109426" : "67109426",
+    "82864069" : "82864069",
+    "67109545" : "67109545",
+    "82864100" : "82864100",
+    "67109424" : "67109424",
+    "67109537" : "67109537",
+    "67109538" : "67109538",
+    "82834952" : "82834952",
+    "82863927" : "82863927",
+    "82863929" : "82863929",
+    "82863928" : "82863928",
+    "82863983" : "82863983",
+    "67109473" : "67109473",
+    "67109471" : "67109471",
+    "67109510" : "67109510",
+    "67109474" : "67109474",
+    "67109478" : "67109478",
+    "67109505" : "67109505",
+    "67109508" : "67109508",
+    "67109509" : "67109509",
+    "82863979" : "82863979",
+    "82863994" : "82863994",
+    "82863996" : "82863996",
+    "67109483" : "67109483",
+    "67109484" : "67109484",
+    "82863997" : "82863997",
+    "67109481" : "67109481",
+    "67109482" : "67109482",
+    "67109366" : "67109366",
+    "67109488" : "67109488",
+    "67109367" : "67109367",
+    "67109485" : "67109485",
+    "67109365" : "67109365",
+    "82864047" : "82864047",
+    "67109368" : "67109368",
+    "82833917" : "82833917",
+    "67109369" : "67109369",
+    "67109523" : "67109523",
+    "67109515" : "67109515",
+    "67109516" : "67109516",
+    "67109519" : "67109519",
+    "82863564" : "82863564",
+    "82864136" : "82864136",
+    "67109450" : "67109450",
+    "82863965" : "82863965",
+    "82863967" : "82863967",
+    "82863966" : "82863966",
+    "82864097" : "82864097",
+    "82864131" : "82864131",
+    "67109452" : "67109452",
+    "67109453" : "67109453",
+    "82864099" : "82864099",
+    "67109449" : "67109449",
+    "82833952" : "82833952",
+    "82863958" : "82863958",
+    "82863957" : "82863957",
+    "82863959" : "82863959",
+    "67109460" : "67109460",
+    "67109469" : "67109469",
+    "67109500" : "67109500",
+    "67109467" : "67109467",
+    "67109468" : "67109468",
+    "82863968" : "82863968"
+  },
+  "attrIdNameMap" : { },
+  "attrNameMap" : {
+    "67109391" : [ "CellID", "Label" ],
+    "82864116" : [ "CellID", "Label" ],
+    "67109392" : [ "CellID", "Label" ],
+    "82864114" : [ "BT", "SN", "SRN", "SSN" ],
+    "67109390" : [ "CellID", "Label" ],
+    "82864115" : [ "BT", "SN", "SRN", "SSN" ],
+    "67109395" : [ "BSC6900UMTS", "CellID", "DEST_Cell_ID", "Label" ],
+    "67109393" : [ "CellID", "Label" ],
+    "67109394" : [ "CellID", "Label", "MCC", "MNC" ],
+    "67109553" : [ "CNINDEX", "CNNAME" ],
+    "67109432" : [ "RNC_ID" ],
+    "67109554" : [ "CNINDEX", "CNNAME" ],
+    "67109433" : [ "RNC_ID" ],
+    "67109430" : [ "RNC_ID" ],
+    "67109431" : [ "RNC_ID" ],
+    "67109437" : [ "RNC_ID" ],
+    "67109434" : [ "RNC_ID" ],
+    "67109555" : [ "RNC_ID" ],
+    "67109435" : [ "RNC_ID" ],
+    "67109429" : [ "RNC_ID" ],
+    "67109428" : [ "RNC_ID" ],
+    "82863953" : [ "CellID", "Label" ],
+    "67109440" : [ "RNC_ID" ],
+    "82863956" : [ "CNNodeID", "CNOPINDEX" ],
+    "67109443" : [ "RNC_ID" ],
+    "67109444" : [ "RNC_ID" ],
+    "67109447" : [ "RNC_ID" ],
+    "67109448" : [ "RNC_ID" ],
+    "67109445" : [ "RNC_ID" ],
+    "82864121" : [ "RNC_ID" ],
+    "82864000" : [ "Subsystem_No_", "Subsystem_Type" ],
+    "67109446" : [ "RNC_ID" ],
+    "67109438" : [ "RNC_ID" ],
+    "67109439" : [ "RNC_ID" ],
+    "82863947" : [ "CellID", "Label" ],
+    "82833961" : [ "BT", "SN", "SRN", "SSN" ],
+    "82863949" : [ "CellID", "Label" ],
+    "67109370" : [ "CellID", "Label" ],
+    "67109373" : [ "CellID", "Label" ],
+    "67109495" : [ "Adjacent_Node_ID", "IP_path_ID" ],
+    "67109374" : [ "CellID", "Label" ],
+    "67109371" : [ "CellID", "Label", "LogicRNCID" ],
+    "67109493" : [ "BT", "SN", "SRN", "SSN" ],
+    "67109372" : [ "CellID", "Label" ],
+    "67109410" : [ "RNCID" ],
+    "67109377" : [ "CellID", "Label" ],
+    "82864053" : [ "CellID", "Label" ],
+    "67109411" : [ "RNCID" ],
+    "67109378" : [ "CellID", "Label" ],
+    "67109375" : [ "CellID", "Label", "LogicRNCID" ],
+    "67109376" : [ "CellID", "Label" ],
+    "67109535" : [ "CNNodeID", "CNOPINDEX" ],
+    "67109536" : [ "RNCID" ],
+    "82864058" : [ "CellID", "Label" ],
+    "67109412" : [ "RNCID" ],
+    "67109379" : [ "CellID", "Label" ],
+    "67109534" : [ "Adjacent_Node_ID", "IP_path_ID" ],
+    "67109413" : [ "CellID", "Label" ],
+    "67109407" : [ "CNNodeID", "CNOPINDEX" ],
+    "67109408" : [ "CNNodeID", "CNOPINDEX" ],
+    "67109405" : [ "CNNodeID", "CNOPINDEX" ],
+    "67109526" : [ "CNNodeID", "CNOPINDEX" ],
+    "67109406" : [ "CNNodeID", "CNOPINDEX" ],
+    "82864171" : [ "Node_Id" ],
+    "82863914" : [ "CellID", "Label" ],
+    "82863915" : [ "Slot_No_", "Subrack_No_", "Trunk_No_" ],
+    "67109380" : [ "CellID", "Label" ],
+    "67109381" : [ "CellID", "Label" ],
+    "67109384" : [ "CellID", "Label" ],
+    "67109385" : [ "CellID", "Label" ],
+    "67109382" : [ "CellID", "Label" ],
+    "67109383" : [ "CellID", "Label" ],
+    "82864185" : [ "Node_Id" ],
+    "67109421" : [ "RNC_ID" ],
+    "67109389" : [ "CellID", "Label" ],
+    "67109422" : [ "RNC_ID" ],
+    "67109386" : [ "CellID", "Label" ],
+    "67109387" : [ "CellID", "Label" ],
+    "67109420" : [ "RNC_ID" ],
+    "82864101" : [ "CellID", "Label" ],
+    "67109546" : [ "DSP_No_", "Slot_No_", "Subrack_No_" ],
+    "67109425" : [ "RNC_ID" ],
+    "82864068" : [ "Client_Index", "Sender_Index" ],
+    "67109426" : [ "RNC_ID" ],
+    "82864069" : [ "Node_Id" ],
+    "67109545" : [ "CellID", "Label" ],
+    "82864100" : [ "CellID", "Label" ],
+    "67109424" : [ "RNC_ID" ],
+    "67109537" : [ "BT", "SN", "SRN", "SSN" ],
+    "67109538" : [ "NODEBID" ],
+    "82834952" : [ "CellID", "Label" ],
+    "82863927" : [ "CellID", "Label" ],
+    "82863929" : [ "RNCID" ],
+    "82863928" : [ "CellID", "Label" ],
+    "82863983" : [ "CellID", "Label" ],
+    "67109473" : [ "NodeB_Name" ],
+    "67109471" : [ "CellID", "Label" ],
+    "67109510" : [ "CellID", "Label" ],
+    "67109474" : [ "CellID", "Label" ],
+    "67109478" : [ "CNNodeID", "CNOPINDEX" ],
+    "67109505" : [ "CellID", "Label" ],
+    "67109508" : [ "CellID", "Label" ],
+    "67109509" : [ "CellID", "Label" ],
+    "82863979" : [ "IP_Address_in_Transmission_Resource_Pool", "Transmission_Resource_Pool_index" ],
+    "82863994" : [ "CPU_No_", "Logic_Board_Type", "Logic_Function_Type", "Slot_No_", "Subrack_No_" ],
+    "82863996" : [ "Subsystem_No_", "Subsystem_Type" ],
+    "67109483" : [ "SIGLKSX" ],
+    "67109484" : [ "DENO" ],
+    "82863997" : [ "Subsystem_No_", "Subsystem_Type" ],
+    "67109481" : [ "ANI", "Label" ],
+    "67109482" : [ "Signaling_link_ID", "Signalling_link_set_index" ],
+    "67109366" : [ "CellID", "Label" ],
+    "67109488" : [ "PN", "SN", "SRN" ],
+    "67109367" : [ "CellID", "Label" ],
+    "67109485" : [ "SCTP_Link_ID", "SCTPLNKN", "SN", "SRN" ],
+    "67109365" : [ "CellID", "Label" ],
+    "82864047" : [ "CellID", "Label" ],
+    "67109368" : [ "CellID", "Label" ],
+    "82833917" : [ "BT", "SN", "SRN", "SSN" ],
+    "67109369" : [ "CellID", "Label" ],
+    "67109523" : [ "CellID", "Label" ],
+    "67109515" : [ "BT", "SN", "SRN", "SSN" ],
+    "67109516" : [ "BT", "SN", "SRN", "SSN" ],
+    "67109519" : [ "CNINDEX", "CNNAME" ],
+    "82863564" : [ "DSRN", "SRN" ],
+    "82864136" : [ "IP_Address_Type", "Local_IP_Address", "Slot_No_", "Subrack_No_" ],
+    "67109450" : [ "RNC_ID" ],
+    "82863965" : [ "ANI", "Label" ],
+    "82863967" : [ "IP_Address_in_Transmission_Resource_Pool", "Transmission_Resource_Pool_index" ],
+    "82863966" : [ "Adjacent_Node_ID", "LocalIP", "PHB", "PeerIP" ],
+    "82864097" : [ "CellID", "Label" ],
+    "82864131" : [ "CellID", "Label" ],
+    "67109452" : [ "OSP_index" ],
+    "67109453" : [ "BT", "SN", "SRN", "SSN" ],
+    "82864099" : [ "CellID", "Label" ],
+    "67109449" : [ "RNC_ID" ],
+    "82833952" : [ "CNINDEX", "CNNAME" ],
+    "82863958" : [ "CellID", "Label" ],
+    "82863957" : [ "CellID", "Label" ],
+    "82863959" : [ "CellID", "Label" ],
+    "67109460" : [ "RNC_ID" ],
+    "67109469" : [ "SCTP_Link_ID", "SCTPLNKN", "SN", "SRN" ],
+    "67109500" : [ "ANI", "Label" ],
+    "67109467" : [ "Adjacent_Node_ID", "IP_path_ID" ],
+    "67109468" : [ "SCTP_Link_ID", "SCTPLNKN", "SN", "SRN" ],
+    "82863968" : [ "ANI", "Label" ]
+  },
+  "attrTypeMap" : {
+    "67109391" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864116" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109392" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864114" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109390" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864115" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109395" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109393" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109394" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109553" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109432" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109554" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109433" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109430" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109431" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109437" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109434" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109555" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109435" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109429" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109428" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863953" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109440" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863956" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109443" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109444" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109447" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109448" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109445" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864121" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864000" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109446" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109438" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109439" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863947" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82833961" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863949" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109370" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109373" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109495" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109374" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109371" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109493" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109372" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109410" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109377" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864053" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109411" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109378" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109375" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109376" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109535" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109536" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864058" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109412" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109379" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109534" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109413" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109407" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109408" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109405" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109526" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109406" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864171" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863914" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863915" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109380" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109381" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109384" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109385" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109382" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109383" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864185" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109421" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109389" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109422" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109386" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109387" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109420" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864101" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109546" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109425" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864068" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109426" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864069" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109545" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864100" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109424" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109537" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109538" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82834952" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863927" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863929" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863928" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863983" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109473" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109471" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109510" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109474" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109478" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109505" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109508" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109509" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863979" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863994" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863996" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109483" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109484" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863997" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109481" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109482" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109366" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109488" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109367" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109485" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109365" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864047" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109368" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82833917" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109369" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109523" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109515" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109516" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109519" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863564" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864136" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109450" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863965" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863967" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863966" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864097" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864131" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109452" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109453" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82864099" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109449" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82833952" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863958" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863957" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863959" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109460" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109469" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109500" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109467" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "67109468" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ],
+    "82863968" : [ {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 64,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    } ]
+  },
+  "index" : false,
+  "attrIdMap" : {
+    "67109391" : [ ],
+    "82864116" : [ ],
+    "67109392" : [ ],
+    "82864114" : [ ],
+    "67109390" : [ ],
+    "82864115" : [ ],
+    "67109395" : [ ],
+    "67109393" : [ ],
+    "67109394" : [ ],
+    "67109553" : [ ],
+    "67109432" : [ ],
+    "67109554" : [ ],
+    "67109433" : [ ],
+    "67109430" : [ ],
+    "67109431" : [ ],
+    "67109437" : [ ],
+    "67109434" : [ ],
+    "67109555" : [ ],
+    "67109435" : [ ],
+    "67109429" : [ ],
+    "67109428" : [ ],
+    "82863953" : [ ],
+    "67109440" : [ ],
+    "82863956" : [ ],
+    "67109443" : [ ],
+    "67109444" : [ ],
+    "67109447" : [ ],
+    "67109448" : [ ],
+    "67109445" : [ ],
+    "82864121" : [ ],
+    "82864000" : [ ],
+    "67109446" : [ ],
+    "67109438" : [ ],
+    "67109439" : [ ],
+    "82863947" : [ ],
+    "82833961" : [ ],
+    "82863949" : [ ],
+    "67109370" : [ ],
+    "67109373" : [ ],
+    "67109495" : [ ],
+    "67109374" : [ ],
+    "67109371" : [ ],
+    "67109493" : [ ],
+    "67109372" : [ ],
+    "67109410" : [ ],
+    "67109377" : [ ],
+    "82864053" : [ ],
+    "67109411" : [ ],
+    "67109378" : [ ],
+    "67109375" : [ ],
+    "67109376" : [ ],
+    "67109535" : [ ],
+    "67109536" : [ ],
+    "82864058" : [ ],
+    "67109412" : [ ],
+    "67109379" : [ ],
+    "67109534" : [ ],
+    "67109413" : [ ],
+    "67109407" : [ ],
+    "67109408" : [ ],
+    "67109405" : [ ],
+    "67109526" : [ ],
+    "67109406" : [ ],
+    "82864171" : [ ],
+    "82863914" : [ ],
+    "82863915" : [ ],
+    "67109380" : [ ],
+    "67109381" : [ ],
+    "67109384" : [ ],
+    "67109385" : [ ],
+    "67109382" : [ ],
+    "67109383" : [ ],
+    "82864185" : [ ],
+    "67109421" : [ ],
+    "67109389" : [ ],
+    "67109422" : [ ],
+    "67109386" : [ ],
+    "67109387" : [ ],
+    "67109420" : [ ],
+    "82864101" : [ ],
+    "67109546" : [ ],
+    "67109425" : [ ],
+    "82864068" : [ ],
+    "67109426" : [ ],
+    "82864069" : [ ],
+    "67109545" : [ ],
+    "82864100" : [ ],
+    "67109424" : [ ],
+    "67109537" : [ ],
+    "67109538" : [ ],
+    "82834952" : [ ],
+    "82863927" : [ ],
+    "82863929" : [ ],
+    "82863928" : [ ],
+    "82863983" : [ ],
+    "67109473" : [ ],
+    "67109471" : [ ],
+    "67109510" : [ ],
+    "67109474" : [ ],
+    "67109478" : [ ],
+    "67109505" : [ ],
+    "67109508" : [ ],
+    "67109509" : [ ],
+    "82863979" : [ ],
+    "82863994" : [ ],
+    "82863996" : [ ],
+    "67109483" : [ ],
+    "67109484" : [ ],
+    "82863997" : [ ],
+    "67109481" : [ ],
+    "67109482" : [ ],
+    "67109366" : [ ],
+    "67109488" : [ ],
+    "67109367" : [ ],
+    "67109485" : [ ],
+    "67109365" : [ ],
+    "82864047" : [ ],
+    "67109368" : [ ],
+    "82833917" : [ ],
+    "67109369" : [ ],
+    "67109523" : [ ],
+    "67109515" : [ ],
+    "67109516" : [ ],
+    "67109519" : [ ],
+    "82863564" : [ ],
+    "82864136" : [ ],
+    "67109450" : [ ],
+    "82863965" : [ ],
+    "82863967" : [ ],
+    "82863966" : [ ],
+    "82864097" : [ ],
+    "82864131" : [ ],
+    "67109452" : [ ],
+    "67109453" : [ ],
+    "82864099" : [ ],
+    "67109449" : [ ],
+    "82833952" : [ ],
+    "82863958" : [ ],
+    "82863957" : [ ],
+    "82863959" : [ ],
+    "67109460" : [ ],
+    "67109469" : [ ],
+    "67109500" : [ ],
+    "67109467" : [ ],
+    "67109468" : [ ],
+    "82863968" : [ ]
+  }
+}

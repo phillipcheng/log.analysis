@@ -6,10 +6,15 @@ public class FlowInfo {
 	private String id;
 	private String name;
 	private String status;
-	private Date createdTime;
-	private Date lastModifiedTime;
-	private Date startTime;
-	private Date endTime;
+	private String createdTime;
+	private String lastModifiedTime;
+
+	private String startTime;
+	private String endTime;
+	
+	public String toString(){
+		return String.format("%s,%s,%s", id, status, lastModifiedTime);
+	}
 
 	public String getId() {
 		return id;
@@ -29,28 +34,35 @@ public class FlowInfo {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	public Date getCreatedTime() {
+
+	public String getCreatedTime() {
 		return createdTime;
 	}
-	public void setCreatedTime(Date createdTime) {
+
+	public void setCreatedTime(String createdTime) {
 		this.createdTime = createdTime;
 	}
-	public Date getLastModifiedTime() {
-		return lastModifiedTime;
-	}
-	public void setLastModifiedTime(Date lastModifiedTime) {
-		this.lastModifiedTime = lastModifiedTime;
-	}
-	public Date getStartTime() {
+
+	public String getStartTime() {
 		return startTime;
 	}
-	public void setStartTime(Date startTime) {
+
+	public void setStartTime(String startTime) {
 		this.startTime = startTime;
 	}
-	public Date getEndTime() {
+
+	public String getEndTime() {
 		return endTime;
 	}
-	public void setEndTime(Date endTime) {
+
+	public void setEndTime(String endTime) {
 		this.endTime = endTime;
+	}
+	public String getLastModifiedTime() {
+		return lastModifiedTime;
+	}
+
+	public void setLastModifiedTime(String lastModifiedTime) {
+		this.lastModifiedTime = lastModifiedTime;
 	}
 }

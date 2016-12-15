@@ -14,9 +14,8 @@ import bdap.util.PropertiesUtil;
 
 public class ActionNode extends Node{
 	
-	public static final String key_exe_type="exe.type";//
-	public static final String key_cmd_class="cmd.class";
-	public static final String key_input_format="input.format";
+	public static final String key_exe_type="exe.type";//etl.flow.ExeType
+	public static final String key_cmd_class="cmd.class";//the fully qualified class name of the cmd
 	
 	public static List<String> sysProperties = null;
 	
@@ -37,7 +36,6 @@ public class ActionNode extends Node{
 	
 	public ActionNode(String name, ExeType exeType, InputFormatType ift){
 		this(name, exeType);
-		properties.put(key_input_format, ift.toString());
 	}
 	
 	//for writing test cases to construct action node from existing properties file
@@ -47,12 +45,6 @@ public class ActionNode extends Node{
 		for (String key: map.keySet()){
 			properties.put(key, map.get(key));
 		}
-	}
-	
-	//for writing test cases to construct action node from existing properties file
-	public ActionNode(String name, ExeType exeType, InputFormatType ift, String propertiesFile){
-		this(name, exeType, propertiesFile);
-		properties.put(key_input_format, ift.toString());
 	}
 	
 	@Override
@@ -72,7 +64,7 @@ public class ActionNode extends Node{
 	
 	public static List<String> getSysProperties(){
 		if (sysProperties==null){
-			sysProperties = Arrays.asList(new String[]{key_exe_type, key_cmd_class, key_input_format});
+			sysProperties = Arrays.asList(new String[]{key_exe_type, key_cmd_class});
 		}
 		return sysProperties;
 	}

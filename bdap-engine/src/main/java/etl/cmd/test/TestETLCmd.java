@@ -1,6 +1,7 @@
 package etl.cmd.test;
 
 import java.io.File;
+import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
@@ -31,7 +33,7 @@ import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
 import scala.Tuple2;
 
-public abstract class TestETLCmd {
+public abstract class TestETLCmd implements Serializable{
 	public static final Logger logger = LogManager.getLogger(TestETLCmd.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
@@ -49,13 +51,13 @@ public abstract class TestETLCmd {
 	private static String key_oozie_user="oozie.user";
 	
 	
-	private PropertiesConfiguration pc;
+	private transient PropertiesConfiguration pc;
 	
 	private String localFolder = "";
 	private String projectFolder = "";
-	private FileSystem fs;
+	private transient FileSystem fs;
 	private String defaultFS;
-	private Configuration conf;
+	private transient Configuration conf;//v2
 	private boolean testSftp=true;
 	private boolean testKafka=true;
 	private String oozieUser = "";
@@ -139,7 +141,7 @@ public abstract class TestETLCmd {
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
-			String staticProperties, String cmdClassName, Class inputFormatClass) throws Exception {
+			String staticProperties, String cmdClassName, Class inputFormatClass, int numReducer) throws Exception {
 		try {
 			getFs().delete(new Path(remoteOutputFolder), true);
 			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
@@ -161,6 +163,7 @@ public abstract class TestETLCmd {
 			}
 			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
 			getConf().set("mapreduce.output.textoutputformat.separator", ",");
+			getConf().set("mapreduce.job.reduces", String.valueOf(numReducer));
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(InvokeMapper.class);
 			job.setReducerClass(etl.engine.InvokeReducer.class);
@@ -186,6 +189,10 @@ public abstract class TestETLCmd {
 		return null;
 	}
 	
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class inputFormatClass) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, 1);
+	}
 	/**
 	 * 
 	 * @param remoteInputFolder

@@ -1,16 +1,21 @@
 package etl.cmd;
 
+import javax.script.CompiledScript;
+
+import org.apache.hadoop.io.Text;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.spark.RDDMultipleTextOutputFormat;
 import etl.spark.SparkUtil;
+import etl.util.ScriptEngineUtil;
 
 public class SaveDataCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 	//cfgkey
-	public static final String cfg_log_tmp_dir="log.tmp.dir";
+	public static final String cfgkey_log_tmp_dir="log.tmp.dir";
 	
 	private String logTmpDir;
 
@@ -29,12 +34,15 @@ public class SaveDataCmd extends ETLCmd {
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
-		logTmpDir = this.getPc().getString(cfg_log_tmp_dir);
+		String tmpDirExp = this.getPc().getString(cfgkey_log_tmp_dir);
+		CompiledScript cs = ScriptEngineUtil.compileScript(tmpDirExp);
+		logTmpDir = ScriptEngineUtil.eval(cs, super.getSystemVariables());
+		
 	}
 	
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		SparkUtil.saveByKey(input, defaultFs, logTmpDir, wfid);
+		input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
 		return null;
 	}
 	

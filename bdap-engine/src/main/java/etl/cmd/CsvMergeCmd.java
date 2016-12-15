@@ -12,7 +12,10 @@ import javax.script.CompiledScript;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -24,10 +27,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
-import etl.cmd.transform.AggrOp;
-import etl.cmd.transform.AggrOps;
 import etl.cmd.transform.GroupOp;
-import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
 import etl.engine.JoinType;
 import etl.engine.MRMode;
@@ -38,6 +38,7 @@ import etl.util.ScriptEngineUtil;
 import etl.util.StringUtil;
 import etl.util.VarType;
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class CsvMergeCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -158,45 +159,31 @@ public class CsvMergeCmd extends SchemaETLCmd{
 		
 		return updateSchema(attrsMap, attrTypesMap);
 	}
-		
-	/**
-	 * map function in map-only or map-reduce mode, for map mode: output null for no key or value
-	 * @return map may contains following key:
-	 * ETLCmd.RESULT_KEY_LOG: list of String user defined log info
-	 * ETLCmd.RESULT_KEY_OUTPUT: list of String output
-	 * ETLCmd.RESULT_KEY_OUTPUT_MAP: list of Tuple2<key, value>
-	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
-	 */
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	
+	private Tuple3<Integer, String, String> kv2kv(String tfName, String row){
 		int idx=-1;
-		Map<String, Object> retMap = new HashMap<String, Object>();
 		if (super.getLogicSchema()!=null){
-			String tableName = super.getTableName(context);
 			for (int i=0; i<srcTables.length; i++){
-				if (srcTables[i].equals(tableName)){
+				if (srcTables[i].equals(tfName)){
 					idx=i;
 					break;
 				}
 			}
 			if (idx==-1){
-				logger.error(String.format("%s matches nothing %s", tableName, Arrays.asList(srcTables)));
-				return retMap;
+				logger.error(String.format("%s matches nothing %s", tfName, Arrays.asList(srcTables)));
+				return null;
 			}
 		}else{
-			String fileName = Path.getPathWithoutSchemeAndAuthority(((FileSplit) context.getInputSplit()).getPath()).toString();
 			for (int i=0; i<srcFilesExp.length; i++){
-				if (srcFilesExp[i].matcher(fileName).matches()){
+				if (srcFilesExp[i].matcher(tfName).matches()){
 					idx=i;
 					break;
 				}
 			}
 			if (idx==-1){
-				logger.error(String.format("%s matches nothing %s", fileName, Arrays.asList(srcFilesExp)));
-				return retMap;
+				logger.error(String.format("%s matches nothing %s", tfName, Arrays.asList(srcFilesExp)));
+				return null;
 			}
-		}
-		if (srcSkipHeader[idx] && offset==0){
-			return retMap;
 		}
 		List<IdxRange> keyIdx = srcKeys[idx];
 		try {
@@ -204,13 +191,33 @@ public class CsvMergeCmd extends SchemaETLCmd{
 			CSVRecord csv = parser.getRecords().get(0);
 			List<String> keys = GroupOp.getFieldsInRange(csv, keyIdx);
 			String value = String.format("%d%s%s", idx, KEY_HEADER_SEP, row);
-			Tuple2<String, String> v = new Tuple2<String, String>(String.join(MULTIPLE_KEY_SEP, keys), value);
-			List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
-			vl.add(v);
-			retMap.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
+			return new Tuple3<Integer, String, String>(idx, String.join(MULTIPLE_KEY_SEP, keys), value);
 		}catch(Exception e){
 			logger.error("", e);
 		}
+		return null;
+	}
+	
+	/**
+	 * row: csv
+	 */
+	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+		Map<String, Object> retMap = new HashMap<String, Object>();
+		String tfName=null;
+		if (super.getLogicSchema()!=null){
+			tfName = super.getTableName(context);
+		}else{
+			tfName = Path.getPathWithoutSchemeAndAuthority(((FileSplit) context.getInputSplit()).getPath()).toString();
+		}
+		Tuple3<Integer, String, String> ikv = kv2kv(tfName, row);
+		int idx = ikv._1();
+		if (srcSkipHeader[idx] && offset==0){
+			return retMap;
+		}
+		
+		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
+		vl.add(new Tuple2<String,String>(ikv._2(), ikv._3()));
+		retMap.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
 		return retMap;
 	}
 	
@@ -229,17 +236,9 @@ public class CsvMergeCmd extends SchemaETLCmd{
 		return GroupOp.getFieldsOutRange(csvr, this.srcKeys[srcIdx], fieldNum);
 	}
 	
-	/**
-	 * reduce function in map-reduce mode
-	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
-	 * set newValue to null, if output line results
-	 * @return list of newKey, newValue, baseOutputPath
-	 */
-	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String[]> retlist = new ArrayList<String[]>();
-		Iterator<Text> it = values.iterator();
+	private List<Tuple2<String, String>> kvs2kvlist(String key, Iterable<String> values){
+		List<Tuple2<String, String>> retlist = new ArrayList<Tuple2<String, String>>();
+		Iterator<String> it = values.iterator();
 		CSVRecord[] mergedRecord = new CSVRecord[srcNum];
 		int hitNum=0;
 		while (it.hasNext()){
@@ -279,15 +278,57 @@ public class CsvMergeCmd extends SchemaETLCmd{
 			
 		if (JoinType.inner==joinType){
 			if (hitNum==srcNum){
-				retlist.add(new String[]{ret, null, ETLCmd.SINGLE_TABLE});
+				retlist.add(new Tuple2<String, String>(ETLCmd.SINGLE_TABLE, ret));
 			}else{
 				logger.warn(String.format("inner join, some data is missing, data from tables are %s", mergedRecord.toString()));
 			}
 		}else if (JoinType.outer == joinType){
-			retlist.add(new String[]{ret, null, ETLCmd.SINGLE_TABLE});
+			retlist.add(new Tuple2<String, String>(ETLCmd.SINGLE_TABLE,ret));
 		}else{
 			logger.error(String.format("join type:%s not supported.", joinType));
 		}
 		return retlist;
+	}
+
+	private Iterable<String> it2is(Iterable<Text> vs){
+		List<String> ls = new ArrayList<String>();
+		Iterator<Text> it = vs.iterator();
+		while(it.hasNext()){
+			ls.add(it.next().toString());
+		}
+		return ls;
+	}
+	/**
+	 * reduce function in map-reduce mode
+	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
+	 * set newValue to null, if output line results
+	 * @return list of newKey, newValue, baseOutputPath
+	 */
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		Iterable<String> is = it2is(values);
+		List<Tuple2<String, String>> kvlist = kvs2kvlist(key.toString(), is);
+		for (Tuple2<String,String> kv:kvlist){
+			mos.write(new Text(kv._2), null, kv._1);
+		}
+		return null;
+	}
+	
+	@Override
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> mapret = input.mapToPair(new PairFunction<Tuple2<String,String>, String, String>(){
+			@Override
+			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
+				Tuple3<Integer, String, String> ike = kv2kv(t._1, t._2);
+				return new Tuple2<String, String>(ike._2(), ike._3());
+			}
+		});
+		return mapret.groupByKey().flatMapToPair(new PairFlatMapFunction<Tuple2<String, Iterable<String>>, String, String>(){
+			@Override
+			public Iterator<Tuple2<String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				return kvs2kvlist(t._1, t._2).iterator();
+			}
+		});
 	}
 }

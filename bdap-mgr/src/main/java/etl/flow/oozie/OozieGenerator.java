@@ -2,7 +2,6 @@ package etl.flow.oozie;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,9 +11,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import bdap.util.CmdDef;
-import bdap.util.CmdDefMgr;
 import bdap.util.EngineConf;
+import etl.engine.ETLCmd;
 import etl.flow.ActionNode;
 import etl.flow.CoordConf;
 import etl.flow.Data;
@@ -86,7 +84,7 @@ public class OozieGenerator {
 			return prop_inputformat_line;
 		}else if (InputFormatType.FileName == ift){
 			return prop_inputformat_filename;
-		}else if (InputFormatType.File == ift){
+		}else if (InputFormatType.Text == ift){
 			return prop_inputformat_textfile;
 		}else{
 			logger.error(String.format("inputformat:%s not supported", ift));
@@ -94,9 +92,14 @@ public class OozieGenerator {
 		}
 	}
 	
-	private static CmdDef getCmd(ActionNode an){
-		String cmdClazz = an.getProperties().get(ActionNode.key_cmd_class);
-		return CmdDefMgr.getInstance().getCmdDef(cmdClazz);
+	private static ETLCmd getCmd(ActionNode an) {
+		try{
+			String cmdClazz = an.getProperties().get(ActionNode.key_cmd_class);
+			return (ETLCmd) Class.forName(cmdClazz).newInstance();
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
 	}
 	
 	private static MAPREDUCE genMRAction(Flow flow, ActionNode an, boolean hasInstanceId){
@@ -124,12 +127,12 @@ public class OozieGenerator {
 		mapperClassCp.setName(prop_map_class);
 		mapperClassCp.setValue(EngineConf.mapper_class);
 		pl.add(mapperClassCp);
-		CmdDef cmd = getCmd(an);
+		ETLCmd cmd = getCmd(an);
 		if (cmd==null){
 			logger.error(String.format("%s is not supported.\n%s", an.getName(), an.getProperties()));
 			return null;
 		}
-		if (cmd.isHasReduce()){
+		if (cmd.hasReduce()){
 			CONFIGURATION.Property reducerClassCp = new CONFIGURATION.Property();
 			reducerClassCp.setName(prop_reduce_class);
 			reducerClassCp.setValue(EngineConf.reducer_class);
@@ -143,6 +146,7 @@ public class OozieGenerator {
 		//input and output configuration
 		List<NodeLet> inlets = an.getInLets();
 		List<String> inputDataDirs = new ArrayList<String>();
+		InputFormatType ift = null;//all the input dataset to this action should have the same inputformattype
 		for (NodeLet ln: inlets){
 			if (ln.getDataName()!=null){
 				Data d = flow.getDataDef(ln.getDataName());
@@ -155,19 +159,29 @@ public class OozieGenerator {
 					}else{
 						inputDataDirs.add(d.getLocation());
 					}
+					if (ift==null){
+						ift = d.getDataFormat();
+					}else{
+						if (!ift.equals(d.getDataFormat())){
+							logger.error(String.format("all input data should have the same inputformattype, %s differ with %s in action %s", 
+									d, ift, an.getName()));
+							return null;
+						}
+					}
 				}
 			}
 		}
-			//input properties
-		CONFIGURATION.Property inputFormatCp = new CONFIGURATION.Property();
-		inputFormatCp.setName(prop_inputformat);
-		inputFormatCp.setValue(getInputFormat(InputFormatType.valueOf(an.getProperty(ActionNode.key_input_format))));
-		pl.add(inputFormatCp);
+		//input properties
 		CONFIGURATION.Property inputDirsCp = new CONFIGURATION.Property();
 		inputDirsCp.setName(prop_inputdirs);
 		inputDirsCp.setValue(String.join(",", inputDataDirs));
 		pl.add(inputDirsCp);
-			//output properties
+		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
+		inputFormatTypeCp.setName(prop_inputformat);
+		inputFormatTypeCp.setValue(getInputFormat(ift));
+		pl.add(inputFormatTypeCp);
+		
+		//output properties
 		CONFIGURATION.Property outputFormatCp = new CONFIGURATION.Property();
 		outputFormatCp.setName(prop_outputformat);
 		CONFIGURATION.Property outputDirCp = new CONFIGURATION.Property();
@@ -213,7 +227,7 @@ public class OozieGenerator {
 		//cmd configuration
 		CONFIGURATION.Property cmdClassNameCp = new CONFIGURATION.Property();
 		cmdClassNameCp.setName(EngineConf.cfgkey_cmdclassname);
-		cmdClassNameCp.setValue(cmd.getClassName());
+		cmdClassNameCp.setValue(cmd.getClass().getName());
 		pl.add(cmdClassNameCp);
 		CONFIGURATION.Property wfNameCp = new CONFIGURATION.Property();
 		wfNameCp.setName(EngineConf.cfgkey_wfName);
@@ -315,7 +329,7 @@ public class OozieGenerator {
 		boolean useFork = false;
 		ACTION fromAction=null;
 		FORK forkNode=null;
-		if (fromNode.getOutlets().size()>1){
+		if (flow.getOutLinks(fromNode.getName()).size()>1){//when fromNode has multiple out/next links, we need to generate a fork node
 			useFork=true;
 			String forkName = getForkNodeName(ln.getFromNodeName());
 			forkNode = getForkNode(wfa, forkName);
@@ -331,9 +345,7 @@ public class OozieGenerator {
 			}
 		}
 		String nextNodeName = ln.getToNodeName();
-		//TODO algorithm to generate join, join depends on how many execution paths point to me, not the number of inlets, this is action flow driven
-		/*
-		if (toNode.getInLets().size()>1){
+		if (flow.getInLinks(toNode.getName()).size()>1){//when toNode has multiple in links, we need to generate a join node
 			//may need to gen join, the toNode's corresponding join node is named as toNode.name+"_"+join
 			String joinNodeName = getJoinNodeName(ln.getToNodeName());
 			JOIN j = getJoinNode(wfa, joinNodeName);
@@ -345,7 +357,7 @@ public class OozieGenerator {
 				wfa.getDecisionOrForkOrJoin().add(j);
 			}
 			nextNodeName = j.getName();
-		}*/
+		}
 		//link to the nextNodeName
 		if (useFork){
 			FORKTRANSITION ft = new FORKTRANSITION();
