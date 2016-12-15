@@ -215,7 +215,6 @@ public class SchemaUtils {
 			Cache<String, List<FieldType>> attrTypeCache = CacheBuilder.newBuilder().maximumSize(Long.MAX_VALUE).removalListener(ATTR_TYPE_REMOVAL_LISTENER).build(attrTypeCacheLoader);
 			index.setAttrTypeMap(new CacheMap<List<FieldType>>(attrTypeCache));
 			return index;
-			
 		} else {
 			return clazz.cast(JsonUtil.fromLocalJsonFile(path, clazz));
 		}
@@ -382,18 +381,14 @@ public class SchemaUtils {
 		return sqls;
 	}
 	
-	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype){
-		try{
-			LogicSchema ls = fromLocalJsonPath(schemaFile, LogicSchema.class);
-			List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype);
-			StringBuffer sb = new StringBuffer();
-			for (String sql:sqls){
-				sb.append(sql).append(";").append("\n");
-			}
-			FileUtils.writeStringToFile(new File(outputSql), sb.toString(), Charset.defaultCharset());
-		}catch(Exception e){
-			logger.error("", e);
+	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype) throws Exception {
+		LogicSchema ls = fromLocalJsonPath(schemaFile, LogicSchema.class);
+		List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype);
+		StringBuffer sb = new StringBuffer();
+		for (String sql:sqls){
+			sb.append(sql).append(";").append("\n");
 		}
+		FileUtils.writeStringToFile(new File(outputSql), sb.toString(), Charset.defaultCharset());
 	}
 	
 	public static boolean genLogicSchemaFromDB(PropertiesConfiguration dbconf, String schemaName, String localLogicSchemaOutputFile){

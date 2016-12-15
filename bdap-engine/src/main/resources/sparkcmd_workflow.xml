@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow-app xmlns:ssh="uri:oozie:ssh-action:0.2" xmlns:shell="uri:oozie:shell-action:0.3" xmlns="uri:oozie:workflow:0.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="etl-workflow">
+	<parameters>
+		<property>
+			<name>BDAP_LIB</name>
+			<value>${nameNode}/bdap-VVERSIONN/engine/lib</value>
+		</property>
+		<property>
+			<name>APP_LIB</name>
+			<value>${nameNode}/${prjName}/${wfName}/lib</value>
+		</property>
+	</parameters>
+	<global>
+		<configuration>
+			<property>
+				<name>oozie.launcher.yarn.app.mapreduce.am.env</name>
+				<value>SPARK_HOME=/data/spark-2.0.0-bin-hadoop2.7/</value>
+			</property>
+		</configuration>
+	</global>
+	<start to="SparkProcess"/>
+	<kill name="fail">
+		<message>Java failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<action name="SparkProcess">
+		<spark xmlns="uri:oozie:spark-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <master>yarn</master>
+            <mode>cluster</mode>
+            <name>${wfName}</name>
+            <class>etl.engine.ETLCmdMain</class>
+            <jar>${BDAP_LIB}/bdap.engine-VVERSIONN.jar</jar>
+            <spark-opts>--executor-memory 2G --num-executors 4 --conf spark.yarn.historyServer.address=${yarn_historyserver} --conf spark.eventLog.dir=${nameNode}/spark/logs --conf spark.eventLog.enabled=true --jars ${BDAP_LIB}/commons-cli-1.3.1.jar,${BDAP_LIB}/commons-codec-1.4.jar,${BDAP_LIB}/commons-collections-3.2.1.jar,${BDAP_LIB}/commons-compress-1.4.1.jar,${BDAP_LIB}/commons-configuration-1.7.jar,${BDAP_LIB}/commons-csv-1.4.jar,${BDAP_LIB}/commons-daemon-1.0.13.jar,${BDAP_LIB}/commons-dbcp-1.4.jar,${BDAP_LIB}/commons-el-1.0.jar,${BDAP_LIB}/commons-exec-1.2.jar,${BDAP_LIB}/commons-httpclient-3.1.jar,${BDAP_LIB}/commons-io-2.5.jar,${BDAP_LIB}/commons-lang-2.6.jar,${BDAP_LIB}/commons-lang3-3.3.2.jar,${BDAP_LIB}/commons-logging-1.1.3.jar,${BDAP_LIB}/commons-math3-3.1.1.jar,${BDAP_LIB}/commons-net-3.1.jar,${BDAP_LIB}/commons-pool-1.5.4.jar,${BDAP_LIB}/jackson-annotations-2.6.0.jar,${BDAP_LIB}/jackson-core-2.6.5.jar,${BDAP_LIB}/jackson-databind-2.6.5.jar,${BDAP_LIB}/jsch-0.1.53.jar,${BDAP_LIB}/kafka-clients-0.10.0.1.jar,${BDAP_LIB}/log4j-api-2.6.2.jar,${BDAP_LIB}/log4j-core-2.6.2.jar,${BDAP_LIB}/vertica-jdbc-7.0.1-0.jar,${BDAP_LIB}/spark-streaming-kafka-0-10_2.11-2.0.0.jar,${BDAP_LIB}/bdap.common-VVERSIONN.jar,${APP_LIB}/${wfName}.jar</spark-opts>
+            <arg>hpe.pde.etl.PdeSparkFlow</arg>
+            <arg>${wfName}</arg>
+            <arg>${wf:id()}</arg>
+            <arg>UNUSED</arg>
+            <arg>${nameNode}</arg>
+        </spark>
+		<ok to="end"/>
+		<error to="fail"/>
+	</action>
+	<end name="end"/>
+</workflow-app>

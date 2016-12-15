@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>bdap</groupId>
 		<artifactId>bdap.parent</artifactId>
-		<version>r0.4.0</version>
+		<version>VVERSIONN</version>
 		<relativePath>..</relativePath>
 	</parent>
 	
@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>bdap</groupId>
 			<artifactId>bdap.mgr</artifactId>
-			<version>r0.4.0</version>
+			<version>VVERSIONN</version>
 			<exclusions>
 				<exclusion>
                   <artifactId>slf4j-log4j12</artifactId>

@@ -24,12 +24,10 @@ import etl.flow.mgr.InMemFile;
 import etl.flow.oozie.OozieFlowMgr;
 import etl.flow.spark.SparkFlowMgr;
 
-
-
 public class FlowTest {
 	public static final Logger logger = LogManager.getLogger(FlowTest.class);
 	
-	private FlowDeployer clouderaDeployer = new FlowDeployer("testFlow.cloudera.properties");
+	private FlowDeployer apacheDeployer = new FlowDeployer("testFlow.apache.properties");
 	private FlowDeployer localDeployer = new FlowDeployer("testFlow.local.properties");
 	
 	public void initData(FlowDeployer deployer, SftpInfo ftpInfo){
@@ -71,19 +69,19 @@ public class FlowTest {
 	}
 	
 	@Test
-	public void testOozieJson() throws Exception{
-		//deployer.installEngine(false);
+	public void testApacheOozieJson() throws Exception{
+		//apacheDeployer.installEngine(false);
 		String projectName = "project1";
 		String flowName="flow1";
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
-		initData(clouderaDeployer, ftpInfo);
-		clouderaDeployer.runDeploy(projectName, flowName, null, true, EngineType.oozie);
-		String wfId = clouderaDeployer.runExecute(projectName, flowName);
+		initData(apacheDeployer, ftpInfo);
+		apacheDeployer.runDeploy(projectName, flowName, null, true, EngineType.oozie);
+		String wfId = apacheDeployer.runExecute(projectName, flowName, EngineType.oozie);
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		FlowInfo fi=null;
 		while (true){
 			try {
-				fi = ofm.getFlowInfo(projectName, clouderaDeployer.getOC(), wfId);
+				fi = ofm.getFlowInfo(projectName, apacheDeployer.getOozieServerConf(), wfId);
 				logger.info(String.format("flow info for instance:%s:%s", wfId, fi));
 				Thread.sleep(5000);
 				if (!fi.getStatus().equals("RUNNING")){
@@ -94,10 +92,10 @@ public class FlowTest {
 			}
 		}
 		//assertion after finished
-		List<String> ls = HdfsUtil.listDfsFile(clouderaDeployer.getFs(), String.format("/flow1/csvmerge/%s", wfId));
-		assertTrue(ls.contains("part-r-00000"));
-		List<String> contents = HdfsUtil.stringsFromDfsFile(clouderaDeployer.getFs(), 
-				String.format("/flow1/csvmerge/%s/%s", wfId, "part-r-00000"));
+		List<String> ls = HdfsUtil.listDfsFile(apacheDeployer.getFs(), String.format("/flow1/csvmerge/%s", wfId));
+		String fileName="singleTable-r-00000";
+		assertTrue(ls.contains(fileName));
+		List<String> contents = HdfsUtil.stringsFromDfsFile(apacheDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
 		logger.info(String.format("contents:\n%s", String.join("\n", contents)));
 		String[] csv = contents.get(0).split(",");
 		assertTrue(csv[8].equals(wfId));
@@ -107,7 +105,7 @@ public class FlowTest {
 	public void testLocalSparkCmd() throws Exception{
 		String wfName= "flow1";
 		String wfId="wfid1";
-		localDeployer.getFs().delete(new Path(String.format("/%s/mergecsv/%s", wfName, wfId)), true);
+		localDeployer.getFs().delete(new Path(String.format("/%s/csvmerge/%s", wfName, wfId)), true);
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
 		initData(localDeployer, ftpInfo);
 		Flow1SparkCmd psf = new Flow1SparkCmd(wfName, wfId, null, localDeployer.getDefaultFS(), null);
@@ -116,21 +114,20 @@ public class FlowTest {
 		psf.sgProcess();
 		//assertion
 		String fileName="singleTable";
-		List<String> ls = HdfsUtil.listDfsFile(localDeployer.getFs(), String.format("/flow1/mergecsv/%s/%s", wfId, fileName));
+		List<String> ls = HdfsUtil.listDfsFile(localDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
 		assertTrue(ls.contains(fileName));
-		List<String> contents = HdfsUtil.stringsFromDfsFile(localDeployer.getFs(), 
-				String.format("/flow1/mergecsv/%s/%s", wfId, fileName));
+		List<String> contents = HdfsUtil.stringsFromDfsFile(localDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
 		logger.info(String.format("contents:\n%s", String.join("\n", contents)));
 		String[] csv = contents.get(0).split(",");
 		assertTrue(csv[8].equals(wfId));
 	}
 
 	@Test
-	public void testSparkJson(){
+	public void testApacheSparkJson(){
 		String projectName = "project1";
 		String flowName="flow1";
 		//ft.initData();
-		clouderaDeployer.runDeploy(projectName, flowName, null, true, EngineType.spark);
-		//deployer.runExecute(projectName, flowName);
+		apacheDeployer.runDeploy(projectName, flowName, null, true, EngineType.spark);
+		apacheDeployer.runExecute(projectName, flowName, EngineType.spark);
 	}
 }
