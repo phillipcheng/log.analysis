@@ -50,7 +50,7 @@ var init = function() {
 	 * 1.4
 	 */
 	d3.select("#main").append("g").attr("id", "lineContainer");
-	
+
 }
 
 /**
@@ -96,7 +96,7 @@ var getOffsetTop = function(o) {
  */
 var zoom = function() {
 
-	if(true||booleaniszoom) {
+	if(true || booleaniszoom) {
 		current_zoom_new_x = parseInt(d3.event.translate[0]);
 		current_zoom_new_y = parseInt(d3.event.translate[1]);
 
@@ -125,6 +125,8 @@ var each = function(ary, fn) {
 		var result = fn.call(ary[i], i, ary[i]);
 		if(result === false) {
 			break;
+		} else if(result === true) {
+			continue;
 		} else {
 			i = result;
 		}

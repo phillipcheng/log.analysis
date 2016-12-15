@@ -1,17 +1,20 @@
 var _node = {
 	start: function() {
 		var temp = new Date().getTime();
-		nodeLists.push("g_" + temp);
-		app.init("g_" + temp).setA({
-			"type": "circle",
-			"args": "30"
-		}).append("circle", "circle_" + temp, "g_" + temp).setA({
-			"r": "30",
-			"class": "startNode"
-		}).add("text", "text_" + temp, "g_" + temp).setA({
-			"x": "-12",
-			"y": "5"
-		}).txt("Star");
+		nodeLists.push({
+			'id': 'g_' + temp
+		});
+		//		nodeLists.push("g_" + temp);
+		//		app.init("g_" + temp).setA({
+		//			"type": "circle",
+		//			"args": "30"
+		//		}).append("circle", "circle_" + temp, "g_" + temp).setA({
+		//			"r": "30",
+		//			"class": "startNode"
+		//		}).add("text", "text_" + temp, "g_" + temp).setA({
+		//			"x": "-12",
+		//			"y": "5"
+		//		}).txt("Star");
 	},
 	end: function() {
 		var temp = new Date().getTime();
@@ -28,7 +31,7 @@ var _node = {
 		}).txt("End");
 	},
 	ActionOne: function() {
-		
+
 		var temp = new Date().getTime();
 		nodeLists.push("g_" + temp);
 		app.init("g_" + temp).setA({
@@ -121,12 +124,12 @@ var _node = {
 				"cx": "90",
 				"cy": "10",
 				"self": "dialog",
-				"args": ""				
-			}).add("path","path_"+temp+"_min","g_" + temp + "_min", "g_" + temp).setA({
-				"d":"M86,10 L94,10 M90,6 L90,14",
+				"args": ""
+			}).add("path", "path_" + temp + "_min", "g_" + temp + "_min", "g_" + temp).setA({
+				"d": "M86,10 L94,10 M90,6 L90,14",
 				"self": "dialog",
-				"args": "open"				
-			}).add("text","text_"+temp+"_min","g_" + temp + "_min", "g_" + temp).setA({
+				"args": "open"
+			}).add("text", "text_" + temp + "_min", "g_" + temp + "_min", "g_" + temp).setA({
 				"x": "15",
 				"y": "45"
 			}).setS({
