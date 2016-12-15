@@ -7,44 +7,55 @@ document.onkeydown = function(event) {
 	console.log(e);
 	if(e && e.keyCode == 27) { // 按 Esc 取消操作
 		clearTempLine();
+		document.getElementById("svg").style.cursor = "default";
 	}
 
 	if(e && e.keyCode == 46) { // 按 delete 取消操作
 		var json = dagre.graphlib.json.write(g);
 		console.info(json);
-		//		d3.select("#rectContainer").selectAll(".rectNodeGSelected")
-		//			.each(function() {
-		//				var tempId = this.getAttribute("id").toString();
-		//				g.removeNode(tempId); //node 节点
-		//				each(pathLists, function(i, o) {
-		//					if(o.dv.localeCompare(tempId) == 0 || o.dw.localeCompare(tempId) == 0) {
-		//						console.log("------------------");
-		//						console.log("1", i);
-		//						pathLists.splice(i, 1);
-		//						console.log("2", pathLists.length);
-		//						console.log("3", --i);
-		//						console.log(i);
-		//						g.removeEdge(o.dv, o.dw);
-		//						g.removeEdge(o.dw, o.dv);
-		//						d3.select("#lineContainer").select("#linegroup" + o.dv + "A" + o.dw).remove();
-		//						d3.select("#lineContainer").select("#linegroup" + o.dw + "A" + o.dv).remove();
-		//						return i;
-		//					}
-		//				});
-		//			}).remove();
-		//
-		//		d3.select("#lineContainer").selectAll(".edgeSelected").each(function() {
-		//			var tempId = d3.select(this).attr("id");
-		//			tempId = tempId.replace("linegroup", "");
-		//			tempId = tempId.split("A");
-		//			g.removeEdge(tempId[0], tempId[1]);
-		//			each(pathLists, function(i, o) {
-		//				if(o.dv.localeCompare(tempId[0]) == 0 && o.dw.localeCompare(tempId[1]) == 0) {
-		//					pathLists.splice(i, 1);
-		//					return false;
-		//				}
-		//			});
-		//		}).remove();
+		d3.select("#rectContainer").selectAll(".nodeRectSelected")
+			.each(function() {
+				var gId = d3.select(this).attr("G").toString();
+				console.log("gId",gId);
+				g.removeNode(gId);
+				each(pathLists, function(i, o) {
+
+					if(o.from.toString().localeCompare(gId) == 0) {
+						g.removeEdge(gId, o.to.toString());
+						d3.select("#linegroup" + gId + "A" + o.to.toString()).remove();
+					} else if(o.to.toString().localeCompare(gId) == 0) {
+						g.removeEdge(o.from.toString(), gId);
+						d3.select("#linegroup" + o.from.toString() + "A" + gId).remove();
+					}
+
+					if(o.from.toString().localeCompare(gId) == 0 ||
+						o.to.toString().localeCompare(gId) == 0) {
+						pathLists.splice(i, 1);
+						return --i;
+					} else {
+						return true;
+					}
+
+				});
+				d3.select("#" + gId).remove();
+				console.log(pathLists);
+			});
+
+		d3.select("#lineContainer").selectAll(".edgeSelected")
+			.each(function() {
+				var gId = d3.select(this).attr("id").toString();
+				var temp = gId.replace("linegroup", "");
+				temp = temp.split("A");
+				each(pathLists, function(i, o) {
+					if(o.from.toString(o.from.toString()).localeCompare() == 0 && o.to.toString().localeCompare(o.to.toString()) == 0) {
+						g.removeEdge(gId, o.to.toString());
+						pathLists.splice(i,1);
+						return --i;
+					}else{
+						return true;
+					}
+				});
+			}).remove();
 
 		console.info(dagre.graphlib.json.write(g));
 	}
@@ -70,40 +81,23 @@ document.ondblclick = function(event) {
 				if(o.getAttribute("G")) {
 					templine.firstId = o.getAttribute("G");
 					var temp = document.getElementById(templine.firstId).getAttribute("transform");
+					console.log(temp);
 					if(temp.lastIndexOf("scale") > -1) {
 						temp = temp.substring(0, temp.lastIndexOf("scale"));
-					}	
+					}
 					temp = temp.replace("translate(", "");
 					temp = temp.replace(")", "");
 					temp = temp.split(",");
-					templine.firstPoint = temp[0] + "," + temp[1];
+					if((parseInt(temp[0]) + 50)){
+						templine.firstPoint = (parseInt(temp[0]) + 50) + "," + (parseInt(temp[1]) + 25);
+					}else{
+						clearTempLine();
+					}
+					document.getElementById("svg").style.cursor = "crosshair";
 				}
 			}
 			break;
 	}
-	//	event.stopPropagation();
-	//	var o = getEventSources();
-	//	console.log(o);
-	//	if(o.getAttribute("G") && o.tagName.toString().localeCompare("rect") == 0) {
-	//		selectionId = o.getAttribute("G").toString();
-	//		if(templine.firstId.length == 0) {
-	//			//还没有点击第一个点
-	//			templine.firstId = selectionId;
-	//			templine.firstPoint = o.getAttribute("x") + "," + o.getAttribute("y");
-	//		} else {
-	//			//已经点击了第一个点，这个时候,确认第二个点
-	//			if(selectionId.localeCompare(templine.firstId) != 0) {
-	//				templine.endId = selectionId;
-	//				pathLists.push({
-	//					from: templine.firstId,
-	//					to: templine.endId
-	//				});
-	//				g.setEdge(templine.firstId, templine.endId);
-	//				_base._build();
-	//				clearTempLine();
-	//			}
-	//		}
-	//	}
 }
 
 /**
@@ -111,8 +105,15 @@ document.ondblclick = function(event) {
  * @param {Object} event
  */
 document.onclick = function(event) {
-	clearTimeout(clicktimer);
 	var o = getEventSources();
+	console.log(o.tagName.toString());
+	if(o.tagName.toString().localeCompare("svg") == 0) {
+		return false;
+	} else if(o.getAttribute("self") || o.tagName.toString().localeCompare("rect") == 0) {
+		document.getElementById("svg").style.cursor = "wait";
+	}
+	clearTimeout(clicktimer);
+
 	clicktimer = setTimeout(function() {
 		console.log("--------------onclick----------------");
 
@@ -128,6 +129,7 @@ document.onclick = function(event) {
 			flow.init(o.getAttribute("self").toString(), o);
 		}
 
+		document.getElementById("svg").style.cursor = "default";
 	}, 300);
 	event.stopPropagation();
 }
