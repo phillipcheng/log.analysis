@@ -33,9 +33,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		//prepare schema
 		String cfgFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
 		String schemaFile = "om_map_merged.schema";
-		String ftmapFile = "efemto_file_table_mapping.properties";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
-		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+ftmapFile), new Path(cfgFolder+ftmapFile));
 		
 		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:\n"+String.join("\n", output));
