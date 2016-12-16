@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.Vector;
 
@@ -332,7 +333,6 @@ public class Main implements Job {
 					trigger.getJobDataMap().put(WORKING_ELEMENT, e);
 					trigger.getJobDataMap().put(WORKING_DIR, dc.getDirectory());
 					trigger.getJobDataMap().put(RECURSIVE, dc.isRecursive());
-					trigger.getJobDataMap().put(FILENAME_FILTER, createIOFileFilter(dc.getFilenameFilterExpr()));
 					trigger.getJobDataMap().put(FILES_PER_BATCH, dc.getFilesPerBatch());
 					trigger.getJobDataMap().put(PROCESS_RECORD, dc.getProcessRecordFile());
 					trigger.getJobDataMap().put(DEST_SERVER, dc.getDestServer());
@@ -341,6 +341,7 @@ public class Main implements Job {
 					trigger.getJobDataMap().put(DEST_SERVER_PRVKEY, dc.getDestServerPrvKey());
 					trigger.getJobDataMap().put(DEST_SERVER_PASS, dc.getDestServerPass());
 					trigger.getJobDataMap().put(DEST_SERVER_DIR_RULE, dc.getDestServerDirRule());
+					trigger.getJobDataMap().put(FILENAME_FILTER, createIOFileFilter(dc.getFilenameFilterExpr(), trigger.getJobDataMap()));
 			
 					scheduler.scheduleJob(trigger);
 				}
@@ -370,10 +371,10 @@ public class Main implements Job {
 		}
 	}
 
-	private static IOFileFilter createIOFileFilter(String filterExpr) {
+	private static IOFileFilter createIOFileFilter(String filterExpr, Map<String, Object> currentCtx) {
 		if (filterExpr != null) {
 			JexlExpression e = jexl.createExpression(filterExpr);
-			JexlContext context = new MapContext();
+			JexlContext context = new MapContext(currentCtx);
 			Object obj = e.evaluate(context);
 			if (obj != null && obj instanceof IOFileFilter)
 				return (IOFileFilter) obj;
