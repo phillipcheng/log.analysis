@@ -1,0 +1,18 @@
+2016年12月16日session
+参与人员：chengyi/chenhuanzhang/yueximing/huangpeng
+
+会议纪要：
+1、兼容性：
+   -- IE、chrome不同版本支持不好，功能不能用
+   -- 属性滚动条支持兼容性
+
+2、用户体验度提升
+3、start/end node形状要和其他action node区分开
+4、class不应该让用户编辑，创建后即有值
+5、node name 根据用户编辑动态展现
+6、点整个node时属性切换
+7、自动布局居中
+8、整个view带滚动条，随着节点增加，滚动条出现
+9、有滚动条和自动布局，不用再对单个节点拖动
+10、node 多个inlet和多个outlet（交互方式有待沟通）
+11、开发环境统一，及时提交代码，保持统一
