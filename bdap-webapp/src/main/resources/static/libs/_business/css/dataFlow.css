@@ -5,76 +5,68 @@ body {
 	user-select: none;
 }
 
-.nodeG {
-	
-}
+.nodeG {}
 
-.nodeG>text{
+.nodeG>text {
 	font-size: 15px
 }
 
-.nodeRect {
+.nodeG>rect {
 	fill: rgb(238, 238, 238);
 	stroke: silver;
 	stroke-width: 2;
 }
 
-.nodeRectSelected{
+.nodeG:hover>rect {
 	fill: rgb(238, 238, 238);
 	stroke: red;
 	stroke-width: 2;
 }
 
-.nodeRect:hover {
-	fill: rgb(238, 238, 238);
+.nodeGSelected {
+	
+}
+
+.nodeGSelected>rect {
+	fill: rgb(155, 155, 155);
 	stroke: red;
-	stroke-width: 2;
+	stroke-width: 3;
 }
 
-.nodeLog {
-	fill: deepskyblue;
-}
-
-.nodeLog:hover{
-	cursor: pointer;
-	stroke: white;
-	stroke-width: 2;
+.nodeGSelected:hover>rect {
+	fill: rgb(155, 155, 155);
+	stroke: red;
+	stroke-width: 3;
 }
 
 .nodeRun {
 	fill: green;
 }
 
-.nodeRun:hover{
+.nodeRun:hover {
+	stroke: white;
+	stroke-width: 2;
 	cursor: pointer;
+}
+
+.nodeLog {
+	fill: deepskyblue;
+}
+
+.nodeLog:hover {
 	stroke: white;
 	stroke-width: 2;
+	cursor: pointer;
 }
 
-.nodePropertyG{
-
-}
-.nodePropertyG>rect{
-	stroke: silver;
-	stroke-width: 2;
-	fill: rgb(238, 238, 238);
-}
-
-.maxNodeG {}
-
-.maxNodeCircle {
+.nodeZoom {
 	fill: red;
+}
+
+.nodeZoom:hover {
+	stroke: white;
 	stroke-width: 2;
-	stroke: white;
-}
-
-.maxNodePath {
-	stroke-width: 1;
-	stroke: white;
-}
-
-.maxNodeG:hover {
-	cursor: zoom-out;
+	cursor: pointer;
 }
 
 .minNodeG {}
@@ -106,25 +98,6 @@ body {
 
 .edge:hover {
 	cursor: crosshair;
-}
-
-.edgeSelected {}
-
-.edgeSelected>path {
-	fill: none;
-	stroke: greenyellow;
-	stroke-linecap: round;
-	stroke-width: 2.5px;
-	opacity: 1;
-}
-
-.edgeSelected:hover {
-	cursor: crosshair;
-}
-
-.edgerun {
-	stroke: green;
-	stroke-width: 2px;
 }
 
 .outPath {

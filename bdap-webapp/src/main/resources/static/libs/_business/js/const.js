@@ -1,4 +1,8 @@
-var dataSetDialogId = ""
+var clientwidth = 0;
+
+var clientheight = 0;
+
+var dataSetDialogId = "";
 
 var countProperty = 0;
 
@@ -265,7 +269,7 @@ var loadinit = function() {
  */
 var _HTTP_ACTION_LIST = "http://localhost:8020/flow/actionList";
 
-//var _HTTP_ACTION_LIST="http://16.165.184.80:8080/dashview/george/flow/node/types/action/commands";
+//var _HTTP_ACTION_LIST="http://localhost:8080/dashview/george/flow/node/types/action/commands";
 
 /**
  * 
@@ -277,7 +281,7 @@ var _HTTP_LOAD_PROPERTY = "http://localhost:8020/flow/loadProperty";
  */
 //var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
 
-var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
+var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8080/dashview/george/flow/node/types/action/commands";
 
 
 /**

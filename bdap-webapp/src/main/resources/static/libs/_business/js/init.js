@@ -40,7 +40,7 @@ var init = function() {
 	d3.select("#svg").call( // <-A
 		d3.behavior.zoom() // <-B
 		.scaleExtent([1, 5]) // <-C
-		.on("zoom", zoom) // <-D
+		.on("zoom", svgzoom) // <-D
 	).append("g").attr("id", "main");
 
 	/**
@@ -111,21 +111,16 @@ var getOffsetTop = function(o) {
 /*
  * svg zoom 操作
  */
-var zoom = function() {
-
+var svgzoom = function() {
 	if(booleaniszoom) {
 		current_zoom_new_x = parseInt(d3.event.translate[0]);
 		current_zoom_new_y = parseInt(d3.event.translate[1]);
-
 		current_zoom_x += current_zoom_new_x - current_zoom_old_x;
 		current_zoom_y += current_zoom_new_y - current_zoom_old_y;
-
 		d3.select("#main").attr("transform",
 			"translate(" + current_zoom_x + "," + current_zoom_y + ")scale(1,1)");
-
 		current_zoom_old_x = current_zoom_new_x;
 		current_zoom_old_y = current_zoom_new_y;
-
 	} else {
 		current_zoom_old_x = parseInt(d3.event.translate[0]);
 		current_zoom_old_y = parseInt(d3.event.translate[1]);
@@ -181,9 +176,9 @@ var svgDrapMove = function() {
  * 鼠标移动 特效
  */
 var svgMouseMove = function(event) {
-	console.log("--------templine.firstId:" + templine.firstId + "-----------------------");
 	var e = event || window.event || arguments.callee.caller.arguments[0];
-	if(templine.firstId.length == 0) {} else {
+	if(templine.firstId.length == 0) {
+	} else {
 		var x = e.x || e.clientX;
 		var y = e.y || e.clientY;
 		console.log("x", x);
