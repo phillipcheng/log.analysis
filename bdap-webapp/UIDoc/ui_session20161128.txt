@@ -1,0 +1,35 @@
+2016年11月28日session
+参与人员：chengyi/chenhuanzhang/yueximing/huangpeng
+
+会议纪要：
+flow editor:
+1、Node多层嵌套,点击可层层展开
+2、property
+            --选中NODE, 右上角弹出模态Div，用来编辑property，可折叠
+            --NODE展开，显示property内容，只读，多个node的property可同时显示.
+3、自动布局，连线时触发自动拓扑布局.
+4、左侧panel去掉，上下结构，top panel以menu方式显示action type，按行排列.
+5、NODE框可拖动大小
+
+flow run:
+6、run
+            --整体run时，动态显示当前数据流向，及NODE执行状态
+            --单个node run, 没有暂停，图标要变.
+7、log
+            --以模态Div方式显示在右下角
+            --可以最大化、最小化、关闭
+            --以tab方式展现不同级别日志信息
+            --内容多时，可自动滚动条展示
+8、dataset and schema
+            --选中run过的NODE,在屏幕右上角弹出模态Div
+            --以tab方式显示input/output/schema
+            --每个tab里面是grid，可分页
+            --schema有个单独页面进行编辑，此处只读.
+9、整体run后，动态显示前几行input/output data数据（待定，暂时先不实现）
+
+Question:
+1、dataset and schema这块我觉得还没有理清
+            -- 一个node上可能有多个input/output data及schema, 
+                data如何展示？
+                schema如何展示？
+            -- 同时显示两个input和一个output,比如merge，可能有这个需求，如何展示？ （待定）
