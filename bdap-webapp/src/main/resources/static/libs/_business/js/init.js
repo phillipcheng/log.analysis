@@ -17,12 +17,7 @@ var clearTempLine = function() {
  */
 var init = function() {
 
-	if (typeof  String.prototype.endsWith  !=  'function')  {    
-		String.prototype.endsWith  =   function(suffix)  {     
-			return  this.indexOf(suffix,  this.length  -  suffix.length)  !==  -1;    
-		};   
-	}  
-
+	compatibilityTools();
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
 
@@ -203,4 +198,21 @@ var clearTempLine = function() {
 	templine.endId = "";
 
 	d3.select("#pathmove").attr("d", "");
+}
+/**
+ * all browser conpatibility will be added here.
+ */
+var compatibilityTools = function(){
+	if (typeof String.prototype.endsWith != 'function') {   
+		 String.prototype.endsWith = function(suffix) {   
+		  return this.indexOf(suffix, this.length - suffix.length) !== -1;   
+		 };   
+		}  
+		
+	if (typeof String.prototype.startsWith != 'function') {  
+	     String.prototype.startsWith = function (prefix){  
+	      return this.slice(0, prefix.length) === prefix;  
+	     };  
+	    }  
+	
 }
