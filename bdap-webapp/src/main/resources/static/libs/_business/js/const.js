@@ -259,7 +259,7 @@ var loadinit = function() {
 				.append("li").append("a")
 				.attr("href", "javascript:;").text(temp)
 				//.attr("onclick","app.group()");
-				.attr("onclick", "app.action({'label':'" + temp + "'})");
+				.attr("onclick", "app.action({'label':'" + temp + "','class':'"+k+"'})");
 		});
 	});
 }
