@@ -174,13 +174,17 @@ var actionEnter = function(theSelf, d, nodeData) {
 	console.log("-------------actionEnter:" + d + "--------------------");
 	var tempM = "";
 	var theSelfObj = d3.select(theSelf);
+	var transform_x = 0;
+	transform_x = (nodeData.x - nodeData.width / 2);
+	console.log("transform_x",transform_x);
 	theSelfObj.attr("id", d)
 		.attr("class", "nodeG")
-		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
-
+		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+		.attr("onmousedown","node_mouse_down()")
+		.attr("onmouseup","node_mouse_up()");
+	
 	theSelfObj.append("rect") //rect
 		.attr("G", d)
-		.attr("class", "nodeRect")
 		.attr("width", nodeData.width)
 		.attr("height", nodeData.height)
 		.attr("rx", 5).attr("ry", 5);
@@ -195,8 +199,9 @@ var actionEnter = function(theSelf, d, nodeData) {
 		.attr("r", "5")
 		.attr("self", "Log")
 		.attr("class", "nodeLog")
+		.attr("onclick","log_click()")
 		.attr("cx", nodeData.width - 10)
-		.attr("cy", nodeData.height - 10);
+		.attr("cy", nodeData.height - 10);		
 
 	tempM = "M10," + (nodeData.height - 5);
 	tempM = tempM + "L10," + (nodeData.height - 15);
@@ -209,6 +214,7 @@ var actionEnter = function(theSelf, d, nodeData) {
 
 	var theSelfObjChild = theSelfObj.append("g");
 	theSelfObjChild.attr("G", d).attr("class", "minNodeG")
+		.attr("onclick","zoom_click()")
 		.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
 
 	theSelfObjChild.append("circle").attr("G", d)
@@ -332,7 +338,7 @@ var actionUpdate = function(theSelf, d, nodeData) {
 				theSelfObjChild.select("path")
 					.transition().duration(200)
 					.each('end', function() {
-						loadProperty(d, nodeData);
+						//loadProperty(d, nodeData);
 					})
 					.attr("G", d)
 					.attr("class", "maxNodePath")
@@ -342,9 +348,8 @@ var actionUpdate = function(theSelf, d, nodeData) {
 			.attr("class", "maxNodeCircle")
 			.attr("self", "HideProperty")
 			.attr("r", 5);
-
+			
 		countProperty++;
-
 	}
 }
 
@@ -501,4 +506,85 @@ var saveAsJson = function() {
 
 	});
 
+
+}
+
+var setNodeSelf = function(keys, valueObj) {
+	var json = dagre.graphlib.json.write(g);
+	console.log(json);
+	var nodeData = g.node(keys);
+	if(nodeData) {
+		//修改
+		g.setNode(keys, {
+			label: valueObj.label || nodeData.label,
+			width: valueObj.width || 100,
+			height: valueObj.height || 50,
+			runstate: valueObj.runstate || 'play',
+			action: valueObj.action || 'node',
+			zoom: valueObj.zoom || 'normal'
+		});
+	} else {
+		//添加
+		g.setNode(keys, valueObj);
+	}
+
+	json = dagre.graphlib.json.write(g);
+	console.log(json);
+
+	var isadd = true;
+	each(nodeLists, function() {
+		if(this.k.toString().localeCompare(keys) == 0) {
+			this.v = valueObj;
+			isadd = false;
+			return false;
+		}else{
+			return true;
+		}
+	});
+	if(isadd) {
+		nodeLists.push({
+			k: keys,
+			v: valueObj
+		});
+	}
+	console.log("nodeLists",nodeLists);
+}
+
+/**
+ * 
+ * @param {Object} keys
+ * @param {Object} valueObj
+ */
+var setPropertySelf = function(keys, valueObj){
+	var isadd = true;
+	each(propertyList,function(i,o){
+		if(o.k.toString().localeCompare(keys)==0){
+			o.v = valueObj;
+			isadd = false;
+			return false;
+		}else{
+			return true;
+		}
+	});
+	if(isadd){
+		propertyList.push({
+			k: keys,
+			v: valueObj
+		})
+	}
+	console.log("propertyList",propertyList);
+}
+
+/**
+ * 用于改变所有的样式
+ * @param {Object} fromClassName
+ * @param {Object} toClassName
+ */
+var allchangeClassNameForRect = function (fromClassName,toClassName){
+	console.log("{}",d3.select("#rectContainer").selectAll("."+fromClassName));
+	d3.select("#rectContainer").selectAll("."+fromClassName)
+	.each(function(){
+		console.log(d3.select(this));
+		d3.select(this).attr("class",toClassName);
+	});
 }
