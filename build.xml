@@ -49,6 +49,7 @@
 			<fileset dir="${engine.src}/src/main/resources">
 				<include name="coordinator.xml"/>
 				<include name="sparkcmd_workflow.xml"/>
+				<include name="submitspark.sh"/>
 			</fileset>
 		</copy>
 		<!-- log module -->
