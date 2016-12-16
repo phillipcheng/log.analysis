@@ -45,6 +45,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	
 	//cfgkey
 	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
+	public static final String cfgkey_input_endwithcomma_exp="input.endwithcomma.exp";
 	public static final String cfgkey_row_validation="row.validation";
 	public static final String cfgkey_col_op="col.op";
 	public static final String cfgkey_old_talbe="old.table";
@@ -52,6 +53,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	
 	private boolean inputEndWithComma=false;
 	private transient CompiledScript rowValidation;
+	private transient CompiledScript inputEndWithCommaCS;
 	private String oldTable;
 	
 	private transient List<String> addFieldsNames;
@@ -83,8 +85,10 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.line);
 		String rowValidationStr;
+		String inputEndWithCommaStr;
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
 		rowValidationStr = super.getCfgString(cfgkey_row_validation, null);
+		inputEndWithCommaStr = super.getCfgString(cfgkey_input_endwithcomma_exp, null);
 		oldTable = super.getCfgString(cfgkey_old_talbe, null);
 		addFieldsNames = new ArrayList<String>();
 		addFieldsTypes = new ArrayList<String>();
@@ -93,6 +97,10 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		// compile the expression to speedup
 		if (rowValidationStr != null && rowValidationStr.length() > 0)
 			rowValidation = ScriptEngineUtil.compileScript(rowValidationStr);
+		
+		// compile the expression to speedup
+		if (inputEndWithCommaStr != null && inputEndWithCommaStr.length() > 0)
+			inputEndWithCommaCS = ScriptEngineUtil.compileScript(inputEndWithCommaStr);
 		
 		//for dynamic trans
 		if (this.logicSchema!=null){
@@ -171,8 +179,18 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			}
 		}
 		
+		
+		//calculate whether use inputEndWithComma
+		boolean hasEndComma=inputEndWithComma;
+		if (inputEndWithCommaCS != null) {
+			Object result = ScriptEngineUtil.evalObject(inputEndWithCommaCS, super.getSystemVariables());
+			if (result instanceof Boolean && result!=null) {
+				hasEndComma=(Boolean) result;
+			} /* If result is not boolean, use the default */
+		}
+
 		//process input ends with comma
-		if (inputEndWithComma){//remove the last empty item since row ends with comma
+		if (hasEndComma){//remove the last empty item since row ends with comma
 			items.remove(items.size()-1);
 		}
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
