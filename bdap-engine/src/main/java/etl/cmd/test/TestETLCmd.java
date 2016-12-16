@@ -68,125 +68,113 @@ public abstract class TestETLCmd implements Serializable{
 	}
 	
 	@Before
-    public void setUp() {
-		try{
-			pc = PropertiesUtil.getPropertiesConfig(cfgProperties);
-			localFolder = pc.getString(key_localFolder);
-			projectFolder = pc.getString(key_projectFolder);
-			oozieUser = pc.getString(key_oozie_user);
-			setTestSftp(pc.getBoolean(key_test_sftp, true));
-			setTestKafka(pc.getBoolean(key_test_kafka, true));
-			conf = new Configuration();
-			String jobTracker=pc.getString(key_jobTracker);
-			if (jobTracker!=null){
-				String host = jobTracker.substring(0,jobTracker.indexOf(":"));
-				conf.set("mapreduce.jobtracker.address", jobTracker);
-				conf.set("yarn.resourcemanager.hostname", host);
-				conf.set("mapreduce.framework.name", "yarn");
-				conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
-			}
-			defaultFS = pc.getString(key_defaultFs);
-			conf.set("fs.defaultFS", defaultFS);
-			if (defaultFS.contains("127.0.0.1")){
-				fs = FileSystem.get(conf);
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-				ugi.doAs(new PrivilegedExceptionAction<Void>() {
-					public Void run() throws Exception {
-						fs = FileSystem.get(conf);
-						return null;
-					}
-				});
-			}
-		}catch(Exception e){
-			logger.error("", e);
+    public void setUp() throws Exception{
+		pc = PropertiesUtil.getPropertiesConfig(cfgProperties);
+		localFolder = pc.getString(key_localFolder);
+		projectFolder = pc.getString(key_projectFolder);
+		oozieUser = pc.getString(key_oozie_user);
+		setTestSftp(pc.getBoolean(key_test_sftp, true));
+		setTestKafka(pc.getBoolean(key_test_kafka, true));
+		conf = new Configuration();
+		String jobTracker=pc.getString(key_jobTracker);
+		if (jobTracker!=null){
+			String host = jobTracker.substring(0,jobTracker.indexOf(":"));
+			conf.set("mapreduce.jobtracker.address", jobTracker);
+			conf.set("yarn.resourcemanager.hostname", host);
+			conf.set("mapreduce.framework.name", "yarn");
+			conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
+		}
+		defaultFS = pc.getString(key_defaultFs);
+		conf.set("fs.defaultFS", defaultFS);
+		if (defaultFS.contains("127.0.0.1")){
+			fs = FileSystem.get(conf);
+		}else{
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					fs = FileSystem.get(conf);
+					return null;
+				}
+			});
 		}
     }
 	
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
 			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass) throws Exception {
-		try {
-			getFs().delete(new Path(remoteInputFolder), true);
-			getFs().delete(new Path(remoteOutputFolder), true);
-			getFs().mkdirs(new Path(remoteInputFolder));
-			for (String csvFile : inputDataFiles) {
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
-			}
-			// run job
-			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
-			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			String cfgProperties = staticProperties;
-			if (this.getResourceSubFolder()!=null){
-				cfgProperties = this.getResourceSubFolder() + staticProperties;
-			}
-			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
-			Job job = Job.getInstance(getConf(), "testCmd");
-			job.setMapperClass(etl.engine.InvokeMapper.class);
-			job.setNumReduceTasks(0);// no reducer
-			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(NullWritable.class);
-			job.setInputFormatClass(inputFormatClass);
-			FileInputFormat.setInputDirRecursive(job, true);
-			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
-			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
-			job.waitForCompletion(true);
-
-			// assertion
-			List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
-			return output;
-		} catch (Exception e) {
-			logger.error("", e);
+		
+		getFs().delete(new Path(remoteInputFolder), true);
+		getFs().delete(new Path(remoteOutputFolder), true);
+		getFs().mkdirs(new Path(remoteInputFolder));
+		for (String csvFile : inputDataFiles) {
+			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
 		}
-		return null;
+		// run job
+		getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
+		getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
+		String cfgProperties = staticProperties;
+		if (this.getResourceSubFolder()!=null){
+			cfgProperties = this.getResourceSubFolder() + staticProperties;
+		}
+		getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
+		Job job = Job.getInstance(getConf(), "testCmd");
+		job.setMapperClass(etl.engine.InvokeMapper.class);
+		job.setNumReduceTasks(0);// no reducer
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(NullWritable.class);
+		job.setInputFormatClass(inputFormatClass);
+		FileInputFormat.setInputDirRecursive(job, true);
+		FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
+		FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
+		job.waitForCompletion(true);
+
+		// assertion
+		List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
+		return output;
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
 			String staticProperties, String cmdClassName, Class inputFormatClass, int numReducer) throws Exception {
-		try {
-			getFs().delete(new Path(remoteOutputFolder), true);
-			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
-				if (rfifs._2.length > 0) {
-					getFs().delete(new Path(rfifs._1), true);
-					getFs().mkdirs(new Path(rfifs._1));
-				}
-				for (String csvFile : rfifs._2) {
-					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
-				}
+		getFs().delete(new Path(remoteOutputFolder), true);
+		for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
+			if (rfifs._2.length > 0) {
+				getFs().delete(new Path(rfifs._1), true);
+				getFs().mkdirs(new Path(rfifs._1));
 			}
-			
-			//run job
-			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
-			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			String cfgProperties = staticProperties;
-			if (this.getResourceSubFolder()!=null){
-				cfgProperties = this.getResourceSubFolder() + staticProperties;
+			for (String csvFile : rfifs._2) {
+				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
 			}
-			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
-			getConf().set("mapreduce.output.textoutputformat.separator", ",");
-			getConf().set("mapreduce.job.reduces", String.valueOf(numReducer));
-			Job job = Job.getInstance(getConf(), "testCmd");
-			job.setMapperClass(InvokeMapper.class);
-			job.setReducerClass(etl.engine.InvokeReducer.class);
-			
-			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(Text.class);
-			job.setInputFormatClass(inputFormatClass);
-			FileInputFormat.setInputDirRecursive(job, true);
-			
-			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
-				FileInputFormat.addInputPath(job, new Path(rfifs._1));
-			}
-			
-			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
-			job.waitForCompletion(true);
-
-			// assertion
-			List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
-			return output;
-		} catch (Exception e) {
-			logger.error("", e);
 		}
-		return null;
+		
+		//run job
+		getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
+		getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
+		String cfgProperties = staticProperties;
+		if (this.getResourceSubFolder()!=null){
+			cfgProperties = this.getResourceSubFolder() + staticProperties;
+		}
+		getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
+		getConf().set("mapreduce.output.textoutputformat.separator", ",");
+		getConf().set("mapreduce.job.reduces", String.valueOf(numReducer));
+		Job job = Job.getInstance(getConf(), "testCmd");
+		job.setMapperClass(InvokeMapper.class);
+		job.setReducerClass(etl.engine.InvokeReducer.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
+		job.setInputFormatClass(inputFormatClass);
+		FileInputFormat.setInputDirRecursive(job, true);
+		
+		for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
+			FileInputFormat.addInputPath(job, new Path(rfifs._1));
+		}
+		
+		FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
+		job.waitForCompletion(true);
+
+		// assertion
+		List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
+		return output;
+		
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,

@@ -150,7 +150,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	
 	@Override
-	public List<String> sgProcess() {
+	public List<String> sgProcess() throws Exception{
 		List<String> copysqls = new ArrayList<String>();
 		if (this.getFs()==null) init();
 		List<String> logInfo = new ArrayList<String>();
