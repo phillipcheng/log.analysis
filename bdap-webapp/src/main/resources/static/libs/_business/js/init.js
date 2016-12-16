@@ -17,6 +17,18 @@ var clearTempLine = function() {
  */
 var init = function() {
 
+	if (typeof  String.prototype.endsWith  !=  'function')  {    
+		String.prototype.endsWith  =   function(suffix)  {     
+			return  this.indexOf(suffix,  this.length  -  suffix.length)  !==  -1;    
+		};   
+	}  
+
+	clientwidth = document.body.clientWidth;
+	clientheight = document.body.clientHeight;
+
+	current_zoom_x = clientwidth / 2 - 100;
+	current_zoom_y = clientheight / 2 - 50;
+
 	//初始化位置的偏移
 	var display = document.getElementById("home");
 	display_off_left = getOffsetLeft(display);
@@ -28,18 +40,18 @@ var init = function() {
 	d3.select("#svg").call( // <-A
 		d3.behavior.zoom() // <-B
 		.scaleExtent([1, 5]) // <-C
-		.on("zoom", zoom) // <-D
+		.on("zoom", svgzoom) // <-D
 	).append("g").attr("id", "main");
 
 	/**
 	 * 1.2
 	 */
-	d3.select("#main")
-		.append("path").attr("id", "pathmove").attr("d", "").attr("fill", "none")
-		.attr("stroke", "#269ABC").attr("stroke-width", "2px")
-		.attr("marker-end", "url(#arrow)");
+	d3.select("#main").append("path").attr("id", "pathmove").attr("marker-end", "url(#arrow)")
+		.attr("stroke", "#269ABC").attr("stroke-width", "2px");
 
 	d3.select("#svg").attr("onmousemove", "svgMouseMove()");
+	d3.select("#svg").attr("onmousedown", "svg_mouse_down()");
+	d3.select("#svg").attr("onmouseup", "svg_mouse_up()");
 
 	/**
 	 * 1.3
@@ -50,6 +62,11 @@ var init = function() {
 	 * 1.4
 	 */
 	d3.select("#main").append("g").attr("id", "lineContainer");
+
+	/**
+	 * 1.5
+	 */
+	d3.select("#main").attr("transform", "translate(" + current_zoom_x + "," + current_zoom_y + ")scale(1,1)");
 
 }
 
@@ -65,8 +82,8 @@ var getStyle = function(o) {
  * 得到事件源
  * @author huang peng
  */
-var getEventSources = function() {
-	return event.srcElement ? event.srcElement : event.target;
+var getEventSources = function(e) {
+	return e.srcElement || e.target;
 }
 
 /**
@@ -94,21 +111,16 @@ var getOffsetTop = function(o) {
 /*
  * svg zoom 操作
  */
-var zoom = function() {
-
-	if(true || booleaniszoom) {
+var svgzoom = function() {
+	if(booleaniszoom) {
 		current_zoom_new_x = parseInt(d3.event.translate[0]);
 		current_zoom_new_y = parseInt(d3.event.translate[1]);
-
 		current_zoom_x += current_zoom_new_x - current_zoom_old_x;
 		current_zoom_y += current_zoom_new_y - current_zoom_old_y;
-
 		d3.select("#main").attr("transform",
 			"translate(" + current_zoom_x + "," + current_zoom_y + ")scale(1,1)");
-
 		current_zoom_old_x = current_zoom_new_x;
 		current_zoom_old_y = current_zoom_new_y;
-
 	} else {
 		current_zoom_old_x = parseInt(d3.event.translate[0]);
 		current_zoom_old_y = parseInt(d3.event.translate[1]);
@@ -163,20 +175,18 @@ var svgDrapMove = function() {
 /**
  * 鼠标移动 特效
  */
-var svgMouseMove = function() {
-
+var svgMouseMove = function(event) {
+	var e = event || window.event || arguments.callee.caller.arguments[0];
 	if(templine.firstId.length == 0) {
-
 	} else {
-
-		var x = event.x;
-		var y = event.y;
-
+		var x = e.x || e.clientX;
+		var y = e.y || e.clientY;
+		console.log("x", x);
+		console.log("y", y);
 		x -= (display_off_left + current_zoom_x);
 		y -= (display_off_top + current_zoom_y);
-
 		var temp_d = "M" + templine.firstPoint + " L" + x + "," + y;
-
+		console.log("temp_d", temp_d);
 		d3.select("#pathmove").attr("d", temp_d);
 	}
 }
