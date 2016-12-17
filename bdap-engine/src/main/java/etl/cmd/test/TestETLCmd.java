@@ -31,6 +31,7 @@ import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
 import etl.engine.InvokeMapper;
 import etl.util.FilenameInputFormat;
+import etl.util.GlobExpPathFilter;
 import scala.Tuple2;
 
 public abstract class TestETLCmd implements Serializable{
@@ -105,6 +106,11 @@ public abstract class TestETLCmd implements Serializable{
 	
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
 			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass) throws Exception {
+		return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, inputFormatClass, null, false);
+	}
+	
+	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass, String inputFilter, boolean useIndividualFiles) throws Exception {
 		try {
 			getFs().delete(new Path(remoteInputFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
@@ -120,14 +126,22 @@ public abstract class TestETLCmd implements Serializable{
 				cfgProperties = this.getResourceSubFolder() + staticProperties;
 			}
 			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
+			getConf().set(GlobExpPathFilter.cfgkey_path_filters, inputFilter);
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(NullWritable.class);
 			job.setInputFormatClass(inputFormatClass);
+			if (inputFilter!=null){
+				FileInputFormat.setInputPathFilter(job, GlobExpPathFilter.class);
+			}
 			FileInputFormat.setInputDirRecursive(job, true);
-			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
+			if (!useIndividualFiles){
+				FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
+			}else{
+				FileInputFormat.addInputPath(job, new Path(remoteInputFolder+"*"));
+			}
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 			job.waitForCompletion(true);
 

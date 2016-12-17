@@ -29,6 +29,20 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 	
 	@Test
+	public void testInputFilter() throws Exception{
+		String remoteCsvFolder = "/etltest/csvtransform/";
+		String remoteCsvOutputFolder = "/etltest/csvtransformout/";
+		String csvtransProp = "csvtrans-nothing.properties";
+		String[] csvFiles = new String[] {"P111.csv", "P112.csv"};
+		
+		List<String> output = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, 
+				FilenameInputFormat.class, "/etltest/csvtransform/P*1.csv", true);
+		logger.info("Output is:\n" + String.join("\n", output));
+	
+		assertTrue(output.size()==1);
+	}
+	
+	@Test
 	public void testFilenameInputFormat() throws Exception {
 		String remoteCsvFolder = "/etltest/csvtransform/";
 		String remoteCsvOutputFolder = "/etltest/csvtransformout/";
