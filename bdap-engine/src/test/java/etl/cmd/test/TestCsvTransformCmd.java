@@ -2,13 +2,22 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.RandomAccessFile;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.lib.input.CombineTextInputFormat;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +26,6 @@ import org.junit.Test;
 import bdap.util.HdfsUtil;
 import etl.util.CombineWithFileNameTextInputFormat;
 import etl.util.FilenameInputFormat;
-import etl.util.XmlInputFormat;
 import scala.Tuple2;
 
 public class TestCsvTransformCmd extends TestETLCmd {
@@ -26,6 +34,54 @@ public class TestCsvTransformCmd extends TestETLCmd {
 
 	public String getResourceSubFolder(){
 		return "csvtrans/";
+	}
+	
+	@Test
+	public void testWriteSequenceFile() throws Exception{
+		File docDirectory = new File("src/test/resources/csvtrans/");
+		String sequenceFilePath = "/etltest/csvtransform/seqFile";
+		getFs().delete(new Path("/etltest/csvtransform/"), true);
+        org.apache.hadoop.io.SequenceFile.Writer.Option filePath = SequenceFile.Writer
+                .file(new Path(sequenceFilePath));
+        org.apache.hadoop.io.SequenceFile.Writer.Option keyClass = SequenceFile.Writer
+                .keyClass(LongWritable.class);
+        org.apache.hadoop.io.SequenceFile.Writer.Option valueClass = SequenceFile.Writer
+                .valueClass(Text.class);
+
+        SequenceFile.Writer sequenceFileWriter = SequenceFile.createWriter(
+                super.getConf(), filePath, keyClass, valueClass);
+
+        File[] documents = docDirectory.listFiles();
+
+        try {
+        	int index=0;
+            for (File doc : documents) {
+            	index++;
+            	String path = doc.getAbsolutePath();
+            	if (path.contains("P111.csv")||path.contains("P112.csv")){
+            		byte[] encoded = Files.readAllBytes(Paths.get(path));
+            		String content = path + "\n";
+            		content +=new String(encoded, Charset.defaultCharset());
+            		sequenceFileWriter.append(new LongWritable(index), new Text(content));
+            	}
+            }
+        } finally {
+            IOUtils.closeStream(sequenceFileWriter);
+        }
+	}
+	
+	@Test
+	public void testSequenceFileInputFormat() throws Exception{
+		String inputFolder = "/etltest/csvtransform/";
+		String outputFolder = "/etltest/csvtransformout/";
+		String csvtransProp = "seqfile.csvtrans.properties";
+		String[] csvFiles = new String[] {"seqFile"};
+		
+		List<String> output = super.mapTest(inputFolder, outputFolder, csvtransProp, csvFiles, testCmdClass, 
+				SequenceFileInputFormat.class);
+		logger.info("Output is:\n" + String.join("\n", output));
+	
+		assertTrue(output.size()==10);
 	}
 	
 	@Test

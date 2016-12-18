@@ -126,7 +126,9 @@ public abstract class TestETLCmd implements Serializable{
 				cfgProperties = this.getResourceSubFolder() + staticProperties;
 			}
 			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
-			getConf().set(GlobExpPathFilter.cfgkey_path_filters, inputFilter);
+			if (inputFilter!=null){
+				getConf().set(GlobExpPathFilter.cfgkey_path_filters, inputFilter);
+			}
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer

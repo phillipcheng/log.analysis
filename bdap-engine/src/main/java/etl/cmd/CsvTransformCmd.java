@@ -19,6 +19,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -157,14 +158,27 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	//value is each line
 	public Tuple2<String, String> mapToPair(String pathName, String value){
 		super.init();
-		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		String tableName = getTableNameSetFileName(pathName);
 		String row = value;
 		String output="";
 		
 		//get all fiels
 		List<String> items = new ArrayList<String>();
 		items.addAll(Arrays.asList(row.split(",", -1)));
+		
+		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
+		//process row validation
+		if (rowValidation!=null){//put this 1st to improve performance
+			Object valid = ScriptEngineUtil.evalObject(rowValidation, super.getSystemVariables());
+			if (valid instanceof Boolean) {
+				if (!(Boolean)valid) {
+					logger.debug("invalid row:" + row);
+					return null;
+				}
+			} /* If result is not boolean, the expression has no effect */
+		}
+		
+		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+		String tableName = getTableNameSetFileName(pathName);
 		
 		//set the fieldsMap
 		Map<String, String> fieldMap = null;
@@ -179,7 +193,6 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			}
 		}
 		
-		
 		//calculate whether use inputEndWithComma
 		boolean hasEndComma=inputEndWithComma;
 		if (inputEndWithCommaCS != null) {
@@ -193,25 +206,15 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		if (hasEndComma){//remove the last empty item since row ends with comma
 			items.remove(items.size()-1);
 		}
-		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
-		//process row validation
-		if (rowValidation!=null){
-			Object valid = ScriptEngineUtil.evalObject(rowValidation, super.getSystemVariables());
-			if (valid instanceof Boolean) {
-				if (!(Boolean)valid) {
-					logger.info("invalid row:" + row);
-					return null;
-				}
-			} /* If result is not boolean, the expression has no effect */
-		}
+		
 		
 		//process operation
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
 		super.getSystemVariables().put(VAR_NAME_TABLE_NAME, tableName);
 		for (ColOp co: colOpList){
-			items = co.process(super.getSystemVariables());
-			super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
+			items = co.process(super.getSystemVariables(), items);
 		}
+	
 		output = Util.getCsv(items, false);
 		logger.debug(String.format("tableName:%s, output:%s", tableName, output));
 		return new Tuple2<String, String>(tableName, output);
@@ -220,21 +223,61 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		//process skip header
-		if (skipHeader && offset==0) {
-			logger.info("skip header:" + row);
+		
+		try {
+			if (context.getInputFormatClass().isAssignableFrom(SequenceFileInputFormat.class)){
+				String[] lines = row.split("\n");
+				String pathName = null;
+				pathName = lines[0];
+				boolean skipFirstLine = skipHeader;
+				if (!skipHeader && skipHeaderCS!=null){
+					this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+					getTableNameSetFileName(pathName);
+					boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, super.getSystemVariables());
+					skipFirstLine = skipFirstLine || skip;
+				}
+				int start=1;
+				if (skipFirstLine) start=2;
+				List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
+				for (int i=start; i<lines.length; i++){
+					String line = lines[i];
+					Tuple2<String, String> ret = mapToPair(pathName, line);
+					output.add(ret);
+				}
+				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, output);
+			}else{
+				String pathName = null;
+				//process skip header
+				if (skipHeader && offset==0) {
+					logger.info("skip header:" + row);
+					return null;
+				}
+				if (context.getInputSplit() instanceof FileSplit){
+					pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+				}else if (context.getInputSplit() instanceof CombineFileSplit){
+					int idx = row.indexOf(CombineWithFileNameTextInputFormat.filename_value_sep);
+					pathName = row.substring(0, idx);
+					row = row.substring(idx+1);
+				}else{
+					logger.error(String.format("unsupported input split:%s", context.getInputSplit()));
+				}
+				//process skip header exp
+				if (skipHeaderCS!=null && offset==0){
+					this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+					getTableNameSetFileName(pathName);
+					boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, super.getSystemVariables());
+					if (skip){
+						logger.info("skip header:" + row);
+						return null;
+					}
+				}
+				Tuple2<String, String> ret = mapToPair(pathName, row);
+				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
+			}
+		}catch(Exception e){
+			logger.error("", e);
 			return null;
 		}
-		String pathName = null;
-		if (context.getInputSplit() instanceof FileSplit){
-			pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
-		}else if (context.getInputSplit() instanceof CombineFileSplit){
-			int idx = row.indexOf(CombineWithFileNameTextInputFormat.filename_value_sep);
-			pathName = row.substring(0, idx);
-			row = row.substring(idx+1);
-		}
-		Tuple2<String, String> ret = mapToPair(pathName, row);
-		retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
 		return retMap;
 	}
 	

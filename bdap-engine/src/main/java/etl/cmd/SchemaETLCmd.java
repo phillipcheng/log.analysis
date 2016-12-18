@@ -521,7 +521,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		}
 	}
 	
-	public String getTableName(Mapper<LongWritable, Text, Text, Text>.Context context){
+	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
 		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
 		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
 		String tableName = inputFileName;
