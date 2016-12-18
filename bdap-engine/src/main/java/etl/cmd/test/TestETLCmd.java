@@ -112,11 +112,15 @@ public abstract class TestETLCmd implements Serializable{
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
 			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass, String inputFilter, boolean useIndividualFiles) throws Exception {
 		try {
-			getFs().delete(new Path(remoteInputFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
-			getFs().mkdirs(new Path(remoteInputFolder));
-			for (String csvFile : inputDataFiles) {
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
+			if (inputDataFiles != null && inputDataFiles.length > 0) {
+				getFs().delete(new Path(remoteInputFolder), true);
+				getFs().mkdirs(new Path(remoteInputFolder));
+				for (String csvFile : inputDataFiles) {
+					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
+				}
+			} else if (!getFs().exists(new Path(remoteInputFolder))) {
+				getFs().mkdirs(new Path(remoteInputFolder));
 			}
 			// run job
 			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
