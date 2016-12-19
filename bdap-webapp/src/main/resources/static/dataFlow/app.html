@@ -46,9 +46,9 @@
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.end();">end</a>
 						</li>
-						<li>
+						<!--<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.group()">ActionFlow</a>
-						</li>
+						</li>-->
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="run();">run</a>
 						</li>
@@ -76,13 +76,13 @@
 
 					<div style="height:100%;border: solid #269ABC 2px;border-radius: 15px;" role="tabpanel" class="tab-pane active" id="home">
 						<div id="display" style="height:100%;width: 100%;">
-							<svg id="svg" style="height:100%;width: 100%;">
+							<svg id="svg" style="height:100%;width: 100%;" onmousedown="svg_document_onmousedown()" onmouseup="svg_document_onmouseup()" onkeyup="svg_document_onkeydown()">
 								<defs>
 									<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
 										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: gray;" />
 									</marker>
 									<marker id="arrowSelected" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
-										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: greenyellow;" />
+										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: orangered;" />
 									</marker>
 									<marker id="circle" markerWidth="4" markerHeight="4" refx="2" refy="2">
 										<circle cx="2" cy="2" r="2" stroke="none" fill="#f00" onclick="init()" />
@@ -155,6 +155,9 @@
 				</div>
 			</div>
 		</div>
+		<!--<form id="form1" method="post" action="http://16.165.184.12:8080/dashview/george/flow">
+			<input id="dataId" type="hidden" name="data" value="23423" />
+		</form>-->
 	</body>
 
 </html>

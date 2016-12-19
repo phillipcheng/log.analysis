@@ -176,32 +176,33 @@ var actionEnter = function(theSelf, d, nodeData) {
 	var theSelfObj = d3.select(theSelf);
 	var transform_x = 0;
 	transform_x = (nodeData.x - nodeData.width / 2);
-	console.log("transform_x",transform_x);
+	console.log("transform_x", transform_x);
 	theSelfObj.attr("id", d)
 		.attr("class", "nodeG")
-		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
-		.attr("onmousedown","node_mouse_down()")
-		.attr("onmouseup","node_mouse_up()");
-	
+		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+	//		.attr("onmousedown","node_mouse_down()")
+	//		.attr("onmouseup","node_mouse_up()");
+
 	theSelfObj.append("rect") //rect
 		.attr("G", d)
+		.attr("self", "RECT")
 		.attr("width", nodeData.width)
 		.attr("height", nodeData.height)
 		.attr("rx", 5).attr("ry", 5);
 
 	theSelfObj.append("text") //text
 		.attr("G", d)
+		.attr("id", "text_" + d)
 		.attr("x", 10)
 		.attr("y", 20).text(nodeData.label);
 
 	theSelfObj.append("circle") //circle
 		.attr("G", d)
 		.attr("r", "5")
-		.attr("self", "Log")
+		.attr("self", "LOG")
 		.attr("class", "nodeLog")
-		.attr("onclick","log_click()")
 		.attr("cx", nodeData.width - 10)
-		.attr("cy", nodeData.height - 10);		
+		.attr("cy", nodeData.height - 10);
 
 	tempM = "M10," + (nodeData.height - 5);
 	tempM = tempM + "L10," + (nodeData.height - 15);
@@ -209,12 +210,16 @@ var actionEnter = function(theSelf, d, nodeData) {
 
 	theSelfObj.append("path") //path run
 		.attr("G", d)
+		.attr("self", "RUN")
 		.attr("class", "nodeRun")
 		.attr("d", tempM);
 
 	var theSelfObjChild = theSelfObj.append("g");
 	theSelfObjChild.attr("G", d).attr("class", "minNodeG")
-		.attr("onclick","zoom_click()")
+		.attr("self", "ShowProperty")
+		//.attr("onclick","zoom_click()")
+		//		.attr("onmousedown","zoom_mouse_down()")
+		//		.attr("onmouseup","func_up()")
 		.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
 
 	theSelfObjChild.append("circle").attr("G", d)
@@ -298,6 +303,8 @@ var actionUpdate = function(theSelf, d, nodeData) {
 		.attr("width", nodeData.width)
 		.attr("height", nodeData.height);
 
+	theSelfObj.select("text").text(nodeData.label); //label
+
 	theSelfObj.select(".nodeLog") //circle
 		.transition().duration(500)
 		.attr("cx", nodeData.width - 10)
@@ -348,7 +355,7 @@ var actionUpdate = function(theSelf, d, nodeData) {
 			.attr("class", "maxNodeCircle")
 			.attr("self", "HideProperty")
 			.attr("r", 5);
-			
+
 		countProperty++;
 	}
 }
@@ -422,90 +429,65 @@ var saveAsJson = function() {
 	var result = {
 		'@class': 'flow',
 		'name': 'flow1',
-		'outlets': '0',
+		'outlets': [],
 		'nodes': [],
 		'links': [],
 		'data': [],
-		'inlets': '0',
+		'inLets': [],
 		'wfName': 'flow1'
 	};
-
-	each(nodeLists, function(i, o) {
-		var nodekey = o.k;
-		each(propertyList, function(index, obj) {
-			if(obj.key.toString().localeCompare(nodekey.toString()) == 0) {
-				var temp_o = {};
-				each(obj.value, function(index_two, obj_two) {
-					if(obj_two.k.toString().localeCompare("name") == 0) {
-						temp_o[obj_two.k] = obj_two.v + "#" + nodekey;
-						gIdAndgName.push({
-							gId: nodekey,
-							asName: obj_two.v + "#" + nodekey
-						})
-					} else {
-						temp_o[obj_two.k] = obj_two.v;
-					}
-
-					return true;
-				});
-				result.nodes.push(temp_o);
+	console.log("nodeLists", nodeLists);
+	console.log("propertyList", propertyList);
+	each(nodeLists, function() {
+		console.log(this);
+		var tempkeys = this.k.toString();
+		var propertyObj = {};
+		each(propertyList, function() {
+			if(this.k.toString().localeCompare(tempkeys) == 0) {
+				propertyObj = this.v;
+				propertyObj.name = propertyObj.name + tempkeys;
+				result.nodes.push(propertyObj);
 				return false;
+			} else {
+				return true;
 			}
-			return true;
 		});
 		return true;
 	});
 
-	console.log("gIdAndgName", gIdAndgName);
-	console.log("pathLists", pathLists);
-	each(dataList, function(i, o) {
-		o.v.name = o.v.name + "#" + o.k;
-		result.data.push(o.v);
-		return true;
-	});
+	//	result.links = pathLists;
+
 	each(pathLists, function(i, o) {
-		var tempfrom = "";
-		var tempto = "";
-		each(gIdAndgName, function() {
-			if(tempfrom.length > 0 && tempto.length > 0) {
-				return false;
+		var tempfromNodeName = o.fromNodeName;
+		var temptoNodeName = o.toNodeName;
+		each(propertyList, function() {
+			if(tempfromNodeName.localeCompare(this.k.toString()) == 0) {
+				o.fromNodeName = this.v.name;
 			}
-			if(o.from.toString().localeCompare(this.gId) == 0) {
-				tempfrom = this.asName;
-			}
-			if(o.to.toString().localeCompare(this.gId) == 0) {
-				tempto = this.asName;
+			if(temptoNodeName.localeCompare(this.k.toString()) == 0) {
+				o.toNodeName = this.v.name;
 			}
 			return true;
 		});
-		var tempObj = {
-			fromNodeName: tempfrom,
-			toNodeName: tempto,
-			linkType: 'success'
-		}
-		result.links.push(tempObj);
-		return true;
 	});
+	
+	result.links = pathLists;
 
-	console.log(result);
+	console.log("result", JSON.stringify(result));
 
-	//	$.post("http://16.165.184.80:8080/dashview/george/flow", 
-	//	headers: {'Content-type': 'application/json;charset=UTF-8'}	
-	//	,{
-	//		data: "txt"
-	//	}, function(result) {
-	//		$("span").html(result);
-	//	});
-
-	$.post("http://16.165.184.80:8080/dashview/george/flow", {
-		data: "txt",
-		headers: {
-			'Content-type': 'application/json;charset=UTF-8'
+	$.ajax({
+		type: "post",
+		url: getAjaxAbsolutePath(_HTTP_SAVE_JSON),
+		contentType: 'application/json',
+		data: JSON.stringify(result),
+		//dataType: "json",
+		success: function(data, textStatus) {
+			console.info(data);
+		},
+		error: function(e) {
+			console.info(e);
 		}
-	}, function(result) {
-
 	});
-
 
 }
 
@@ -537,7 +519,7 @@ var setNodeSelf = function(keys, valueObj) {
 			this.v = valueObj;
 			isadd = false;
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	});
@@ -547,32 +529,34 @@ var setNodeSelf = function(keys, valueObj) {
 			v: valueObj
 		});
 	}
-	console.log("nodeLists",nodeLists);
+	console.log("nodeLists", nodeLists);
 }
 
 /**
  * 
  * @param {Object} keys
  * @param {Object} valueObj
+ * @param {Object} length
  */
-var setPropertySelf = function(keys, valueObj){
+var setPropertySelf = function(keys, valueObj, length) {
 	var isadd = true;
-	each(propertyList,function(i,o){
-		if(o.k.toString().localeCompare(keys)==0){
+	each(propertyList, function(i, o) {
+		if(o.k.toString().localeCompare(keys) == 0) {
 			o.v = valueObj;
 			isadd = false;
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	});
-	if(isadd){
+	if(isadd) {
 		propertyList.push({
 			k: keys,
-			v: valueObj
+			v: valueObj,
+			length: length
 		})
 	}
-	console.log("propertyList",propertyList);
+	console.log("propertyList", propertyList);
 }
 
 /**
@@ -580,11 +564,11 @@ var setPropertySelf = function(keys, valueObj){
  * @param {Object} fromClassName
  * @param {Object} toClassName
  */
-var allchangeClassNameForRect = function (fromClassName,toClassName){
-	console.log("{}",d3.select("#rectContainer").selectAll("."+fromClassName));
-	d3.select("#rectContainer").selectAll("."+fromClassName)
-	.each(function(){
-		console.log(d3.select(this));
-		d3.select(this).attr("class",toClassName);
-	});
+var allchangeClassNameForRect = function(fromClassName, toClassName) {
+	console.log("{}", d3.select("#rectContainer").selectAll("." + fromClassName));
+	d3.select("#rectContainer").selectAll("." + fromClassName)
+		.each(function() {
+			console.log(d3.select(this));
+			d3.select(this).attr("class", toClassName);
+		});
 }
