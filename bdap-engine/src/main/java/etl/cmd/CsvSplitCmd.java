@@ -37,11 +37,13 @@ public class CsvSplitCmd extends ETLCmd {
 	private static final String cfgkey_SPLIT_KEYS = "split.keys";
 	private static final String cfgkey_SPLIT_KEYS_OMIT = "split.keys.omit";
 	private static final String cfgkey_SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
+	private static final String cfgkey_input_endwithcomma = "input.endwithcomma";
 
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	
 	private List<IdxRange> splitKeys;
 	private boolean splitKeysOmit;
+	private boolean inputEndWithComma;
 	
 	private CompiledScript splitKeysReduce;
 	
@@ -62,6 +64,7 @@ public class CsvSplitCmd extends ETLCmd {
 		
 		splitKeys = IdxRange.parseString(getCfgString(cfgkey_SPLIT_KEYS, null));
 		splitKeysOmit = getCfgBoolean(cfgkey_SPLIT_KEYS_OMIT, false);
+		inputEndWithComma = getCfgBoolean(cfgkey_input_endwithcomma, false);
 		
 		String cfg = getCfgString(cfgkey_SPLIT_KEYS_REDUCE_EXP, null);
 		if (cfg != null && cfg.length() > 0)
@@ -74,7 +77,7 @@ public class CsvSplitCmd extends ETLCmd {
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
 		CSVParser parser = null;
 		try {
-			parser = CSVParser.parse(row, CSVFormat.DEFAULT.withTrim());
+			parser = CSVParser.parse(row, CSVFormat.DEFAULT.withTrim().withTrailingDelimiter(inputEndWithComma));
 			for (CSVRecord csv : parser.getRecords())
 				vl.add(getTuple2(csv, splitKeys, splitKeysOmit));
 		} finally {
