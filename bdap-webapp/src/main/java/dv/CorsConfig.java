@@ -7,7 +7,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 /**
- * 实现允许跨域访问
+ * implement cross domain access
  * @author ximing
  *
  */
