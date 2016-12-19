@@ -81,7 +81,7 @@ public abstract class FlowMgr {
 	}
 	
 	//return common properties: nameNode, jobTracker, queue, username, useSystem
-	public bdap.xml.config.Configuration getCommonConf(OozieConf oc, String wfName){
+	public bdap.xml.config.Configuration getCommonConf(OozieConf oc, String prjName, String wfName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
 		{
 			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
@@ -113,6 +113,11 @@ public abstract class FlowMgr {
 			flowName.setName(OozieConf.key_flowName);
 			flowName.setValue(wfName);
 			bodyConf.getProperty().add(flowName);
+		}{
+			bdap.xml.config.Configuration.Property prjNameProp = new bdap.xml.config.Configuration.Property();
+			prjNameProp.setName(OozieConf.key_prjName);
+			prjNameProp.setValue(prjName);
+			bodyConf.getProperty().add(prjNameProp);
 		}
 		return bodyConf;
 	}

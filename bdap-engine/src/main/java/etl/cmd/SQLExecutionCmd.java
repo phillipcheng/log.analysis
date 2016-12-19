@@ -56,7 +56,7 @@ public class SQLExecutionCmd extends SchemaETLCmd {
 	}
 	
 	@Override
-	public List<String> sgProcess() {
+	public List<String> sgProcess() throws Exception{
 		List<String> logInfo = new ArrayList<String>();
 		if (super.getDbtype()!=DBType.NONE){
 			int rowsAdded = DBUtil.executeSqls(sqlList, super.getPc());

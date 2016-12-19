@@ -52,14 +52,14 @@ public class SparkFlowMgr extends FlowMgr{
 		logger.info(output);
 		//generate action properties files
 		List<InMemFile> imfiles = new ArrayList<InMemFile>();
-		imfiles.add(super.genEnginePropertyFile(fd.getEC()));
+		imfiles.add(super.genEnginePropertyFile(fd.getEngineConfig()));
 		//generate etlengine.properties
 		imfiles.addAll(super.genProperties(flow));
-		//jar the file
 		for (InMemFile im: imfiles){
 			Path path = Paths.get(String.format("%s/%s", classesRootDir, im.getFileName()));
 			Files.write(path, im.getContent());
 		}
+		//jar the file
 		String jarFilePath = String.format("%s/%s.jar", targetDir, flow.getName());
 		ZipUtil.makeJar(jarFilePath, classesRootDir);
 		//deploy ${wfName}.jar
@@ -73,6 +73,7 @@ public class SparkFlowMgr extends FlowMgr{
 	/*
 	oozie.libpath=${nameNode}/bdap-VVERSIONN/lib/
 	oozie.wf.application.path=${nameNode}/bdap-VVERSIONN/cfg/sparkcmd_workflow.xml
+	yarn_historyserver=
 	 */
 	private bdap.xml.config.Configuration getWfConf(OozieConf oc, String prjName, String flowName, FlowDeployer fd){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
@@ -84,8 +85,19 @@ public class SparkFlowMgr extends FlowMgr{
 		}{
 			bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
 			propWfAppPath.setName(OozieConf.key_oozieWfAppPath);
-			propWfAppPath.setValue(fd.getPlatformSparkWfXml());
+			propWfAppPath.setValue(String.format("%s/cfg/%s", fd.getPlatformRemoteDist(), FlowDeployer.spark_wfxml));
 			bodyConf.getProperty().add(propWfAppPath);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName(OozieConf.key_yarn_historyserver);
+			property.setValue(oc.getYarnHistoryServer());
+			bodyConf.getProperty().add(property);
+		}{
+			String fqClassCmdName=SparkGenerator.getFQClassName(prjName, flowName);
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName(OozieConf.key_cmdClassName);
+			property.setValue(fqClassCmdName);
+			bodyConf.getProperty().add(property);
 		}
 		return bodyConf;
 	}
@@ -97,7 +109,7 @@ public class SparkFlowMgr extends FlowMgr{
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oozieServerConf.getOozieServerIp(), oozieServerConf.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration commonConf = getCommonConf(oozieServerConf, flowName);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oozieServerConf, prjName, flowName);
 		bdap.xml.config.Configuration wfConf = getWfConf(oozieServerConf, prjName, flowName, fd);
 		commonConf.getProperty().addAll(wfConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");

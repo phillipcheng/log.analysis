@@ -138,7 +138,7 @@ public class FlowController {
 	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
 		HttpHeaders httpHeaders = new HttpHeaders();
 		OozieConf oc = flowDeployer.getOozieServerConf();
-		EngineConf ec = flowDeployer.getEC();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
 		try {
 			FlowEntity flowEntity = flowRepository.findOne(flowId);
@@ -187,7 +187,7 @@ public class FlowController {
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/inputfiles", method = RequestMethod.GET)
 	String[] listFlowNodeInputFiles(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
-		EngineConf ec = flowDeployer.getEC();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
 		return this.flowMgr.listNodeInputFiles("project1", oc, ec, instanceId, nodeName);
 	}
@@ -195,7 +195,7 @@ public class FlowController {
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/outputfiles", method = RequestMethod.GET)
 	String[] listFlowNodeOutputFiles(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
-		EngineConf ec = flowDeployer.getEC();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
 		return this.flowMgr.listNodeOutputFiles("project1", oc, ec, instanceId, nodeName);
 	}
@@ -204,7 +204,7 @@ public class FlowController {
 	InMemFile getDFSFile(@PathVariable String userName, HttpServletRequest request) {
 		this.validateUser(userName);
 		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-		EngineConf ec = flowDeployer.getEC();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
 		return this.flowMgr.getDFSFile(ec, filePath);
@@ -214,7 +214,7 @@ public class FlowController {
 	boolean putDFSFile(@PathVariable String userName, HttpServletRequest request, @RequestBody String content) {
 		this.validateUser(userName);
 		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-		EngineConf ec = flowDeployer.getEC();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
 		InMemFile file = new InMemFile(FileType.textData, filePath, content);

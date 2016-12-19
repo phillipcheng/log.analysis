@@ -25,6 +25,26 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 	}
 	
 	@Test
+	public void testLeftjoin() throws Exception {
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "csvaggr.mergetable.leftjoin.properties";
+		String[] csvFiles = new String[] {"femto-r-00000", "RRC_connection_establishments-r-00000"};
+		//prepare schema
+		String cfgFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
+		String schemaFile = "om_map_merged.schema";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
+		
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:\n"+String.join("\n", output));
+		assertEquals(4, output.size());
+		assertTrue(output.contains("A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(output.contains("A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,71DB021D7868,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
+	}
+	
+	@Test
 	public void noSchemaSum() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -100,7 +120,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		assertTrue(output.size()==4);
 	}
 	
-	@Test
+	@Test //TODO
 	public void mergeIntoOneTable() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -119,6 +139,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String day = GroupFun.day(dt, dtformat);
 		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0.0,0.0,0.0,114258.0,114258.0",
 				hour, day);
+		logger.info("Excpet has:{}",csv);
 		assertTrue(output.contains(csv));
 	}
 	
@@ -129,7 +150,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String csvtransProp = "csvAggrNoGroup.properties";
 		String[] csvFiles = new String[] {"data1.data"};
 		//prepare data
-		String dataFile = "maxA";
+		String dataFile = "maxA"; 
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+dataFile), new Path("/data/"+dataFile));
 		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:"+output);
@@ -141,7 +162,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		assertTrue("1.0".equals(csvs[0]));
 	}
 	
-	@Test
+	@Test //TODO
 	public void mergeIntoMultiple() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";

@@ -23,9 +23,13 @@ body {
 	stroke-width: 2;
 }
 
-.nodeGSelected {
-	
+.nodeG>.nodePropertyG>rect {
+	fill: rgb(238, 238, 238);
+	stroke: rgb(155, 155, 155);
+	stroke-width: 2;
 }
+
+.nodeGSelected {}
 
 .nodeGSelected>rect {
 	fill: rgb(155, 155, 155);
@@ -36,6 +40,12 @@ body {
 .nodeGSelected:hover>rect {
 	fill: rgb(155, 155, 155);
 	stroke: red;
+	stroke-width: 3;
+}
+
+.nodeGSelected>.nodePropertyG>rect{
+	fill: rgb(238, 238, 238);
+	stroke: rgb(255, 0, 0);
 	stroke-width: 3;
 }
 
@@ -82,8 +92,29 @@ body {
 	stroke: white;
 }
 
-.minNodeG:hover {
+.minNodeG:hover>.minNodeCircle {
+	stroke: white;
+	stroke-width: 2;
 	cursor: zoom-in;
+}
+
+.maxNodeG {}
+
+.maxNodeCircle {
+	fill: red;
+	stroke-width: 1;
+	stroke: white;
+}
+
+.maxNodePath {
+	stroke-width: 1;
+	stroke: white;
+}
+
+.maxNodeG:hover>.maxNodeCircle {
+	stroke: white;
+	stroke-width: 2;
+	cursor: zoom-out;
 }
 
 .edge {}
@@ -114,4 +145,12 @@ body {
 
 .inPath:hover {
 	cursor: help
+}
+
+.nodePropertyG {}
+
+.nodePropertyG>rect {
+	/*fill: rgb(238, 238, 238);
+	stroke: rgb(155, 155, 155);
+	stroke-width: 2;*/
 }

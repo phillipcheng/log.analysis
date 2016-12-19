@@ -175,7 +175,7 @@ public class OozieFlowMgr extends FlowMgr{
 		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
 		imFiles.addAll(actionPropertyFiles);
 		//gen etlengine.properties
-		InMemFile enginePropertyFile = super.genEnginePropertyFile(fd.getEC());
+		InMemFile enginePropertyFile = super.genEnginePropertyFile(fd.getEngineConfig());
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		String projectDir = fd.getProjectHdfsDir(prjName);
@@ -190,7 +190,7 @@ public class OozieFlowMgr extends FlowMgr{
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, prjName, flowName);
 		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
 		commonConf.getProperty().addAll(wfConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");
@@ -210,7 +210,7 @@ public class OozieFlowMgr extends FlowMgr{
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, prjName, flowName);
 		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
 		commonConf.getProperty().addAll(wfConf.getProperty());
 		bdap.xml.config.Configuration.Property wfIdProperty = getWfIdConf(wfId);
@@ -233,7 +233,7 @@ public class OozieFlowMgr extends FlowMgr{
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
-		bdap.xml.config.Configuration commonConf = getCommonConf(oc, flowName);
+		bdap.xml.config.Configuration commonConf = getCommonConf(oc, prjName, flowName);
 		bdap.xml.config.Configuration coordConf = getCoordConf(oc, cc, projectDir, flowName);
 		commonConf.getProperty().addAll(coordConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");
