@@ -214,5 +214,14 @@ var compatibilityTools = function(){
 	      return this.slice(0, prefix.length) === prefix;  
 	     };  
 	    }  
-	
+}
+
+var getAjaxAbsolutePath = function(relativePath){
+	var httpPath = "http://16.165.184.12:8080";
+	if(relativePath != null && relativePath != ''){
+		httpPath += relativePath;
+	}else {
+		httpPath = "";
+	}
+	return httpPath;
 }
