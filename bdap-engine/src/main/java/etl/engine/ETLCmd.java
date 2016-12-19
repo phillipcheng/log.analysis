@@ -74,7 +74,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	private transient Configuration conf;
 	
 	private ProcessMode pm = ProcessMode.Single;
-	private MRMode mrMode = MRMode.file;
+	private MRMode mrMode = MRMode.line;
 	private boolean sendLog = true;//command level send log flag
 	
 	//system variable map
