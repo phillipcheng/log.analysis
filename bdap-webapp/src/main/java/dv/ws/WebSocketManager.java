@@ -29,7 +29,7 @@ public class WebSocketManager {
     private Session session;
 
     /**
-     * when connection is successful, then invoke the function.
+     * when connection is successful, it will be triggered.
      * @param session
      */
     @OnOpen
@@ -45,21 +45,17 @@ public class WebSocketManager {
     }
 
     /**
-     * 连接关闭调用的方法
+     * when connection is closed, it will be triggered.
      */
     @OnClose
     public void onClose() {
     	//remove from set
         webSocketSet.remove(this);
-        try {
-			this.session.close();
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-		}
     }
 
     /**
      * receive messages from client.
+     * when there is message coming, it will be triggered.
      * @param message
      * @param session
      */
@@ -74,7 +70,7 @@ public class WebSocketManager {
     }
 
     /**
-     * when happen error, it will be triggered.
+     * when error happen, it will be triggered.
      */
     
     @OnError
