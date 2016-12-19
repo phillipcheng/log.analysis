@@ -39,7 +39,7 @@ var init = function() {
 	 */
 	d3.select("#svg").call( // <-A
 		d3.behavior.zoom() // <-B
-		.scaleExtent([1, 5]) // <-C
+		.scaleExtent([1, 1]) // <-C
 		.on("zoom", svgzoom) // <-D
 	).append("g").attr("id", "main");
 
@@ -50,9 +50,9 @@ var init = function() {
 		.attr("stroke", "#269ABC").attr("stroke-width", "2px");
 
 	d3.select("#svg").attr("onmousemove", "svgMouseMove()");
-	d3.select("#svg").attr("onmousedown", "svg_mouse_down()");
-	d3.select("#svg").attr("onmouseup", "svg_mouse_up()");
-
+//	d3.select("#svg").attr("onmousedown", "svg_mouse_down()");
+//	d3.select("#svg").attr("onmouseup", "svg_mouse_up()");
+	
 	/**
 	 * 1.3
 	 */
@@ -181,12 +181,12 @@ var svgMouseMove = function(event) {
 	} else {
 		var x = e.x || e.clientX;
 		var y = e.y || e.clientY;
-		console.log("x", x);
-		console.log("y", y);
+		//console.log("x", x);
+		//console.log("y", y);
 		x -= (display_off_left + current_zoom_x);
 		y -= (display_off_top + current_zoom_y);
 		var temp_d = "M" + templine.firstPoint + " L" + x + "," + y;
-		console.log("temp_d", temp_d);
+		//console.log("temp_d", temp_d);
 		d3.select("#pathmove").attr("d", temp_d);
 	}
 }
