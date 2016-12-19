@@ -1,5 +1,5 @@
 <project name="preload" default="dist" basedir=".">
-	<property name="dist"  location="bdap-r0.4.0"/>
+	<property name="dist"  location="bdap-VVERSIONN"/>
 	<property name="src"  location="."/>
 	<property name="engine.target"  location="bdap-engine/target"/>
 	<property name="engine.src"  location="bdap-engine"/>
@@ -41,6 +41,8 @@
 		<copy todir="${dist}/engine/cfg"><!-- copy shell scripts -->
 			<fileset dir="${engine.src}/src/main/resources">
 				<include name="coordinator.xml"/>
+				<include name="sparkcmd_workflow.xml"/>
+				<include name="submitspark.sh"/>
 			</fileset>
 		</copy>
 		<!-- log module -->
@@ -89,8 +91,8 @@
             	<exclude name="flow1/expected/"/>
             </fileset>
         </copy>
-		<tar destfile="${src}/bdap-r0.4.0.tar" basedir="${dist}"/>
-		<gzip destfile="${src}/bdap-r0.4.0.tar.gz" src="${src}/bdap-r0.4.0.tar"/>
+		<tar destfile="${src}/bdap-VVERSIONN.tar" basedir="${dist}"/>
+		<gzip destfile="${src}/bdap-VVERSIONN.tar.gz" src="${src}/bdap-VVERSIONN.tar"/>
 	</target>
 	
 	<target name="clean">

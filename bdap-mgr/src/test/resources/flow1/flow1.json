@@ -155,13 +155,13 @@
     "name" : "data1trans",
     "location" : "/flow1/d1csvtrans/",
     "dataFormat" : "Text",
-    "recordType" : "Value",
+    "recordType" : "KeyValue",
     "instance" : true
   }, {
     "name" : "data2trans",
     "location" : "/flow1/d2csvtrans/",
     "dataFormat" : "Text",
-    "recordType" : "Value",
+    "recordType" : "KeyValue",
     "instance" : true
   }, {
     "name" : "csvmerge",

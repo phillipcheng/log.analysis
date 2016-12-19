@@ -1,10 +1,12 @@
-package etl.log;
+package etl.log.test;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import bdap.util.JsonUtil;
@@ -13,7 +15,7 @@ import etl.util.DBType;
 import etl.util.FieldType;
 import etl.util.SchemaUtils;
 
-public class ETLLogSchema {
+public class TestETLLogSchema {
 	@Test
 	public void genETLLogSchema(){
 		LogicSchema ls = new LogicSchema();
@@ -42,19 +44,29 @@ public class ETLLogSchema {
 			ls.addAttrTypes(tableName, attTypesList);
 			
 		}
-		JsonUtil.toLocalJsonFile("logschema.txt", ls);
-		LogicSchema ls2 = SchemaUtils.fromLocalJsonPath("logschema.txt", LogicSchema.class);
+		JsonUtil.toLocalJsonFile(getResourceFolder() + "generated/logschema.txt", ls);
+		LogicSchema ls2 = SchemaUtils.fromLocalJsonPath(getResourceFolder() + "generated/logschema.txt", LogicSchema.class);
 		assertTrue(ls2.equals(ls));
 	}
 	
 	@Test
-	public void genVerticaSqlFromSchema(){
-		SchemaUtils.genCreateSqls("src/main/resources/logschema.txt", "sql/vertica/etllog.sql", "etllog", DBType.VERTICA);
+	public void genVerticaSqlFromSchema() throws Exception{
+		SchemaUtils.genCreateSqls(getResourceFolder() + "logschema.txt", getResourceFolder() + "generated/etllog.vertica.sql", "etllog", DBType.VERTICA);
+		File file1 = new File(getResourceFolder() + "etllog.vertica.sql");
+		File file2 = new File(getResourceFolder() + "generated/etllog.vertica.sql");
+		assertTrue(FileUtils.contentEquals(file1, file2));
 	}
 	
 	@Test
-	public void genHiveSqlFromSchema(){
-		SchemaUtils.genCreateSqls("src/main/resources/logschema.txt", "sql/hive/etllog.sql", "etllog", DBType.HIVE);
+	public void genHiveSqlFromSchema() throws Exception{
+		SchemaUtils.genCreateSqls(getResourceFolder() + "logschema.txt", getResourceFolder() + "generated/etllog.hive.sql", "etllog", DBType.HIVE);
+		File file1 = new File(getResourceFolder() + "etllog.hive.sql");
+		File file2 = new File(getResourceFolder() + "generated/etllog.hive.sql");
+		assertTrue(FileUtils.contentEquals(file1, file2));
+	}
+	
+	public String getResourceFolder(){
+		return "src/test/resources/etllog/";
 	}
 
 }

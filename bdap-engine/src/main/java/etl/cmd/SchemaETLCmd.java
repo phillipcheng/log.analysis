@@ -202,7 +202,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 
 	private LogicSchema createTableSchema(LogicSchema tableSchema, String schemaFile, String name, List<String> attrIds,
-			List<String> attrNames, List<FieldType> attrTypes, List<String> loginfo) {
+			List<String> attrNames, List<FieldType> attrTypes, List<String> loginfo) throws Exception{
 		int i;
 		tableSchema.updateTableAttrs(name, attrNames);
 		tableSchema.updateTableAttrTypes(name, attrTypes);
@@ -236,7 +236,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	private LogicSchema updateTableSchema(LogicSchema tableSchema, String schemaFile, String name, List<String> attrIds, List<String> attrNames,
-			List<FieldType> attrTypes, List<String> loginfo) {
+			List<FieldType> attrTypes, List<String> loginfo) throws Exception{
 		List<String> existAttrs = tableSchema.getAttrNames(name);
 		if (existAttrs.containsAll(attrNames)) {//
 			logger.debug(String.format("update nothing for %s", name));

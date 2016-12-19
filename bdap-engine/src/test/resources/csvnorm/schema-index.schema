@@ -1,0 +1,9 @@
+{
+  "tableIdNameMap" : {
+    "MyCore_" : "MyCore_"
+  },
+  "attrIdNameMap" : { },
+  "attrNameMap" : { },
+  "attrTypeMap" : { },
+  "index" : true
+}

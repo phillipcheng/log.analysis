@@ -26,7 +26,7 @@ public class AccountRepositoryImpl {
 		List list = q.getResultList();
 		Page<Object[]> page = new PageImpl<Object[]>(list, new PageRequest(0,10),list.size());   
 		System.out.println(page);
-		System.out.println("自定义sql查询");
+		System.out.println("鑷畾涔塻ql鏌ヨ");
         return page;  
 		
 	}

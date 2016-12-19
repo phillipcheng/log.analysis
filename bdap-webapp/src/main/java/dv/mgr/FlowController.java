@@ -30,6 +30,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import bdap.util.EngineConf;
+import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import dv.UserNotFoundException;
@@ -136,15 +137,15 @@ public class FlowController {
 	@RequestMapping(value = "/{flowId}", method = RequestMethod.POST)
 	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
 		HttpHeaders httpHeaders = new HttpHeaders();
-		OozieConf oc = flowDeployer.getOC();
-		EngineConf ec = flowDeployer.getEC();
+		OozieConf oc = flowDeployer.getOozieServerConf();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
 		try {
 			FlowEntity flowEntity = flowRepository.findOne(flowId);
 			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
 				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
-				flowMgr.deployFlowFromJson("project1", flow, flowDeployer, oc, ec);
-				String flowInstanceId = flowMgr.executeFlow("project1", flowId, oc, ec);
+				flowMgr.deployFlowFromJson("project1", flow, flowDeployer);
+				String flowInstanceId = flowMgr.executeFlow("project1", flowId, flowDeployer);
 				return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
 			} else {
 				return new ResponseEntity<String>("Flow entity not found or is empty", httpHeaders, HttpStatus.NOT_FOUND);
@@ -157,56 +158,67 @@ public class FlowController {
 	
 	@RequestMapping(value = "/instances/{instanceId}", method = RequestMethod.GET)
 	FlowInfo getFlowInstance(@PathVariable String userName, @PathVariable String instanceId) {
-		OozieConf oc = flowDeployer.getOC();
+		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
 		return this.flowMgr.getFlowInfo("project1", oc, instanceId);
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/log", method = RequestMethod.GET)
 	String getFlowLog(@PathVariable String userName, @PathVariable String instanceId) {
-		OozieConf oc = flowDeployer.getOC();
+		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
 		return this.flowMgr.getFlowLog("project1", oc, instanceId);
 	}
 
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}", method = RequestMethod.GET)
 	NodeInfo getFlowNode(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
-		OozieConf oc = flowDeployer.getOC();
+		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
 		return this.flowMgr.getNodeInfo("project1", oc, instanceId, nodeName);
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/log", method = RequestMethod.GET)
 	InMemFile[] getFlowNodeLog(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
-		OozieConf oc = flowDeployer.getOC();
+		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
 		return this.flowMgr.getNodeLog("project1", oc, instanceId, nodeName);
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/inputfiles", method = RequestMethod.GET)
 	String[] listFlowNodeInputFiles(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
-		OozieConf oc = flowDeployer.getOC();
-		EngineConf ec = flowDeployer.getEC();
+		OozieConf oc = flowDeployer.getOozieServerConf();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
 		return this.flowMgr.listNodeInputFiles("project1", oc, ec, instanceId, nodeName);
 	}
 
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/outputfiles", method = RequestMethod.GET)
 	String[] listFlowNodeOutputFiles(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
-		OozieConf oc = flowDeployer.getOC();
-		EngineConf ec = flowDeployer.getEC();
+		OozieConf oc = flowDeployer.getOozieServerConf();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
 		return this.flowMgr.listNodeOutputFiles("project1", oc, ec, instanceId, nodeName);
 	}
 
 	@RequestMapping(value = "/dfs/**", method = RequestMethod.GET)
 	InMemFile getDFSFile(@PathVariable String userName, HttpServletRequest request) {
+		this.validateUser(userName);
 		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-		EngineConf ec = flowDeployer.getEC();
+		EngineConf ec = flowDeployer.getEngineConfig();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
-		this.validateUser(userName);
 		return this.flowMgr.getDFSFile(ec, filePath);
+	}
+
+	@RequestMapping(value = "/dfs/**", method = { RequestMethod.PUT, RequestMethod.POST })
+	boolean putDFSFile(@PathVariable String userName, HttpServletRequest request, @RequestBody String content) {
+		this.validateUser(userName);
+		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+		EngineConf ec = flowDeployer.getEngineConfig();
+		if (filePath != null && filePath.contains("/flow/dfs/"))
+			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
+		InMemFile file = new InMemFile(FileType.textData, filePath, content);
+		return flowMgr.putDFSFile(ec, filePath, file);
 	}
 	
 	private void validateUser(String userName) {

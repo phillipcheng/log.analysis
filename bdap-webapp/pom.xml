@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>bdap</groupId>
 		<artifactId>bdap.parent</artifactId>
-		<version>r0.4.0</version>
+		<version>VVERSIONN</version>
 		<relativePath>..</relativePath>
 	</parent>
 	
@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>bdap</groupId>
 			<artifactId>bdap.mgr</artifactId>
-			<version>r0.4.0</version>
+			<version>VVERSIONN</version>
 			<exclusions>
 				<exclusion>
                   <artifactId>slf4j-log4j12</artifactId>
@@ -62,7 +62,23 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+        
+        <!-- when use websocket,
+    	spring-boot-starter-websocket and spring-context must be added,
+    	and spring-context version cannot lower than 4.2 -->
 		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+            <version>1.4.1.RELEASE</version>
+        </dependency>
+        
+        <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>4.3.4.RELEASE</version>
+		</dependency>
+        
+		<!-- <dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-web</artifactId>
 		    <version>1.4.1.RELEASE</version>
@@ -72,7 +88,7 @@
 	            	<artifactId>spring-boot-starter-logging</artifactId>
 	            </exclusion>
 			</exclusions>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>

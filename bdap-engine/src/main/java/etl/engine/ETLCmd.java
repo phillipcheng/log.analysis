@@ -175,7 +175,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	@Override
 	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc){
-		logger.error("empty sparkSplitProcess impl, should not be invoked.");
+		logger.error("empty sparkProcessV2KV impl, should not be invoked.");
 		return null;
 	}
 	
@@ -219,28 +219,6 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		}
 		return sparkProcessKeyValue(prdd, jsc);
 	}
-	/*
-	public JavaRDD<String> sparkProcessFilesToV(JavaRDD<String> inputfiles, JavaSparkContext jsc){
-		JavaRDD<String> prdd = null;
-		for (String file:inputfiles.collect()){
-			JavaRDD<String> content = jsc.textFile(file);
-			if (skipHeader){
-				String header = content.first();
-				content = content.filter(new Function<String, Boolean>(){
-					@Override
-					public Boolean call(String v1) throws Exception {
-						return !header.equals(v1);
-					}
-				});
-			};
-			if (prdd==null){
-				prdd = content;
-			}else{
-				prdd = prdd.union(content);
-			}
-		}
-		return sparkProcess(prdd, jsc);
-	}*/
 	
 	/**
 	 * map function in map-only or map-reduce mode, for map mode: output null for no key or value

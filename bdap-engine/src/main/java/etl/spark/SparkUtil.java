@@ -51,6 +51,10 @@ public class SparkUtil {
 		return jsc.parallelize(Arrays.asList(new String[]{str}));
 	}
 	
+	public static JavaRDD<String> fromFile(String str, JavaSparkContext jsc){
+		return jsc.textFile(str);
+	}
+	
 	public static JavaRDD<String> filterPairRDD(JavaPairRDD<String,String> input, String key){
 		return input.filter(new Function<Tuple2<String,String>, Boolean>(){
 			@Override

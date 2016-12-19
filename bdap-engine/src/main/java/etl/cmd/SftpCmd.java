@@ -13,6 +13,7 @@ import java.util.Vector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.commons.compress.utils.IOUtils;
@@ -378,11 +379,11 @@ public class SftpCmd extends ETLCmd {
 	 * called from sparkProcessFileToKV, key: file Name, v: line value
 	 */
 	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		return input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc){
+		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
 			@Override
-			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-				List<String> fileList = process(0, t._2);
+			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
+				List<String> fileList = process(0, t);
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 				for (String file:fileList){
 					ret.add(new Tuple2<String,String>(outputKey, file));
