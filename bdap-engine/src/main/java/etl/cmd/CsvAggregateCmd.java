@@ -59,15 +59,22 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	public static final String cfgkey_aggr_old_table="old.table";
 	public static final String cfgkey_aggr_new_table="new.table";
 	
+	public static final String cfgkey_join_type="join.type";
+	public static final String cfgkey_groupkey_output="groupkey.output";
+	
 	private boolean inputEndWithComma=false;
 	private int oldTableCnt=0;
 	private String[][] oldTables = null;
+	private String[][] unSortedOldTables = null;
 	private String[] newTables = null;
 	private transient Map<String, List<String>> oldnewTableMap;
 	private transient Map<String, AggrOps> aoMapMap; //old table name to AggrOps
 	private transient Map<String, GroupOp> groupKeysMap; //old table name to groupOp
 	
 	private boolean mergeTable = false;
+	
+	private String joinType="outer";
+	private boolean groupKeyOutput=true;
 	
 	private GroupOp getGroupOp(String keyPrefix){
 		String groupKey = keyPrefix==null? cfgkey_aggr_groupkey:keyPrefix+"."+cfgkey_aggr_groupkey;
@@ -122,6 +129,14 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		if (super.cfgContainsKey(cfgkey_aggr_new_table)){
 			newTables = super.getCfgStringArray(cfgkey_aggr_new_table);
 		}
+		if (super.cfgContainsKey(cfgkey_join_type)){
+			this.joinType=super.getCfgString(cfgkey_join_type, "outer");
+		}
+		
+		if(super.cfgContainsKey(cfgkey_groupkey_output)){
+			this.groupKeyOutput=super.getCfgBoolean(cfgkey_groupkey_output, true);
+		}
+		
 		if (oldTables==null){//not using schema
 			String[] strAggrOpList = super.getCfgStringArray(cfgkey_aggr_op);
 			AggrOps aoMap = new AggrOps(strAggrOpList);
@@ -164,7 +179,12 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		}
 		this.mergeTable = oldnewTableMap!=null && this.oldTableCnt>this.newTables.length;
 		if (oldTables!=null){
-			for (String[] oldTableGrp:oldTables){//sort table by name order
+			unSortedOldTables=new String[oldTables.length][];
+			for(int i=0;i<oldTables.length;i++){
+				String[] oldTableGrp=oldTables[i];
+				String[] copyedOldTableGrp=new String[oldTableGrp.length];
+				System.arraycopy(oldTableGrp, 0, copyedOldTableGrp, 0, oldTableGrp.length);
+				unSortedOldTables[i]=copyedOldTableGrp;
 				Arrays.sort(oldTableGrp);
 			}
 		}
@@ -377,6 +397,13 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 						}
 					}
 				}else{
+					/*
+					 * it will output following:
+					 * key= newtablename,expKey1,expKey2,...commonkey1,commonkey2...
+					 * value=oldtablename, {raw data}
+					 * 
+					 * if expKey is array, it will output multiple key-values pairs
+					 */
 					List<String> newTableNames = oldnewTableMap.get(tableName);
 					v = oldTableName + KEY_SEP + row;
 					for (String newTableName:newTableNames){
@@ -432,17 +459,20 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		return null;
 	}
 	
-	/**
-	 * @param tableName
-	 * @param rl, is null, return the record filled with empty/0 values for outer join
-	 * @return
-	 */
-	private List<String> getAggrValues(String tableName, List<CSVRecord> rl){
+	private List<List<String>> getAggrValues(String tableName, List<CSVRecord> csvRecords){
+		/*
+		 * if use aggr op like count, sum, avg, max, min, at least it will generate one row.
+		 * if the aggr op as above is not used, and there is no records also, it will generte zero row.
+		 * if the aggr op is used, and "keep" aggr op also used, it will generate same number of rows as input csvRecords with each same fill with same aggred value.
+		 * 
+		 */
+		
+		List<List<String>> records = new ArrayList<List<String>>();
 		AggrOps aoMap = aoMapMap.get(tableName);
 		List<String> aggrValues = new ArrayList<String>();
 		int fieldNum=0;
-		if (rl!=null && rl.size()>0){
-			fieldNum=rl.get(0).size();
+		if (csvRecords!=null && csvRecords.size()>0){
+			fieldNum=csvRecords.get(0).size();
 		}else{
 			if (logicSchema!=null){
 				if (logicSchema.getAttrNameMap().containsKey(tableName)){
@@ -456,48 +486,138 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				return null;
 			}
 		}
+		
+		//Below both used to record when encounter keep aggr op, what's the position aggr did
+		Map<Integer,Integer> keepOpOutputIdxInputIndxMap=new HashMap<Integer,Integer>();
+		
+		boolean executedAggrOp=false;//to indicate whether has max,count,min,sum,avg and etc. 
 		for (AggrOp aop: aoMap.getOpList()){
 			AggrOperator op = aop.getAo();
 			if (AggrOperator.count==op){
-				aggrValues.add(Integer.toString(rl.size()));
+				if(csvRecords==null){
+					aggrValues.add("0");
+				}else{
+					aggrValues.add(Integer.toString(csvRecords.size()));
+				}
+				
+				executedAggrOp=true;
 			}else{
 				List<Integer> idxList = GroupOp.getIdxInRange(aop.getIdxRangeList(), fieldNum);
 				for (int idx:idxList){
-					double aggrValue=0;
-					if (rl!=null && rl.size()>0){
-						for (CSVRecord r:rl){
-							String strv = r.get(idx);
-							double v =0d;
-							if (!"".equals(strv.trim())){
-								try {
-									v= Double.parseDouble(strv);
-								}catch(Exception e){
-									v=0d;//do nothing, if failed to parse, treat as 0
+					if(AggrOperator.keep==op){
+						keepOpOutputIdxInputIndxMap.put(aggrValues.size(), idx);
+						aggrValues.add("");
+					}else{
+						double aggrValue=0;
+						if (csvRecords!=null && csvRecords.size()>0){
+							for (CSVRecord r:csvRecords){
+								String strv = r.get(idx);
+								double v =0d;
+								if (!"".equals(strv.trim())){
+									try {
+										v= Double.parseDouble(strv);
+									}catch(Exception e){
+										v=0d;//do nothing, if failed to parse, treat as 0
+									}
+								}
+								if (AggrOperator.sum==op || AggrOperator.avg==op){
+									aggrValue +=v;
+									executedAggrOp=true;
+								}else if (AggrOperator.max==op){
+									if (v>aggrValue) aggrValue=v;
+									executedAggrOp=true;
+								}else if (AggrOperator.min==op){
+									if (v<aggrValue) aggrValue=v;
+									executedAggrOp=true;
+								}else{
+									logger.error(String.format("op %s not supported yet.", op.toString()));
 								}
 							}
-							if (AggrOperator.sum==op || AggrOperator.avg==op){
-								aggrValue +=v;
-							}else if (AggrOperator.max==op){
-								if (v>aggrValue) aggrValue=v;
-							}else if (AggrOperator.min==op){
-								if (v<aggrValue) aggrValue=v;
-							}else{
-								logger.error(String.format("op %s not supported yet.", op.toString()));
+							if (AggrOperator.avg==op){
+								aggrValue=aggrValue/csvRecords.size();
+								executedAggrOp=true;
 							}
 						}
-						if (AggrOperator.avg==op){
-							aggrValue=aggrValue/rl.size();
-						}
-					}
-					aggrValues.add(Double.toString(aggrValue));
+						aggrValues.add(Double.toString(aggrValue));
+					}					
 				}
 			}
 		}
-		return aggrValues;
+		
+		
+		if(csvRecords==null || csvRecords.size()==0){
+			if(executedAggrOp==true) records.add(aggrValues);
+		}else{
+			if(keepOpOutputIdxInputIndxMap.size()>0){
+				String[] originArrgValues=aggrValues.toArray(new String[aggrValues.size()]);
+				for(CSVRecord csvRecord:csvRecords){
+					String[] copiedArrgValues=new String[originArrgValues.length];
+					System.arraycopy(originArrgValues, 0, copiedArrgValues, 0, originArrgValues.length);
+					
+					for(Integer position:keepOpOutputIdxInputIndxMap.keySet()){
+						copiedArrgValues[position]=csvRecord.get(keepOpOutputIdxInputIndxMap.get(position));
+					}
+					
+					records.add(Arrays.asList(copiedArrgValues));
+				}
+			}else{
+				if(executedAggrOp==true) records.add(aggrValues);
+			}
+		}
+		
+		return records;
 	}
 	
-	private Tuple3<String, String, String> reduceByKey(String key, Iterable<String> it){
+	/*
+	 * To generate a empty record according to it's schema and aggr op(with idx)
+	 * fillNULL is true: if no record, it will fill with empty according to schema. 
+	 */
+	private List<String> fillEmptyValues(String tableName){
+		AggrOps aoMap = aoMapMap.get(tableName);
+		List<String> fieldValues = new ArrayList<String>();		
+		int fieldNum=0;
+		
+		if (logicSchema!=null){
+			if (logicSchema.getAttrNameMap().containsKey(tableName)){
+				fieldNum=logicSchema.getAttrNameMap().get(tableName).size();
+			}else{
+				logger.error(String.format("table %s not found in logic schema defined.", tableName));
+				return fieldValues; //return an empty records
+			}
+		}else{
+			logger.error(String.format("no logic schema defined."));
+			return fieldValues; //return an empty records
+		}		
+		
+		for (AggrOp aop: aoMap.getOpList()){
+			AggrOperator ao=aop.getAo();
+			if(AggrOperator.count==ao){
+				fieldValues.add("0");
+			}else{
+				List<Integer> idxList = GroupOp.getIdxInRange(aop.getIdxRangeList(), fieldNum);
+				for (int idx:idxList){
+					if(AggrOperator.keep!=ao){
+						fieldValues.add("0.0");
+					}else{
+						fieldValues.add("");
+					}
+					
+				}
+			}			
+		}
+		return fieldValues;
+	}
+	
+	private List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it){
 		super.init();
+		/*
+		* key= newtablename,expKey1,expKey2,...commonkey1,commonkey2...
+		* value array=[oldtablename1, {raw data}] , [oldtablename2, {raw data}]....
+		*/
+		
+		if(key.contains("PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00")){
+			System.out.println("entry");
+		}
 		String[] kl = key.toString().split(KEY_SEP, -1);
 		String tableName = kl[0];
 		List<String> ks = new ArrayList<String>();
@@ -522,9 +642,19 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			if (oldnewTableMap!=null && oldnewTableMap.containsKey(tableName)){
 				newTableName = oldnewTableMap.get(tableName).get(0);
 			}
-			return new Tuple3<String, String, String>(newKey, 
-					Util.getCsv(getAggrValues(tableName, rl), false), 
-					newTableName);
+			
+			List<Tuple3<String, String, String>> retList=new ArrayList<Tuple3<String, String, String>>();
+			
+			List<List<String>> records=getAggrValues(tableName, rl);
+			for(List<String> record:records){
+				if(this.groupKeyOutput==true){
+					retList.add(new Tuple3<String, String, String>(newKey,Util.getCsv(record, false),newTableName));
+				}else{
+					retList.add(new Tuple3<String, String, String>(Util.getCsv(record, false),null,newTableName));
+				}
+			}
+			
+			return retList;
 		}else{
 			int grpIdx = Arrays.asList(newTables).indexOf(tableName);
 			if (grpIdx==-1){
@@ -533,6 +663,11 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			Map<String, List<CSVRecord>> oldTableRecordsMap = new HashMap<String, List<CSVRecord>>();
 			Iterator<String> its = it.iterator();
 			while (its.hasNext()){
+				/*
+				 * Store the record from each old table
+				 * key: oldtableName
+				 * value: array of records
+				 */
 				try {
 					String s = its.next().toString();
 					logger.debug(String.format("reduce: key:%s, one value:%s", key, s));
@@ -551,18 +686,76 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				}catch(Exception e){
 					logger.error("", e);
 				}
-			}
-			List<String> aggrValues = new ArrayList<String>();
+			}			
+
+			//Do aggr op for each old table.
+			Map<String, List<List<String>>> oldTableAggrRecordsMap=new HashMap<String,List<List<String>>>();
 			for (int i=0; i<oldTables[grpIdx].length; i++){
 				String oldTableName = oldTables[grpIdx][i];
 				List<CSVRecord> csvrl = oldTableRecordsMap.get(oldTableName);
-				List<String> avs = getAggrValues(oldTableName, csvrl);
-				aggrValues.addAll(avs);
+				List<List<String>> records = getAggrValues(oldTableName, csvrl);
+				oldTableAggrRecordsMap.put(oldTableName, records);
 			}
-			return new Tuple3<String, String, String>(
-					newKey.toString(), 
-					Util.getCsv(aggrValues, false), 
-					newTables[grpIdx]);
+			
+			//Calculate total rows
+			long rows=1;
+			for (int i=0; i<oldTables[grpIdx].length; i++){
+				String oldTableName=oldTables[grpIdx][i];
+				List<List<String>> records=oldTableAggrRecordsMap.get(oldTableName);
+				if(records!=null && records.size()>0) rows=rows*records.size();
+			}
+			
+			
+			List<Tuple3<String, String, String>> retList=new ArrayList<Tuple3<String, String, String>>();
+			if("left".equalsIgnoreCase(joinType)){				
+				String leftTable=unSortedOldTables[grpIdx][0];
+				List<List<String>> leftTableRecords=oldTableAggrRecordsMap.get(leftTable);
+				if(leftTableRecords==null || leftTableRecords.size()==0){// if left table no records should skip.
+					return retList; //return an empty result list
+				}				
+			}
+			
+			if("inner".equalsIgnoreCase(joinType)){
+				boolean allHasRecords=true;
+				for (int i=0; i<oldTables[grpIdx].length; i++){
+					String oldTableName=oldTables[grpIdx][i];
+					List<List<String>> records = oldTableAggrRecordsMap.get(oldTableName);
+					if(records==null || records.size()==0){
+						allHasRecords=false;
+						break;
+					}
+				}
+				if(allHasRecords==false){ //if has one table has nothing, should skip
+					return retList; //return an empty result list
+				}
+			}
+			
+			//output join result						
+			for(int rowNum=0;rowNum<rows;rowNum++){
+				List<String> fieldValues = new ArrayList<String>();
+				for (int i=0; i<oldTables[grpIdx].length; i++){
+					String oldTableName=oldTables[grpIdx][i];
+					List<List<String>> records = oldTableAggrRecordsMap.get(oldTableName);
+					//Actually every table has one record after aggregated.
+					if(records!=null && records.size()>0){
+						List<String> record=records.get(rowNum%records.size());
+						fieldValues.addAll(record);
+					}else{
+						//Fill with empty value
+						List<String> record=fillEmptyValues(oldTableName);
+						fieldValues.addAll(record);
+					}
+				}
+				
+				if(groupKeyOutput==false){
+					retList.add(new Tuple3<String, String, String>(Util.getCsv(fieldValues, false),null,newTables[grpIdx]));
+				}else{
+					retList.add(new Tuple3<String, String, String>(newKey,Util.getCsv(fieldValues, false),newTables[grpIdx]));
+				}
+				
+			}			
+			
+			return retList;
 		}
 	}
 	
@@ -574,10 +767,12 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		while (vit.hasNext()){
 			svalues.add(vit.next().toString());
 		}
-		Tuple3<String, String, String> ret = reduceByKey(key.toString(), svalues);
-		List<String[]> retlist = new ArrayList<String[]>();
-		retlist.add(new String[]{ret._1(), ret._2(), ret._3()});
-		return retlist;
+		List<Tuple3<String, String, String>> retList = reduceByKey(key.toString(), svalues);
+		List<String[]> retStringlist = new ArrayList<String[]>();
+		for(Tuple3<String, String, String> ret:retList){
+			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
+		}		
+		return retStringlist;
 	}
 	
 	@Override
@@ -595,8 +790,12 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			private static final long serialVersionUID = 1L;
 			@Override
 			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				//FIXME
+				/*
 				Tuple3<String, String, String> t3 = reduceByKey(t._1, t._2);
 				return new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2());
+				*/
+				return null;
 			}
 		});
 		

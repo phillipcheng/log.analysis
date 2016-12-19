@@ -1,6 +1,13 @@
-此文档为方便UI正常启动提供的一些初始化内容说明。
+﻿此文档为方便UI正常启动提供的一些初始化内容说明。
 
 1、启动h2数据库
 2、启动redis
 3、h2数据库插入用户
 	insert into  T_ACCOUNT  (name, email, tableauuserid, userid) values('george1', '', 0,10)
+4、访问地址：
+	 http://localhost:8080/dashview/dataFlow/app.html
+	 
+
+	 
+webSocket 访问地址：
+		ws://localhost:8080/dashview/websocket

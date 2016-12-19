@@ -236,6 +236,7 @@ public class EngineUtil {
 			}
 		}catch(Throwable t){
 			logger.error(new ETLLog(cmd, null, t), t);
+		
 		}
 	}
 

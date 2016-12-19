@@ -163,7 +163,7 @@ public class DBUtil {
 		return conn;
 	}
 
-	public static int executeSqls(List<String> sqls, PropertiesConfiguration pc){
+	public static int executeSqls(List<String> sqls, PropertiesConfiguration pc) throws Exception{
 		Connection conn = null;
 		int rowsUpdated = 0;
 		try {
@@ -183,15 +183,11 @@ public class DBUtil {
 							logger.info(warning.getMessage());
 							warning = warning.getNextWarning();
 						}
-					}catch(Exception e){
-						logger.error(e.getMessage());
 					}finally{
 						stmt.close();
 					}
 				}
 			}
-		}catch(Exception e){
-			logger.error("", e);
 		}finally{
 			try{
 				if (conn!=null){

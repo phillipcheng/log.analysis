@@ -50,7 +50,7 @@ public class FlowTest {
 		Flow flow1 = (Flow) JsonUtil.fromLocalJsonFile(getRelativeResourceFolder()+"flow1.json", Flow.class);
 		SparkFlowMgr flowMgr = new SparkFlowMgr();
 		List<InMemFile> mflist = flowMgr.genProperties(flow1);
-		mflist.add(flowMgr.genEnginePropertyFile(deployer.getEC()));
+		mflist.add(flowMgr.genEnginePropertyFile(deployer.getEngineConfig()));
 		for (InMemFile mf:mflist){
 			Files.write(Paths.get(String.format("%s%s", getRelativeResourceFolder(), mf.getFileName())), mf.getContent());
 		}
@@ -123,9 +123,10 @@ public class FlowTest {
 	}
 
 	@Test
-	public void testApacheSparkJson(){
+	public void testApacheSparkJson() throws Exception{
 		String projectName = "project1";
 		String flowName="flow1";
+		apacheDeployer.installEngine(false);
 		//ft.initData();
 		apacheDeployer.runDeploy(projectName, flowName, null, true, EngineType.spark);
 		apacheDeployer.runExecute(projectName, flowName, EngineType.spark);

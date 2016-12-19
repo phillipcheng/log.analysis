@@ -28,6 +28,10 @@ import etl.spark.SparkUtil;
 public class SparkGenerator {
 	public static final Logger logger = LogManager.getLogger(SparkGenerator.class);
 	
+	public static String getFQClassName(String prjName, String flowName){
+		return String.format("%s.%s", getPackageName(prjName), getClassName(flowName));
+	}
+	
 	private static String getPackageName(String prjName){
 		return prjName.replaceAll("\\.", "_").replaceAll("-", "_");
 	}
@@ -58,10 +62,8 @@ public class SparkGenerator {
 		sb.append(String.format("public class %s extends %s implements %s {\n", className, ETLCmd.class.getName(), Serializable.class.getName()));
 		sb.append(String.format("public static final Logger logger = Logger.getLogger(%s.class);\n", className));
 		//gen constructor
-		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){\n", className));
-		sb.append("init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);}\n");
-		sb.append("public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){\n");
-		sb.append("super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, etl.engine.ProcessMode.Single);}\n");
+		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, etl.engine.ProcessMode pm){\n", className));
+		sb.append("init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);}\n");
 		//gen sgProcess
 		sb.append("public List<String> sgProcess() {\n");
 		sb.append("List<String> retInfo = new ArrayList<String>();\n");
