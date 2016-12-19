@@ -477,7 +477,7 @@ var saveAsJson = function() {
 
 	$.ajax({
 		type: "post",
-		url: _HTTP_SAVE_JSON,
+		url: getAjaxAbsolutePath(_HTTP_SAVE_JSON),
 		contentType: 'application/json',
 		data: JSON.stringify(result),
 		//dataType: "json",
