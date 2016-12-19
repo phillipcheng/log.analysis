@@ -10,13 +10,6 @@
 	
 	<target name="dist" depends="clean">
 		<mkdir dir="${dist}"/>
-		<copy todir="${dist}/engine/buildlib/"> <!-- copy thirdparty lib-->
-			<fileset dir="${engine.target}/lib/">
-			</fileset>
-			<fileset dir="${engine.target}">
-				<include name="bdap.*.jar"/>
-			</fileset>
-		</copy>
 		<copy todir="${dist}/engine/lib/"> <!-- copy thirdparty lib-->
 			<fileset dir="${engine.target}/lib/">
 				<include name="commons*.jar"/>

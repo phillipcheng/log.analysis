@@ -83,9 +83,8 @@ public class ColOp {
 		}
 	}
 	
-	public List<String> process(Map<String, Object> vars){
-		List<String> items = new ArrayList<String>();
-		items.addAll(Arrays.asList((String[]) vars.get(VAR_NAME_FIELDS)));
+	
+	public List<String> process(Map<String, Object> vars, List<String> items){
 		if (type == ColOpType.update){
 			String val = ScriptEngineUtil.eval(expCS, vars);
 			if (val!=null){

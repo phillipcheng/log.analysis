@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.CompiledScript;
+
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,6 +48,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	//cfgkey
 	public static final String cfgkey_vars="vars";
 	public static final String cfgkey_skip_header="skip.header";
+	public static final String cfgkey_skip_header_exp="skip.header.exp";
 	
 	//system variables
 	public static final String VAR_NAME_TABLE_NAME="tablename";
@@ -63,6 +66,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	private String prefix;
 	
 	protected boolean skipHeader=false;
+	protected transient CompiledScript skipHeaderCS;
 	
 	protected transient FileSystem fs;
 	private transient PropertiesConfiguration pc;
@@ -70,7 +74,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	private transient Configuration conf;
 	
 	private ProcessMode pm = ProcessMode.Single;
-	private MRMode mrMode = MRMode.file;
+	private MRMode mrMode = MRMode.line;
 	private boolean sendLog = true;//command level send log flag
 	
 	//system variable map
@@ -136,6 +140,10 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 			}
 		}
 		skipHeader =getCfgBoolean(cfgkey_skip_header, false);
+		String skipHeaderExpStr = getCfgString(cfgkey_skip_header_exp, null);
+		if (skipHeaderExpStr!=null){
+			this.skipHeaderCS = ScriptEngineUtil.compileScript(skipHeaderExpStr);
+		}
 	}
 	
 	public void init(){
