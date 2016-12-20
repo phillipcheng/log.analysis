@@ -445,12 +445,15 @@ var saveAsJson = function() {
 		'wfName': 'flow1'
 	};
 	each(nodeLists, function() {
+		debugger
 		var tempkeys = this.k.toString();
 		var propertyObj = {};
 		each(propertyList, function() {
 			if(this.k.toString().localeCompare(tempkeys) == 0) {
 				propertyObj = this.v;
-				propertyObj.name = propertyObj.name + tempkeys;
+				if(propertyObj.name.indexOf("g_") == -1){
+					propertyObj.name = propertyObj.name + tempkeys;
+				}
 				result.nodes.push(propertyObj);
 				return false;
 			} else {

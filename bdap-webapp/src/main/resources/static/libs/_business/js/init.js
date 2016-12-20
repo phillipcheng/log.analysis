@@ -214,8 +214,11 @@ var compatibilityTools = function(){
 }
 
 var getAjaxAbsolutePath = function(relativePath){
+	
 	var httpPath = "http://localhost:8080";
+	var userName = "george";
 	if(relativePath != null && relativePath != ''){
+		relativePath = relativePath.replace("{userName}", userName);
 		httpPath += relativePath;
 	}else {
 		httpPath = "";
