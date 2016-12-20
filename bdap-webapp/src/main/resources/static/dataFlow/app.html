@@ -50,9 +50,6 @@
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.group()">ActionFlow</a>
 						</li>-->
 						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="run();">run</a>
-						</li>
-						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="openLogWin();">openLogWin</a>
 						</li>
 						<li>
@@ -72,11 +69,9 @@
 		</nav>
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-12" style="height: 94vh;">
-
+				<div class="col-md-12" style="height: 93vh;">
 					<div style="height:100%;" role="tabpanel" class="tab-pane active" id="home">
-
-						<div id="display" style="height:100%;width: 100%; position: absolute;">
+						<div id="display" style="height:99%;width: 99%; position: absolute;">
 							<svg id="svg" style="height:100%;width: 100%;" onmousedown="svg_document_onmousedown()" onmouseup="svg_document_onmouseup()" onkeyup="svg_document_onkeydown()">
 								<defs>
 									<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
@@ -91,15 +86,15 @@
 								</defs>
 							</svg>
 						</div>
-						<div class="child_svg">
+						<div id="child_svg" class="child_svg" onclick="remoeToInitPosition()">
 							<svg id="svgsmall" style="height:100%;width: 100%;">
 								<g id="rectSmallContainer" transform="translate(75,75)scale(1,1)">
 
 								</g>
 							</svg>
-						</div>
-						<div id="child_small_svg" class="child_small_svg" style="width: 10px;height: 10px;">
-							
+							<div id="child_small_svg" class="child_small_svg" style="width: 10px;height: 10px;">
+
+							</div>
 						</div>
 						<div id="divrightup" class="rightupcss">
 							<div class="rightupcssheader">

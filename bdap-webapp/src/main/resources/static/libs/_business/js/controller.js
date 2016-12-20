@@ -9,82 +9,6 @@ var svg_document_onkeydown = function() {
 	}
 }
 
-//var node_mouse_down = function() {
-//	var e = window.event || arguments.callee.caller.arguments[0];
-//	e.stopPropagation();
-//	var o = getEventSources(e);
-//	console.log("-------------node_mouse_down:" + o.tagName + "-----------------");
-//	booleaniszoom = false;
-//	if(o.tagName.toString().localeCompare("rect") == 0) {
-//		if(o.getAttribute("G")) {
-//			templine.firstId = o.getAttribute("G");
-//			var temp = document.getElementById(templine.firstId).getAttribute("transform");
-//			if(temp.lastIndexOf("scale") > -1) {
-//				temp = temp.substring(0, temp.lastIndexOf("scale"));
-//			}
-//			temp = temp.replace("translate(", "");
-//			temp = temp.replace(")", "");
-//			temp = temp.split(",");
-//			if((parseInt(temp[0]) + 50) > 0) {
-//				templine.firstPoint = (parseInt(temp[0]) + 50) + "," + (parseInt(temp[1]) + 25);
-//			} else {
-//				//clearTempLine();
-//			}
-//			document.getElementById("svg").style.cursor = "crosshair";
-//		}
-//	}
-//}
-
-//var node_mouse_up = function() {
-//	var e = window.event || arguments.callee.caller.arguments[0];
-//	e.stopPropagation();
-//	var o = getEventSources(e);
-//	console.log("-------------node_mouse_up:" + o.tagName + "-----------------");
-//	if(o.tagName.toString().localeCompare("rect") == 0) {
-//		//画线
-//		if(o.getAttribute("G")) {
-//			if(o.getAttribute("G").toString().localeCompare(templine.firstId) == 0) {
-//				if(d3.select("#" + o.getAttribute("G")).attr("class").toString().indexOf("nodeGSelected") > -1) {
-//					//localeCompare("nodeG nodeGSelected")
-//					//d3.select("#" + o.getAttribute("G")).attr("class", "nodeG");
-//					var tempClassName = d3.select("#" + o.getAttribute("G")).attr("class").toString();
-//					tempClassName = tempClassName.replace("nodeGSelected", "");
-//					d3.select("#" + o.getAttribute("G")).attr("class", tempClassName);
-//				} else {
-//					//清除其它选中的效果
-//					//allchangeClassNameForRect("nodeGSelected", "nodeG");
-//					removeSelectedClass();
-//					//d3.select("#" + o.getAttribute("G")).attr("class", "nodeG nodeGSelected");
-//					beSureClassName(o.getAttribute("G"));
-//
-//					//如果,后来选中的那个,已经最大化,还要修改属性列表
-//					if(document.getElementById(o.getAttribute("G")).getElementsByTagName("g").length == 2) {
-//						var d = o.getAttribute("G");
-//						var nodeData = g.node(d);
-//						loadProperty(d, nodeData);
-//					}
-//				}
-//			} else {
-//				templine.endId = o.getAttribute("G").toString();
-//				g.setEdge(templine.firstId, templine.endId);
-//				_base._build();
-//				clearTempLine();
-//			}
-//		}
-//		clearTempLine();
-//		document.getElementById("svg").style.cursor = "default";
-//	}
-//}
-
-//var svg_mouse_down = function() {
-//	booleaniszoom = true;
-//}
-
-//var svg_mouse_up = function() {
-//	booleaniszoom = true;
-//	clearTempLine();
-//}
-
 var zoom_click = function() {
 	var e = window.event || arguments.callee.caller.arguments[0];
 	e.stopPropagation();
@@ -133,18 +57,6 @@ var log_click = function() {
 	openLogWin();
 }
 
-//var func_down = function() {
-//	var e = window.event || arguments.callee.caller.arguments[0];
-//	e.stopPropagation();
-//	console.log("func_down");
-//}
-
-//var func_up = function() {
-//	var e = window.event || arguments.callee.caller.arguments[0];
-//	e.stopPropagation();
-//	console.log("func_up");
-//}
-
 var make_sure_first_point = function(o) {
 	templine.firstId = o.getAttribute("G");
 	var temp = document.getElementById(templine.firstId).getAttribute("transform");
@@ -164,13 +76,20 @@ var make_sure_first_point = function(o) {
 
 var make_sure_second_point = function(o) {
 	if(g_mouse_down.length > 0 && g_mouse_up.length > 0 && (g_mouse_down.localeCompare(g_mouse_up) != 0)) {
-		g.setEdge(g_mouse_down, g_mouse_up);
-		pathLists.push({
-			'fromNodeName': g_mouse_down,
-			'toNodeName': g_mouse_up,
-			'linkType': 'success'
-		});
-		_base._build();
+		var firstPointData = g.node(g_mouse_down);
+		var endPointData = g.node(g_mouse_up);
+		if(firstPointData.nodeType.localeCompare("end") == 0 ||
+			endPointData.nodeType.localeCompare("start") == 0) {
+			
+		} else {
+			g.setEdge(g_mouse_down, g_mouse_up);
+			pathLists.push({
+				'fromNodeName': g_mouse_down,
+				'toNodeName': g_mouse_up,
+				'linkType': 'success'
+			});
+			_base._build();
+		}
 	}
 }
 
@@ -189,6 +108,14 @@ var svg_document_onmousedown = function() {
 	}
 	var args_tagName = o.tagName.toString();
 
+	switch(args_tagName) {
+		case "svg":
+			{
+				document.getElementById("svg").style.cursor = "move";
+			}
+			break;
+	}
+
 	if(o.getAttribute("G")) {
 		g_mouse_down = o.getAttribute("G").toString();
 	}
@@ -198,11 +125,7 @@ var svg_document_onmousedown = function() {
 			{
 				if(args_tagName.localeCompare("rect") == 0) {
 					var nodeData = g.node(g_mouse_down);
-					if(nodeData.nodeType.localeCompare("end") == 0) {
-
-					} else {
-						make_sure_first_point(o); //1.确定连线的第一个点
-					}
+					make_sure_first_point(o); //1.确定连线的第一个点
 				}
 			}
 			break;
@@ -266,12 +189,8 @@ var svg_document_onmouseup = function() {
 				case "RECT":
 					{
 						var nodeData = g.node(g_mouse_up);
-						if(nodeData.nodeType.localeCompare("start") == 0) {
-							clearTempLine();
-						} else {
-							make_sure_second_point(o);
-							clearTempLine();
-						}
+						make_sure_second_point(o);
+						clearTempLine();
 					}
 					break;
 			}
@@ -279,6 +198,7 @@ var svg_document_onmouseup = function() {
 	} else {
 		clearTempLine();
 	}
+	clearTempLine();
 	document.getElementById("svg").style.cursor = "default";
 }
 
@@ -296,17 +216,21 @@ var documentClickOperation = function(e, o, g_mouse_down, g_mouse_up, args_tagNa
 		console.log("----------右键----------");
 		if(args_tagName.localeCompare("rect") == 0 && args_self.localeCompare("RECT") == 0) {
 			//删除节点
-			g.removeNode(g_mouse_down);
-			_base._build();
-			clearTempLine();
+			if(window.confirm("Are you Sure? Delete!")) {
+				g.removeNode(g_mouse_down);
+				_base._build();
+				clearTempLine();
+			}
 		} else if(args_tagName.localeCompare("path") == 0 && g_mouse_down.indexOf("linegroup") > -1) {
 			//删除连接线
-			var temp = o.getAttribute("id");
-			temp = temp.replace("pathA", "");
-			temp = temp.split("A");
-			g.removeEdge(temp[0], temp[1]);
-			_base._build();
-			clearTempLine();
+			if(window.confirm("Are you Sure? Delete!")) {
+				var temp = o.getAttribute("id");
+				temp = temp.replace("pathA", "");
+				temp = temp.split("A");
+				g.removeEdge(temp[0], temp[1]);
+				_base._build();
+				clearTempLine();
+			}
 		}
 	} else if(e.button == 0) {
 		console.log("----------左键----------");

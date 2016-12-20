@@ -200,18 +200,22 @@ body {
 }
 
 .child_svg {
-	position: absolute;
+	position: relative;
 	width: 150px;
 	height: 150px;
-	border: 1px solid #F00;
+	border: 1px solid rgb(155,155,155);
 	background: #FFF;
 	z-index: 1;
 	opacity: 0.5;
 }
 
+.child_svg:hover{
+	cursor: move;
+}
+
 .child_small_svg {
-	position: relative;
-	border: 1px solid #F00;
+	position: absolute;
+	border: 1px solid rgb(155,155,155);
 	background: #FFF;
 	z-index: 5;
 	opacity: 0.5;
