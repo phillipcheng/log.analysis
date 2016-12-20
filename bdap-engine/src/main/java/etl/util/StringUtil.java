@@ -2,8 +2,14 @@ package etl.util;
 
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class StringUtil {
 
+	public static final Logger logger = LogManager.getLogger(StringUtil.class);
+	
 	//replace "[param]" with value from params map, only support type string, for list type, should call this multiple times
 	public static String fillParams(String input, Map<String, Object> params, 
 			String prefix, String postfix){//TODO slow

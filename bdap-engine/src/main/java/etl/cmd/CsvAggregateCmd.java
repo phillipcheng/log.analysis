@@ -442,7 +442,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			}
 		}
 		try {
-			String tableName = getTableName(context);
+			String tableName = getTableNameSetFileNameByContext(context);
 			logger.debug(String.format("in map tableName:%s", tableName));
 			if (tableName==null || "".equals(tableName.trim())){
 				logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
