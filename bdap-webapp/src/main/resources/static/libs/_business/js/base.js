@@ -58,7 +58,7 @@ var _base = {
 			return d;
 		});
 
-		groupSmall.enter().append("g") //enter
+		groupSmall.enter().append("circle") //enter
 			.each(function(d) {
 				var nodeData = g.node(d);
 				smallNodeEnter(this, d, nodeData);
@@ -74,6 +74,11 @@ var _base = {
 				}
 			});
 
+		groupSmall.each(function(d) {
+			var nodeData = g.node(d);
+			smallNodeUpdate(this, d, nodeData);
+		});
+
 		group.each(function(d) { //update
 			var nodeData = g.node(d);
 			if(nodeData.action.toString().localeCompare("group") == 0) {
@@ -82,6 +87,13 @@ var _base = {
 				actionUpdate(this, d, nodeData);
 			}
 		});
+
+		groupSmall.exit()
+			.each(function(d) {
+				d3.select(this).remove();
+				console.info("remove small node: " + d);
+			})
+			.remove();
 
 		group.exit()
 			.each(function(d) {
@@ -176,11 +188,16 @@ var _base = {
 
 var smallNodeEnter = function(theSelf, d, nodeData) {
 	var theSelfObj = d3.select(theSelf);
-	theSelfObj.append("rect") //rect
-		.attr("width", 2)
-		.attr("height", 2)
-		.attr("x",((nodeData.x/20)-1))
-		.attr("y",((nodeData.y/20)-1));
+	theSelfObj.attr("class", "nodeSmallG")
+		.attr("id", "small" + d)
+		.attr("r",2)
+		.attr("cx", ((nodeData.x / 20) - 1))
+		.attr("cy", ((nodeData.y / 20) - 1));
+}
+
+var smallNodeUpdate = function(theSelf, d, nodeData) {
+	var theSelfObj = d3.select(theSelf);
+	theSelfObj.attr("cx", ((nodeData.x / 20) - 1)).attr("cy", ((nodeData.y / 20) - 1));
 }
 
 /**
@@ -247,9 +264,6 @@ var actionEnter = function(theSelf, d, nodeData) {
 	var theSelfObjChild = theSelfObj.append("g");
 	theSelfObjChild.attr("G", d).attr("class", "minNodeG")
 		.attr("self", "ShowProperty")
-		//.attr("onclick","zoom_click()")
-		//		.attr("onmousedown","zoom_mouse_down()")
-		//		.attr("onmouseup","func_up()")
 		.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
 
 	theSelfObjChild.append("circle").attr("G", d)
@@ -503,7 +517,7 @@ var saveAsJson = function() {
 
 	result.links = pathLists;
 
-	//	console.log("result", JSON.stringify(result));
+	console.log("result", JSON.stringify(result));
 
 	$.ajax({
 		type: "post",
@@ -613,4 +627,14 @@ var removeAllSelectedClass = function() {
 			var nodeData = g.node(tempId);
 			d3.select(this).attr("class", "nodeG " + nodeData.nodeType);
 		});
+}
+
+/**
+ * 移动到初始化的位置
+ */
+var remoeToInitPosition = function(){
+	d3.select("#main").attr("transform", "translate(" + init_zoom_x + "," + init_zoom_y + ")scale(1,1)");
+	d3.select("#rectSmallContainer").attr("transform", "translate(75,75)scale(1,1)");
+	current_zoom_x = init_zoom_x;
+	current_zoom_y = init_zoom_y;
 }

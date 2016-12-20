@@ -30,6 +30,10 @@ var current_zoom_new_x = 0;
 
 var current_zoom_new_y = 0;
 
+var init_zoom_x = 0;
+
+var init_zoom_y = 0;
+
 var display_off_left = 0;
 
 var display_off_top = 0;
