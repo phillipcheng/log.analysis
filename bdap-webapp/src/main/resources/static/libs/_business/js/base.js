@@ -473,7 +473,9 @@ var saveAsJson = function() {
 		each(propertyList, function() {
 			if(this.k.toString().localeCompare(tempkeys) == 0) {
 				propertyObj = this.v;
-				propertyObj.name = propertyObj.name + tempkeys;
+				if(propertyObj.name.indexOf("g_") == -1){
+					propertyObj.name = propertyObj.name + tempkeys;
+				}
 				result.nodes.push(propertyObj);
 				return false;
 			} else {
