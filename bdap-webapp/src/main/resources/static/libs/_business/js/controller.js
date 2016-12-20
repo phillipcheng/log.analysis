@@ -198,9 +198,9 @@ var svg_document_onmousedown = function() {
 			{
 				if(args_tagName.localeCompare("rect") == 0) {
 					var nodeData = g.node(g_mouse_down);
-					if(nodeData.nodeType.localeCompare("end")==0){
-						
-					}else{
+					if(nodeData.nodeType.localeCompare("end") == 0) {
+
+					} else {
 						make_sure_first_point(o); //1.确定连线的第一个点
 					}
 				}
@@ -265,8 +265,13 @@ var svg_document_onmouseup = function() {
 			switch(args_self) {
 				case "RECT":
 					{
-						make_sure_second_point(o);
-						clearTempLine();
+						var nodeData = g.node(g_mouse_up);
+						if(nodeData.nodeType.localeCompare("start") == 0) {
+							clearTempLine();
+						} else {
+							make_sure_second_point(o);
+							clearTempLine();
+						}
 					}
 					break;
 			}
@@ -289,17 +294,17 @@ var svg_document_onmouseup = function() {
 var documentClickOperation = function(e, o, g_mouse_down, g_mouse_up, args_tagName, args_self) {
 	if(e.button == 2) {
 		console.log("----------右键----------");
-		if(args_tagName.localeCompare("rect")==0&&args_self.localeCompare("RECT")==0){
+		if(args_tagName.localeCompare("rect") == 0 && args_self.localeCompare("RECT") == 0) {
 			//删除节点
 			g.removeNode(g_mouse_down);
 			_base._build();
 			clearTempLine();
-		}else if(args_tagName.localeCompare("path")==0&&g_mouse_down.indexOf("linegroup")>-1){
+		} else if(args_tagName.localeCompare("path") == 0 && g_mouse_down.indexOf("linegroup") > -1) {
 			//删除连接线
 			var temp = o.getAttribute("id");
-			temp = temp.replace("pathA","");
+			temp = temp.replace("pathA", "");
 			temp = temp.split("A");
-			g.removeEdge(temp[0],temp[1]);
+			g.removeEdge(temp[0], temp[1]);
 			_base._build();
 			clearTempLine();
 		}

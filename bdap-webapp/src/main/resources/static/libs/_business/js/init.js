@@ -20,6 +20,15 @@ var init = function() {
 	compatibilityTools();
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
+	console.log("clientwidth", clientwidth);
+	console.log("clientheight", clientheight);
+
+	document.getElementById("child_small_svg").style.width = (clientwidth / 20) + "px";
+	document.getElementById("child_small_svg").style.height = (clientheight / 20) + "px";
+	console.log("(clientwidth / 20) ",(clientwidth / 20));
+	console.log("(clientheight / 20) ",(clientheight / 20));
+	document.getElementById("child_small_svg").style.left = (75 - (clientwidth / 40)) + "px";
+	document.getElementById("child_small_svg").style.top = (75 - (clientheight / 40)) + "px";
 
 	current_zoom_x = clientwidth / 2 - 100;
 	current_zoom_y = clientheight / 2 - 50;
@@ -45,9 +54,9 @@ var init = function() {
 		.attr("stroke", "#269ABC").attr("stroke-width", "2px");
 
 	d3.select("#svg").attr("onmousemove", "svgMouseMove()");
-//	d3.select("#svg").attr("onmousedown", "svg_mouse_down()");
-//	d3.select("#svg").attr("onmouseup", "svg_mouse_up()");
-	
+	//	d3.select("#svg").attr("onmousedown", "svg_mouse_down()");
+	//	d3.select("#svg").attr("onmouseup", "svg_mouse_up()");
+
 	/**
 	 * 1.3
 	 */
@@ -172,8 +181,7 @@ var svgDrapMove = function() {
  */
 var svgMouseMove = function(event) {
 	var e = event || window.event || arguments.callee.caller.arguments[0];
-	if(templine.firstId.length == 0) {
-	} else {
+	if(templine.firstId.length == 0) {} else {
 		var x = e.x || e.clientX;
 		var y = e.y || e.clientY;
 		x -= (display_off_left + current_zoom_x);
@@ -188,36 +196,36 @@ var svgMouseMove = function(event) {
  */
 var clearTempLine = function() {
 
-	templine.firstId = "";
-	templine.firstPoint = "";
+		templine.firstId = "";
+		templine.firstPoint = "";
 
-	templine.endPoint = "";
-	templine.endId = "";
+		templine.endPoint = "";
+		templine.endId = "";
 
-	d3.select("#pathmove").attr("d", "");
+		d3.select("#pathmove").attr("d", "");
+	}
+	/**
+	 * all browser conpatibility will be added here.
+	 */
+var compatibilityTools = function() {
+	if (typeof  String.prototype.endsWith  !=  'function')  {    
+		String.prototype.endsWith  =   function(suffix)  {     
+			return  this.indexOf(suffix,  this.length  -  suffix.length)  !==  -1;    
+		};   
+	}  
+
+	if(typeof String.prototype.startsWith != 'function') {
+		String.prototype.startsWith = function(prefix) {
+			return this.slice(0, prefix.length) === prefix;
+		};
+	}
 }
-/**
- * all browser conpatibility will be added here.
- */
-var compatibilityTools = function(){
-	if (typeof String.prototype.endsWith != 'function') {   
-		 String.prototype.endsWith = function(suffix) {   
-		  return this.indexOf(suffix, this.length - suffix.length) !== -1;   
-		 };   
-		}  
-		
-	if (typeof String.prototype.startsWith != 'function') {  
-	     String.prototype.startsWith = function (prefix){  
-	      return this.slice(0, prefix.length) === prefix;  
-	     };  
-	    }  
-}
 
-var getAjaxAbsolutePath = function(relativePath){
+var getAjaxAbsolutePath = function(relativePath) {
 	var httpPath = "http://localhost:8080";
-	if(relativePath != null && relativePath != ''){
+	if(relativePath != null && relativePath != '') {
 		httpPath += relativePath;
-	}else {
+	} else {
 		httpPath = "";
 	}
 	return httpPath;

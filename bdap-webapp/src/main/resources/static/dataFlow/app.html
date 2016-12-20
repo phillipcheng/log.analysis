@@ -75,7 +75,7 @@
 				<div class="col-md-12" style="height: 94vh;">
 
 					<div style="height:100%;" role="tabpanel" class="tab-pane active" id="home">
-						
+
 						<div id="display" style="height:100%;width: 100%; position: absolute;">
 							<svg id="svg" style="height:100%;width: 100%;" onmousedown="svg_document_onmousedown()" onmouseup="svg_document_onmouseup()" onkeyup="svg_document_onkeydown()">
 								<defs>
@@ -91,7 +91,16 @@
 								</defs>
 							</svg>
 						</div>
-						<div class="child_svg">我浮动在上面</div>
+						<div class="child_svg">
+							<svg id="svgsmall" style="height:100%;width: 100%;">
+								<g id="rectSmallContainer" transform="translate(75,75)scale(1,1)">
+
+								</g>
+							</svg>
+						</div>
+						<div id="child_small_svg" class="child_small_svg" style="width: 10px;height: 10px;">
+							
+						</div>
 						<div id="divrightup" class="rightupcss">
 							<div class="rightupcssheader">
 								<strong id="rightupcssheaderstring">Star</strong>
