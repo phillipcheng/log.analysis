@@ -504,6 +504,7 @@ var saveAsJson = function() {
 	each(pathLists, function(i, o) {
 		var tempfromNodeName = o.fromNodeName;
 		var temptoNodeName = o.toNodeName;
+		
 		each(propertyList, function() {
 			if(tempfromNodeName.localeCompare(this.k.toString()) == 0) {
 				o.fromNodeName = this.v.name;
@@ -513,10 +514,10 @@ var saveAsJson = function() {
 			}
 			return true;
 		});
+		return true;
 	});
 
 	result.links = pathLists;
-
 	console.log("result", JSON.stringify(result));
 
 	$.ajax({
