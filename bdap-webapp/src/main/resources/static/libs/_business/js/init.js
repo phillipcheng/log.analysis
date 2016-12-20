@@ -21,6 +21,12 @@ var init = function() {
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
 
+	document.getElementById("child_small_svg").style.width = (clientwidth / 20) + "px";
+	document.getElementById("child_small_svg").style.height = (clientheight / 20) + "px";
+
+	document.getElementById("child_small_svg").style.left = (75 - (clientwidth / 40)) + "px";
+	document.getElementById("child_small_svg").style.top = (75 - (clientheight / 40)) + "px";
+
 	current_zoom_x = clientwidth / 2 - 100;
 	current_zoom_y = clientheight / 2 - 50;
 
@@ -45,9 +51,6 @@ var init = function() {
 		.attr("stroke", "#269ABC").attr("stroke-width", "2px");
 
 	d3.select("#svg").attr("onmousemove", "svgMouseMove()");
-//	d3.select("#svg").attr("onmousedown", "svg_mouse_down()");
-//	d3.select("#svg").attr("onmouseup", "svg_mouse_up()");
-	
 	/**
 	 * 1.3
 	 */
@@ -63,6 +66,12 @@ var init = function() {
 	 */
 	d3.select("#main").attr("transform", "translate(" + current_zoom_x + "," + current_zoom_y + ")scale(1,1)");
 
+	/**
+	 * 1.6
+	 */
+	
+	init_zoom_x = current_zoom_x;
+	init_zoom_y = current_zoom_y;
 }
 
 /**
@@ -86,6 +95,7 @@ var getEventSources = function(e) {
  */
 var getOffsetLeft = function(o) {
 	var offset = o.offsetLeft;
+
 	if(o.offsetParent) {
 		offset += arguments.callee(o.offsetParent);
 	}
@@ -116,6 +126,10 @@ var svgzoom = function() {
 			"translate(" + current_zoom_x + "," + current_zoom_y + ")scale(1,1)");
 		current_zoom_old_x = current_zoom_new_x;
 		current_zoom_old_y = current_zoom_new_y;
+
+		d3.select("#rectSmallContainer").attr("transform",
+			"translate(" + (current_zoom_x / 20 + 75 - clientwidth / 40) + "," + (current_zoom_y / 20 + 75 - clientheight / 40) + ")scale(1,1)");
+
 	} else {
 		current_zoom_old_x = parseInt(d3.event.translate[0]);
 		current_zoom_old_y = parseInt(d3.event.translate[1]);
@@ -170,57 +184,46 @@ var svgDrapMove = function() {
 /**
  * 鼠标移动 特效
  */
-var svgMouseMove = function(event) {
-	var e = event || window.event || arguments.callee.caller.arguments[0];
-	if(templine.firstId.length == 0) {
-	} else {
-		var x = e.x || e.clientX;
-		var y = e.y || e.clientY;
-		//console.log("x", x);
-		//console.log("y", y);
-		x -= (display_off_left + current_zoom_x);
-		y -= (display_off_top + current_zoom_y);
-		var temp_d = "M" + templine.firstPoint + " L" + x + "," + y;
-		//console.log("temp_d", temp_d);
-		d3.select("#pathmove").attr("d", temp_d);
+var svgMouseMove = function() {
+	var e = window.event || arguments.callee.caller.arguments[0];
+	if(templine.firstId.length == 0) {} else {
+		try {
+			var x = e.x || e.clientX;
+			var y = e.y || e.clientY;
+			x -= (display_off_left + current_zoom_x);
+			y -= (display_off_top + current_zoom_y);
+			var temp_d = "M" + templine.firstPoint + " L" + x + "," + y;
+			d3.select("#pathmove").attr("d", temp_d);
+		} catch(e) {
+			clearTempLine();
+		}
 	}
 }
 
 /**
- * 清除 templine 的   属性
- */
-var clearTempLine = function() {
-
-	templine.firstId = "";
-	templine.firstPoint = "";
-
-	templine.endPoint = "";
-	templine.endId = "";
-
-	d3.select("#pathmove").attr("d", "");
-}
-/**
  * all browser conpatibility will be added here.
  */
-var compatibilityTools = function(){
-	if (typeof String.prototype.endsWith != 'function') {   
-		 String.prototype.endsWith = function(suffix) {   
-		  return this.indexOf(suffix, this.length - suffix.length) !== -1;   
-		 };   
-		}  
-		
-	if (typeof String.prototype.startsWith != 'function') {  
-	     String.prototype.startsWith = function (prefix){  
-	      return this.slice(0, prefix.length) === prefix;  
-	     };  
-	    }  
+var compatibilityTools = function() {
+	if (typeof  String.prototype.endsWith  !=  'function')  {    
+		String.prototype.endsWith  =   function(suffix)  {     
+			return  this.indexOf(suffix,  this.length  -  suffix.length)  !==  -1;    
+		};   
+	}  
+
+	if(typeof String.prototype.startsWith != 'function') {
+		String.prototype.startsWith = function(prefix) {
+			return this.slice(0, prefix.length) === prefix;
+		};
+	}
 }
 
-var getAjaxAbsolutePath = function(relativePath){
-	var httpPath = "http://16.165.184.12:8080";
+var getAjaxAbsolutePath = function(relativePath) {
+	var httpPath = "http://localhost:8080";
+	var userName = "george";
 	if(relativePath != null && relativePath != ''){
+		relativePath = relativePath.replace("{userName}", userName);
 		httpPath += relativePath;
-	}else {
+	} else {
 		httpPath = "";
 	}
 	return httpPath;

@@ -4,6 +4,15 @@
 var zoom = {
 	ShowProperty: function(keys) {
 		var nodeData = g.node(keys);
+		var temp_width = 0;
+		each(nodeArgs,function(){
+			if(this.k.toString().localeCompare(keys)==0){
+				temp_width = this.vmax.width;
+				return false;
+			}else{
+				return true;
+			}
+		});
 		each(propertyList, function(i, o) {
 			if(o.k.toString().localeCompare(keys) == 0) {
 				var temp_index = 0;
@@ -12,8 +21,9 @@ var zoom = {
 				});
 				var obj = {
 					label: nodeData.label || "",
-					width: 300,
+					width: temp_width,
 					height: ((18 * (temp_index)) + 10),
+					nodeType: nodeData.nodeType,
 					runstate: nodeData.runstate || 'play',
 					action: nodeData.action || 'node',
 					zoom: 'max'
@@ -28,10 +38,22 @@ var zoom = {
 	},
 	HideProperty: function(keys) {
 		var nodeData = g.node(keys);
+		var temp_width = 0;
+		var temp_height = 0;
+		each(nodeArgs,function(){
+			if(this.k.toString().localeCompare(keys)==0){
+				temp_width = this.vmin.width;
+				temp_height = this.vmin.height;
+				return false;
+			}else{
+				return true;
+			}
+		});		
 		var obj = {
 			label: nodeData.label || "",
-			width: 200,
-			height: 50,
+			width: temp_width,
+			height: temp_height,
+			nodeType: nodeData.nodeType,
 			runstate: nodeData.runstate || 'play',
 			action: nodeData.action || 'node',
 			zoom: 'normal'
@@ -47,13 +69,11 @@ var zoom = {
  * @param {Object} nodeData
  */
 var loadProperty = function(d, nodeData) {
-	console.log(document.getElementById(d).getElementsByTagName("text")[0].innerHTML);
 	d3.select("#" + d).select(".nodePropertyG").remove();
 	d3.select(".rightupcssbody").selectAll(".sublistgroup").remove();
 	d3.select("#divrightup").select(".rightupcssheader").select("strong").text(document.getElementById(d).getElementsByTagName("text")[0].innerHTML);
 	each(propertyList, function(i, v) {
 		if(v.k.toString().localeCompare(d.toString()) == 0) {
-			console.log("propertylist", v.v);
 			d3.select("#" + d).append("g")
 				.attr("id", "propertylist_" + d)
 				.attr("class", "nodePropertyG")
@@ -66,7 +86,6 @@ var loadProperty = function(d, nodeData) {
 				.attr("y", 25);
 			var _index = 0;
 			var svgrect = d3.select("#propertylist_" + d);
-			console.log("v.v", v.v);
 			$.each(v.v, function(key, value) {
 				if(key.toString().localeCompare("inLets") == 0 || key.toString().localeCompare("outlets") == 0 || key.toString().localeCompare("@class") == 0) {
 
@@ -111,7 +130,6 @@ var changeProperty = function(d, keys, proId) {
 		$("#rightupcssheaderstring").html(getEventSources(e).value);
 		d3.select("#text_" + d).text(getEventSources(e).value);
 		var nodeDate = g.node(d);
-		console.log("nodeDate", nodeDate);
 		var obj = {
 			label: getEventSources(e).value,
 			width: nodeDate.width,
@@ -122,10 +140,7 @@ var changeProperty = function(d, keys, proId) {
 		};
 		g.setNode(d, obj);
 	}
-	console.log("propertyList", propertyList);
 	each(propertyList, function(i, o) {
-		console.log(o.k.toString());
-		console.log(d);
 		if(o.k.toString().localeCompare(d) == 0) {
 			$.each(o.v, function(key, value) {
 				if(key.toString().localeCompare(keys.toString()) == 0) {
@@ -138,7 +153,6 @@ var changeProperty = function(d, keys, proId) {
 			return true;
 		}
 	});
-	console.log("propertyList", propertyList);
 }
 
 /**

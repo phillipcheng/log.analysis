@@ -5,11 +5,9 @@ body {
 	user-select: none;
 }
 
-.nodePropertyG{
-	
-}
+.nodePropertyG {}
 
-.nodePropertyG:hover{
+.nodePropertyG:hover {
 	cursor: pointer;
 }
 
@@ -20,16 +18,16 @@ body {
 }
 
 .nodeG>rect {
-	fill: rgb(238, 238, 238);
 	stroke: silver;
 	stroke-width: 2;
 }
 
-.nodeG:hover>rect {
+
+/*.nodeG:hover>rect {
 	fill: rgb(238, 238, 238);
 	stroke: red;
 	stroke-width: 2;
-}
+}*/
 
 .nodeG>.nodePropertyG>rect {
 	fill: rgb(238, 238, 238);
@@ -51,7 +49,7 @@ body {
 	stroke-width: 3;
 }
 
-.nodeGSelected>.nodePropertyG>rect{
+.nodeGSelected>.nodePropertyG>rect {
 	fill: rgb(238, 238, 238);
 	stroke: rgb(255, 0, 0);
 	stroke-width: 3;
@@ -135,9 +133,9 @@ body {
 	opacity: 0.4;
 }
 
-.edgeSelected{}
+.edgeSelected {}
 
-.edgeSelected>path{
+.edgeSelected>path {
 	fill: none;
 	stroke: orangered;
 	stroke-linecap: round;
@@ -163,4 +161,66 @@ body {
 
 .inPath:hover {
 	cursor: help
+}
+
+.start {}
+
+.start>rect {
+	fill: darkolivegreen;
+}
+
+.start:hover>rect {
+	fill: darkolivegreen;
+	stroke: red;
+	stroke-width: 2;
+}
+
+.end {}
+
+.end>rect {
+	fill: orange;
+}
+
+.end:hover>rect {
+	fill: orange;
+	stroke: red;
+	stroke-width: 2;
+}
+
+.action {}
+
+.action>rect {
+	fill: rgb(238, 238, 238);
+}
+
+.action:hover>rect {
+	fill: rgb(238, 238, 238);
+	stroke: red;
+	stroke-width: 2;
+}
+
+.child_svg {
+	position: relative;
+	width: 150px;
+	height: 150px;
+	border: 1px solid rgb(155,155,155);
+	background: #FFF;
+	z-index: 1;
+	opacity: 0.5;
+}
+
+.child_svg:hover{
+	cursor: move;
+}
+
+.child_small_svg {
+	position: absolute;
+	border: 1px solid rgb(155,155,155);
+	background: #FFF;
+	z-index: 5;
+	opacity: 0.5;
+}
+
+.nodeSmallG{
+	
 }
