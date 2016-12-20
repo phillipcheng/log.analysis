@@ -205,7 +205,7 @@ public class CsvMergeCmd extends SchemaETLCmd{
 		Map<String, Object> retMap = new HashMap<String, Object>();
 		String tfName=null;
 		if (super.getLogicSchema()!=null){
-			tfName = super.getTableName(context);
+			tfName = super.getTableNameSetFileNameByContext(context);
 		}else{
 			tfName = Path.getPathWithoutSchemeAndAuthority(((FileSplit) context.getInputSplit()).getPath()).toString();
 		}

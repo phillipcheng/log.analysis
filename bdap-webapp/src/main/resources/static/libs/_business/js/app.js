@@ -12,12 +12,12 @@ var app = {
 		};
 		setNodeSelf(temp_g, obj);
 		var propertyObj = {
-			'@class': '',
-			'name':'Star' ,
+			'@class': 'start',
+			'name': 'Star',
 			'outlets': [],
 			'input.format': ''
 		}
-		setPropertySelf(temp_g, propertyObj);
+		setPropertySelf(temp_g, propertyObj, 4);
 		_base._build();
 	},
 	end: function() {
@@ -33,16 +33,16 @@ var app = {
 		};
 		setNodeSelf(temp_g, obj);
 		var propertyObj = {
-			'@class': '',
+			'@class': 'end',
 			'name': 'end',
-			'inlets': [],
+			'inLets': [],
 			'input.format': ''
 		}
-		setPropertySelf(temp_g, propertyObj);
+		setPropertySelf(temp_g, propertyObj, 4);
 		_base._build();
 	},
 	action: function(jsonObj) {
-		console.log("jsonObj",jsonObj);
+		console.log("jsonObj", jsonObj);
 		nodeIndex++;
 		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
 		var obj = {
@@ -55,19 +55,21 @@ var app = {
 		};
 		setNodeSelf(temp_g, obj);
 		_base._build();
-		$.each(remoteActionObj, function(k,v) {
-			if(k.toString().indexOf(jsonObj.label)>-1){
+		$.each(remoteActionObj, function(k, v) {
+			if(k.toString().indexOf(jsonObj.label) > -1) {
 				var propertyObj = {};
-				each(v,function(i,o){
+				var _index = 5;
+				each(v, function(i, o) {
+					_index++;
 					propertyObj[o.toString()] = '';
 					return true;
 				});
-				propertyObj['@class']=''+jsonObj.class+'';
-				propertyObj['name']=''+jsonObj.label+'';
-				propertyObj['inlets']='';
-				propertyObj['outlets']='';
-				propertyObj['input.format']='';
-				setPropertySelf(temp_g, propertyObj);
+				propertyObj['@class'] = '' + jsonObj.class + '';
+				propertyObj['name'] = '' + jsonObj.label + '';
+				propertyObj['inLets'] = [];
+				propertyObj['outlets'] = [];
+				propertyObj['input.format'] = '';
+				setPropertySelf(temp_g, propertyObj,_index);
 				return false;
 			}
 		});

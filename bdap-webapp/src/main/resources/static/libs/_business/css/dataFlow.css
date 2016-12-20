@@ -5,6 +5,14 @@ body {
 	user-select: none;
 }
 
+.nodePropertyG{
+	
+}
+
+.nodePropertyG:hover{
+	cursor: pointer;
+}
+
 .nodeG {}
 
 .nodeG>text {
@@ -123,8 +131,18 @@ body {
 	fill: none;
 	stroke: gray;
 	stroke-linecap: round;
-	stroke-width: 2px;
+	stroke-width: 3px;
 	opacity: 0.4;
+}
+
+.edgeSelected{}
+
+.edgeSelected>path{
+	fill: none;
+	stroke: orangered;
+	stroke-linecap: round;
+	stroke-width: 3px;
+	opacity: 0.8;
 }
 
 .edge:hover {
@@ -145,12 +163,4 @@ body {
 
 .inPath:hover {
 	cursor: help
-}
-
-.nodePropertyG {}
-
-.nodePropertyG>rect {
-	/*fill: rgb(238, 238, 238);
-	stroke: rgb(155, 155, 155);
-	stroke-width: 2;*/
 }

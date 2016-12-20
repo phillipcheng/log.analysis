@@ -6,3 +6,8 @@
 	insert into  T_ACCOUNT  (name, email, tableauuserid, userid) values('george1', '', 0,10)
 4、访问地址：
 	 http://localhost:8080/dashview/dataFlow/app.html
+	 
+
+	 
+webSocket 访问地址：
+		ws://localhost:8080/dashview/websocket

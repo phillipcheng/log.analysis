@@ -1,3 +1,7 @@
+var g_mouse_down = "";
+
+var g_mouse_up = "";
+
 var clientwidth = 0;
 
 var clientheight = 0;
@@ -249,7 +253,7 @@ var loadinit = function() {
 	/**
 	 * 
 	 */
-	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
+	d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {
 		remoteActionObj = data;
 		console.log("remoteActionObj", remoteActionObj);
 		$.each(data, function(k, v) {
@@ -259,7 +263,7 @@ var loadinit = function() {
 				.append("li").append("a")
 				.attr("href", "javascript:;").text(temp)
 				//.attr("onclick","app.group()");
-				.attr("onclick", "app.action({'label':'" + temp + "','class':'"+k+"'})");
+				.attr("onclick", "app.action({'label':'" + temp + "','class':'" + k + "'})");
 		});
 	});
 }
@@ -281,10 +285,12 @@ var _HTTP_LOAD_PROPERTY = "http://localhost:8020/flow/loadProperty";
  */
 //var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
 
-var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8080/dashview/george/flow/node/types/action/commands";
-
+var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
 
 /**
  * 保存JSON
  */
-var _HTTP_SAVE_JSON = "http://16.165.184.80:8080/dashview/george/flow";
+var _HTTP_SAVE_JSON = "/dashview/george/flow/";
+
+//var _HTTP_SAVE_JSON = "http://localhost:8080/dashview/george/flow";
+

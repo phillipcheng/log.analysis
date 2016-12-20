@@ -1,4 +1,5 @@
-document.onkeydown = function() {
+var svg_document_onkeydown = function() {
+	//document.onkeydown = function() {
 	var e = window.event || arguments.callee.caller.arguments[0];
 	console.log(e);
 
@@ -124,4 +125,166 @@ var zoom_click = function() {
 
 var log_click = function() {
 	openLogWin();
+}
+
+//var func_down = function() {
+//	var e = window.event || arguments.callee.caller.arguments[0];
+//	e.stopPropagation();
+//	console.log("func_down");
+//}
+
+//var func_up = function() {
+//	var e = window.event || arguments.callee.caller.arguments[0];
+//	e.stopPropagation();
+//	console.log("func_up");
+//}
+
+var make_sure_first_point = function(o) {
+	templine.firstId = o.getAttribute("G");
+	var temp = document.getElementById(templine.firstId).getAttribute("transform");
+	if(temp.lastIndexOf("scale") > -1) {
+		temp = temp.substring(0, temp.lastIndexOf("scale"));
+	}
+	temp = temp.replace("translate(", "");
+	temp = temp.replace(")", "");
+	temp = temp.split(",");
+	if((parseInt(temp[0]) + 50) > 0) {
+		templine.firstPoint = (parseInt(temp[0]) + 50) + "," + (parseInt(temp[1]) + 25);
+	} else {
+		//clearTempLine();
+	}
+	document.getElementById("svg").style.cursor = "crosshair";
+}
+
+var make_sure_second_point = function(o) {
+	if(g_mouse_down.length > 0 && g_mouse_up.length > 0 && (g_mouse_down.localeCompare(g_mouse_up) != 0)) {
+		g.setEdge(g_mouse_down, g_mouse_up);
+		pathLists.push({'fromNodeName':g_mouse_down, 'toNodeName':g_mouse_up,'linkType':'success'});
+		_base._build();
+	}
+}
+
+/**
+ * 
+ */
+var svg_document_onmousedown = function() {
+	g_mouse_down = "";
+	g_mouse_up = "";
+	booleaniszoom = false;
+	e = window.event || arguments.callee.caller.arguments[0];
+	var o = getEventSources(e);
+	var args_self = "";
+	if(o.getAttribute("self")) {
+		args_self = o.getAttribute("self").toString();
+	}
+	var args_tagName = o.tagName.toString();
+	
+	if(o.getAttribute("G")) {
+		g_mouse_down = o.getAttribute("G").toString();
+	}
+	console.log("---mouse_down:" + args_self + "," + args_tagName + "," + g_mouse_down + "---");
+	switch(args_self) {
+		case "RECT": //1.确定连线的第一个点
+			{
+				if(args_tagName.localeCompare("rect") == 0) {
+					make_sure_first_point(o); //1.确定连线的第一个点
+				}
+			}
+			break;
+		case "LOG":
+			{
+				openLogWin();
+			}
+			break;
+		case "ShowProperty":
+			{
+				zoom.ShowProperty(g_mouse_down);
+				setTimeout(function() {
+					var nodeData = g.node(g_mouse_down);
+					loadProperty(g_mouse_down, nodeData);
+					//清除其它选中的效果
+					allchangeClassNameForRect("nodeGSelected", "nodeG");
+					d3.select("#" + g_mouse_down).attr("class", "nodeG nodeGSelected");
+				}, 1000);
+			}
+			break;
+		case "HideProperty":
+			{
+				countProperty = 0;
+				clearProperty(g_mouse_down);
+				d3.select("#divrightup").style({
+					"display": "none"
+				});
+				zoom.HideProperty(g_mouse_down);
+			}
+			break;
+		default:
+			{
+				console.log("--------onmousedown,default--------");
+				booleaniszoom = true;
+			}
+			break;
+	}
+}
+
+/**
+ * 
+ */
+var svg_document_onmouseup = function() {
+	var e = window.event || arguments.callee.caller.arguments[0];
+	var o = getEventSources(e);
+	var args_tagName = o.tagName.toString();
+	var args_self = "";
+	if(o.getAttribute("self")) {
+		args_self = o.getAttribute("self").toString();
+	}
+	if(args_tagName.localeCompare("svg") != 0) {
+		if(o.getAttribute("G")) {
+			g_mouse_up = o.getAttribute("G").toString();
+		}
+		console.log("---mouse_up:" + args_self + "," + args_tagName + "," + g_mouse_up + "---");
+		if(g_mouse_down.localeCompare(g_mouse_up) == 0) {
+			//进行onclick
+			clearTempLine();
+			if(args_tagName.localeCompare("rect") == 0||args_tagName.localeCompare("text") == 0) {
+				if(g_mouse_down.localeCompare("") != 0 && g_mouse_up.localeCompare("") != 0) {
+					if(document.getElementById(g_mouse_up).getAttribute("class").toString().localeCompare("nodeG nodeGSelected") == 0) {
+						d3.select("#" + g_mouse_up).attr("class", "nodeG");
+					} else {
+						allchangeClassNameForRect("nodeGSelected", "nodeG");
+						d3.select("#" + g_mouse_up).attr("class", "nodeG nodeGSelected");
+						//判断是否加载loadProperty
+						if(d3.select("#" + g_mouse_up).select(".nodePropertyG")[0][0]===null){
+							
+						}else{
+							var nodeDate = g.node(g_mouse_up);
+							loadProperty(g_mouse_up,nodeDate);
+						}
+						
+					}
+				}
+			} else if(args_tagName.localeCompare("path") == 0) {
+				var tempPathG = g_mouse_up;
+				if(document.getElementById(tempPathG).getAttribute("class").toString().localeCompare("edge") == 0) {
+					document.getElementById(tempPathG).setAttribute("class", "edge edgeSelected");
+					o.setAttribute("marker-end","url(#arrowSelected)");
+				} else {
+					document.getElementById(tempPathG).setAttribute("class", "edge");
+					o.setAttribute("marker-end","url(#arrow)");
+				}
+			}
+		} else {
+			switch(args_self) {
+				case "RECT":
+					{
+						make_sure_second_point(o);
+						clearTempLine();
+					}
+					break;
+			}
+		}
+	} else {
+		clearTempLine();
+	}
+	document.getElementById("svg").style.cursor = "default";
 }
