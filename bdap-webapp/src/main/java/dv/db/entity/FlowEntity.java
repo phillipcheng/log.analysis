@@ -1,5 +1,6 @@
 package dv.db.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -19,7 +20,7 @@ public class FlowEntity {
 	private String name;
 	
 	private String owner;
-	
+	@Column(length=10000)  
 	private String jsonContent;
 
 	public String getName() {

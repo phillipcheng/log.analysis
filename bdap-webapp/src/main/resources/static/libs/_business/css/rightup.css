@@ -6,10 +6,9 @@
 	top:5px;
 	right:30px;
 	width: 300px;
-	height: 300px;
+	height: 500px;
 	border: solid silver 2px;
 }
-
 
 .rightupcssheader{
 	width: 297px;
@@ -21,6 +20,11 @@
 	font-family: 'Roboto', sans-serif;
 }
 
+.rightupcssbody{
+	height: 90%;
+	overflow: scroll;
+}
+
 .sublistgroup{
 	padding: 8px 12px 0px;
     font-weight: 500;
@@ -28,5 +32,9 @@
 }
 
 .sublistgroup>input{
+	width: 100%;
+}
+
+.sublistgroup>select{
 	width: 100%;
 }

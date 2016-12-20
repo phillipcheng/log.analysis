@@ -84,7 +84,7 @@ var _base = {
 	 * 用于边界线
 	 */
 	_groupEdges: function() {
-
+		d3.select("#lineContainer").selectAll(".edgeSelected").remove();
 		var edges = g.edges();
 
 		$.each(edges, function(i, d) {
@@ -117,6 +117,7 @@ var _base = {
 				linegroup.append("circle")
 					.attr("id", "outPath" + d.v + "A" + d.w)
 					.attr("G", "linegroup" + d.v + d.w)
+					.attr("self", "OutPath")
 					.attr("class", "outPath")
 					.attr("r", "4").attr("cx", points[0]["x"]).attr("cy", points[0]["y"]);
 
@@ -126,6 +127,7 @@ var _base = {
 				linegroup.append("circle")
 					.attr("id", "inPath" + d.v + "A" + d.w)
 					.attr("G", "linegroup" + d.v + d.w)
+					.attr("self", "InPath")
 					.attr("class", "inPath")
 					.attr("r", "3").attr("cx", endx).attr("cy", endy);
 
@@ -169,29 +171,35 @@ var _base = {
  */
 var actionEnter = function(theSelf, d, nodeData) {
 	//var nodeData = g.node(d);
-	console.log("-------------actionEnter:"+d+"--------------------");
+	console.log("-------------actionEnter:" + d + "--------------------");
 	var tempM = "";
 	var theSelfObj = d3.select(theSelf);
+	var transform_x = 0;
+	transform_x = (nodeData.x - nodeData.width / 2);
+	console.log("transform_x", transform_x);
 	theSelfObj.attr("id", d)
 		.attr("class", "nodeG")
 		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+	//		.attr("onmousedown","node_mouse_down()")
+	//		.attr("onmouseup","node_mouse_up()");
 
 	theSelfObj.append("rect") //rect
 		.attr("G", d)
-		.attr("class","nodeRect")
+		.attr("self", "RECT")
 		.attr("width", nodeData.width)
 		.attr("height", nodeData.height)
 		.attr("rx", 5).attr("ry", 5);
 
 	theSelfObj.append("text") //text
 		.attr("G", d)
+		.attr("id", "text_" + d)
 		.attr("x", 10)
 		.attr("y", 20).text(nodeData.label);
 
 	theSelfObj.append("circle") //circle
 		.attr("G", d)
 		.attr("r", "5")
-		.attr("self", "Log")
+		.attr("self", "LOG")
 		.attr("class", "nodeLog")
 		.attr("cx", nodeData.width - 10)
 		.attr("cy", nodeData.height - 10);
@@ -202,20 +210,25 @@ var actionEnter = function(theSelf, d, nodeData) {
 
 	theSelfObj.append("path") //path run
 		.attr("G", d)
+		.attr("self", "RUN")
 		.attr("class", "nodeRun")
 		.attr("d", tempM);
 
 	var theSelfObjChild = theSelfObj.append("g");
 	theSelfObjChild.attr("G", d).attr("class", "minNodeG")
+		.attr("self", "ShowProperty")
+		//.attr("onclick","zoom_click()")
+		//		.attr("onmousedown","zoom_mouse_down()")
+		//		.attr("onmouseup","func_up()")
 		.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
 
 	theSelfObjChild.append("circle").attr("G", d)
-		.attr("class","minNodeCircle")
+		.attr("class", "minNodeCircle")
 		.attr("self", "ShowProperty")
 		.attr("r", 5);
 
 	theSelfObjChild.append("path").attr("G", d)
-		.attr("class","minNodePath")
+		.attr("class", "minNodePath")
 		.attr("self", "ShowProperty")
 		.attr("d", "M-3,0L3,0M0,-3L0,3");
 
@@ -229,7 +242,7 @@ var actionEnter = function(theSelf, d, nodeData) {
  */
 var groupEnter = function(theSelf, d, nodeData) {
 	//var nodeData = g.node(d);
-	console.log("-------------actionEnter:"+d+"--------------------");
+	console.log("-------------actionEnter:" + d + "--------------------");
 	var tempM = "";
 	var theSelfObj = d3.select(theSelf);
 	theSelfObj.attr("id", d)
@@ -238,7 +251,7 @@ var groupEnter = function(theSelf, d, nodeData) {
 
 	theSelfObj.append("rect") //rect
 		.attr("G", d)
-		.attr("class","nodeRect")
+		.attr("class", "nodeRect")
 		.attr("width", nodeData.width)
 		.attr("height", nodeData.height)
 		.attr("rx", 5).attr("ry", 5);
@@ -261,17 +274,16 @@ var groupEnter = function(theSelf, d, nodeData) {
 		.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
 
 	theSelfObjChild.append("circle").attr("G", d)
-		.attr("class","minNodeCircle")
+		.attr("class", "minNodeCircle")
 		.attr("self", "ShowChildren")
 		.attr("r", 5);
 
 	theSelfObjChild.append("path").attr("G", d)
-		.attr("class","minNodePath")
+		.attr("class", "minNodePath")
 		.attr("self", "ShowChildren")
 		.attr("d", "M-3,0L3,0M0,-3L0,3");
 
 }
-
 
 /**
  *  actionUpdate 子节点
@@ -280,29 +292,31 @@ var groupEnter = function(theSelf, d, nodeData) {
  * @param {Object} nodeData
  */
 var actionUpdate = function(theSelf, d, nodeData) {
-	console.log("----------------actionUpdate:"+d+"----------------");
+	console.log("----------------actionUpdate:" + d + "----------------");
 	var tempM = "";
 	var theSelfObj = d3.select(theSelf);
 	theSelfObj.transition().duration(500)
-	.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 
 	theSelfObj.select("rect") //rect
-	.transition().duration(500)
+		.transition().duration(500)
 		.attr("width", nodeData.width)
 		.attr("height", nodeData.height);
 
+	theSelfObj.select("text").text(nodeData.label); //label
+
 	theSelfObj.select(".nodeLog") //circle
-	.transition().duration(500)
+		.transition().duration(500)
 		.attr("cx", nodeData.width - 10)
 		.attr("cy", nodeData.height - 10);
 
-		tempM = "M10," + (nodeData.height - 5);
-		tempM = tempM + "L10," + (nodeData.height - 15);
-		tempM = tempM + "L20,"+ (nodeData.height - 10) + " Z";
-	
-		theSelfObj.select(".nodeRun") //path run
+	tempM = "M10," + (nodeData.height - 5);
+	tempM = tempM + "L10," + (nodeData.height - 15);
+	tempM = tempM + "L20," + (nodeData.height - 10) + " Z";
+
+	theSelfObj.select(".nodeRun") //path run
 		.transition().duration(500)
-			.attr("d", tempM);	
+		.attr("d", tempM);
 
 	var theSelfObjChild = theSelfObj.select("g");
 	theSelfObjChild.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
@@ -310,32 +324,39 @@ var actionUpdate = function(theSelf, d, nodeData) {
 		theSelfObjChild.attr("class", "minNodeG");
 
 		theSelfObjChild.select("circle")
-		.transition().duration(500).attr("G", d)
-			.attr("class","minNodeCircle")
+			.transition().duration(500).attr("G", d)
+			.attr("class", "minNodeCircle")
 			.attr("self", "ShowProperty")
 			.attr("r", 5);
-			
+
 		theSelfObjChild.select("path")
-		.transition().duration(500).attr("G", d)
-			.attr("class","minNodePath")
+			.transition().duration(500).attr("G", d)
+			.attr("class", "minNodePath")
 			.attr("self", "ShowProperty")
-			.attr("d", "M-3,0L3,0M0,-3L0,3");			
-			
+			.attr("d", "M-3,0L3,0M0,-3L0,3");
+
 	} else if(nodeData.zoom.localeCompare("max") == 0) {
-		
+
 		theSelfObjChild.attr("class", "maxNodeG");
 
 		theSelfObjChild.select("circle")
-		.transition().duration(500).attr("G", d)
-			.attr("class","maxNodeCircle")
+			.transition().duration(500).attr("G", d)
+			.each('end', function() {
+				theSelfObjChild.select("path")
+					.transition().duration(200)
+					.each('end', function() {
+						//loadProperty(d, nodeData);
+					})
+					.attr("G", d)
+					.attr("class", "maxNodePath")
+					.attr("self", "HideProperty")
+					.attr("d", "M-3,0L3,0");
+			})
+			.attr("class", "maxNodeCircle")
 			.attr("self", "HideProperty")
 			.attr("r", 5);
-			
-		theSelfObjChild.select("path")
-		.transition().duration(500).attr("G", d)
-			.attr("class","maxNodePath")
-			.attr("self", "HideProperty")
-			.attr("d", "M-3,0L3,0");	
+
+		countProperty++;
 	}
 }
 
@@ -346,29 +367,21 @@ var actionUpdate = function(theSelf, d, nodeData) {
  * @param {Object} nodeData
  */
 var groupUpdate = function(theSelf, d, nodeData) {
-	console.log("----------------actionUpdate:"+d+"----------------");
+	console.log("----------------actionUpdate:" + d + "----------------");
 	var tempM = "";
 	var theSelfObj = d3.select(theSelf);
 	theSelfObj.transition().duration(500)
-	.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 
 	theSelfObj.select("rect") //rect
-	.transition().duration(500)
+		.transition().duration(500)
 		.attr("width", nodeData.width)
 		.attr("height", nodeData.height);
 
 	theSelfObj.select(".nodeLog") //circle
-	.transition().duration(500)
+		.transition().duration(500)
 		.attr("cx", nodeData.width - 10)
 		.attr("cy", nodeData.height - 10);
-
-//		tempM = "M10," + (nodeData.height - 5);
-//		tempM = tempM + "L10," + (nodeData.height - 15);
-//		tempM = tempM + "L20,"+ (nodeData.height - 10) + " Z";
-//	
-//		theSelfObj.select(".nodeRun") //path run
-//		.transition().duration(500)
-//			.attr("d", tempM);	
 
 	var theSelfObjChild = theSelfObj.select("g");
 	theSelfObjChild.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
@@ -376,31 +389,186 @@ var groupUpdate = function(theSelf, d, nodeData) {
 		theSelfObjChild.attr("class", "minNodeG");
 
 		theSelfObjChild.select("circle")
-		.transition().duration(500).attr("G", d)
-			.attr("class","minNodeCircle")
+			.transition().duration(500).attr("G", d)
+			.attr("class", "minNodeCircle")
 			.attr("self", "ShowChildren")
 			.attr("r", 5);
-			
+
 		theSelfObjChild.select("path")
-		.transition().duration(500).attr("G", d)
-			.attr("class","minNodePath")
+			.transition().duration(500).attr("G", d)
+			.attr("class", "minNodePath")
 			.attr("self", "ShowChildren")
-			.attr("d", "M-3,0L3,0M0,-3L0,3");			
-			
+			.attr("d", "M-3,0L3,0M0,-3L0,3");
+
 	} else if(nodeData.zoom.localeCompare("max") == 0) {
-		
+
 		theSelfObjChild.attr("class", "maxNodeG");
 
 		theSelfObjChild.select("circle")
-		.transition().duration(500).attr("G", d)
-			.attr("class","maxNodeCircle")
+			.transition().duration(500).attr("G", d)
+			.attr("class", "maxNodeCircle")
 			.attr("self", "HideChildren")
 			.attr("r", 5);
-			
+
 		theSelfObjChild.select("path")
-		.transition().duration(500).attr("G", d)
-			.attr("class","maxNodePath")
+			.transition().duration(500).attr("G", d)
+			.attr("class", "maxNodePath")
 			.attr("self", "HideChildren")
-			.attr("d", "M-3,0L3,0");	
+			.attr("d", "M-3,0L3,0");
 	}
+}
+
+/**
+ * 保存生成JSON
+ * 
+ * 	id,@class,name,inletNum
+ * }
+ */
+var saveAsJson = function() {
+	var gIdAndgName = [];
+	var result = {
+		'@class': 'flow',
+		'name': 'flow1',
+		'outlets': [],
+		'nodes': [],
+		'links': [],
+		'data': [],
+		'inLets': [],
+		'wfName': 'flow1'
+	};
+	console.log("nodeLists", nodeLists);
+	console.log("propertyList", propertyList);
+	each(nodeLists, function() {
+		console.log(this);
+		var tempkeys = this.k.toString();
+		var propertyObj = {};
+		each(propertyList, function() {
+			if(this.k.toString().localeCompare(tempkeys) == 0) {
+				propertyObj = this.v;
+				propertyObj.name = propertyObj.name + tempkeys;
+				result.nodes.push(propertyObj);
+				return false;
+			} else {
+				return true;
+			}
+		});
+		return true;
+	});
+
+	//	result.links = pathLists;
+
+	each(pathLists, function(i, o) {
+		var tempfromNodeName = o.fromNodeName;
+		var temptoNodeName = o.toNodeName;
+		each(propertyList, function() {
+			if(tempfromNodeName.localeCompare(this.k.toString()) == 0) {
+				o.fromNodeName = this.v.name;
+			}
+			if(temptoNodeName.localeCompare(this.k.toString()) == 0) {
+				o.toNodeName = this.v.name;
+			}
+			return true;
+		});
+	});
+	
+	result.links = pathLists;
+
+	console.log("result", JSON.stringify(result));
+
+	$.ajax({
+		type: "post",
+		url: getAjaxAbsolutePath(_HTTP_SAVE_JSON),
+		contentType: 'application/json',
+		data: JSON.stringify(result),
+		//dataType: "json",
+		success: function(data, textStatus) {
+			console.info(data);
+		},
+		error: function(e) {
+			console.info(e);
+		}
+	});
+
+}
+
+var setNodeSelf = function(keys, valueObj) {
+	var json = dagre.graphlib.json.write(g);
+	console.log(json);
+	var nodeData = g.node(keys);
+	if(nodeData) {
+		//修改
+		g.setNode(keys, {
+			label: valueObj.label || nodeData.label,
+			width: valueObj.width || 100,
+			height: valueObj.height || 50,
+			runstate: valueObj.runstate || 'play',
+			action: valueObj.action || 'node',
+			zoom: valueObj.zoom || 'normal'
+		});
+	} else {
+		//添加
+		g.setNode(keys, valueObj);
+	}
+
+	json = dagre.graphlib.json.write(g);
+	console.log(json);
+
+	var isadd = true;
+	each(nodeLists, function() {
+		if(this.k.toString().localeCompare(keys) == 0) {
+			this.v = valueObj;
+			isadd = false;
+			return false;
+		} else {
+			return true;
+		}
+	});
+	if(isadd) {
+		nodeLists.push({
+			k: keys,
+			v: valueObj
+		});
+	}
+	console.log("nodeLists", nodeLists);
+}
+
+/**
+ * 
+ * @param {Object} keys
+ * @param {Object} valueObj
+ * @param {Object} length
+ */
+var setPropertySelf = function(keys, valueObj, length) {
+	var isadd = true;
+	each(propertyList, function(i, o) {
+		if(o.k.toString().localeCompare(keys) == 0) {
+			o.v = valueObj;
+			isadd = false;
+			return false;
+		} else {
+			return true;
+		}
+	});
+	if(isadd) {
+		propertyList.push({
+			k: keys,
+			v: valueObj,
+			length: length
+		})
+	}
+	console.log("propertyList", propertyList);
+}
+
+/**
+ * 用于改变所有的样式
+ * @param {Object} fromClassName
+ * @param {Object} toClassName
+ */
+var allchangeClassNameForRect = function(fromClassName, toClassName) {
+	console.log("{}", d3.select("#rectContainer").selectAll("." + fromClassName));
+	d3.select("#rectContainer").selectAll("." + fromClassName)
+		.each(function() {
+			console.log(d3.select(this));
+			d3.select(this).attr("class", toClassName);
+		});
 }

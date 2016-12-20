@@ -24,6 +24,7 @@
 		<script type="text/javascript" src="../libs/_business/js/base.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/init.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/app.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/zoom.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/controller.js"></script>
 	</head>
 
@@ -45,9 +46,9 @@
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.end();">end</a>
 						</li>
-						<li>
+						<!--<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.group()">ActionFlow</a>
-						</li>
+						</li>-->
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="run();">run</a>
 						</li>
@@ -56,24 +57,32 @@
 						</li>
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="openDatasetWin();">openDatasetWin</a>
-						</li>						
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="saveAsJson();">Save</a>
+						</li>
+						<li class="dropdown">
+							<a style="color: #FFFFFF;" href="#" class="dropdown-toggle" data-toggle="dropdown">ActionNode <b class="caret"></b></a>
+							<ul class="dropdown-menu" id="actionList">
+							</ul>
+						</li>
 					</ul>
 				</div>
 			</div>
 		</nav>
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-12" style="height: 95vh;">
+				<div class="col-md-12" style="height: 94vh;">
 
 					<div style="height:100%;border: solid #269ABC 2px;border-radius: 15px;" role="tabpanel" class="tab-pane active" id="home">
 						<div id="display" style="height:100%;width: 100%;">
-							<svg id="svg" style="height:100%;width: 100%;">
+							<svg id="svg" style="height:100%;width: 100%;" onmousedown="svg_document_onmousedown()" onmouseup="svg_document_onmouseup()" onkeyup="svg_document_onkeydown()">
 								<defs>
 									<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
 										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: gray;" />
 									</marker>
 									<marker id="arrowSelected" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
-										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: greenyellow;" />
+										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: orangered;" />
 									</marker>
 									<marker id="circle" markerWidth="4" markerHeight="4" refx="2" refy="2">
 										<circle cx="2" cy="2" r="2" stroke="none" fill="#f00" onclick="init()" />
@@ -83,19 +92,9 @@
 						</div>
 						<div id="divrightup" class="rightupcss">
 							<div class="rightupcssheader">
-								<strong>Star</strong>
+								<strong id="rightupcssheaderstring">Star</strong>
 							</div>
-							<div class="sublistgroup">
-								<strong>@class</strong>
-								<input type="text" value="" placeholder="class..." />
-							</div>
-							<div class="sublistgroup">
-								<strong>name</strong>
-								<input type="text" value="" placeholder="name..." />
-							</div>
-							<div class="sublistgroup">
-								<strong>propertyOne</strong>
-								<input type="text" value="" placeholder="propertyOne..." />
+							<div id="rightupcssbody" class="rightupcssbody">
 							</div>
 						</div>
 					</div>
@@ -123,19 +122,42 @@
 				</div>
 			</div>
 		</div>
-		
 
-    <div id="datasetDetail" class="easyui-window" title="Log Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
-            <div class="easyui-tabs" style="width:100%;height:100%">
-                <div id="tab-dataset" title="dataset" style="padding:0px;margin: 0px;">
-                    <table id="dg1" style="margin:0px; padding:0px;"></table>
-                </div>
-                <div id="tab-dataschame" title="schame" style="padding:10px">
-                    <table id="dg2"></table>
-                </div>
-        </div>
-    </div>
-
+		<div id="datasetDetail" class="easyui-window" title="Log Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
+			<div class="easyui-tabs" style="width:100%;height:100%">
+				<div id="tab-dataset" title="dataset" style="padding:0px;margin: 0px;">
+					<table id="dg1" style="margin:0px; padding:0px;"></table>
+				</div>
+				<div id="tab-dataschame" title="schame" style="padding:10px">
+					<table id="dg2"></table>
+				</div>
+				<div id="tab-data" title="data" style="padding:10px">
+					<div class="sublistgroup">
+						<strong>name:</strong>
+						<input type="text" value="" placeholder="..." />
+					</div>
+					<div class="sublistgroup">
+						<strong>location:</strong>
+						<input type="text" value="" placeholder="..." />
+					</div>
+					<div class="sublistgroup">
+						<strong>dataFormat:</strong>
+						<input type="text" value="" placeholder="..." />
+					</div>
+					<div class="sublistgroup">
+						<strong>recordType:</strong>
+						<input type="text" value="" placeholder="..." />
+					</div>
+					<div class="sublistgroup">
+						<strong>instance:</strong>
+						<input type="text" value="" placeholder="..." />
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--<form id="form1" method="post" action="http://16.165.184.12:8080/dashview/george/flow">
+			<input id="dataId" type="hidden" name="data" value="23423" />
+		</form>-->
 	</body>
 
 </html>

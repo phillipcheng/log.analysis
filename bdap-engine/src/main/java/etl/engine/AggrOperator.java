@@ -7,6 +7,7 @@ public enum AggrOperator {
 	avg,
 	min,
 	max,
-	group
+	group,
+	keep //do nothing, used to output joined table
 
 }

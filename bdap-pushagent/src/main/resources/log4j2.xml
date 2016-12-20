@@ -6,8 +6,8 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="bdap" level="debug"/>
-    <Root level="debug">
+    <Logger name="bdap" level="info"/>
+    <Root level="info">
       <AppenderRef ref="STDOUT"/>
     </Root>
   </Loggers>
