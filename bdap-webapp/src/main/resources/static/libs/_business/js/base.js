@@ -53,6 +53,17 @@ var _base = {
 			return d;
 		});
 
+		var groupSmallNode = d3.select("#rectSmallContainer").selectAll(".nodeSmallG");
+		var groupSmall = groupSmallNode.data(nodes, function(d) {
+			return d;
+		});
+
+		groupSmall.enter().append("g") //enter
+			.each(function(d) {
+				var nodeData = g.node(d);
+				smallNodeEnter(this, d, nodeData);
+			});
+
 		group.enter().append("g") //enter
 			.each(function(d) {
 				var nodeData = g.node(d);
@@ -88,7 +99,7 @@ var _base = {
 		var edges = g.edges();
 
 		$.each(edges, function(i, d) {
-			if(!g.hasNode(d.v) || !g.hasNode(d.v)) {
+			if(!g.hasNode(d.v) || !g.hasNode(d.w)) {
 				g.removeEdge(d.v, d.w);
 			}
 		});
@@ -163,6 +174,15 @@ var _base = {
 	}
 }
 
+var smallNodeEnter = function(theSelf, d, nodeData) {
+	var theSelfObj = d3.select(theSelf);
+	theSelfObj.append("rect") //rect
+		.attr("width", 2)
+		.attr("height", 2)
+		.attr("x",((nodeData.x/20)-1))
+		.attr("y",((nodeData.y/20)-1));
+}
+
 /**
  * actionEnter 子节点
  * @param {Object} theSelf
@@ -172,6 +192,8 @@ var _base = {
 var actionEnter = function(theSelf, d, nodeData) {
 	//var nodeData = g.node(d);
 	console.log("-------------actionEnter:" + d + "--------------------");
+	console.log("nodeData:", nodeData);
+
 	var tempM = "";
 	var theSelfObj = d3.select(theSelf);
 	var transform_x = 0;
@@ -301,6 +323,7 @@ var groupEnter = function(theSelf, d, nodeData) {
  */
 var actionUpdate = function(theSelf, d, nodeData) {
 	console.log("----------------actionUpdate:" + d + "----------------");
+	console.log("nodeData:", nodeData);
 	var tempM = "";
 	var theSelfObj = d3.select(theSelf);
 	theSelfObj.transition().duration(500)
@@ -478,7 +501,7 @@ var saveAsJson = function() {
 
 	result.links = pathLists;
 
-//	console.log("result", JSON.stringify(result));
+	//	console.log("result", JSON.stringify(result));
 
 	$.ajax({
 		type: "post",
@@ -504,7 +527,7 @@ var setNodeSelf = function(keys, valueObj) {
 			label: valueObj.label || nodeData.label,
 			width: valueObj.width || 100,
 			height: valueObj.height || 50,
-			nodeType:valueObj.nodeType,
+			nodeType: valueObj.nodeType,
 			runstate: valueObj.runstate || 'play',
 			action: valueObj.action || 'node',
 			zoom: valueObj.zoom || 'normal'
@@ -586,6 +609,6 @@ var removeAllSelectedClass = function() {
 		.each(function() {
 			var tempId = d3.select(this).attr("id");
 			var nodeData = g.node(tempId);
-			d3.select(this).attr("class","nodeG "+nodeData.nodeType);
+			d3.select(this).attr("class", "nodeG " + nodeData.nodeType);
 		});
 }
