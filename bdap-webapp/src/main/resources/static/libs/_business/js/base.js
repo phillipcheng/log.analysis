@@ -176,12 +176,20 @@ var actionEnter = function(theSelf, d, nodeData) {
 	var theSelfObj = d3.select(theSelf);
 	var transform_x = 0;
 	transform_x = (nodeData.x - nodeData.width / 2);
-	console.log("transform_x", transform_x);
-	theSelfObj.attr("id", d)
-		.attr("class", "nodeG")
-		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
-	//		.attr("onmousedown","node_mouse_down()")
-	//		.attr("onmouseup","node_mouse_up()");
+
+	if(nodeData.nodeType.localeCompare("start") == 0) {
+		theSelfObj.attr("id", d)
+			.attr("class", "nodeG start")
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+	} else if(nodeData.nodeType.localeCompare("end") == 0) {
+		theSelfObj.attr("id", d)
+			.attr("class", "nodeG end")
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+	} else {
+		theSelfObj.attr("id", d)
+			.attr("class", "nodeG action")
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+	}
 
 	theSelfObj.append("rect") //rect
 		.attr("G", d)
@@ -436,10 +444,7 @@ var saveAsJson = function() {
 		'inLets': [],
 		'wfName': 'flow1'
 	};
-	console.log("nodeLists", nodeLists);
-	console.log("propertyList", propertyList);
 	each(nodeLists, function() {
-		console.log(this);
 		var tempkeys = this.k.toString();
 		var propertyObj = {};
 		each(propertyList, function() {
@@ -470,10 +475,10 @@ var saveAsJson = function() {
 			return true;
 		});
 	});
-	
+
 	result.links = pathLists;
 
-	console.log("result", JSON.stringify(result));
+//	console.log("result", JSON.stringify(result));
 
 	$.ajax({
 		type: "post",
@@ -492,8 +497,6 @@ var saveAsJson = function() {
 }
 
 var setNodeSelf = function(keys, valueObj) {
-	var json = dagre.graphlib.json.write(g);
-	console.log(json);
 	var nodeData = g.node(keys);
 	if(nodeData) {
 		//修改
@@ -501,6 +504,7 @@ var setNodeSelf = function(keys, valueObj) {
 			label: valueObj.label || nodeData.label,
 			width: valueObj.width || 100,
 			height: valueObj.height || 50,
+			nodeType:valueObj.nodeType,
 			runstate: valueObj.runstate || 'play',
 			action: valueObj.action || 'node',
 			zoom: valueObj.zoom || 'normal'
@@ -509,10 +513,6 @@ var setNodeSelf = function(keys, valueObj) {
 		//添加
 		g.setNode(keys, valueObj);
 	}
-
-	json = dagre.graphlib.json.write(g);
-	console.log(json);
-
 	var isadd = true;
 	each(nodeLists, function() {
 		if(this.k.toString().localeCompare(keys) == 0) {
@@ -529,7 +529,6 @@ var setNodeSelf = function(keys, valueObj) {
 			v: valueObj
 		});
 	}
-	console.log("nodeLists", nodeLists);
 }
 
 /**
@@ -556,7 +555,6 @@ var setPropertySelf = function(keys, valueObj, length) {
 			length: length
 		})
 	}
-	console.log("propertyList", propertyList);
 }
 
 /**
@@ -565,10 +563,29 @@ var setPropertySelf = function(keys, valueObj, length) {
  * @param {Object} toClassName
  */
 var allchangeClassNameForRect = function(fromClassName, toClassName) {
-	console.log("{}", d3.select("#rectContainer").selectAll("." + fromClassName));
 	d3.select("#rectContainer").selectAll("." + fromClassName)
 		.each(function() {
-			console.log(d3.select(this));
 			d3.select(this).attr("class", toClassName);
+		});
+}
+
+/**
+ * 确定其最终的样式
+ * @param {Object} keys
+ */
+var beSureClassName = function(keys) {
+	var nodeData = g.node(keys);
+	d3.select("#" + keys).attr("class", "nodeG " + nodeData.nodeType);
+}
+
+/**
+ * 移除选定的样式
+ */
+var removeAllSelectedClass = function() {
+	d3.select("#rectContainer").selectAll(".nodeG")
+		.each(function() {
+			var tempId = d3.select(this).attr("id");
+			var nodeData = g.node(tempId);
+			d3.select(this).attr("class","nodeG "+nodeData.nodeType);
 		});
 }

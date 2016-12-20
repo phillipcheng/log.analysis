@@ -176,12 +176,9 @@ var svgMouseMove = function(event) {
 	} else {
 		var x = e.x || e.clientX;
 		var y = e.y || e.clientY;
-		//console.log("x", x);
-		//console.log("y", y);
 		x -= (display_off_left + current_zoom_x);
 		y -= (display_off_top + current_zoom_y);
 		var temp_d = "M" + templine.firstPoint + " L" + x + "," + y;
-		//console.log("temp_d", temp_d);
 		d3.select("#pathmove").attr("d", temp_d);
 	}
 }
@@ -217,7 +214,7 @@ var compatibilityTools = function(){
 }
 
 var getAjaxAbsolutePath = function(relativePath){
-	var httpPath = "http://16.165.184.12:8080";
+	var httpPath = "http://localhost:8080";
 	if(relativePath != null && relativePath != ''){
 		httpPath += relativePath;
 	}else {

@@ -2,10 +2,12 @@ var app = {
 	start: function() {
 		nodeIndex++;
 		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
+		nodeArgs.push({k:temp_g,vmax:{width:'300',height:'50'},vmin:{width:'80',height:'50'}});
 		var obj = {
 			label: "Star",
-			width: 100,
+			width: 80,
 			height: 50,
+			nodeType:'start',
 			runstate: 'play',
 			action: 'node',
 			zoom: 'normal'
@@ -23,10 +25,12 @@ var app = {
 	end: function() {
 		nodeIndex++;
 		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
+		nodeArgs.push({k:temp_g,vmax:{width:'300',height:'50'},vmin:{width:'80',height:'50'}});
 		var obj = {
 			label: "end",
-			width: 100,
+			width: 80,
 			height: 50,
+			nodeType:'end',
 			runstate: 'play',
 			action: 'node',
 			zoom: 'normal'
@@ -42,13 +46,14 @@ var app = {
 		_base._build();
 	},
 	action: function(jsonObj) {
-		console.log("jsonObj", jsonObj);
 		nodeIndex++;
 		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
+		nodeArgs.push({k:temp_g,vmax:{width:'300',height:'50'},vmin:{width:'200',height:'50'}});
 		var obj = {
 			label: jsonObj.label,
 			width: 200,
 			height: 50,
+			nodeType:'action',
 			runstate: 'play',
 			action: 'node',
 			zoom: 'normal'
