@@ -291,6 +291,6 @@ var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands"
 /**
  * 保存JSON
  */
-var _HTTP_SAVE_JSON = "/dashview/{userName}/flow/";
+var _HTTP_SAVE_JSON = "/dashview/george/flow/";
 
 //var _HTTP_SAVE_JSON = "http://localhost:8080/dashview/george/flow";
