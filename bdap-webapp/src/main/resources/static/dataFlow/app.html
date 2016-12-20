@@ -74,8 +74,9 @@
 			<div class="row">
 				<div class="col-md-12" style="height: 94vh;">
 
-					<div style="height:100%;border: solid #269ABC 2px;border-radius: 15px;" role="tabpanel" class="tab-pane active" id="home">
-						<div id="display" style="height:100%;width: 100%;">
+					<div style="height:100%;" role="tabpanel" class="tab-pane active" id="home">
+						
+						<div id="display" style="height:100%;width: 100%; position: absolute;">
 							<svg id="svg" style="height:100%;width: 100%;" onmousedown="svg_document_onmousedown()" onmouseup="svg_document_onmouseup()" onkeyup="svg_document_onkeydown()">
 								<defs>
 									<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
@@ -90,6 +91,7 @@
 								</defs>
 							</svg>
 						</div>
+						<div class="child_svg">我浮动在上面</div>
 						<div id="divrightup" class="rightupcss">
 							<div class="rightupcssheader">
 								<strong id="rightupcssheaderstring">Star</strong>

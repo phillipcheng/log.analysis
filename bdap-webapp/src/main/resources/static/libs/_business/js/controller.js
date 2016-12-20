@@ -197,7 +197,12 @@ var svg_document_onmousedown = function() {
 		case "RECT": //1.确定连线的第一个点
 			{
 				if(args_tagName.localeCompare("rect") == 0) {
-					make_sure_first_point(o); //1.确定连线的第一个点
+					var nodeData = g.node(g_mouse_down);
+					if(nodeData.nodeType.localeCompare("end")==0){
+						
+					}else{
+						make_sure_first_point(o); //1.确定连线的第一个点
+					}
 				}
 			}
 			break;
@@ -286,10 +291,17 @@ var documentClickOperation = function(e, o, g_mouse_down, g_mouse_up, args_tagNa
 		console.log("----------右键----------");
 		if(args_tagName.localeCompare("rect")==0&&args_self.localeCompare("RECT")==0){
 			//删除节点
-			
+			g.removeNode(g_mouse_down);
+			_base._build();
+			clearTempLine();
 		}else if(args_tagName.localeCompare("path")==0&&g_mouse_down.indexOf("linegroup")>-1){
 			//删除连接线
-			
+			var temp = o.getAttribute("id");
+			temp = temp.replace("pathA","");
+			temp = temp.split("A");
+			g.removeEdge(temp[0],temp[1]);
+			_base._build();
+			clearTempLine();
 		}
 	} else if(e.button == 0) {
 		console.log("----------左键----------");
