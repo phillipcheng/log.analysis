@@ -214,7 +214,7 @@ var compatibilityTools = function(){
 }
 
 var getAjaxAbsolutePath = function(relativePath){
-	var httpPath = "http://16.165.184.12:8080";
+	var httpPath = "http://localhost:8080";
 	if(relativePath != null && relativePath != ''){
 		httpPath += relativePath;
 	}else {

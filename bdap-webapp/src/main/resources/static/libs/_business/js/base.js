@@ -187,7 +187,7 @@ var actionEnter = function(theSelf, d, nodeData) {
 			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 	} else {
 		theSelfObj.attr("id", d)
-			.attr("class", "nodeG")
+			.attr("class", "nodeG action")
 			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 	}
 
