@@ -487,7 +487,9 @@ var saveAsJson = function() {
 		each(propertyList, function() {
 			if(this.k.toString().localeCompare(tempkeys) == 0) {
 				propertyObj = this.v;
-				propertyObj.name = propertyObj.name + tempkeys;
+				if(propertyObj.name.indexOf("g_") == -1){
+					propertyObj.name = propertyObj.name + tempkeys;
+				}
 				result.nodes.push(propertyObj);
 				return false;
 			} else {
@@ -502,6 +504,7 @@ var saveAsJson = function() {
 	each(pathLists, function(i, o) {
 		var tempfromNodeName = o.fromNodeName;
 		var temptoNodeName = o.toNodeName;
+		
 		each(propertyList, function() {
 			if(tempfromNodeName.localeCompare(this.k.toString()) == 0) {
 				o.fromNodeName = this.v.name;
@@ -511,10 +514,10 @@ var saveAsJson = function() {
 			}
 			return true;
 		});
+		return true;
 	});
 
 	result.links = pathLists;
-
 	console.log("result", JSON.stringify(result));
 
 	$.ajax({

@@ -69,7 +69,8 @@ var app = {
 					propertyObj[o.toString()] = '';
 					return true;
 				});
-				propertyObj['@class'] = '' + jsonObj.class + '';
+				propertyObj['@class'] = 'action';
+				propertyObj['cmd.class'] = '' + jsonObj.class + '';
 				propertyObj['name'] = '' + jsonObj.label + '';
 				propertyObj['inLets'] = [];
 				propertyObj['outlets'] = [];
