@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -302,7 +302,7 @@ public class FTPDeployMethod implements DeployMethod {
 		    f.setReportActiveExternalIPAddress("10.0.2.2");
 		    f.enterLocalActiveMode();
 		    f.login(userName, passwd);
-		    return IOUtils.readLines(f.retrieveFileStream(path), Charset.forName("utf8"));
+		    return IOUtils.readLines(f.retrieveFileStream(path), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 		} finally {

@@ -2,7 +2,7 @@ package bdap.util;
 
 import java.io.PrintWriter;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -121,14 +121,14 @@ public class JsonUtil {
 				URL fileURL = ClassLoader.getSystemResource(file);
 				if (fileURL != null) {
 					path = Paths.get(fileURL.toURI());
-					String contents = new String(Files.readAllBytes(path), Charset.forName("utf8"));
+					String contents = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 					return fromJsonString(contents, clazz);
 				} else {
 					logger.debug("File does not exist: {}", file);
 					return null;
 				}
 			} else {
-				String contents = new String(Files.readAllBytes(path), Charset.forName("utf8"));
+				String contents = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 				return fromJsonString(contents, clazz);
 			}
 		}catch(Exception e){

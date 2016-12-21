@@ -1,6 +1,6 @@
 package etl.flow.test;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import etl.flow.deploy.FTPDeployMethod;
@@ -18,7 +18,7 @@ public class TestFTPDeployMethod {
 		
 		m.delete("/user/player/pom.xml", true);
 		
-		m.createFile("/user/player/test.txt", "Hello World!".getBytes(Charset.forName("utf8")));
+		m.createFile("/user/player/test.txt", "Hello World!".getBytes(StandardCharsets.UTF_8));
 		
 		result = m.readFile("/user/player/test.txt");
 		

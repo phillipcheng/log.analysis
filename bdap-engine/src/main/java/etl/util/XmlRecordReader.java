@@ -2,7 +2,7 @@ package etl.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -76,7 +76,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		buffer = new DataOutputBuffer();
 		
 		if (readUntilMatch(fsin, startTag, true))
-			header = new String(buffer.getData(), 0, buffer.getLength(), Charset.forName("utf8"));
+			header = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 		else
 			header = "";
 		
@@ -86,7 +86,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 			readUntilMatch(fsin, endTag, true);
 		}
 		
-		footer = new String(buffer.getData(), 0, buffer.getLength(), Charset.forName("utf8"));
+		footer = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 		
 		buffer.reset();
 		
@@ -100,7 +100,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 	private boolean nextKeyValue(XmlInputStream dataIn, byte[] startTag, byte[] endTag, String header, String footer, long count) throws IOException {
 		int i = 0;
 		
-		byte[] headerBuf = header.getBytes(Charset.forName("utf8"));
+		byte[] headerBuf = header.getBytes(StandardCharsets.UTF_8);
 		value.append(headerBuf, 0, headerBuf.length);
 		
 		do {
@@ -118,7 +118,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 
 		key.set(dataIn.getPos());
 		
-		byte[] footerBuf = footer.getBytes(Charset.forName("utf8"));
+		byte[] footerBuf = footer.getBytes(StandardCharsets.UTF_8);
 		value.append(footerBuf, 0, footerBuf.length);
 		
 		return i > 0;
@@ -137,7 +137,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 					buffer.reset();
 					
 					if (readUntilMatch(sectionIn, rowStartTag, true))
-						sectionHeader = new String(buffer.getData(), 0, buffer.getLength(), Charset.forName("utf8"));
+						sectionHeader = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 					else
 						sectionHeader = "";
 					
@@ -146,7 +146,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 						buffer.reset();
 					} while (readUntilMatch(sectionIn, rowEndTag, true));
 					
-					sectionFooter = new String(buffer.getData(), 0, buffer.getLength(), Charset.forName("utf8"));
+					sectionFooter = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 					
 					sectionIn.reset();
 					
@@ -168,7 +168,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 			else
 				available = false;
 			if (available) {
-				byte[] footerBuf = footer.getBytes(Charset.forName("utf8"));
+				byte[] footerBuf = footer.getBytes(StandardCharsets.UTF_8);
 				value.append(footerBuf, 0, footerBuf.length);
 				return true;
 			} else if (currentSectionIn != null) {
@@ -181,7 +181,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 					value.set(header);
 					available = nextKeyValue(currentSectionIn, rowStartTag, rowEndTag, sectionHeader, sectionFooter, rowMaxNumber);
 					if (available) {
-						byte[] footerBuf = footer.getBytes(Charset.forName("utf8"));
+						byte[] footerBuf = footer.getBytes(StandardCharsets.UTF_8);
 						value.append(footerBuf, 0, footerBuf.length);
 						return true;
 					} else {
