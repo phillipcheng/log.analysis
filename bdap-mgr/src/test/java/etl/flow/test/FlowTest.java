@@ -34,7 +34,7 @@ public class FlowTest {
 		SftpUtil.sftpFromLocal(ftpInfo, String.format("%sdata", getRelativeResourceFolder()), 
 				String.format("/data/flow1/"));
 		try {
-			deployer.getFs().copyFromLocalFile(new Path(String.format("%sdata/sftpcfg/test1.sftp.map.properties", getRelativeResourceFolder())), 
+			deployer.getFs().copyFromLocalFile(false, true, new Path(String.format("%sdata/sftpcfg/test1.sftp.map.properties", getRelativeResourceFolder())), 
 					new Path("/flow1/sftpcfg/test1.sftp.map.properties"));
 		}catch(Exception e){
 			logger.error("", e);
@@ -72,7 +72,7 @@ public class FlowTest {
 	public void testApacheOozieJson() throws Exception{
 		//apacheDeployer.installEngine(false);
 		String projectName = "project1";
-		String flowName="flow1";
+		String flowName="flow1_oozie";
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
 		initData(apacheDeployer, ftpInfo);
 		apacheDeployer.runDeploy(projectName, flowName, null, true, EngineType.oozie);
@@ -105,13 +105,16 @@ public class FlowTest {
 	public void testLocalSparkCmd() throws Exception{
 		String wfName= "flow1";
 		String wfId="wfid1";
+		//
 		localDeployer.getFs().delete(new Path(String.format("/%s/csvmerge/%s", wfName, wfId)), true);
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
 		initData(localDeployer, ftpInfo);
+		
 		Flow1SparkCmd psf = new Flow1SparkCmd(wfName, wfId, null, localDeployer.getDefaultFS(), null);
-		psf.setResFolder("src/test/resources/flow1/");
+		psf.setResFolder("src/test/resources/flow1_oozie/");
 		psf.setMasterUrl("local[5]");
 		psf.sgProcess();
+		
 		//assertion
 		String fileName="singleTable";
 		List<String> ls = HdfsUtil.listDfsFile(localDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
@@ -125,10 +128,22 @@ public class FlowTest {
 	@Test
 	public void testApacheSparkJson() throws Exception{
 		String projectName = "project1";
-		String flowName="flow1";
+		String flowName="flow1_spark";
 		apacheDeployer.installEngine(false);
-		//ft.initData();
+		
+		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
+		initData(apacheDeployer, ftpInfo);
+		
 		apacheDeployer.runDeploy(projectName, flowName, null, true, EngineType.spark);
-		apacheDeployer.runExecute(projectName, flowName, EngineType.spark);
+		String wfId = apacheDeployer.runExecute(projectName, flowName, EngineType.spark);
+		
+		//assertion
+		String fileName="singleTable";
+		List<String> ls = HdfsUtil.listDfsFile(localDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
+		assertTrue(ls.contains(fileName));
+		List<String> contents = HdfsUtil.stringsFromDfsFile(localDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
+		logger.info(String.format("contents:\n%s", String.join("\n", contents)));
+		String[] csv = contents.get(0).split(",");
+		assertTrue(csv[8].equals(wfId));
 	}
 }
