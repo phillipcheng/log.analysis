@@ -23,6 +23,15 @@ import org.apache.hadoop.fs.Path;
 public class HdfsUtil {
 	
 	public static final Logger logger = LogManager.getLogger(HdfsUtil.class);
+	
+	public static String getRootPath(String urlPath) {
+		if (urlPath != null && urlPath.startsWith("hdfs://")) {
+			/* Locate from the root path */
+			urlPath = urlPath.substring(7);
+			urlPath = urlPath.substring(urlPath.indexOf("/"));
+		}
+		return urlPath;
+	}
 
 	public static FileSystem getHadoopFs(String defaultFs){
 		String fs_key = "fs.defaultFS";

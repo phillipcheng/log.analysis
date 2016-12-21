@@ -1,10 +1,10 @@
 package bdap.util;
 
 public class SftpInfo{
-	String user;
-	String passwd;
-	String ip;
-	int port;
+	protected String user;
+	protected String passwd;
+	protected String ip;
+	protected int port;
 	
 	public SftpInfo(String user, String passwd, String ip, int port){
 		this.user = user;
