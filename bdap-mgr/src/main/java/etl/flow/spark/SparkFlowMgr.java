@@ -66,7 +66,7 @@ public class SparkFlowMgr extends FlowMgr{
 		List<InMemFile> imFiles = new ArrayList<InMemFile>();
 		imFiles.add(new InMemFile(FileType.thirdpartyJar, String.format("%s.jar", flow.getName()), Files.readAllBytes(Paths.get(jarFilePath))));
 		String projectDir = fd.getProjectHdfsDir(prjName);
-		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), ssc.getOozieServerConf(), fd.getFs());
+		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), ssc.getOozieServerConf(), fd);
 		return false;
 	}
 

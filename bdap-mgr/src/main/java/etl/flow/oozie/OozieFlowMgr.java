@@ -179,7 +179,7 @@ public class OozieFlowMgr extends FlowMgr{
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		String projectDir = fd.getProjectHdfsDir(prjName);
-		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fd.getOozieServerConf(), fd.getFs());
+		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fd.getOozieServerConf(), fd);
 		return true;
 	}
 

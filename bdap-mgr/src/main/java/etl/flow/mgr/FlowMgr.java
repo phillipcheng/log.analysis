@@ -3,13 +3,11 @@ package etl.flow.mgr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
-import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import bdap.util.Util;
@@ -70,13 +68,13 @@ public abstract class FlowMgr {
 		}
 	}
 	
-	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, OozieConf oc, FileSystem fs) {
+	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, OozieConf oc, FlowDeployer fd) {
 		//deploy to the server
 		for (InMemFile im:files){
 			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
 			logger.info(String.format("copy to %s", path));
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+			fd.deploy(path, im.getContent());
 		}
 	}
 	
