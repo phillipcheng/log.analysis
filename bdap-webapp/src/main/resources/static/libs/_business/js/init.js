@@ -69,9 +69,11 @@ var init = function() {
 	/**
 	 * 1.6
 	 */
-	
+
 	init_zoom_x = current_zoom_x;
 	init_zoom_y = current_zoom_y;
+
+	document.getElementById("child_svg").style.left = (clientwidth - 180) + "px";
 }
 
 /**
@@ -219,9 +221,7 @@ var compatibilityTools = function() {
 
 var getAjaxAbsolutePath = function(relativePath) {
 	var httpPath = "http://localhost:8080";
-	var userName = "george";
-	if(relativePath != null && relativePath != ''){
-		relativePath = relativePath.replace("{userName}", userName);
+	if(relativePath != null && relativePath != '') {
 		httpPath += relativePath;
 	} else {
 		httpPath = "";

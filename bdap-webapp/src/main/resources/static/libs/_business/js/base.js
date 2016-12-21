@@ -13,7 +13,6 @@ var _base = {
 	 * 防止渲染时父节点覆盖子节点（一般父节点矩形框大于子节点矩形框）
 	 */
 	_sortNodes: function(g) {
-		var nodes = g.nodes();
 		var newNodes = new Array();
 		$.each(nodes, function(i, d) {
 			//从当前节点取到所有父级节点（包含本节点）
@@ -127,7 +126,8 @@ var _base = {
 				var pro = g.edge(d);
 				var points = pro.points;
 
-				var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge");
+				var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge")
+				 .on("contextmenu",d3.contextMenu(pathmenu));
 
 				linegroup.append("path")
 					.transition()
@@ -217,17 +217,20 @@ var actionEnter = function(theSelf, d, nodeData) {
 	transform_x = (nodeData.x - nodeData.width / 2);
 
 	if(nodeData.nodeType.localeCompare("start") == 0) {
-		theSelfObj.attr("id", d)
+		theSelfObj.attr("id", d)	
 			.attr("class", "nodeG start")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+		    .on("contextmenu",d3.contextMenu(menu));
 	} else if(nodeData.nodeType.localeCompare("end") == 0) {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG end")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+			.on("contextmenu",d3.contextMenu(menu));
 	} else {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG action")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+			.on("contextmenu",d3.contextMenu(menu));
 	}
 
 	theSelfObj.append("rect") //rect
@@ -487,9 +490,7 @@ var saveAsJson = function() {
 		each(propertyList, function() {
 			if(this.k.toString().localeCompare(tempkeys) == 0) {
 				propertyObj = this.v;
-				if(propertyObj.name.indexOf("g_") == -1){
-					propertyObj.name = propertyObj.name + tempkeys;
-				}
+				propertyObj.name = propertyObj.name + tempkeys;
 				result.nodes.push(propertyObj);
 				return false;
 			} else {
@@ -504,7 +505,6 @@ var saveAsJson = function() {
 	each(pathLists, function(i, o) {
 		var tempfromNodeName = o.fromNodeName;
 		var temptoNodeName = o.toNodeName;
-		
 		each(propertyList, function() {
 			if(tempfromNodeName.localeCompare(this.k.toString()) == 0) {
 				o.fromNodeName = this.v.name;
@@ -514,10 +514,10 @@ var saveAsJson = function() {
 			}
 			return true;
 		});
-		return true;
 	});
 
 	result.links = pathLists;
+
 	console.log("result", JSON.stringify(result));
 
 	$.ajax({

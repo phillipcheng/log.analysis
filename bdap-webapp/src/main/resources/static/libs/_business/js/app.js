@@ -62,6 +62,7 @@ var app = {
 		_base._build();
 		$.each(remoteActionObj, function(k, v) {
 			if(k.toString().indexOf(jsonObj.label) > -1) {
+				console.log("jsonObj",jsonObj);
 				var propertyObj = {};
 				var _index = 5;
 				each(v, function(i, o) {
@@ -70,7 +71,6 @@ var app = {
 					return true;
 				});
 				propertyObj['@class'] = 'action';
-				propertyObj['cmd.class'] = '' + jsonObj.class + '';
 				propertyObj['name'] = '' + jsonObj.label + '';
 				propertyObj['inLets'] = [];
 				propertyObj['outlets'] = [];

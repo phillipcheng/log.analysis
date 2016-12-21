@@ -50,6 +50,7 @@ var templine = {
 	endPoint: ''
 };
 
+
 /**
  * 节点列表
  * 
@@ -261,6 +262,7 @@ var loadinit = function() {
 	 */
 	d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {
 		remoteActionObj = data;
+		console.log("remoteActionObj", remoteActionObj);
 		$.each(data, function(k, v) {
 			var temp = k;
 			temp = temp.substring(temp.lastIndexOf(".") + 1);
@@ -295,6 +297,6 @@ var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands"
 /**
  * 保存JSON
  */
-var _HTTP_SAVE_JSON = "/dashview/{userName}/flow/";
+var _HTTP_SAVE_JSON = "/dashview/george/flow/";
 
 //var _HTTP_SAVE_JSON = "http://localhost:8080/dashview/george/flow";
