@@ -38,21 +38,21 @@ body {
 .nodeGSelected {}
 
 .nodeGSelected>rect {
-	fill: rgb(155, 155, 155);
+	fill: rgb(238, 238, 238);
 	stroke: red;
-	stroke-width: 3;
+	stroke-width: 1;
 }
 
 .nodeGSelected:hover>rect {
-	fill: rgb(155, 155, 155);
+	/*fill: rgb(238, 238, 238);*/
 	stroke: red;
-	stroke-width: 3;
+	stroke-width: 1;
 }
 
 .nodeGSelected>.nodePropertyG>rect {
-	fill: rgb(238, 238, 238);
+	/*fill: rgb(238, 238, 238);*/
 	stroke: rgb(255, 0, 0);
-	stroke-width: 3;
+	stroke-width: 1;
 }
 
 .nodeRun {
@@ -87,8 +87,18 @@ body {
 
 .minNodeG {}
 
+.inletsMinNodeG {}
+
+.outletsMinNodeG {}
+
 .minNodeCircle {
 	fill: red;
+	stroke-width: 1;
+	stroke: white;
+}
+
+.letsMinNodeCircle {
+	fill: #006EC3;
 	stroke-width: 1;
 	stroke: white;
 }
@@ -97,11 +107,29 @@ body {
 	stroke-width: 1;
 	stroke: white;
 }
+.letsMinNodePath {
+	stroke-width: 1;
+	stroke: white;
+}
+.minNodeG:hover>.minNodePath{
+	cursor: zoom-in;
+}
+.minNodeG:hover>.letsMinNodePath{
+	stroke-width: 1;
+	stroke: white;
+	cursor: pointer;
+}
 
 .minNodeG:hover>.minNodeCircle {
 	stroke: white;
 	stroke-width: 2;
 	cursor: zoom-in;
+}
+
+.minNodeG:hover>.letsMinNodeCircle {
+	stroke: white;
+	stroke-width: 2;
+	cursor: pointer;
 }
 
 .maxNodeG {}
@@ -148,29 +176,29 @@ body {
 }
 
 .outPath {
-	fill: cornflowerblue
-}
-
-.outPath:hover {
-	cursor: help
-}
-
-.inPath {
 	fill: orangered
 }
 
+.outPath:hover {
+	cursor: pointer;
+}
+
+.inPath {
+	fill: cornflowerblue
+}
+
 .inPath:hover {
-	cursor: help
+	cursor: pointer;
 }
 
 .start {}
 
 .start>rect {
-	fill: darkolivegreen;
+	fill: #789938;
 }
 
 .start:hover>rect {
-	fill: darkolivegreen;
+	fill: #789938;
 	stroke: red;
 	stroke-width: 2;
 }
@@ -178,11 +206,11 @@ body {
 .end {}
 
 .end>rect {
-	fill: orange;
+	fill: #AE5F2E;
 }
 
 .end:hover>rect {
-	fill: orange;
+	fill: #AE5F2E;
 	stroke: red;
 	stroke-width: 2;
 }
