@@ -1,7 +1,7 @@
 package etl.flow.oozie;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -30,7 +29,9 @@ import bdap.util.Util;
 import bdap.util.XmlUtil;
 import dv.util.RequestUtil;
 import etl.flow.CoordConf;
+import etl.flow.Data;
 import etl.flow.Flow;
+import etl.flow.InputFormatType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
@@ -325,9 +326,9 @@ public class OozieFlowMgr extends FlowMgr{
 						jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
 						
 						for (Map<String, Object> a: jobAttempts) {
-							appendLog(logFiles, a.get("logsLink") + "/stderr?start=0");
-							appendLog(logFiles, a.get("logsLink") + "/stdout?start=0");
-							appendLog(logFiles, a.get("logsLink") + "/syslog?start=0");
+							appendLog(logFiles, FileType.stderrLog, a.get("logsLink") + "/stderr?start=0");
+							appendLog(logFiles, FileType.stdoutLog, a.get("logsLink") + "/stdout?start=0");
+							appendLog(logFiles, FileType.sysLog, a.get("logsLink") + "/syslog?start=0");
 						}
 					}
 					
@@ -344,9 +345,9 @@ public class OozieFlowMgr extends FlowMgr{
 							jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
 							
 							for (Map<String, Object> a: jobAttempts) {
-								appendLog(logFiles, a.get("logsLink") + "/stderr?start=0");
-								appendLog(logFiles, a.get("logsLink") + "/stdout?start=0");
-								appendLog(logFiles, a.get("logsLink") + "/syslog?start=0");
+								appendLog(logFiles, FileType.stderrLog, a.get("logsLink") + "/stderr?start=0");
+								appendLog(logFiles, FileType.stdoutLog, a.get("logsLink") + "/stdout?start=0");
+								appendLog(logFiles, FileType.sysLog, a.get("logsLink") + "/syslog?start=0");
 							}
 							
 							/* Task attempts */
@@ -362,9 +363,9 @@ public class OozieFlowMgr extends FlowMgr{
 													oc.getHistoryServer(), nodeAddressToId(fsconf, (String)taskAttempt.get("nodeHttpAddress")),
 													(String)taskAttempt.get("assignedContainerId"), (String)taskAttempt.get("id"), user);
 
-											appendLog(logFiles, url + "/stderr?start=0");
-											appendLog(logFiles, url + "/stdout?start=0");
-											appendLog(logFiles, url + "/syslog?start=0");
+											appendLog(logFiles, FileType.stderrLog, url + "/stderr?start=0");
+											appendLog(logFiles, FileType.stdoutLog, url + "/stdout?start=0");
+											appendLog(logFiles, FileType.sysLog, url + "/syslog?start=0");
 										}
 									}
 								}
@@ -394,7 +395,7 @@ public class OozieFlowMgr extends FlowMgr{
 		return "";
 	}
 
-	private void appendLog(List<InMemFile> logFiles, String url) {
+	private void appendLog(List<InMemFile> logFiles, FileType fileType, String url) {
 		Map<String, String> headMap = new HashMap<String, String>();
 		String log = RequestUtil.get(url, null, 0, headMap);
 		int logStart = log.indexOf("<pre>");
@@ -405,9 +406,12 @@ public class OozieFlowMgr extends FlowMgr{
 			log = "";
 		
 		InMemFile logFile = new InMemFile();
-		/* TODO: Log file type STDOUT/ERROR */
 		logFile.setFileName(url);
-		logFile.setFileType(FileType.textData);
+		if (fileType != null)
+			/* Log file type STDOUT/ERROR/SYS */
+			logFile.setFileType(fileType);
+		else
+			logFile.setFileType(FileType.textData);
 		logFile.setTextContent(log);
 		logFiles.add(logFile);
 	}
@@ -627,6 +631,72 @@ public class OozieFlowMgr extends FlowMgr{
 		} else
 			return Collections.emptyList();
 	}
+	
+	private InMemFile getDFSFile(FileSystem fs, String filePath, InputFormatType dataFormat) {
+		Path p = new Path(filePath);
+		try {
+			if (fs.exists(p)) {
+				if (fs.isFile(p)) {
+					if (textType(dataFormat))
+						return new InMemFile(FileType.textData, filePath, HdfsUtil.readDfsTextFile(fs, filePath, DEFAULT_MAX_FILE_SIZE));
+					else
+						return new InMemFile(FileType.binaryData, filePath, HdfsUtil.readDfsFile(fs, filePath, DEFAULT_MAX_FILE_SIZE));
+				} else {
+					return new InMemFile(FileType.directoryList, filePath, directoryList(HdfsUtil.listDfsFilePath(fs, filePath, true)));
+				}
+			}
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+		}
+		
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data) {
+		if (data != null && !data.isInstance() && data.getLocation() != null && data.getLocation().length() > 0) {
+			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			
+			return getDFSFile(fs, data.getLocation(), data.getDataFormat());
+		}
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data, FlowInfo flowInfo) {
+		if (data != null && data.isInstance() && data.getLocation() != null && data.getLocation().length() > 0) {
+			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			String filePath = data.getLocation();
+			if (!filePath.endsWith(Path.SEPARATOR))
+				filePath += Path.SEPARATOR;
+			
+			if (flowInfo != null && flowInfo.getId() != null)
+				filePath += flowInfo.getId();
+			
+			return getDFSFile(fs, filePath, data.getDataFormat());
+		}
+		return null;
+	}
+	
+	private String directoryList(List<String> list) {
+		StringBuilder buffer = new StringBuilder();
+		if (list != null) {
+			for (String f: list) {
+				buffer.append(f);
+				buffer.append("\n");
+			}
+		}
+		return buffer.toString();
+	}
+
+	private boolean textType(InputFormatType dataFormat) {
+		if (dataFormat == null)
+			return false;
+		else if (InputFormatType.Binary.equals(dataFormat))
+			return false;
+		else
+			return true;
+	}
 
 	@Override
 	public InMemFile getDFSFile(EngineConf ec, String filePath) {
@@ -637,25 +707,18 @@ public class OozieFlowMgr extends FlowMgr{
 	public InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize) {
 		if (filePath != null) {
 			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-			FSDataInputStream in = null;
-			byte[] buffer = new byte[maxFileSize];
-			int readSize;
-			try {
-				in = fs.open(new Path(filePath));
-				readSize = in.read(buffer, 0, maxFileSize);
-				if (FileType.textData.equals(Util.guessFileType(filePath)))
-					return new InMemFile(FileType.textData, filePath, new String(buffer, 0, readSize, Charset.forName("utf8")));
+			if (FileType.textData.equals(Util.guessFileType(filePath))) {
+				String text = HdfsUtil.readDfsTextFile(fs, filePath, DEFAULT_MAX_FILE_SIZE);
+				if (text != null)
+					return new InMemFile(FileType.textData, filePath, text);
 				else
-					return new InMemFile(FileType.binaryData, filePath, buffer, readSize);
-			} catch (Exception e) {
-				logger.error(e.getMessage(), e);
-			} finally {
-				if (in != null)
-					try {
-						in.close();
-					} catch (IOException e) {
-						logger.error(e.getMessage(), e);
-					}
+					return null;
+			} else {
+				byte[] binary = HdfsUtil.readDfsFile(fs, filePath, DEFAULT_MAX_FILE_SIZE);
+				if (binary != null)
+					return new InMemFile(FileType.binaryData, filePath, binary);
+				else
+					return null;
 			}
 		}
 		return null;
@@ -665,7 +728,7 @@ public class OozieFlowMgr extends FlowMgr{
 		if (filePath != null) {
 			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 			if (FileType.textData.equals(file.getFileType()))
-				return HdfsUtil.writeDfsFile(fs, filePath, file.getTextContent().getBytes(Charset.forName("utf8")), false);
+				return HdfsUtil.writeDfsFile(fs, filePath, file.getTextContent().getBytes(StandardCharsets.UTF_8), false);
 			else
 				return HdfsUtil.writeDfsFile(fs, filePath, file.getContent(), false);
 		} else

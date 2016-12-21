@@ -6,10 +6,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.conf.Configuration;
@@ -61,6 +63,64 @@ public class HdfsUtil {
 			logger.error("", e);
 			return null;
 		}
+	}
+	
+	public static String readDfsTextFile(FileSystem fs, String path, int maxFileSize) {
+		FSDataInputStream in = null;
+		BoundedInputStream boundedIn = null;
+		try {
+			in = fs.open(new Path(path));
+			boundedIn = new BoundedInputStream(in, maxFileSize);
+			return IOUtils.toString(boundedIn, StandardCharsets.UTF_8);
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+		} finally {
+			if (boundedIn != null)
+				try {
+					boundedIn.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+		}
+		
+		return null;
+	}
+	
+	public static byte[] readDfsFile(FileSystem fs, String path, int maxFileSize) {
+		FSDataInputStream in = null;
+		BoundedInputStream boundedIn = null;
+		try {
+			in = fs.open(new Path(path));
+			boundedIn = new BoundedInputStream(in, maxFileSize);
+			return IOUtils.toByteArray(boundedIn);
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+		} finally {
+			if (boundedIn != null)
+				try {
+					boundedIn.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+		}
+		
+		return null;
 	}
 	
 	public static boolean writeDfsFile(FileSystem fs, String path, byte[] content, boolean overwrite){
@@ -164,13 +224,33 @@ public class HdfsUtil {
 		}
 	}
 	
-	public static List<String> listDfsFile(FileSystem fs, String folder){
+	public static List<String> listDfsFilePath(FileSystem fs, String folder, boolean recursive){
 		List<String> files = new ArrayList<String>();
 		try {
 			FileStatus[] fslist = fs.listStatus(new Path(folder));
 			for (FileStatus f:fslist){
-				files.add(f.getPath().getName());
+				if (f.isDirectory())
+					files.addAll(listDfsFilePath(fs, f.getPath().toString(), recursive));
+				else {
+					files.add(f.getPath().toString());
+				}
 			}
+		}catch(Exception e){
+			logger.error("", e);
+		}
+		return files;
+	}
+	
+	public static List<String> listDfsFilePath(FileSystem fs, String folder){
+		return listDfsFilePath(fs, folder, false);
+	}
+	
+	public static List<String> listDfsFile(FileSystem fs, String folder){
+		List<String> files = new ArrayList<String>();
+		try {
+			FileStatus[] fslist = fs.listStatus(new Path(folder));
+			for (FileStatus f:fslist)
+				files.add(f.getPath().getName());
 		}catch(Exception e){
 			logger.error("", e);
 		}

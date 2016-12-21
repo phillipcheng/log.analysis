@@ -20,6 +20,7 @@ import bdap.util.XmlUtil;
 import bdap.util.ZipUtil;
 import dv.util.RequestUtil;
 import etl.flow.CoordConf;
+import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
@@ -170,6 +171,18 @@ public class SparkFlowMgr extends FlowMgr{
 	@Override
 	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId,
 			String nodeName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data, FlowInfo flowInfo) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -13,6 +13,7 @@ import bdap.util.PropertiesUtil;
 import bdap.util.Util;
 import etl.flow.ActionNode;
 import etl.flow.CoordConf;
+import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.Node;
 import etl.flow.deploy.FlowDeployer;
@@ -196,10 +197,28 @@ public abstract class FlowMgr {
 	 * @return list of file paths
 	 */
 	public abstract String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName);
+
+
+	/**
+	 * get the distributed file according to the data definition
+	 * @param engine config
+	 * @param data definition
+	 * @return file content
+	 */
+	public abstract InMemFile getDFSFile(EngineConf ec, Data data);
+
+	/**
+	 * get the distributed file according to the data definition & flow instance info
+	 * @param engine config
+	 * @param data definition
+	 * @param flow instance info
+	 * @return file content
+	 */
+	public abstract InMemFile getDFSFile(EngineConf ec, Data data, FlowInfo flowInfo);
 	
 	/**
 	 * get the distributed file
-	 * @param fsconf
+	 * @param engine config
 	 * @param filePath
 	 * @return file content (Max file default size: 1MB)
 	 */
@@ -208,7 +227,7 @@ public abstract class FlowMgr {
 
 	/**
 	 * get the distributed file
-	 * @param fsconf
+	 * @param engine config
 	 * @param filePath
 	 * @param maxFileSize
 	 * @return file content
@@ -217,7 +236,7 @@ public abstract class FlowMgr {
 
 	/**
 	 * put the distributed file
-	 * @param ec
+	 * @param engine config
 	 * @param filePath
 	 * @param file
 	 * @return true/false
