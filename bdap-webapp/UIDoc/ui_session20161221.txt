@@ -1,0 +1,35 @@
+2016年12月21日session
+参与人员：chengyi/yueximing
+
+会议纪要：
+
+1、关于node上的data需要讨论UI展现方式。
+      -- data在node上展现方式
+			Node: outlet: name, datasetName
+			Node: inlet: name, datasetName
+			
+			On the node, add “Inlet add button/point” at top
+			Add “outlet add button/point” at bottom, 
+			User right click to delete unwanted in/outlet
+
+      -- inlets和outlets匹配方式在UI层面的表现方式
+			First user define all the dataset
+			Then user select dataset for each in/outlet, on the UI we can show a red/dotted line to indicate the data flow
+
+      -- node之间是否只连一个link就可以？link只是区分节点流向（不管node有多少inlets和outlets）
+			yes
+      -- Dataset点个数是否有限制？如何添加？如何删除？
+			unlimit
+      -- dataset
+			In test mode, for given instanceId, user can see the data in the defined dataset.
+			User can see multiple dataset, for example 2 input and 1 output
+
+	  -- schame等等
+			Standalone editoring
+
+2、run时，log实时加载？目前后台仅是一个log api，没有error/info/debug/warning区分
+		Startline(-1), endline (-1) 取log的末尾多少行
+3、run时，node运行状态？如何与后台实时交互？
+		After execute, instance id is generated, use this instance id to query the status of the flow, and the dataset
+4、link这个版本是否实现fail类型？目前仅支持success类型
+		User only define success next.

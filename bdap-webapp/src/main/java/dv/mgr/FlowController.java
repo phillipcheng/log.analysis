@@ -39,6 +39,7 @@ import dv.db.dao.FlowRepository;
 import dv.db.entity.AccountEntity;
 import dv.db.entity.FlowEntity;
 import etl.engine.ETLCmd;
+import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
@@ -137,8 +138,6 @@ public class FlowController {
 	@RequestMapping(value = "/{flowId}", method = RequestMethod.POST)
 	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
 		HttpHeaders httpHeaders = new HttpHeaders();
-		OozieConf oc = flowDeployer.getOozieServerConf();
-		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
 		try {
 			FlowEntity flowEntity = flowRepository.findOne(flowId);
@@ -155,6 +154,28 @@ public class FlowController {
 			return new ResponseEntity<String>(e.getMessage(), httpHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@RequestMapping(value = "/{flowId}/data/{dataName:.+}", method = RequestMethod.GET)
+	InMemFile getFlowData(@PathVariable String userName, @PathVariable String flowId, @PathVariable String dataName) {
+		this.validateUser(userName);
+		FlowEntity flowEntity = this.flowRepository.findOne(flowId);
+		if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
+			Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
+			List<Data> datalist = flow.getData();
+			if (datalist != null) {
+				EngineConf ec = flowDeployer.getEngineConfig();
+				for (Data d: datalist) {
+					if (d != null && d.getName() != null && !d.isInstance() && d.getName().equals(dataName)) {
+						return this.flowMgr.getDFSFile(ec, d);
+					}
+				}
+			}
+			return null;
+		} else {
+			logger.debug("Flow {} not found", flowId);
+			return null;
+		}
+	}
 	
 	@RequestMapping(value = "/instances/{instanceId}", method = RequestMethod.GET)
 	FlowInfo getFlowInstance(@PathVariable String userName, @PathVariable String instanceId) {
@@ -164,10 +185,39 @@ public class FlowController {
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/log", method = RequestMethod.GET)
-	String getFlowLog(@PathVariable String userName, @PathVariable String instanceId) {
+	String getFlowInstanceLog(@PathVariable String userName, @PathVariable String instanceId) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
 		return this.flowMgr.getFlowLog("project1", oc, instanceId);
+	}
+	
+	@RequestMapping(value = "/instances/{instanceId}/data/{dataName}", method = RequestMethod.GET)
+	InMemFile getFlowInstanceData(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String dataName) {
+		this.validateUser(userName);
+		OozieConf oc = flowDeployer.getOozieServerConf();
+		FlowInfo flowInfo = this.flowMgr.getFlowInfo("project1", oc, instanceId);
+		if (flowInfo != null) {
+			FlowEntity flowEntity = this.flowRepository.findOne(flowInfo.getName());
+			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
+				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
+				List<Data> datalist = flow.getData();
+				if (datalist != null) {
+					EngineConf ec = flowDeployer.getEngineConfig();
+					for (Data d: datalist) {
+						if (d != null && d.getName() != null && d.isInstance() && d.getName().equals(dataName)) {
+							return this.flowMgr.getDFSFile(ec, d, flowInfo);
+						}
+					}
+				}
+				return null;
+			} else {
+				logger.debug("Flow {} not found", flowInfo.getName());
+				return null;
+			}
+		} else {
+			logger.debug("Flow instance {} not found", instanceId);
+			return null;
+		}
 	}
 
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}", method = RequestMethod.GET)

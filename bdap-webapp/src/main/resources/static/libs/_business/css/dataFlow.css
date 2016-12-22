@@ -5,11 +5,9 @@ body {
 	user-select: none;
 }
 
-.nodePropertyG{
-	
-}
+.nodePropertyG {}
 
-.nodePropertyG:hover{
+.nodePropertyG:hover {
 	cursor: pointer;
 }
 
@@ -20,16 +18,16 @@ body {
 }
 
 .nodeG>rect {
-	fill: rgb(238, 238, 238);
 	stroke: silver;
 	stroke-width: 2;
 }
 
-.nodeG:hover>rect {
+
+/*.nodeG:hover>rect {
 	fill: rgb(238, 238, 238);
 	stroke: red;
 	stroke-width: 2;
-}
+}*/
 
 .nodeG>.nodePropertyG>rect {
 	fill: rgb(238, 238, 238);
@@ -40,21 +38,21 @@ body {
 .nodeGSelected {}
 
 .nodeGSelected>rect {
-	fill: rgb(155, 155, 155);
+	fill: rgb(238, 238, 238);
 	stroke: red;
-	stroke-width: 3;
+	stroke-width: 4;
 }
 
 .nodeGSelected:hover>rect {
-	fill: rgb(155, 155, 155);
+	/*fill: rgb(238, 238, 238);*/
 	stroke: red;
-	stroke-width: 3;
+	stroke-width: 4;
 }
 
-.nodeGSelected>.nodePropertyG>rect{
-	fill: rgb(238, 238, 238);
+.nodeGSelected>.nodePropertyG>rect {
+	/*fill: rgb(238, 238, 238);*/
 	stroke: rgb(255, 0, 0);
-	stroke-width: 3;
+	stroke-width: 1;
 }
 
 .nodeRun {
@@ -89,8 +87,18 @@ body {
 
 .minNodeG {}
 
+.inletsMinNodeG {}
+
+.outletsMinNodeG {}
+
 .minNodeCircle {
 	fill: red;
+	stroke-width: 1;
+	stroke: white;
+}
+
+.letsMinNodeCircle {
+	fill: #006EC3;
 	stroke-width: 1;
 	stroke: white;
 }
@@ -99,11 +107,29 @@ body {
 	stroke-width: 1;
 	stroke: white;
 }
+.letsMinNodePath {
+	stroke-width: 1;
+	stroke: white;
+}
+.minNodeG:hover>.minNodePath{
+	cursor: zoom-in;
+}
+.minNodeG:hover>.letsMinNodePath{
+	stroke-width: 1;
+	stroke: white;
+	cursor: pointer;
+}
 
 .minNodeG:hover>.minNodeCircle {
 	stroke: white;
 	stroke-width: 2;
 	cursor: zoom-in;
+}
+
+.minNodeG:hover>.letsMinNodeCircle {
+	stroke: white;
+	stroke-width: 2;
+	cursor: pointer;
 }
 
 .maxNodeG {}
@@ -135,9 +161,9 @@ body {
 	opacity: 0.4;
 }
 
-.edgeSelected{}
+.edgeSelected {}
 
-.edgeSelected>path{
+.edgeSelected>path {
 	fill: none;
 	stroke: orangered;
 	stroke-linecap: round;
@@ -150,17 +176,79 @@ body {
 }
 
 .outPath {
-	fill: cornflowerblue
-}
-
-.outPath:hover {
-	cursor: help
-}
-
-.inPath {
 	fill: orangered
 }
 
+.outPath:hover {
+	cursor: pointer;
+}
+
+.inPath {
+	fill: cornflowerblue
+}
+
 .inPath:hover {
-	cursor: help
+	cursor: pointer;
+}
+
+.start {}
+
+.start>rect {
+	fill: #789938;
+}
+
+.start:hover>rect {
+	fill: #789938;
+	stroke: red;
+	stroke-width: 2;
+}
+
+.end {}
+
+.end>rect {
+	fill: #AE5F2E;
+}
+
+.end:hover>rect {
+	fill: #AE5F2E;
+	stroke: red;
+	stroke-width: 2;
+}
+
+.action {}
+
+.action>rect {
+	fill: rgb(238, 238, 238);
+}
+
+.action:hover>rect {
+	fill: rgb(238, 238, 238);
+	stroke: red;
+	stroke-width: 2;
+}
+
+.child_svg {
+	position: relative;
+	width: 150px;
+	height: 150px;
+	border: 1px solid rgb(155,155,155);
+	background: #FFF;
+	z-index: 1;
+	opacity: 0.5;
+}
+
+.child_svg:hover{
+	cursor: move;
+}
+
+.child_small_svg {
+	position: absolute;
+	border: 1px solid rgb(155,155,155);
+	background: #FFF;
+	z-index: 5;
+	opacity: 0.5;
+}
+
+.nodeSmallG{
+	
 }

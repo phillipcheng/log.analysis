@@ -11,6 +11,8 @@
 
 		<link rel="stylesheet" type="text/css" href="../libs/easyui/themes/bootstrap/easyui.css">
 		<link rel="stylesheet" type="text/css" href="../libs/easyui/themes/icon.css">
+		<link rel="stylesheet" type="text/css" href="../libs/_business/css/d3-context-menu.css" />
+		<link rel="stylesheet" type="text/css" href="../libs/_business/css/dataSetFlow.css" />
 
 		<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
 		<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
@@ -19,6 +21,7 @@
 		<script type="text/javascript" src="../libs/d3/lodash/lodash.min.js"></script>
 		<script type="text/javascript" src="../libs/d3/graphlib/graphlib.core.min.js"></script>
 		<script type="text/javascript" src="../libs/d3/dagre/dagre.core.min.js"></script>
+		<script type="text/javascript" src="../libs/d3/contextmenu/d3-context-menu.js"></script>
 
 		<script type="text/javascript" src="../libs/_business/js/const.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/base.js"></script>
@@ -26,9 +29,11 @@
 		<script type="text/javascript" src="../libs/_business/js/app.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/zoom.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/controller.js"></script>
+
+		<script type="text/javascript" src="../libs/_business/js/dataset.js"></script>
 	</head>
 
-	<body onload="loadinit()">
+	<body onload="loadinit()" oncontextmenu="return false">
 
 		<!--
 			导航 #f57c00
@@ -41,41 +46,37 @@
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSet();">dataSet</a>
+						</li>
+						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.start();">start</a>
 						</li>
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.end();">end</a>
-						</li>
-						<!--<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.group()">ActionFlow</a>
-						</li>-->
-						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="run();">run</a>
-						</li>
-						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="openLogWin();">openLogWin</a>
-						</li>
-						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="openDatasetWin();">openDatasetWin</a>
-						</li>
-						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="saveAsJson();">Save</a>
-						</li>
-						<li class="dropdown">
-							<a style="color: #FFFFFF;" href="#" class="dropdown-toggle" data-toggle="dropdown">ActionNode <b class="caret"></b></a>
-							<ul class="dropdown-menu" id="actionList">
-							</ul>
-						</li>
+						</li>	
+							<li>
+								<a style="color: #FFFFFF;" href="javascript:;" onclick="openLogWin();">openLogWin</a>
+							</li>
+							<li>
+								<a style="color: #FFFFFF;" href="javascript:;" onclick="openDatasetWin();">openDatasetWin</a>
+							</li>
+							<li>
+								<a style="color: #FFFFFF;" href="javascript:;" onclick="saveAsJson();">Save</a>
+							</li>
+							<li class="dropdown">
+								<a style="color: #FFFFFF;" href="#" class="dropdown-toggle" data-toggle="dropdown">ActionNode <b class="caret"></b></a>
+								<ul class="dropdown-menu" id="actionList">
+								</ul>
+							</li>
 					</ul>
 				</div>
 			</div>
 		</nav>
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-12" style="height: 94vh;">
-
-					<div style="height:100%;border: solid #269ABC 2px;border-radius: 15px;" role="tabpanel" class="tab-pane active" id="home">
-						<div id="display" style="height:100%;width: 100%;">
+				<div class="col-md-12" style="height: 93vh;">
+					<div style="height:100%;" role="tabpanel" class="tab-pane active" id="home">
+						<div id="display" style="height:99%;width: 99%; position: absolute;">
 							<svg id="svg" style="height:100%;width: 100%;" onmousedown="svg_document_onmousedown()" onmouseup="svg_document_onmouseup()" onkeyup="svg_document_onkeydown()">
 								<defs>
 									<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
@@ -90,12 +91,55 @@
 								</defs>
 							</svg>
 						</div>
+						<div id="dataset_svg" class="dataset_svg">
+							<svg id="svgdataset" style="width: 100%;height: 100%;">
+							</svg>
+						</div>
+						<div id="child_svg" class="child_svg" onclick="remoeToInitPosition()">
+							<svg id="svgsmall" style="height:100%;width: 100%;">
+								<g id="rectSmallContainer" transform="translate(75,75)scale(1,1)">
+
+								</g>
+							</svg>
+							<div id="child_small_svg" class="child_small_svg" style="width: 10px;height: 10px;">
+
+							</div>
+						</div>
 						<div id="divrightup" class="rightupcss">
 							<div class="rightupcssheader">
 								<strong id="rightupcssheaderstring">Star</strong>
 							</div>
 							<div id="rightupcssbody" class="rightupcssbody">
 							</div>
+						</div>
+						<div id="divleftdatasetproperty">
+							<div id="datasetcssheader">
+								AAAA
+							</div>
+							<div id="rightupcssbody" class="propertycssbody">
+								<input type="hidden" id="hidDataSetId" value=""/>
+								<div class="sublistgroup">
+									<strong>name:</strong>
+									<input id="dataset_property_name" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+								</div>
+								<div class="sublistgroup">
+									<strong>location:</strong>
+									<input id="dataset_property_location" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+								</div>
+								<div class="sublistgroup">
+									<strong>dataFormat:</strong>
+									<input id="dataset_property_dataFormat" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+								</div>
+								<div class="sublistgroup">
+									<strong>recordType:</strong>
+									<input id="dataset_property_recordType" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+								</div>
+								<div class="sublistgroup">
+									<strong>instance:</strong>
+									<input id="dataset_property_instance" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+								</div>
+							</div>
+
 						</div>
 					</div>
 				</div>
@@ -106,19 +150,10 @@
 			init();
 		</script>
 
-		<div id="logDetail" class="easyui-window" title="Log Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
+		<div id="logDetail" class="easyui-window" title="Data Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
 			<div class="easyui-tabs" style="width:100%;height:100%">
 				<div id="tab-info" title="Info" style="padding:10px;margin: 0px;">
 					This is the log content1.
-				</div>
-				<div id="tab-warning" title="Warning" style="padding:10px">
-					This is the log content2.
-				</div>
-				<div id="tab-error" title="Error" data-options="closable:false,animate:true" style="padding:10px">
-					This is the help content3.
-				</div>
-				<div id="tab-debug" title="Debug" data-options="closable:false,animate:true" style="padding:10px">
-					This is the help content4.
 				</div>
 			</div>
 		</div>
@@ -131,33 +166,8 @@
 				<div id="tab-dataschame" title="schame" style="padding:10px">
 					<table id="dg2"></table>
 				</div>
-				<div id="tab-data" title="data" style="padding:10px">
-					<div class="sublistgroup">
-						<strong>name:</strong>
-						<input type="text" value="" placeholder="..." />
-					</div>
-					<div class="sublistgroup">
-						<strong>location:</strong>
-						<input type="text" value="" placeholder="..." />
-					</div>
-					<div class="sublistgroup">
-						<strong>dataFormat:</strong>
-						<input type="text" value="" placeholder="..." />
-					</div>
-					<div class="sublistgroup">
-						<strong>recordType:</strong>
-						<input type="text" value="" placeholder="..." />
-					</div>
-					<div class="sublistgroup">
-						<strong>instance:</strong>
-						<input type="text" value="" placeholder="..." />
-					</div>
-				</div>
 			</div>
 		</div>
-		<!--<form id="form1" method="post" action="http://16.165.184.12:8080/dashview/george/flow">
-			<input id="dataId" type="hidden" name="data" value="23423" />
-		</form>-->
 	</body>
 
 </html>

@@ -1,6 +1,6 @@
 {
   "@class" : "flow",
-  "name" : "flow1",
+  "name" : "flow1_oozie",
   "outlets" : [ ],
   "nodes" : [ {
     "@class" : "start",

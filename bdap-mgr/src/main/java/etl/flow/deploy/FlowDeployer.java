@@ -5,28 +5,20 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.commons.configuration.Configuration;
 import bdap.util.EngineConf;
 import bdap.util.FileType;
-import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
-import bdap.util.SystemUtil;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.mgr.InMemFile;
@@ -52,21 +44,20 @@ public class FlowDeployer {
 	
 	private static String key_hdfs_user="hdfs.user";
 	private static String key_defaultFs="defaultFs";
-	
+	private static String key_deploy_method="deploy.method";
 	
 	private String cfgProperties=null;
-	private PropertiesConfiguration pc;
+	private Configuration pc;
 	
 	private String platformLocalDist;
 	private String platformRemoteDist;
 	private Map<String, String> projectLocalDirMap= new HashMap<String, String>();
 	private Map<String, String> projectHdfsDirMap= new HashMap<String, String>();
 	
-	private FileSystem fs;
+	private DeployMethod deployMethod;
 	private String defaultFS;
 	private String hdfsUser;
-	private boolean localDeploy=true;
-	private transient Configuration conf;
+	private transient org.apache.hadoop.conf.Configuration conf;
 	
 	public FlowDeployer(){
 		this(defaultCfgProperties);
@@ -82,33 +73,26 @@ public class FlowDeployer {
 			projectLocalDirMap.put(project, pc.getString(project + "." + key_local_dir));
 			projectHdfsDirMap.put(project, pc.getString(project + "." + key_hdfs_dir));
 		}
-		conf = new Configuration();
+		conf = new org.apache.hadoop.conf.Configuration();
 		defaultFS = pc.getString(key_defaultFs);
 		conf.set("fs.defaultFS", defaultFS);
 		platformLocalDist = pc.getString(key_platform_local_dist);
 		platformRemoteDist = pc.getString(key_platform_remote_dist);
 		hdfsUser = pc.getString(key_hdfs_user);
-		Set<String> ipAddresses = SystemUtil.getMyIpAddresses();
-		try {
-			if (ipAddresses.contains(defaultFS)){
-				fs = FileSystem.get(conf);
-				localDeploy = true;
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-				ugi.doAs(new PrivilegedExceptionAction<Void>() {
-					public Void run() throws Exception {
-						fs = FileSystem.get(conf);
-						localDeploy = false;
-						return null;
-					}
-				});
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}
+		
+		deployMethod = createDeployMethod(pc.getString(key_deploy_method), hdfsUser, defaultFS, pc);
     }
     
-    public String getProjectHdfsDir(String prjName){
+    private DeployMethod createDeployMethod(String deployMethod, String remoteUser, String defaultFs, Configuration pc) {
+		if (DeployMethod.FTP.equals(deployMethod))
+			return new FTPDeployMethod(pc);
+		else if (DeployMethod.SSH.equals(deployMethod))
+			return new SSHDeployMethod(pc);
+		else
+			return new DefaultDeployMethod(remoteUser, defaultFs);
+	}
+    
+	public String getProjectHdfsDir(String prjName){
     	return projectHdfsDirMap.get(prjName);
     }
     
@@ -117,14 +101,14 @@ public class FlowDeployer {
 		    logger.info(String.format("lib path:%s", path.getFileName().toString()));
 			byte[] content = Files.readAllBytes(path);
 			String remotePath = String.format("%s/lib/%s", platformRemoteDist, path.getFileName().toString());
-			HdfsUtil.writeDfsFile(fs, remotePath, content);
+			deployMethod.createFile(remotePath, content);
 		}
     }
     
     public void installEngine(boolean clean) throws Exception {
     	DirectoryStream<Path> stream = null;
     	if (clean){
-    		fs.delete(new org.apache.hadoop.fs.Path(String.format("%s/lib/", platformRemoteDist)), true);
+    		deployMethod.delete(String.format("%s/lib/", platformRemoteDist), true);
     	}
     	//copy lib
     	if (clean){
@@ -133,13 +117,13 @@ public class FlowDeployer {
     		stream = Files.newDirectoryStream(Paths.get(String.format("%s%s", platformLocalDist, File.separator+"lib")), "bdap*.jar");
     	}
     	installPlatformLib(stream);
-		HdfsUtil.writeDfsFile(fs, String.format("%s/cfg/%s", platformRemoteDist, FlowDeployer.coordinator_xml), 
-				Files.readAllBytes(Paths.get(String.format("%s/cfg/%s", platformLocalDist, FlowDeployer.coordinator_xml))));
+    	deployMethod.createFile(String.format("%s/cfg/%s", platformRemoteDist, FlowDeployer.coordinator_xml),
+    			Files.readAllBytes(Paths.get(String.format("%s/cfg/%s", platformLocalDist, FlowDeployer.coordinator_xml))));
 
-		HdfsUtil.writeDfsFile(fs, String.format("%s/cfg/%s", platformRemoteDist, FlowDeployer.spark_wfxml), 
+    	deployMethod.createFile(String.format("%s/cfg/%s", platformRemoteDist, FlowDeployer.spark_wfxml), 
 				Files.readAllBytes(Paths.get(String.format("%s/cfg/%s", platformLocalDist, FlowDeployer.spark_wfxml))));
 		
-		HdfsUtil.writeDfsFile(fs, String.format("%s/cfg/lib/%s", platformRemoteDist, FlowDeployer.submitspark_shell), 
+    	deployMethod.createFile(String.format("%s/cfg/lib/%s", platformRemoteDist, FlowDeployer.submitspark_shell), 
 				Files.readAllBytes(Paths.get(String.format("%s/cfg/%s", platformLocalDist, FlowDeployer.submitspark_shell))));
     }
     
@@ -231,6 +215,26 @@ public class FlowDeployer {
 		return fl;
 	}
 	
+	public void deploy(String path, byte[] content) {
+    	deployMethod.createFile(path, content);
+	}
+	
+	public void copyFromLocalFile(String localPath, String remotePath) {
+		deployMethod.copyFromLocalFile(localPath, remotePath);
+	}
+	
+	public void delete(String path, boolean recursive) {
+		deployMethod.delete(path, recursive);
+	}
+	
+	public List<String> listFiles(String path) {
+		return deployMethod.listFiles(path);
+	}
+	
+	public List<String> readFile(String path) {
+		return deployMethod.readFile(path);
+	}
+	
 	private void deploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
 		String localProjectFolder = this.projectLocalDirMap.get(projectName);
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
@@ -258,17 +262,7 @@ public class FlowDeployer {
 	
 	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) {
 		try {
-			if (localDeploy){		
-				deploy(projectName, flowName, jars, fromJson, skipSchema, et);
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-				ugi.doAs(new PrivilegedExceptionAction<Void>() {
-						public Void run() throws Exception {
-							deploy(projectName, flowName, jars, fromJson, skipSchema, et);
-							return null;
-						}
-					});
-			}
+			deploy(projectName, flowName, jars, fromJson, skipSchema, et);
 		}catch(Exception e){
 			logger.error("", e);
 		}
@@ -303,16 +297,7 @@ public class FlowDeployer {
 	
 	public String runExecute(String projectName, String flowName, EngineType et) {
 		try {
-			if (localDeploy){		
-				return execute(projectName, flowName, et);
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-				return ugi.doAs(new PrivilegedExceptionAction<String>() {
-						public String run() throws Exception {
-							return execute(projectName, flowName, et);
-						}
-					});
-			}
+			return execute(projectName, flowName, et);
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
@@ -321,16 +306,7 @@ public class FlowDeployer {
 	
 	public String runExecute(String projectName, String flowName, String wfId, EngineType et) {
 		try {
-			if (localDeploy){		
-				return execute(projectName, flowName, wfId, et);
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-				return ugi.doAs(new PrivilegedExceptionAction<String>() {
-						public String run() throws Exception {
-							return execute(projectName, flowName, wfId, et);
-						}
-					});
-			}
+			return execute(projectName, flowName, wfId, et);
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
@@ -345,16 +321,7 @@ public class FlowDeployer {
 	
 	public String runStartCoordinator(String projectName, String flowName, CoordConf cc) {
 		try {
-			if (localDeploy){		
-				return startCoordinator(projectName, flowName, cc);
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-				return ugi.doAs(new PrivilegedExceptionAction<String>() {
-						public String run() throws Exception {
-							return startCoordinator(projectName, flowName, cc);
-						}
-					});
-			}
+			return startCoordinator(projectName, flowName, cc);
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
@@ -418,15 +385,11 @@ public class FlowDeployer {
 		}
 	}
 	
-	public FileSystem getFs() {
-		return fs;
-	}
-	
 	public String getDefaultFS() {
 		return defaultFS;
 	}
 	
-	public Configuration getConf(){
+	public org.apache.hadoop.conf.Configuration getConf(){
 		return conf;
 	}
 	public String getPlatformLocalDist() {
