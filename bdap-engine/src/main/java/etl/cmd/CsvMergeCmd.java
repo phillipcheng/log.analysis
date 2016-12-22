@@ -161,6 +161,7 @@ public class CsvMergeCmd extends SchemaETLCmd{
 	}
 	
 	private Tuple3<Integer, String, String> kv2kv(String tfName, String row){
+		logger.debug(String.format("tfName:%s, row:%s", tfName, row));
 		int idx=-1;
 		if (super.getLogicSchema()!=null){
 			for (int i=0; i<srcTables.length; i++){

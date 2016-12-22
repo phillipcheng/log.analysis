@@ -156,6 +156,21 @@ var svg_document_onmousedown = function() {
 				zoom.HideProperty(g_mouse_down);
 			}
 			break;
+		case "addInLetsPoint":
+			{
+			debugger
+				var nodeData = g.node(g_mouse_down);
+				var node = d3.selectAll("#" + g_mouse_down);
+				addInletsPoint(node, nodeData, g_mouse_down);
+			}
+			break;
+		case "addOutLetsPoint":
+			{	
+				var nodeData = g.node(g_mouse_down);
+				var node = d3.selectAll("#" + g_mouse_down);
+				addOutletsPoint(node, nodeData, g_mouse_down);
+			}
+			break;
 		default:
 			{
 				console.log("--------onmousedown,default--------");
@@ -252,6 +267,10 @@ var documentClickOperation = function(e, o, g_mouse_down, g_mouse_up, args_tagNa
 		} else if(args_tagName.localeCompare("path") == 0) {
 			if(args_self.localeCompare("RUN") == 0) { //点击进行操作
 
+			} else if(args_self.localeCompare("addInLetsPoint") == 0){
+				
+			} else if(args_self.localeCompare("addOutLetsPoint") == 0){
+				
 			} else {
 				var tempPathG = g_mouse_up;
 				if(document.getElementById(tempPathG).getAttribute("class").toString().localeCompare("edge") == 0) {
