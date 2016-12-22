@@ -136,9 +136,9 @@ public class FlowTest {
 		
 		//assertion
 		String fileName="singleTable";
-		List<String> ls = HdfsUtil.listDfsFile(localDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
+		List<String> ls = apacheDeployer.listFiles(String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
 		assertTrue(ls.contains(fileName));
-		List<String> contents = HdfsUtil.stringsFromDfsFile(localDeployer.getFs(), String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
+		List<String> contents = apacheDeployer.readFile(String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
 		logger.info(String.format("contents:\n%s", String.join("\n", contents)));
 		String[] csv = contents.get(0).split(",");
 		assertTrue(csv[8].equals(wfId));
