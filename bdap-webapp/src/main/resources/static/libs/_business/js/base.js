@@ -13,7 +13,6 @@ var _base = {
 	 * 防止渲染时父节点覆盖子节点（一般父节点矩形框大于子节点矩形框）
 	 */
 	_sortNodes: function(g) {
-		var nodes = g.nodes();
 		var newNodes = new Array();
 		$.each(nodes, function(i, d) {
 			//从当前节点取到所有父级节点（包含本节点）
@@ -127,7 +126,8 @@ var _base = {
 				var pro = g.edge(d);
 				var points = pro.points;
 
-				var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge");
+				var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge")
+					.on("contextmenu", d3.contextMenu(pathmenu));
 
 				linegroup.append("path")
 					.transition()
@@ -137,22 +137,22 @@ var _base = {
 					.attr("d", interpolate(points))
 					.attr("marker-end", "url(#arrow)");
 
-//				linegroup.append("circle")
-//					.attr("id", "outPath" + d.v + "A" + d.w)
-//					.attr("G", "linegroup" + d.v + d.w)
-//					.attr("self", "OutPath")
-//					.attr("class", "outPath")
-//					.attr("r", "4").attr("cx", points[0]["x"]).attr("cy", points[0]["y"]);
+				//				linegroup.append("circle")
+				//					.attr("id", "outPath" + d.v + "A" + d.w)
+				//					.attr("G", "linegroup" + d.v + d.w)
+				//					.attr("self", "OutPath")
+				//					.attr("class", "outPath")
+				//					.attr("r", "4").attr("cx", points[0]["x"]).attr("cy", points[0]["y"]);
 
-				var endx = points[points.length - 1]["x"];
-				var endy = points[points.length - 1]["y"];
-
-//				linegroup.append("circle")
-//					.attr("id", "inPath" + d.v + "A" + d.w)
-//					.attr("G", "linegroup" + d.v + d.w)
-//					.attr("self", "InPath")
-//					.attr("class", "inPath")
-//					.attr("r", "3").attr("cx", endx).attr("cy", endy);
+				//				var endx = points[points.length - 1]["x"];
+				//				var endy = points[points.length - 1]["y"];
+				//
+				//				linegroup.append("circle")
+				//					.attr("id", "inPath" + d.v + "A" + d.w)
+				//					.attr("G", "linegroup" + d.v + d.w)
+				//					.attr("self", "InPath")
+				//					.attr("class", "inPath")
+				//					.attr("r", "3").attr("cx", endx).attr("cy", endy);
 
 			});
 
@@ -160,17 +160,19 @@ var _base = {
 			var pro = g.edge(d);
 			var points = pro.points;
 			var linegroup = d3.select(this);
-			linegroup.select(".inPath")
-				.transition()
-				.duration(500)
-				.attr("cx", points[0]["x"]).attr("cy", points[0]["y"]);
 
-			var endx = points[points.length - 1]["x"];
-			var endy = points[points.length - 1]["y"];
-			linegroup.select(".outPath")
-				.transition()
-				.duration(500)
-				.attr("cx", endx).attr("cy", endy);
+			//			linegroup.select(".inPath")
+			//				.transition()
+			//				.duration(500)
+			//				.attr("cx", points[0]["x"]).attr("cy", points[0]["y"]);
+			//
+			//			var endx = points[points.length - 1]["x"];
+			//			var endy = points[points.length - 1]["y"];
+			//			
+			//			linegroup.select(".outPath")
+			//				.transition()
+			//				.duration(500)
+			//				.attr("cx", endx).attr("cy", endy);
 
 			linegroup.select("path")
 				.transition()
@@ -190,7 +192,7 @@ var smallNodeEnter = function(theSelf, d, nodeData) {
 	var theSelfObj = d3.select(theSelf);
 	theSelfObj.attr("class", "nodeSmallG")
 		.attr("id", "small" + d)
-		.attr("r",2)
+		.attr("r", 2)
 		.attr("cx", ((nodeData.x / 20) - 1))
 		.attr("cy", ((nodeData.y / 20) - 1));
 }
@@ -200,8 +202,8 @@ var smallNodeUpdate = function(theSelf, d, nodeData) {
 	theSelfObj.attr("cx", ((nodeData.x / 20) - 1)).attr("cy", ((nodeData.y / 20) - 1));
 }
 
-var addInLetsButton = function(theSelfObj, d, nodeData){
-	
+var addInLetsButton = function(theSelfObj, d, nodeData) {
+
 	var theSelfObjChild = theSelfObj.append("g");
 	theSelfObjChild.attr("G", d)
 		.attr("class", "minNodeG inletsMinNodeG")
@@ -219,12 +221,12 @@ var addInLetsButton = function(theSelfObj, d, nodeData){
 		.attr("d", "M-3,0L3,0M0,-3L0,3");
 }
 
-var addOutLetsButton = function(theSelfObj, d, nodeData){
-	
+var addOutLetsButton = function(theSelfObj, d, nodeData) {
+
 	var theSelfObjChild = theSelfObj.append("g");
 	theSelfObjChild.attr("G", d).attr("class", "minNodeG outletsMinNodeG")
 		.attr("self", "addOutLetsPoint")
-		.attr("transform", "translate(" + 10 + ","+ (nodeData.height - 15) +")scale(1,1)");
+		.attr("transform", "translate(" + 10 + "," + (nodeData.height - 15) + ")scale(1,1)");
 
 	theSelfObjChild.append("circle").attr("G", d)
 		.attr("class", "letsMinNodeCircle")
@@ -237,24 +239,24 @@ var addOutLetsButton = function(theSelfObj, d, nodeData){
 		.attr("d", "M-3,0L3,0M0,-3L0,3");
 }
 
-var addInletsPoint = function(node, nodeData, g_mouse_down){
+var addInletsPoint = function(node, nodeData, g_mouse_down) {
 	var points = node.selectAll(".inPath");
 	var length = points[0].length;
-	if(length >= 8){
+	if(length >= 8) {
 		return;
 	}
 	var number = 1;
-	if(length > 0){
-		var point = points[0][length-1]
+	if(length > 0) {
+		var point = points[0][length - 1]
 		number = point.getAttribute("number");
 		number = Number.parseInt(number);
 		number += 1;
 	}
-	var x = length*18+25;
-//	if(length == 0){
-//		x += 20;
-//	}
-	
+	var x = length * 18 + 25;
+	//	if(length == 0){
+	//		x += 20;
+	//	}
+
 	node.append("circle")
 		.attr("id", "inlets" + number)
 		.attr("G", g_mouse_down)
@@ -263,25 +265,25 @@ var addInletsPoint = function(node, nodeData, g_mouse_down){
 		.attr("r", "4")
 		.attr("number", number)
 		.attr("transform", "translate(" + x + ",5)scale(1,1)");
-	
+
 }
 
-var addOutletsPoint = function(node, nodeData, g_mouse_down){
+var addOutletsPoint = function(node, nodeData, g_mouse_down) {
 	var points = node.selectAll(".outPath");
 	var length = points[0].length;
-	if(length >= 8){
+	if(length >= 8) {
 		return;
 	}
 	var number = 1;
-	if(length > 0){
-		number = points[0][length-1].getAttribute("number");
+	if(length > 0) {
+		number = points[0][length - 1].getAttribute("number");
 		number = Number.parseInt(number);
 		number += 1;
 	}
-	var x = length*18+25;
-//	if(length == 0){
-//		x += 20;
-//	}
+	var x = length * 18 + 25;
+	//	if(length == 0){
+	//		x += 20;
+	//	}
 	node.append("circle")
 		.attr("id", "outlets" + number)
 		.attr("G", g_mouse_down)
@@ -289,10 +291,9 @@ var addOutletsPoint = function(node, nodeData, g_mouse_down){
 		.attr("class", "outPath")
 		.attr("r", "4")
 		.attr("number", number)
-		.attr("transform", "translate(" + x + "," + (nodeData.height-5) + ")scale(1,1)");
-	
-}
+		.attr("transform", "translate(" + x + "," + (nodeData.height - 5) + ")scale(1,1)");
 
+}
 
 /**
  * actionEnter 子节点
@@ -331,9 +332,9 @@ var actionEnter = function(theSelf, d, nodeData) {
 		.attr("cx", nodeData.width - 10)
 		.attr("cy", nodeData.height - 10);
 
-	tempM = "M"+ (nodeData.width-30) +"," + (nodeData.height - 5);
-	tempM = tempM + "L"+ (nodeData.width-30) +"," + (nodeData.height - 15);
-	tempM = tempM + "L"+ (nodeData.width-20) +"," + (nodeData.height - 10) + " Z";
+	tempM = "M" + (nodeData.width - 30) + "," + (nodeData.height - 5);
+	tempM = tempM + "L" + (nodeData.width - 30) + "," + (nodeData.height - 15);
+	tempM = tempM + "L" + (nodeData.width - 20) + "," + (nodeData.height - 10) + " Z";
 
 	theSelfObj.append("path") //path run
 		.attr("G", d)
@@ -355,28 +356,29 @@ var actionEnter = function(theSelf, d, nodeData) {
 		.attr("class", "minNodePath")
 		.attr("self", "ShowProperty")
 		.attr("d", "M-3,0L3,0M0,-3L0,3");
-	
+
 	if(nodeData.nodeType.localeCompare("start") == 0) {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG start")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+			.on("contextmenu", d3.contextMenu(menu));
 	} else if(nodeData.nodeType.localeCompare("end") == 0) {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG end")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+			.on("contextmenu", d3.contextMenu(menu));
 	} else {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG action")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
-		
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+			.on("contextmenu", d3.contextMenu(menu));
+
 		addInLetsButton(theSelfObj, d, nodeData);
 		addOutLetsButton(theSelfObj, d, nodeData);
+
 	}
 
-
 }
-
-
 
 /**
  * groupEnter 子节点
@@ -455,35 +457,34 @@ var actionUpdate = function(theSelf, d, nodeData) {
 		.attr("cx", nodeData.width - 10)
 		.attr("cy", nodeData.height - 10);
 
-	tempM = "M"+ (nodeData.width-30) +"," + (nodeData.height - 5);
-	tempM = tempM + "L"+ (nodeData.width-30) +"," + (nodeData.height - 15);
-	tempM = tempM + "L"+ (nodeData.width-20) +"," + (nodeData.height - 10) + " Z";
+	tempM = "M" + (nodeData.width - 30) + "," + (nodeData.height - 5);
+	tempM = tempM + "L" + (nodeData.width - 30) + "," + (nodeData.height - 15);
+	tempM = tempM + "L" + (nodeData.width - 20) + "," + (nodeData.height - 10) + " Z";
 
 	theSelfObj.select(".nodeRun") //path run
 		.transition().duration(500)
 		.attr("d", tempM);
-	
-	theSelfObj.select(".inletsMinNodeG")  //add inlets button
+
+	theSelfObj.select(".inletsMinNodeG") //add inlets button
 		.transition().duration(500)
 		.attr("transform", "translate(" + 10 + ",15)scale(1,1)");
-	
-	theSelfObj.select(".outletsMinNodeG")   //add outlets button
-	.transition().duration(500)
-	.attr("transform", "translate(" + 10 + ","+ (nodeData.height - 15) +")scale(1,1)");
-	
-	var outnumber =0;
+
+	theSelfObj.select(".outletsMinNodeG") //add outlets button
+		.transition().duration(500)
+		.attr("transform", "translate(" + 10 + "," + (nodeData.height - 15) + ")scale(1,1)");
+
+	var outnumber = 0;
 	theSelfObj.selectAll(".outPath")
-			  .each(function(){
-				  var x = outnumber*20+10;
-					if(outnumber == 0){
-						x += 20;
-					}
-					outnumber ++;
-				  d3.select(this).transition().duration(500)
-				   .attr("transform", "translate(" + x + "," + (nodeData.height-5) + ")scale(1,1)");
-			  });
-			  
-	
+		.each(function() {
+			var x = outnumber * 20 + 10;
+			if(outnumber == 0) {
+				x += 20;
+			}
+			outnumber++;
+			d3.select(this).transition().duration(500)
+				.attr("transform", "translate(" + x + "," + (nodeData.height - 5) + ")scale(1,1)");
+		});
+
 	var theSelfObjChild = theSelfObj.select("g");
 	theSelfObjChild.attr("transform", "translate(" + (nodeData.width - 10) + ",10)scale(1,1)");
 	if(nodeData.zoom.localeCompare("normal") == 0) {
@@ -608,7 +609,7 @@ var saveAsJson = function() {
 		each(propertyList, function() {
 			if(this.k.toString().localeCompare(tempkeys) == 0) {
 				propertyObj = this.v;
-				if(propertyObj.name.indexOf("g_") == -1){
+				if(propertyObj.name.indexOf("g_") == -1) {
 					propertyObj.name = propertyObj.name + tempkeys;
 				}
 				result.nodes.push(propertyObj);
@@ -625,7 +626,7 @@ var saveAsJson = function() {
 	each(pathLists, function(i, o) {
 		var tempfromNodeName = o.fromNodeName;
 		var temptoNodeName = o.toNodeName;
-		
+
 		each(propertyList, function() {
 			if(tempfromNodeName.localeCompare(this.k.toString()) == 0) {
 				o.fromNodeName = this.v.name;
@@ -754,7 +755,7 @@ var removeAllSelectedClass = function() {
 /**
  * 移动到初始化的位置
  */
-var remoeToInitPosition = function(){
+var remoeToInitPosition = function() {
 	d3.select("#main").attr("transform", "translate(" + init_zoom_x + "," + init_zoom_y + ")scale(1,1)");
 	d3.select("#rectSmallContainer").attr("transform", "translate(75,75)scale(1,1)");
 	current_zoom_x = init_zoom_x;

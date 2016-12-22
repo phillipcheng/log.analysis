@@ -30,6 +30,18 @@ var current_zoom_new_x = 0;
 
 var current_zoom_new_y = 0;
 
+var current_zoom_dataset_x = 15;
+
+var current_zoom_dataset_y = 5;
+
+var current_zoom_dataset_old_x = 0;
+
+var current_zoom_dataset_old_y = 0;
+
+var current_zoom_dataset_new_x = 0;
+
+var current_zoom_dataset_new_y = 0;
+
 var init_zoom_x = 0;
 
 var init_zoom_y = 0;
@@ -50,6 +62,7 @@ var templine = {
 	endPoint: ''
 };
 
+
 /**
  * 节点列表
  * 
@@ -69,11 +82,11 @@ var propertyList = [];
 /**
  * 数据属性内容
  */
-var dataList = [];
+//var dataList = [];
 
 var nodeArgs = [];
 
-// Create a new directed graph
+// Create a new directed graph---------start------------------------------------------------------
 /**
  * 1.1
  * 创建画版
@@ -113,6 +126,31 @@ g.setGraph(param);
 g.setDefaultEdgeLabel(function() {
 	return {};
 });
+//Create a new directed graph---------end------------------------------------------------------
+
+//Create a new directed dataSet---------start------------------------------------------------------
+var g_dataSet = new dagre.graphlib.Graph({
+	compound: true
+});
+
+var param_dataSet = {
+	name: "test",
+	rankdir: 'TB',
+	nodeSep: 5,
+	rankSep: 5,
+	edgeSep: 5
+};
+
+// Set an object for the graph label
+g_dataSet.setGraph(param_dataSet);
+
+// Default to assigning a new object as a label for each new edge.
+g_dataSet.setDefaultEdgeLabel(function() {
+	return {};
+});
+
+//Create a new directed dataSet---------end--------------------------------------------------------
+
 
 /**
  * 1.2
@@ -127,7 +165,6 @@ var interpolate = d3.svg.line()
 	.y(function(d) {
 		return d.y;
 	});
-
 //------------star-------------------------------transition,tweenDash --------------------------------------------------------
 /**
  * 2.1
@@ -259,7 +296,8 @@ var loadinit = function() {
 	/**
 	 * 
 	 */
-	d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {
+	//d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {
+	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
 		remoteActionObj = data;
 		$.each(data, function(k, v) {
 			var temp = k;
@@ -288,9 +326,9 @@ var _HTTP_LOAD_PROPERTY = "http://localhost:8020/flow/loadProperty";
 /**
  * 
  */
-//var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
+var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
 
-var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
+//var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
 
 /**
  * 保存JSON
