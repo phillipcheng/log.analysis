@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class PropertiesUtil {
 		}
 		java.nio.file.Path file = Paths.get(filestring);
 		try {
-			Files.write(file, lines, Charset.forName("UTF-8"));
+			Files.write(file, lines, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			logger.error("", e);
 		}

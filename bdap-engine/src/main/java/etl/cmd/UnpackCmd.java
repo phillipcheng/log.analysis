@@ -2,7 +2,7 @@ package etl.cmd;
 
 import java.io.BufferedInputStream;
 import java.io.FilenameFilter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +41,7 @@ public class UnpackCmd extends ETLCmd {
 	public static final String cfgkey_input_file_filter="input.file.filter";
 	public static final String cfgkey_output_file_filter="output.file.filter";
 	public static final String cfgkey_unpack_file_format="output.file.format";
-	private static final byte[] NEW_LINE = "\n".getBytes(Charset.forName("utf8"));
+	private static final byte[] NEW_LINE = "\n".getBytes(StandardCharsets.UTF_8);
 	
 	private FilenameFilter inputFileFilter;
 	private FilenameFilter outputFileFilter;
