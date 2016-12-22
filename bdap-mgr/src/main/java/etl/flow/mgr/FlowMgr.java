@@ -3,18 +3,17 @@ package etl.flow.mgr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
-import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import bdap.util.Util;
 import etl.flow.ActionNode;
 import etl.flow.CoordConf;
+import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.Node;
 import etl.flow.deploy.FlowDeployer;
@@ -70,13 +69,13 @@ public abstract class FlowMgr {
 		}
 	}
 	
-	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, OozieConf oc, FileSystem fs) {
+	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, OozieConf oc, FlowDeployer fd) {
 		//deploy to the server
 		for (InMemFile im:files){
 			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
 			logger.info(String.format("copy to %s", path));
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+			fd.deploy(path, im.getContent());
 		}
 	}
 	
@@ -198,10 +197,28 @@ public abstract class FlowMgr {
 	 * @return list of file paths
 	 */
 	public abstract String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName);
+
+
+	/**
+	 * get the distributed file according to the data definition
+	 * @param engine config
+	 * @param data definition
+	 * @return file content
+	 */
+	public abstract InMemFile getDFSFile(EngineConf ec, Data data);
+
+	/**
+	 * get the distributed file according to the data definition & flow instance info
+	 * @param engine config
+	 * @param data definition
+	 * @param flow instance info
+	 * @return file content
+	 */
+	public abstract InMemFile getDFSFile(EngineConf ec, Data data, FlowInfo flowInfo);
 	
 	/**
 	 * get the distributed file
-	 * @param fsconf
+	 * @param engine config
 	 * @param filePath
 	 * @return file content (Max file default size: 1MB)
 	 */
@@ -210,7 +227,7 @@ public abstract class FlowMgr {
 
 	/**
 	 * get the distributed file
-	 * @param fsconf
+	 * @param engine config
 	 * @param filePath
 	 * @param maxFileSize
 	 * @return file content
@@ -219,7 +236,7 @@ public abstract class FlowMgr {
 
 	/**
 	 * put the distributed file
-	 * @param ec
+	 * @param engine config
 	 * @param filePath
 	 * @param file
 	 * @return true/false

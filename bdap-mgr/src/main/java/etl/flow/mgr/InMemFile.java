@@ -2,6 +2,8 @@ package etl.flow.mgr;
 
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import bdap.util.FileType;
 
 public class InMemFile {
@@ -38,24 +40,33 @@ public class InMemFile {
 	public FileType getFileType() {
 		return fileType;
 	}
+	
 	public String getFileName() {
 		return fileName;
 	}
+	
+	@JsonInclude(JsonInclude.Include.NON_NULL) 
 	public byte[] getContent() {
 		return content;
 	}
+	
 	public void setFileType(FileType fileType) {
 		this.fileType = fileType;
 	}
+	
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
+	
 	public void setContent(byte[] content) {
 		this.content = content;
 	}
+	
+	@JsonInclude(JsonInclude.Include.NON_NULL) 
 	public String getTextContent() {
 		return textContent;
 	}
+	
 	public void setTextContent(String textContent) {
 		this.textContent = textContent;
 	}

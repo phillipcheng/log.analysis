@@ -20,6 +20,7 @@ import bdap.util.XmlUtil;
 import bdap.util.ZipUtil;
 import dv.util.RequestUtil;
 import etl.flow.CoordConf;
+import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
@@ -66,7 +67,7 @@ public class SparkFlowMgr extends FlowMgr{
 		List<InMemFile> imFiles = new ArrayList<InMemFile>();
 		imFiles.add(new InMemFile(FileType.thirdpartyJar, String.format("%s.jar", flow.getName()), Files.readAllBytes(Paths.get(jarFilePath))));
 		String projectDir = fd.getProjectHdfsDir(prjName);
-		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), ssc.getOozieServerConf(), fd.getFs());
+		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), ssc.getOozieServerConf(), fd);
 		return false;
 	}
 
@@ -170,6 +171,18 @@ public class SparkFlowMgr extends FlowMgr{
 	@Override
 	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId,
 			String nodeName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data, FlowInfo flowInfo) {
 		// TODO Auto-generated method stub
 		return null;
 	}

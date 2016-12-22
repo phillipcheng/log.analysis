@@ -10,7 +10,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -98,7 +98,7 @@ public class Main implements Job {
 			if (processRecordFile != null && processRecordFile.length() > 0 && new File(processRecordFile).exists()) {
 				try {
 					in = new FileInputStream(processRecordFile);
-					text = IOUtils.toString(in, Charset.forName("utf8"));
+					text = IOUtils.toString(in, StandardCharsets.UTF_8);
 					fileRecord = fromJsonString(text, FileRecord.class);
 				} catch (Exception e1) {
 					logger.error(e1.getMessage(), e1);
@@ -259,7 +259,7 @@ public class Main implements Job {
 			OutputStream output = null;
 			try {
 				output = new FileOutputStream(processRecordFile);
-				IOUtils.write(text, output, Charset.forName("utf8"));
+				IOUtils.write(text, output, StandardCharsets.UTF_8);
 			} finally {
 				if (output != null)
 					output.close();
@@ -304,7 +304,7 @@ public class Main implements Job {
 		}
 
 		try {
-			configText = IOUtils.toString(in, Charset.forName("utf8"));
+			configText = IOUtils.toString(in, StandardCharsets.UTF_8);
 		} finally {
 			IOUtils.closeQuietly(in);
 		}

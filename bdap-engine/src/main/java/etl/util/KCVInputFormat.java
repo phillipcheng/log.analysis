@@ -3,7 +3,7 @@ package etl.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -143,17 +143,17 @@ public class KCVInputFormat extends TextInputFormat {
 				Matcher matcher = match.matcher(line);
 				if (matcher.find()) {
 					if (bufferHeader != null) {
-						bufferHeader.write(line.getBytes(Charset.forName("utf8")));
-						bufferHeader.write("\n".getBytes(Charset.forName("utf8")));
+						bufferHeader.write(line.getBytes(StandardCharsets.UTF_8));
+						bufferHeader.write("\n".getBytes(StandardCharsets.UTF_8));
 					} else {
-						buffer.write(line.getBytes(Charset.forName("utf8")));
-						buffer.write("\n".getBytes(Charset.forName("utf8")));
+						buffer.write(line.getBytes(StandardCharsets.UTF_8));
+						buffer.write("\n".getBytes(StandardCharsets.UTF_8));
 					}
 					return true;
 				} else {
 					// save to buffer:
-					buffer.write(line.getBytes(Charset.forName("utf8")));
-					buffer.write("\n".getBytes(Charset.forName("utf8")));
+					buffer.write(line.getBytes(StandardCharsets.UTF_8));
+					buffer.write("\n".getBytes(StandardCharsets.UTF_8));
 				}
 			}
 				
