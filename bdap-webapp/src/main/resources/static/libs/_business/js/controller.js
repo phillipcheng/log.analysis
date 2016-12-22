@@ -260,7 +260,7 @@ var svg_document_onmouseup = function() {
 }
 
 var menu = [{
-	title: 'Delete this Node!',
+	title: 'Delete Node',
 	action: function(elm, d, i) {
 		g.removeNode(d);
 		_base._build();
@@ -276,7 +276,7 @@ var menu = [{
 }];
 
 var pathmenu = [{
-	title: 'Delete this Path!',
+	title: 'Delete Path',
 	action: function(elm, d, i) {
 		g.removeEdge(d.v, d.w);
 		_base._build();
