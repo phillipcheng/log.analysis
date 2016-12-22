@@ -27,8 +27,8 @@ var init = function() {
 	document.getElementById("child_small_svg").style.left = (75 - (clientwidth / 40)) + "px";
 	document.getElementById("child_small_svg").style.top = (75 - (clientheight / 40)) + "px";
 
-	current_zoom_x = clientwidth / 2 - 100;
-	current_zoom_y = clientheight / 2 - 50;
+	current_zoom_x = clientwidth / 2 - 200;
+	current_zoom_y =  50;
 
 	//初始化位置的偏移
 	var display = document.getElementById("home");

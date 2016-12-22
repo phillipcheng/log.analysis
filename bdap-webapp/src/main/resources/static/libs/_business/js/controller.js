@@ -1,6 +1,7 @@
 var svg_document_onkeydown = function() {
 	var e = window.event || arguments.callee.caller.arguments[0];
 	console.log(e);
+
 	if(e && e.keyCode == 46) { // 按 delete 取消操作
 		clearTempLine();
 		document.getElementById("svg").style.cursor = "default";
@@ -78,7 +79,7 @@ var make_sure_second_point = function(o) {
 		var endPointData = g.node(g_mouse_up);
 		if(firstPointData.nodeType.localeCompare("end") == 0 ||
 			endPointData.nodeType.localeCompare("start") == 0) {
-
+			
 		} else {
 			g.setEdge(g_mouse_down, g_mouse_up);
 			pathLists.push({
@@ -101,6 +102,7 @@ var svg_document_onmousedown = function() {
 	e = window.event || arguments.callee.caller.arguments[0];
 	var o = getEventSources(e);
 	var args_self = "";
+	var pointID = "";
 	if(o.getAttribute("self")) {
 		args_self = o.getAttribute("self").toString();
 	}
@@ -116,6 +118,9 @@ var svg_document_onmousedown = function() {
 
 	if(o.getAttribute("G")) {
 		g_mouse_down = o.getAttribute("G").toString();
+	}
+	if(o.getAttribute("id")) {
+		pointID = o.getAttribute("id").toString();
 	}
 	console.log("---mouse_down:" + args_self + "," + args_tagName + "," + g_mouse_down + "---");
 	switch(args_self) {
@@ -167,6 +172,44 @@ var svg_document_onmousedown = function() {
 				var nodeData = g.node(g_mouse_down);
 				var node = d3.selectAll("#" + g_mouse_down);
 				addOutletsPoint(node, nodeData, g_mouse_down);
+			}
+			break;
+		case "inletsPoint":
+			{	
+			debugger
+				var nodeData = g.node(g_mouse_down);
+				var node = d3.selectAll("#" + g_mouse_down);
+				
+				var windowKey = g_mouse_down + '_' +pointID;
+				if($("#"+windowKey).length > 0){
+					var options = $("#"+windowKey).window("options");
+					var closed = options.closed;
+					if(closed) {
+						$("#"+windowKey).window("open");
+					}
+				}else{
+					dataWindowIDs.push(windowKey);
+					dywindow.buildDataWindow(windowKey);
+				}
+	
+			}
+			break;
+		case "outletsPoint":
+			{	
+				var nodeData = g.node(g_mouse_down);
+				var node = d3.selectAll("#" + g_mouse_down);
+				
+				var windowKey = g_mouse_down + '_' +pointID;
+				if($("#"+windowKey).length > 0){
+					var options = $("#"+windowKey).window("options");
+					var closed = options.closed;
+					if(closed) {
+						$("#"+windowKey).window("open");
+					}
+				}else{
+					dataWindowIDs.push(windowKey);
+					dywindow.buildDataWindow(windowKey);
+				}
 			}
 			break;
 		default:
@@ -281,6 +324,10 @@ var documentClickOperation = function(e, o, g_mouse_down, g_mouse_up, args_tagNa
 			if(document.getElementById(tempPathG).getAttribute("class").toString().localeCompare("edge") == 0) {
 				document.getElementById(tempPathG).setAttribute("class", "edge edgeSelected");
 				o.setAttribute("marker-end", "url(#arrowSelected)");
+			} else if(args_self.localeCompare("addInLetsPoint") == 0) {
+				
+			} else if(args_self.localeCompare("addOutLetsPoint") == 0) {
+				
 			} else {
 				document.getElementById(tempPathG).setAttribute("class", "edge");
 				o.setAttribute("marker-end", "url(#arrow)");
