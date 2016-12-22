@@ -143,6 +143,11 @@ public class SSHDeployMethod extends SftpInfo implements DeployMethod {
 		}
 	}
 	
+	/* TODO implement */
+	public void copyFromLocalFile(boolean delSrc, boolean overwrite, String localPath, String remotePath) {
+		this.copyFromLocalFile(localPath, remotePath);
+	}
+	
 	public List<String> listFiles(String path) {
 		List<String> result = Collections.emptyList();
 		try {

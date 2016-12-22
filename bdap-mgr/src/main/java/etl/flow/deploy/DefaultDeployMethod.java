@@ -61,6 +61,14 @@ public class DefaultDeployMethod implements DeployMethod {
 		}
 	}
 	
+	public void copyFromLocalFile(boolean delSrc, boolean overwrite, String localPath, String remotePath) {
+		try {
+			fs.copyFromLocalFile(delSrc, overwrite, new Path(localPath), new Path(remotePath));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+	
 	public List<String> listFiles(String path) {
 		return HdfsUtil.listDfsFile(fs, path);
 	}
