@@ -14,10 +14,12 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.Resource;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -32,6 +34,8 @@ import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.InputFormatType;
+import etl.flow.deploy.DefaultDeployMethod;
+import etl.flow.deploy.DeployMethod;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
@@ -47,8 +51,22 @@ public class OozieFlowMgr extends FlowMgr{
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	private static final InMemFile[] EMPTY_LOG_FILES = new InMemFile[0];
 	private String dateTimePattern;
+	private FileSystem fs;
 	
+	public OozieFlowMgr() {
+	}
 	
+	public OozieFlowMgr(FileSystem fs) {
+		this.fs = fs;
+	}
+	
+	public OozieFlowMgr(DeployMethod deployMethod) {
+		if (deployMethod instanceof DefaultDeployMethod)
+			this.fs = ((DefaultDeployMethod) deployMethod).getFs();
+		else
+			this.fs = null;
+	}
+
 	public String genWfXmlFile(Flow flow){
 		return genWfXmlFile(flow, null, false);
 	}
@@ -156,11 +174,15 @@ public class OozieFlowMgr extends FlowMgr{
 	public boolean deployFlowFromXml(String projectDir, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
 		//deploy to the server
 		deployFiles.add(super.genEnginePropertyFile(ec));
-		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+		FileSystem fileSystem;
+		if (this.fs != null)
+			fileSystem = this.fs;
+		else
+			fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 		for (InMemFile im:deployFiles){
 			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
 			String path = String.format("%s%s", dir, im.getFileName());
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+			HdfsUtil.writeDfsFile(fileSystem, path, im.getContent());
 		}
 		return true;
 	}
@@ -282,13 +304,26 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 		return null;
 	}
-
-	@Override
-	public String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId) {
+	
+	public Resource getFlowLogResource(String projectName, FlowServerConf fsconf, String instanceId) {
 		OozieConf oc = (OozieConf)fsconf;
 		String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=log", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
 		Map<String, String> headMap = new HashMap<String, String>();
-		return RequestUtil.get(jobLogUrl, null, 0, headMap);
+		return RequestUtil.getResource(jobLogUrl, null, 0, headMap);
+	}
+
+	@Override
+	public String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId) {
+		Resource resource = getFlowLogResource(projectName, fsconf, instanceId);
+		try {
+			if (resource.isReadable())
+				return IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
+			else
+				return "";
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+		}
+		return "";
 	}
 
 	@Override
@@ -608,9 +643,13 @@ public class OozieFlowMgr extends FlowMgr{
 
 	private List<String> listDFSDir(EngineConf ec, String remoteDir) {
 		if (remoteDir != null) {
-			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 			try {
-				if (fs.isDirectory(new Path(remoteDir))) {
+				if (fileSystem.isDirectory(new Path(remoteDir))) {
 					final Function<String, String> FULL_PATH_TRANSFORMER = new Function<String, String>() {
 					    public String apply(String fileName) {
 					    	if (remoteDir.endsWith(Path.SEPARATOR))
@@ -619,7 +658,7 @@ public class OozieFlowMgr extends FlowMgr{
 					    		return remoteDir + Path.SEPARATOR + fileName;
 					    }
 					};
-					return Lists.transform(HdfsUtil.listDfsFile(fs, remoteDir), FULL_PATH_TRANSFORMER);
+					return Lists.transform(HdfsUtil.listDfsFile(fileSystem, remoteDir), FULL_PATH_TRANSFORMER);
 				} else {
 					return Lists.newArrayList(remoteDir);
 				}
@@ -655,9 +694,13 @@ public class OozieFlowMgr extends FlowMgr{
 	@Override
 	public InMemFile getDFSFile(EngineConf ec, Data data) {
 		if (data != null && !data.isInstance() && data.getLocation() != null && data.getLocation().length() > 0) {
-			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 			
-			return getDFSFile(fs, data.getLocation(), data.getDataFormat());
+			return getDFSFile(fileSystem, data.getLocation(), data.getDataFormat());
 		}
 		return null;
 	}
@@ -665,7 +708,11 @@ public class OozieFlowMgr extends FlowMgr{
 	@Override
 	public InMemFile getDFSFile(EngineConf ec, Data data, FlowInfo flowInfo) {
 		if (data != null && data.isInstance() && data.getLocation() != null && data.getLocation().length() > 0) {
-			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 			String filePath = data.getLocation();
 			if (!filePath.endsWith(Path.SEPARATOR))
 				filePath += Path.SEPARATOR;
@@ -673,7 +720,7 @@ public class OozieFlowMgr extends FlowMgr{
 			if (flowInfo != null && flowInfo.getId() != null)
 				filePath += flowInfo.getId();
 			
-			return getDFSFile(fs, filePath, data.getDataFormat());
+			return getDFSFile(fileSystem, filePath, data.getDataFormat());
 		}
 		return null;
 	}
@@ -706,15 +753,19 @@ public class OozieFlowMgr extends FlowMgr{
 	@Override
 	public InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize) {
 		if (filePath != null) {
-			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
 			if (FileType.textData.equals(Util.guessFileType(filePath))) {
-				String text = HdfsUtil.readDfsTextFile(fs, filePath, DEFAULT_MAX_FILE_SIZE);
+				String text = HdfsUtil.readDfsTextFile(fileSystem, filePath, DEFAULT_MAX_FILE_SIZE);
 				if (text != null)
 					return new InMemFile(FileType.textData, filePath, text);
 				else
 					return null;
 			} else {
-				byte[] binary = HdfsUtil.readDfsFile(fs, filePath, DEFAULT_MAX_FILE_SIZE);
+				byte[] binary = HdfsUtil.readDfsFile(fileSystem, filePath, DEFAULT_MAX_FILE_SIZE);
 				if (binary != null)
 					return new InMemFile(FileType.binaryData, filePath, binary);
 				else
@@ -726,11 +777,15 @@ public class OozieFlowMgr extends FlowMgr{
 	
 	public boolean putDFSFile(EngineConf ec, String filePath, InMemFile file) {
 		if (filePath != null) {
-			FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-			if (FileType.textData.equals(file.getFileType()))
-				return HdfsUtil.writeDfsFile(fs, filePath, file.getTextContent().getBytes(StandardCharsets.UTF_8), false);
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
 			else
-				return HdfsUtil.writeDfsFile(fs, filePath, file.getContent(), false);
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			if (FileType.textData.equals(file.getFileType()))
+				return HdfsUtil.writeDfsFile(fileSystem, filePath, file.getTextContent().getBytes(StandardCharsets.UTF_8), false);
+			else
+				return HdfsUtil.writeDfsFile(fileSystem, filePath, file.getContent(), false);
 		} else
 			return false;
 	}
