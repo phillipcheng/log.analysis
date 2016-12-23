@@ -52,6 +52,8 @@ var display_off_top = 0;
 
 var remoteActionObj = {};
 
+var dataWindowIDs = [];
+
 /**
  * 用于记录临时点的线的集合
  */
@@ -61,7 +63,6 @@ var templine = {
 	firstPoint: '',
 	endPoint: ''
 };
-
 
 /**
  * 节点列表
@@ -165,6 +166,7 @@ var interpolate = d3.svg.line()
 	.y(function(d) {
 		return d.y;
 	});
+
 //------------star-------------------------------transition,tweenDash --------------------------------------------------------
 /**
  * 2.1
@@ -326,9 +328,9 @@ var _HTTP_LOAD_PROPERTY = "http://localhost:8020/flow/loadProperty";
 /**
  * 
  */
-var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
+//var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
 
-//var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
+var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
 
 /**
  * 保存JSON

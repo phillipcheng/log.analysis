@@ -262,6 +262,11 @@ public class FTPDeployMethod implements DeployMethod {
 		}
 	}
 	
+	/* TODO implement */
+	public void copyFromLocalFile(boolean delSrc, boolean overwrite, String localPath, String remotePath) {
+		this.copyFromLocalFile(localPath, remotePath);
+	}
+	
 	public List<String> listFiles(String path) {
 		List<String> result = new ArrayList<String>();
 		FTPClient f = null;

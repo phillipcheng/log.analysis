@@ -18,6 +18,10 @@ public class DefaultDeployMethod implements DeployMethod {
 	public static final Logger logger = LogManager.getLogger(DefaultDeployMethod.class);
 	private FileSystem fs;
 	
+	public FileSystem getFs() {
+		return fs;
+	}
+
 	public DefaultDeployMethod(String remoteUser, String defaultFs) {
 		Set<String> ipAddresses = SystemUtil.getMyIpAddresses();
 		Configuration conf = new Configuration();
@@ -56,6 +60,14 @@ public class DefaultDeployMethod implements DeployMethod {
 	public void copyFromLocalFile(String localPath, String remotePath) {
 		try {
 			fs.copyFromLocalFile(new Path(localPath), new Path(remotePath));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+	
+	public void copyFromLocalFile(boolean delSrc, boolean overwrite, String localPath, String remotePath) {
+		try {
+			fs.copyFromLocalFile(delSrc, overwrite, new Path(localPath), new Path(remotePath));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
