@@ -1,5 +1,4 @@
 var svg_document_onkeydown = function() {
-	//document.onkeydown = function() {
 	var e = window.event || arguments.callee.caller.arguments[0];
 	console.log(e);
 
@@ -103,6 +102,7 @@ var svg_document_onmousedown = function() {
 	e = window.event || arguments.callee.caller.arguments[0];
 	var o = getEventSources(e);
 	var args_self = "";
+	var pointID = "";
 	if(o.getAttribute("self")) {
 		args_self = o.getAttribute("self").toString();
 	}
@@ -118,6 +118,9 @@ var svg_document_onmousedown = function() {
 
 	if(o.getAttribute("G")) {
 		g_mouse_down = o.getAttribute("G").toString();
+	}
+	if(o.getAttribute("id")) {
+		pointID = o.getAttribute("id").toString();
 	}
 	console.log("---mouse_down:" + args_self + "," + args_tagName + "," + g_mouse_down + "---");
 	switch(args_self) {
@@ -171,6 +174,44 @@ var svg_document_onmousedown = function() {
 				addOutletsPoint(node, nodeData, g_mouse_down);
 			}
 			break;
+		case "inletsPoint":
+			{	
+			debugger
+				var nodeData = g.node(g_mouse_down);
+				var node = d3.selectAll("#" + g_mouse_down);
+				
+				var windowKey = g_mouse_down + '_' +pointID;
+				if($("#"+windowKey).length > 0){
+					var options = $("#"+windowKey).window("options");
+					var closed = options.closed;
+					if(closed) {
+						$("#"+windowKey).window("open");
+					}
+				}else{
+					dataWindowIDs.push(windowKey);
+					dywindow.buildDataWindow(windowKey);
+				}
+	
+			}
+			break;
+		case "outletsPoint":
+			{	
+				var nodeData = g.node(g_mouse_down);
+				var node = d3.selectAll("#" + g_mouse_down);
+				
+				var windowKey = g_mouse_down + '_' +pointID;
+				if($("#"+windowKey).length > 0){
+					var options = $("#"+windowKey).window("options");
+					var closed = options.closed;
+					if(closed) {
+						$("#"+windowKey).window("open");
+					}
+				}else{
+					dataWindowIDs.push(windowKey);
+					dywindow.buildDataWindow(windowKey);
+				}
+			}
+			break;
 		default:
 			{
 				console.log("--------onmousedown,default--------");
@@ -215,7 +256,41 @@ var svg_document_onmouseup = function() {
 	}
 	clearTempLine();
 	document.getElementById("svg").style.cursor = "default";
+	document.getElementById("divleftdatasetproperty").style.display = "none";
 }
+
+var menu = [{
+	title: 'Delete Node',
+	action: function(elm, d, i) {
+		g.removeNode(d);
+		_base._build();
+		each(nodeLists, function(i, o) {
+			if(o.k.toString().localeCompare(d) == 0) {
+				nodeLists.splice(i, 1);
+				return false;
+			} else {
+				return true;
+			}
+		});
+	}
+}];
+
+var pathmenu = [{
+	title: 'Delete Path',
+	action: function(elm, d, i) {
+		g.removeEdge(d.v, d.w);
+		_base._build();
+		each(pathLists, function(i, o) {
+			if(o.fromNodeName.toString().localeCompare(d.v) == 0&&
+				o.toNodeName.toString().localeCompare(d.w) == 0) {
+				pathLists.splice(i, 1);
+				return false;
+			} else {
+				return true;
+			}
+		});
+	}
+}];
 
 /**
  * 这里面进行处理单击操作
@@ -227,59 +302,35 @@ var svg_document_onmouseup = function() {
  * @param {Object} args_self
  */
 var documentClickOperation = function(e, o, g_mouse_down, g_mouse_up, args_tagName, args_self) {
-	if(e.button == 2) {
-		console.log("----------右键----------");
-		if(args_tagName.localeCompare("rect") == 0 && args_self.localeCompare("RECT") == 0) {
-			//删除节点
-			if(window.confirm("Are you Sure? Delete!")) {
-				g.removeNode(g_mouse_down);
-				_base._build();
-				clearTempLine();
-			}
-		} else if(args_tagName.localeCompare("path") == 0 && g_mouse_down.indexOf("linegroup") > -1) {
-			//删除连接线
-			if(window.confirm("Are you Sure? Delete!")) {
-				var temp = o.getAttribute("id");
-				temp = temp.replace("pathA", "");
-				temp = temp.split("A");
-				g.removeEdge(temp[0], temp[1]);
-				_base._build();
-				clearTempLine();
+	clearTempLine();
+	if(args_tagName.localeCompare("rect") == 0 || args_tagName.localeCompare("text") == 0) { //点击   rect 或 text
+		if(g_mouse_down.localeCompare("") != 0 && g_mouse_up.localeCompare("") != 0) { //确认操作内容
+			if(document.getElementById(g_mouse_up).getAttribute("class").toString().indexOf("nodeGSelected") > -1) {
+				beSureClassName(g_mouse_up);
+			} else {
+				removeAllSelectedClass();
+				d3.select("#" + o.getAttribute("G")).attr("class", "nodeG nodeGSelected");
+				//判断是否加载loadProperty
+				if(d3.select("#" + g_mouse_up).select(".nodePropertyG")[0][0] === null) {} else {
+					var nodeDate = g.node(g_mouse_up);
+					loadProperty(g_mouse_up, nodeDate);
+				}
 			}
 		}
-	} else if(e.button == 0) {
-		console.log("----------左键----------");
-		clearTempLine();
-		if(args_tagName.localeCompare("rect") == 0 || args_tagName.localeCompare("text") == 0) { //点击   rect 或 text
-			if(g_mouse_down.localeCompare("") != 0 && g_mouse_up.localeCompare("") != 0) { //确认操作内容
-				if(document.getElementById(g_mouse_up).getAttribute("class").toString().indexOf("nodeGSelected") > -1) {
-					beSureClassName(g_mouse_up);
-				} else {
-					removeAllSelectedClass();
-					d3.select("#" + o.getAttribute("G")).attr("class", "nodeG nodeGSelected");
-					//判断是否加载loadProperty
-					if(d3.select("#" + g_mouse_up).select(".nodePropertyG")[0][0] === null) {} else {
-						var nodeDate = g.node(g_mouse_up);
-						loadProperty(g_mouse_up, nodeDate);
-					}
-				}
-			}
-		} else if(args_tagName.localeCompare("path") == 0) {
-			if(args_self.localeCompare("RUN") == 0) { //点击进行操作
-
-			} else if(args_self.localeCompare("addInLetsPoint") == 0){
+	} else if(args_tagName.localeCompare("path") == 0) {
+		if(args_self.localeCompare("RUN") == 0) { //点击进行操作
+		} else {
+			var tempPathG = g_mouse_up;
+			if(document.getElementById(tempPathG).getAttribute("class").toString().localeCompare("edge") == 0) {
+				document.getElementById(tempPathG).setAttribute("class", "edge edgeSelected");
+				o.setAttribute("marker-end", "url(#arrowSelected)");
+			} else if(args_self.localeCompare("addInLetsPoint") == 0) {
 				
-			} else if(args_self.localeCompare("addOutLetsPoint") == 0){
+			} else if(args_self.localeCompare("addOutLetsPoint") == 0) {
 				
 			} else {
-				var tempPathG = g_mouse_up;
-				if(document.getElementById(tempPathG).getAttribute("class").toString().localeCompare("edge") == 0) {
-					document.getElementById(tempPathG).setAttribute("class", "edge edgeSelected");
-					o.setAttribute("marker-end", "url(#arrowSelected)");
-				} else {
-					document.getElementById(tempPathG).setAttribute("class", "edge");
-					o.setAttribute("marker-end", "url(#arrow)");
-				}
+				document.getElementById(tempPathG).setAttribute("class", "edge");
+				o.setAttribute("marker-end", "url(#arrow)");
 			}
 		}
 	}

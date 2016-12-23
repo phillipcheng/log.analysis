@@ -101,7 +101,7 @@
       "dataName" : "csvmerge"
     }],
     "exe.type" : "mr",
-    "log.tmp.dir": "'/flow1/mergecsv/'+WFID+'/'",
+    "log.tmp.dir": "'/flow1/csvmerge/'+WFID+'/'",
     "cmd.class" : "etl.cmd.SaveDataCmd"
   } ],
   "links" : [ {

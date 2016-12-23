@@ -27,8 +27,8 @@ var init = function() {
 	document.getElementById("child_small_svg").style.left = (75 - (clientwidth / 40)) + "px";
 	document.getElementById("child_small_svg").style.top = (75 - (clientheight / 40)) + "px";
 
-	current_zoom_x = clientwidth / 2 - 100;
-	current_zoom_y = clientheight / 2 - 50;
+	current_zoom_x = clientwidth / 2 - 200;
+	current_zoom_y =  50;
 
 	//初始化位置的偏移
 	var display = document.getElementById("home");
@@ -43,6 +43,13 @@ var init = function() {
 		.scaleExtent([1, 1]) // <-C
 		.on("zoom", svgzoom) // <-D
 	).append("g").attr("id", "main");
+	
+	//dataSet编辑
+	d3.select("#svgdataset").call( // <-A
+		d3.behavior.zoom() // <-B
+		.scaleExtent([1, 1]) // <-C
+		.on("zoom", svgDataSetZoom) // <-D
+	).append("g").attr("id", "dataSetMain");
 
 	/**
 	 * 1.2
@@ -51,11 +58,14 @@ var init = function() {
 		.attr("stroke", "#269ABC").attr("stroke-width", "2px");
 
 	d3.select("#svg").attr("onmousemove", "svgMouseMove()");
+	
 	/**
 	 * 1.3
 	 */
 	d3.select("#main").append("g").attr("id", "rectContainer");
-
+	
+	d3.select("#dataSetMain").append("g").attr("id", "rectDataSetContainer");
+	
 	/**
 	 * 1.4
 	 */
@@ -66,12 +76,16 @@ var init = function() {
 	 */
 	d3.select("#main").attr("transform", "translate(" + current_zoom_x + "," + current_zoom_y + ")scale(1,1)");
 
+	d3.select("#dataSetMain").attr("transform", "translate("+current_zoom_dataset_x+","+current_zoom_dataset_y+")scale(1,1)");
+	
 	/**
 	 * 1.6
 	 */
-	
+
 	init_zoom_x = current_zoom_x;
 	init_zoom_y = current_zoom_y;
+
+	document.getElementById("child_svg").style.left = (clientwidth - 180) + "px";
 }
 
 /**
@@ -134,6 +148,24 @@ var svgzoom = function() {
 		current_zoom_old_x = parseInt(d3.event.translate[0]);
 		current_zoom_old_y = parseInt(d3.event.translate[1]);
 	}
+}
+
+/**
+ * svg DataSet zoom 操作
+ */
+var svgDataSetZoom = function() {
+		current_zoom_dataset_new_x = parseInt(d3.event.translate[0]);
+		current_zoom_dataset_new_y = parseInt(d3.event.translate[1]);
+		
+		current_zoom_dataset_x += current_zoom_dataset_new_x - current_zoom_dataset_old_x;
+		current_zoom_dataset_y += current_zoom_dataset_new_y - current_zoom_dataset_old_y;
+		
+		d3.select("#dataSetMain").attr("transform",
+			"translate(" + current_zoom_dataset_x + "," + current_zoom_dataset_y + ")scale(1,1)");
+			
+		current_zoom_dataset_old_x = current_zoom_dataset_new_x;
+		current_zoom_dataset_old_y = current_zoom_dataset_new_y;
+
 }
 
 /**
