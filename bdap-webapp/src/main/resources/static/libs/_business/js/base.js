@@ -603,6 +603,10 @@ var saveAsJson = function() {
 		'inLets': [],
 		'wfName': 'flow1'
 	};
+	
+	var nodeInletObjs = getNodeInlets(nodeInLets);
+	var nodeOutletObjs = getNodeOutlets(nodeOutLets);
+	
 	each(nodeLists, function() {
 		var tempkeys = this.k.toString();
 		var propertyObj = {};
@@ -612,6 +616,9 @@ var saveAsJson = function() {
 				if(propertyObj.name.indexOf("g_") == -1) {
 					propertyObj.name = propertyObj.name + tempkeys;
 				}
+				propertyObj.inLets = nodeInletObjs[propertyObj.name];
+				propertyObj.outlets = nodeOutletObjs[propertyObj.name];
+				
 				result.nodes.push(propertyObj);
 				return false;
 			} else {
@@ -640,6 +647,57 @@ var saveAsJson = function() {
 	});
 
 	result.links = pathLists;
+	
+	//add data properties
+	var dataSetList = [];  //to do delete
+	var dataList = [];
+	$.each(dataSetList, function(i, obj){
+		var v = obj.v;
+		dataList.push(v);
+	});
+	result.data = dataList;
+	
+	/**
+	 * add node inlets
+	 * 节点的进入数据
+	 * k:'节点ID',dsk:'',v:{name:'',dataName:''}
+	 */
+	function getNodeInlets(nodeInLets){
+		var nodeInletObjs = {};
+		$.each(nodeInLets, function(i, obj){
+			var k = obj.k;
+			var v = obj.v;
+			if(nodeInletObjs[k] == undefined){
+				nodeInletObjs[k] = [];
+				nodeInletObjs[k].push(v);
+			}else {
+				nodeInletObjs[k].push(v);
+			}
+		});
+		return nodeInletObjs;
+	}
+
+	/**
+	 * add node outlets
+	 * 节点的outlets数据
+	 * k:'节点ID',dsk:'',v:{name:'',dataName:''}
+	 */
+	function getNodeOutlets(nodeOutLets){
+		var nodeOutletObjs = {};
+		$.each(nodeOutLets, function(i, obj){
+			var k = obj.k;
+			var v = obj.v;
+			if(nodeOutletObjs[k] == undefined){
+				nodeOutletObjs[k] = [];
+				nodeOutletObjs[k].push(v);
+			}else {
+				nodeOutletObjs[k].push(v);
+			}
+		});
+		return nodeOutletObjs;
+	}
+	
+	
 	console.log("result", JSON.stringify(result));
 
 	$.ajax({
