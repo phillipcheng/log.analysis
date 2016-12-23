@@ -11,6 +11,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -95,6 +96,21 @@ public class RequestUtil {
 		String result = response.getBody();
 		return result;
 	}
+	
+	public static Resource getResource(String url, String proxyHost, int proxyPort, Map<String, String> headMap) {
+		HttpHeaders headers = new HttpHeaders();
+		if (headMap != null) {
+			for (String key : headMap.keySet()) {
+				headers.add(key, headMap.get(key));
+			}
+		}
+		HttpEntity<String> request = new HttpEntity<String>(headers);
+		RestTemplate restTemplate = getRestTemplate(proxyHost, proxyPort);
+
+		ResponseEntity<Resource> response = restTemplate.exchange(url,
+				HttpMethod.GET, request, Resource.class);
+		return response.getBody();
+	}
 
 	public static String put(String url, String proxyHost, int proxyPort, Map<String, String> headMap,
 			String body) {
@@ -128,8 +144,10 @@ public class RequestUtil {
 		}
 		HttpEntity<String> formEntity = new HttpEntity<String>(body, headers);
 		RestTemplate restTemplate = getRestTemplate(proxyHost, proxyPort);
-		restTemplate.delete(url);
-		return "";
+		restTemplate.delete(url, formEntity);
+		ResponseEntity<String> response = restTemplate.exchange(url,
+				HttpMethod.DELETE, formEntity, String.class);
+		return response.getBody();
 	}
 
 }
