@@ -5,7 +5,7 @@ import java.util.Objects;
 public class Data {
 	
 	private String name;
-	private String location;//hdfs directory
+	private String location;//hdfs directory, if instance = true, only used by oozie
 	private String baseOutput;//baseOutput, for multiple outputs
 	private String schemaName = null;//reference to schema
 	private InputFormatType dataFormat = InputFormatType.Text;//for processing

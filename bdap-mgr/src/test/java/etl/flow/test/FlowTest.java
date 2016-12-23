@@ -21,6 +21,7 @@ import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.InMemFile;
 import etl.flow.oozie.OozieFlowMgr;
 import etl.flow.spark.SparkFlowMgr;
+import etl.flow.test.cmd.Flow1SparkCmd;
 
 public class FlowTest {
 	public static final Logger logger = LogManager.getLogger(FlowTest.class);
@@ -68,7 +69,7 @@ public class FlowTest {
 	
 	@Test
 	public void testApacheOozieJson() throws Exception{
-		//apacheDeployer.installEngine(false);
+		apacheDeployer.installEngine(false);
 		String projectName = "project1";
 		String flowName="flow1_oozie";
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
@@ -133,6 +134,21 @@ public class FlowTest {
 		
 		apacheDeployer.runDeploy(projectName, flowName, null, true, EngineType.spark);
 		String wfId = apacheDeployer.runExecute(projectName, flowName, EngineType.spark);
+		
+		OozieFlowMgr ofm = new OozieFlowMgr();
+		FlowInfo fi=null;
+		while (true){
+			try {
+				fi = ofm.getFlowInfo(projectName, apacheDeployer.getOozieServerConf(), wfId);
+				logger.info(String.format("flow info for instance:%s:%s", wfId, fi));
+				Thread.sleep(5000);
+				if (!fi.getStatus().equals("RUNNING")){
+					break;
+				}
+			}catch(Exception e){
+				logger.error("", e);
+			}
+		}
 		
 		//assertion
 		String fileName="singleTable";
