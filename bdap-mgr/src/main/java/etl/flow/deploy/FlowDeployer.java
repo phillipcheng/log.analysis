@@ -242,7 +242,7 @@ public class FlowDeployer {
 	private void deploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
 		String localProjectFolder = this.projectLocalDirMap.get(projectName);
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
-		OozieFlowMgr ofm = new OozieFlowMgr();
+		OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 		SparkFlowMgr sfm = new SparkFlowMgr();
 		if (!fromJson){
 			List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s", localProjectFolder, flowName), 
@@ -278,7 +278,7 @@ public class FlowDeployer {
 	
 	private String execute(String prjName, String flowName, EngineType et){
 		if (et == EngineType.oozie){
-			OozieFlowMgr ofm = new OozieFlowMgr();
+			OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 			return ofm.executeFlow(prjName, flowName, this);
 		}else if (et == EngineType.spark){
 			SparkFlowMgr sfm = new SparkFlowMgr();
@@ -291,7 +291,7 @@ public class FlowDeployer {
 	
 	private String execute(String prjName, String flowName, String wfId, EngineType et){
 		if (et == EngineType.oozie){
-			OozieFlowMgr ofm = new OozieFlowMgr();
+			OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 			return ofm.executeFlow(prjName, flowName, this, wfId);
 		}else{
 			logger.error(String.format("unsupported engine type:%s", et));
@@ -319,7 +319,7 @@ public class FlowDeployer {
 	
 	private String startCoordinator(String projectName, String flowName, CoordConf cc){
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
-		OozieFlowMgr ofm = new OozieFlowMgr();
+		OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 		return ofm.executeCoordinator(hdfsProjectFolder, flowName, this, cc);
 	}
 	
@@ -334,7 +334,7 @@ public class FlowDeployer {
 	
 	//generate oozie xml from json file
 	public String genOozieFlow(String jsonFile){
-		OozieFlowMgr ofm = new OozieFlowMgr();
+		OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 		Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
 		String flowXml = ofm.genWfXmlFile(flow);
 		logger.info("\n" + flowXml);

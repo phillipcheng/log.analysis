@@ -18,6 +18,10 @@ public class DefaultDeployMethod implements DeployMethod {
 	public static final Logger logger = LogManager.getLogger(DefaultDeployMethod.class);
 	private FileSystem fs;
 	
+	public FileSystem getFs() {
+		return fs;
+	}
+
 	public DefaultDeployMethod(String remoteUser, String defaultFs) {
 		Set<String> ipAddresses = SystemUtil.getMyIpAddresses();
 		Configuration conf = new Configuration();
