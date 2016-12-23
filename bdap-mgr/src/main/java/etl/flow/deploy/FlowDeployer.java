@@ -223,6 +223,10 @@ public class FlowDeployer {
 		deployMethod.copyFromLocalFile(localPath, remotePath);
 	}
 	
+	public void copyFromLocalFile(boolean delSrc, boolean overwrite, String localPath, String remotePath) {
+		deployMethod.copyFromLocalFile(delSrc, overwrite, localPath, remotePath);
+	}
+	
 	public void delete(String path, boolean recursive) {
 		deployMethod.delete(path, recursive);
 	}

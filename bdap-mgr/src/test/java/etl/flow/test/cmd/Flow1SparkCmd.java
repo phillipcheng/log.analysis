@@ -1,4 +1,4 @@
-package etl.flow.test;
+package etl.flow.test.cmd;
 
 import java.io.Serializable;
 import java.util.ArrayList;
