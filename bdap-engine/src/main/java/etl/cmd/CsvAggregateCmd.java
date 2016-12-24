@@ -364,6 +364,14 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	 */
 	private List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
+		
+		if (inputEndWithComma){
+			value = value.trim();
+			if (value.endsWith(",")){
+				value = value.replaceAll(",$", "");
+			}
+		}
+		
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
 			String row = value.toString();
@@ -435,12 +443,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			logger.info("skip header:" + row);
 			return null;
 		}
-		if (inputEndWithComma){
-			row = row.trim();
-			if (row.endsWith(",")){
-				row = row.replaceAll(",$", "");
-			}
-		}
+		
 		try {
 			String tableName = getTableNameSetFileNameByContext(context);
 			logger.debug(String.format("in map tableName:%s", tableName));
@@ -786,19 +789,18 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			}
 		});
 		
-		JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
+		JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().flatMapToPair(new PairFlatMapFunction<Tuple2<String, Iterable<String>>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
-			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
-				//FIXME
-				/*
-				Tuple3<String, String, String> t3 = reduceByKey(t._1, t._2);
-				return new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2());
-				*/
-				return null;
+			public Iterator<Tuple2<String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				List<Tuple3<String, String, String>> t3l = reduceByKey(t._1, t._2);
+				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
+				for (Tuple3<String, String, String> t3:t3l){
+					ret.add(new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2()));
+				}
+				return ret.iterator();
 			}
 		});
-		
 		return csvaggr;
 		
 	}

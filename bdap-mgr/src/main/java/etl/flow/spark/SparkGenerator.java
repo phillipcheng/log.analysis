@@ -14,12 +14,12 @@ import java.nio.file.StandardOpenOption;
 
 
 import bdap.util.JavaCodeGenUtil;
+import etl.engine.DataType;
 import etl.engine.ETLCmd;
+import etl.engine.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.Data;
-import etl.flow.DataType;
 import etl.flow.Flow;
-import etl.flow.InputFormatType;
 import etl.flow.Node;
 import etl.flow.NodeLet;
 import etl.flow.mgr.FlowMgr;
@@ -120,7 +120,6 @@ public class SparkGenerator {
 				}
 				//cmd execution line
 				//data1trans = d1csvTransformCmd.sparkProcessFilesToKV(data1, jsc, TextInputFormat.class);
-				String methodName=null;
 				String inputFormat=null;
 				String inputVarName=null;
 				for (int i=0; i<node.getInLets().size(); i++){
@@ -135,19 +134,8 @@ public class SparkGenerator {
 				NodeLet inlet = node.getInLets().get(0);
 				Data inData = flow.getDataDef(inlet.getDataName());
 				DataType inputDataType = inData.getRecordType();
-				if (inputDataType==DataType.Path && 
-						(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
-					methodName = "sparkProcessFilesToKV";
-				}else if ((inputDataType==DataType.KeyPath || inputDataType==DataType.KeyValue) &&
-						(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
-					methodName = "sparkProcessKeyValue";
-				}else if ((inputDataType==DataType.Value) &&
-						(outputDataType==DataType.Path || outputDataType==DataType.Value)){
-					methodName = "sparkProcess";
-				}else if ((inputDataType==DataType.Value) &&
-						(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
-					methodName = "sparkProcessV2KV";
-				}else{
+				String methodName = SparkUtil.getCmdSparkProcessMethod(inputDataType, outputDataType);
+				if (methodName==null){
 					logger.error(String.format("input:%s, output:%s pair on action:%s not supported.", inputDataType, outputDataType, anode.getName()));
 				}
 				if (inputDataType.equals(DataType.Path) || inputDataType.equals(DataType.KeyPath)){

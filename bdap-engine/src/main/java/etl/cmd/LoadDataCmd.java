@@ -221,6 +221,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	
 	private int reduceByKey(String key, String[] files) throws Exception{
+		super.init();
 		if (this.tableNames==null ||tableNames.length==0||Arrays.asList(this.tableNames).contains(key)){
 			List<String> copysqls = new ArrayList<String>();
 			logger.info(String.format("in reduce for key:%s, we need to load file:%s", key.toString(), Arrays.toString(files)));

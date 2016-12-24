@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 
 //log4j2
@@ -25,6 +26,7 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
+import etl.spark.SparkUtil;
 import etl.util.CombineFileNameInputFormat;
 import etl.util.DBType;
 import etl.util.DBUtil;
@@ -250,34 +252,23 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 	@Test
 	public void testSpark1() throws Exception{
 		String staticCfgName = "loadcsv.spark.properties";
-		String wfid="wfid1";
 		String localSchemaFileName = "test1_schemas.txt";
-		String csvFileName = "MyCore_.csv";
-		String tableName = "MyCore_";
-
+		String[] csvFileNames = new String[]{"MyCore_.csv"};
+		
 		String inputFolder = "/test/loadcsv/input/";
 		String schemaFolder="/test/loadcsv/schema/";
 		
 		//copy schema file
-		getFs().delete(new Path(inputFolder), true);
-		getFs().mkdirs(new Path(inputFolder));
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
-		//run cmd
-		LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
-		SparkConf conf = new SparkConf().setAppName(wfid).setMaster("local[3]");
+		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
 		JavaSparkContext jsc = new JavaSparkContext(conf);
-		JavaRDD<String> lines = jsc.textFile("file:///" + getLocalFolder() + csvFileName);
-		JavaPairRDD<String, String> input = lines.mapToPair(new PairFunction<String,String,String>(){
-			@Override
-			public Tuple2<String, String> call(String t) throws Exception {
-				return new Tuple2<String, String>(tableName, t);
-			}
-		});
-		cmd.sparkProcessKeyValue(input, jsc);
+		JavaPairRDD<String, String> output = super.sparkTestKV(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, TextInputFormat.class, jsc);
 		//check hdfs
-		String dbFilesFolder = cmd.getDbInputPath();
-		List<String> files = HdfsUtil.listDfsFile(super.getFs(), dbFilesFolder);
-		logger.info(files);
-		assertTrue(files.contains(tableName));
+		List<String> keys = SparkUtil.getKeys(output);
+		jsc.close();
+		logger.info(String.format("output keys:\n %s", String.join("\n", keys)));
+		assertTrue(keys.contains("MyCore_"));
+		
+		
 	}
 }
