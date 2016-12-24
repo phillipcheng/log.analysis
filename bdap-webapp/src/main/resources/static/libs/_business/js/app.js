@@ -14,7 +14,7 @@ var app = {
 			}
 		});
 		var obj = {
-			label: "Star",
+			label: "start",
 			width: 80,
 			height: 50,
 			nodeType: 'start',
@@ -25,9 +25,9 @@ var app = {
 		setNodeSelf(temp_g, obj);
 		var propertyObj = {
 			'@class': 'start',
-			'name': 'Star',
+			'name': 'start',
 			'outlets': [],
-			'input.format': ''
+			'duration': ''
 		}
 		setPropertySelf(temp_g, propertyObj, 4);
 		_base._build();
@@ -59,8 +59,7 @@ var app = {
 		var propertyObj = {
 			'@class': 'end',
 			'name': 'end',
-			'inLets': [],
-			'input.format': ''
+			'inLets': []
 		}
 		setPropertySelf(temp_g, propertyObj, 4);
 		_base._build();
