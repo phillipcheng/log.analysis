@@ -33,11 +33,11 @@ import etl.engine.MRMode;
 import etl.engine.OutputType;
 import etl.engine.ProcessMode;
 import etl.util.CombineWithFileNameTextInputFormat;
-import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
 
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class CsvTransformCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -155,8 +155,8 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		}
 	}
 
-	//value is each line
-	public Tuple2<String, String> mapToPair(String pathName, String value){
+	@Override
+	public List<Tuple2<String, String>> flatMapToPair(String pathName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		String row = value;
 		String output="";
@@ -192,7 +192,6 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				}
 			}
 		}
-		
 		//calculate whether use inputEndWithComma
 		boolean hasEndComma=inputEndWithComma;
 		if (inputEndWithCommaCS != null) {
@@ -201,12 +200,10 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				hasEndComma=(Boolean) result;
 			} /* If result is not boolean, use the default */
 		}
-
 		//process input ends with comma
 		if (hasEndComma){//remove the last empty item since row ends with comma
 			items.remove(items.size()-1);
 		}
-		
 		
 		//process operation
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
@@ -214,10 +211,9 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		for (ColOp co: colOpList){
 			items = co.process(super.getSystemVariables(), items);
 		}
-	
 		output = Util.getCsv(items, false);
 		logger.debug(String.format("tableName:%s, output:%s", tableName, output));
-		return new Tuple2<String, String>(tableName, output);
+		return Arrays.asList(new Tuple2<String, String>(tableName, output));
 	}
 	
 	@Override
@@ -241,8 +237,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
 				for (int i=start; i<lines.length; i++){
 					String line = lines[i];
-					Tuple2<String, String> ret = mapToPair(pathName, line);
-					output.add(ret);
+					output.addAll(flatMapToPair(pathName, line, context));
 				}
 				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, output);
 			}else{
@@ -271,8 +266,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 						return null;
 					}
 				}
-				Tuple2<String, String> ret = mapToPair(pathName, row);
-				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
+				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, flatMapToPair(pathName, row, null));
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -282,54 +276,39 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	}
 	
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values,
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
 		//write output using the lastpart of the path name.
 		String pathName = key.toString();
 		int lastSep = pathName.lastIndexOf("/");
 		String fileName = pathName.substring(lastSep+1);
-		List<String[]> ret = new ArrayList<String[]>();	
-		Iterator<Text> it = values.iterator();
+		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();	
+		Iterator<String> it = values.iterator();
 		while (it.hasNext()){
 			String v = it.next().toString();
 			if (super.getOutputType()==OutputType.multiple){
-				ret.add(new String[]{v, null, fileName.toString()});
+				ret.add(new Tuple3<String, String, String>(v, null, fileName.toString()));
 			}else{
-				ret.add(new String[]{v, null, ETLCmd.SINGLE_TABLE});
+				ret.add(new Tuple3<String, String, String>(v, null, ETLCmd.SINGLE_TABLE));
 			}
 		}
 		return ret;
 	}
 	
-	//key contain pathName, value is each line
 	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		JavaPairRDD<String, String> mapret = input.mapToPair(new PairFunction<Tuple2<String, String>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
-				return mapToPair(t._1, t._2);
-			}
-		}).filter(new Function<Tuple2<String, String>, Boolean>(){
-			@Override
-			public Boolean call(Tuple2<String, String> v1) throws Exception {
-				if (v1==null){
-					return false;
-				}else{
-					return true;
-				}
-			}
-		});
-		JavaPairRDD<String, String> csvret=mapret;
-		if (super.getOutputType()==OutputType.single){
-			csvret = mapret.mapToPair(new PairFunction<Tuple2<String,String>, String,String>(){
-				@Override
-				public Tuple2<String, String> call(Tuple2<String, String> v1) throws Exception {
-					return new Tuple2<String,String>(ETLCmd.SINGLE_TABLE, v1._2);
-				}
-			});
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		List<String> svalues = new ArrayList<String>();
+		Iterator<Text> vit = values.iterator();
+		while (vit.hasNext()){
+			svalues.add(vit.next().toString());
 		}
-		return csvret;
+		List<String[]> ret = new ArrayList<String[]>();	
+		List<Tuple3<String, String, String>> output = reduceByKey(key.toString(), svalues, context, mos);
+		for (Tuple3<String, String, String> t: output){
+			ret.add(new String[]{t._1(), t._2(), t._3()});
+		}
+		return ret;
 	}
 
 	public String getOldTable() {

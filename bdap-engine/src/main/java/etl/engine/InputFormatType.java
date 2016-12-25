@@ -9,4 +9,5 @@ public enum InputFormatType {
 	Section,//for kcv
 	Mixed,//join will follow
 	FileName,//used for input is a directory
+	SequenceFile,
 }

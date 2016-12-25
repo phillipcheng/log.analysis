@@ -1,7 +1,7 @@
 {
   "attrNameMap" : {
     "MyCore_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ],
-    "MyCore1_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ]
+    "MyCore1_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ],
   	"MyCore2_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ]
   
   },
