@@ -5,18 +5,25 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.TextInputFormat;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Assert;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
+import etl.spark.SparkUtil;
 import etl.util.GroupFun;
 
 public class TestCsvAggregateCmd extends TestETLCmd {
+	private static final long serialVersionUID = 1L;
+	
 	public static final Logger logger = LogManager.getLogger(TestCsvAggregateCmd.class);
 	public static final String testCmdClass = "etl.cmd.CsvAggregateCmd";
 
@@ -45,6 +52,35 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 	}
 	
 	@Test
+	public void testLeftJoinSpark() throws Exception{
+		String remoteInputFolder = "/etltest/csvaggr/";
+		String csvtransProp = "csvaggr.mergetable.leftjoin.properties";
+		String[] csvFiles = new String[] {"femto-r-00000", "RRC_connection_establishments-r-00000"};
+		//prepare schema
+		String cfgFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
+		String schemaFile = "om_map_merged.schema";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
+		
+		List<String> output = null;
+		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
+		JavaSparkContext jsc = new JavaSparkContext(conf);
+		try {
+			JavaPairRDD<String, String> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
+					TextInputFormat.class, jsc);
+			output = SparkUtil.getValues(ret);
+		}finally{
+			jsc.close();
+		}
+		//assertion
+		logger.info("Output is:\n"+String.join("\n", output));
+		assertEquals(4, output.size());
+		assertTrue(output.contains("A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(output.contains("A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,71DB021D7868,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
+	}
+	
+	@Test
 	public void noSchemaSum() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -54,6 +90,31 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		
+		// assertion
+		assertTrue(output.size() ==12);
+		String sampleOutput = output.get(6);
+		String[] csvs = sampleOutput.split(",", -1);
+		assertTrue("2.0".equals(csvs[6]));
+	}
+	
+	@Test
+	public void noSchemaSumSpark() throws Exception {
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String csvtransProp = "NoSchemaSum.properties";
+		String[] csvFiles = new String[] {"csvaggregate.csv"};
+		
+		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
+		JavaSparkContext jsc = new JavaSparkContext(conf);
+		List<String> output = null;
+		try {
+			JavaPairRDD<String, String> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
+					TextInputFormat.class, jsc);
+			ret = SparkUtil.flip(ret).sortByKey();
+			output = SparkUtil.getKeys(ret);
+		}finally{
+			jsc.close();
+		}
+		logger.info("Output is:\n"+ String.join("\n", output));
 		// assertion
 		assertTrue(output.size() ==12);
 		String sampleOutput = output.get(6);

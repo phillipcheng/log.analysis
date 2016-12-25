@@ -13,13 +13,13 @@ import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
 import etl.engine.ETLCmd;
+import etl.engine.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.EndNode;
 import etl.flow.ExeType;
 import etl.flow.Flow;
-import etl.flow.InputFormatType;
 import etl.flow.Link;
 import etl.flow.Node;
 import etl.flow.NodeLet;

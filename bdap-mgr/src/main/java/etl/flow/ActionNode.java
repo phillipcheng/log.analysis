@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import bdap.util.PropertiesUtil;
+import etl.engine.InputFormatType;
 
 public class ActionNode extends Node{
 	

@@ -20,6 +20,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.HdfsUtil;
+import etl.engine.DataType;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
 
@@ -69,6 +70,49 @@ public class SparkUtil {
 			@Override
 			public String call(Tuple2<String, String> v1) throws Exception {
 				return v1._2;
+			}
+		});
+	}
+	
+	public static String getCmdSparkProcessMethod(DataType inputDataType, DataType outputDataType){
+		String methodName = null;
+		if (inputDataType==DataType.Path && 
+				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
+			methodName = "sparkProcessFilesToKV";
+		}else if ((inputDataType==DataType.KeyPath || inputDataType==DataType.KeyValue) &&
+				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
+			methodName = "sparkProcessKeyValue";
+		}else if ((inputDataType==DataType.Value) &&
+				(outputDataType==DataType.Path || outputDataType==DataType.Value)){
+			methodName = "sparkProcess";
+		}else if ((inputDataType==DataType.Value) &&
+				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
+			methodName = "sparkProcessV2KV";
+		}
+		return methodName;
+	}
+	
+	public static List<String> getValues(JavaPairRDD<String, String> input){
+		List<String> out = new ArrayList<String>();
+		for (Tuple2<String, String> t: input.collect()){
+			out.add(t._2);
+		}
+		return out;
+	}
+	
+	public static List<String> getKeys(JavaPairRDD<String, String> input){
+		List<String> out = new ArrayList<String>();
+		for (Tuple2<String, String> t: input.collect()){
+			out.add(t._1);
+		}
+		return out;
+	}
+	
+	public static JavaPairRDD<String, String> flip(JavaPairRDD<String, String> input){
+		return input.mapToPair(new PairFunction<Tuple2<String, String>, String, String>(){
+			@Override
+			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
+				return new Tuple2<String, String>(t._2, t._1);
 			}
 		});
 	}

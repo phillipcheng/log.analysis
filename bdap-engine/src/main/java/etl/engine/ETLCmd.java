@@ -97,6 +97,10 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
+	public ETLCmd(String wfName, String wfid, String staticCfg, String defaultFs){
+		init(wfName, wfid, staticCfg, null, defaultFs, null, ProcessMode.Single);
+	}
+	
 	/**
 	 * @param wfName
 	 * @param wfid
@@ -189,6 +193,11 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		}
 	}
 	
+	//will be overriden by schema-etl-cmd
+	public String mapKey(String key){
+		return key;
+	}
+	
 	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, Class inputFormatClass){
 		JavaPairRDD<String, String> prdd = null;
 		for (String file:inputfiles.collect()){
@@ -204,10 +213,11 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 					}
 				});
 			};
+			String key = mapKey(file);
 			JavaPairRDD<String, String> tprdd = content.mapToPair(new PairFunction<Tuple2<LongWritable, Text>, String, String>(){
 				@Override
 				public Tuple2<String, String> call(Tuple2<LongWritable, Text> t) throws Exception {
-					return new Tuple2<String, String>(file, t._2.toString());
+					return new Tuple2<String, String>(key, t._2.toString());
 				}
 				
 			});

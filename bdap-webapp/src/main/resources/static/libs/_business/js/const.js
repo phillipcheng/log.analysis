@@ -87,6 +87,10 @@ var propertyList = [];
 
 var nodeArgs = [];
 
+var nodeInLets = [];
+
+var nodeOutLets = [];
+
 // Create a new directed graph---------start------------------------------------------------------
 /**
  * 1.1
