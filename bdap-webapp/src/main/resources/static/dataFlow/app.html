@@ -113,12 +113,31 @@
 							<div id="rightupcssbody" class="rightupcssbody">
 							</div>
 						</div>
+						<div id="divdatanode">
+							<div id="divdatanodeheader" class="rightupcssheader">
+								<strong>Data Information</strong>
+							</div>
+							<div id="divdatanodebody">
+								<input type="hidden" id="hidDataSetNodeId" value="" />
+								<input type="hidden" id="hidDataSetPathId" value="" />
+								<div class="sublistgroup">
+									<strong>name:</strong>
+									<input id="dataset_node_name" type="text" value="" placeholder="..." onkeyup="changeShowDataBang()" />
+								</div>
+								<div class="sublistgroup">
+									<strong>dataSetList:</strong>
+									<select id="dataset_node_select" style="width: 100%;" onkeyup="changeShowDataBang()" />
+
+									</select>
+								</div>
+							</div>
+						</div>
 						<div id="divleftdatasetproperty">
-							<div id="datasetcssheader">
-								AAAA
+							<div id="datasetcssheader" class="rightupcssheader">
+								<strong id="datasetcssheaderstring">AAA</strong>
 							</div>
 							<div id="rightupcssbody" class="propertycssbody">
-								<input type="hidden" id="hidDataSetId" value=""/>
+								<input type="hidden" id="hidDataSetId" value="" />
 								<div class="sublistgroup">
 									<strong>name:</strong>
 									<input id="dataset_property_name" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
@@ -170,6 +189,11 @@
 			</div>
 		</div> -->
 		<div id="windowContentStart" ></div>
+
+
+		<div id="d3contextmenu" class="d3-context-menu" style="display: none;">
+		</div>
+
 	</body>
 
 </html>

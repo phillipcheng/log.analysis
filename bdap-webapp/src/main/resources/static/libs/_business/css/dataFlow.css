@@ -13,8 +13,16 @@ body {
 
 .nodeG {}
 
+.nodeG:hover {
+	cursor: crosshair;
+}
+
 .nodeG>text {
 	font-size: 15px
+}
+
+.nodeG>text:hover {
+	cursor: default;
 }
 
 .nodeG>rect {
@@ -107,14 +115,17 @@ body {
 	stroke-width: 1;
 	stroke: white;
 }
+
 .letsMinNodePath {
 	stroke-width: 1;
 	stroke: white;
 }
-.minNodeG:hover>.minNodePath{
+
+.minNodeG:hover>.minNodePath {
 	cursor: zoom-in;
 }
-.minNodeG:hover>.letsMinNodePath{
+
+.minNodeG:hover>.letsMinNodePath {
 	stroke-width: 1;
 	stroke: white;
 	cursor: pointer;
@@ -157,8 +168,7 @@ body {
 	fill: none;
 	stroke: gray;
 	stroke-linecap: round;
-	stroke-width: 3px;
-	opacity: 0.4;
+	stroke-width: 2px;
 }
 
 .edgeSelected {}
@@ -168,7 +178,6 @@ body {
 	stroke: orangered;
 	stroke-linecap: round;
 	stroke-width: 3px;
-	opacity: 0.8;
 }
 
 .edge:hover {
@@ -176,7 +185,7 @@ body {
 }
 
 .outPath {
-	fill: orangered
+	fill: orangered;
 }
 
 .outPath:hover {
@@ -189,6 +198,15 @@ body {
 
 .inPath:hover {
 	cursor: pointer;
+}
+
+.dataPathEdit {
+	stroke: white;
+	stroke-width: 2px;
+}
+
+.dataPathSelected{
+	fill:greenyellow;
 }
 
 .start {}
@@ -229,26 +247,25 @@ body {
 
 .child_svg {
 	position: relative;
+	top: 2px;
 	width: 150px;
 	height: 150px;
-	border: 1px solid rgb(155,155,155);
+	border: 1px solid rgb(155, 155, 155);
 	background: #FFF;
 	z-index: 1;
 	opacity: 0.5;
 }
 
-.child_svg:hover{
+.child_svg:hover {
 	cursor: move;
 }
 
 .child_small_svg {
 	position: absolute;
-	border: 1px solid rgb(155,155,155);
+	border: 1px solid rgb(155, 155, 155);
 	background: #FFF;
 	z-index: 5;
 	opacity: 0.5;
 }
 
-.nodeSmallG{
-	
-}
+.nodeSmallG {}

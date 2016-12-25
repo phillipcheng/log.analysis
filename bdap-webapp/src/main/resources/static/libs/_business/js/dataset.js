@@ -71,6 +71,7 @@ var dataSetEnter = function(theSelf, d, nodeData) {
 	var theSelfObj = d3.select(theSelf);
 	theSelfObj.attr("class", "dataSetG").attr("id", d)
 		.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
+		.attr("self", "nodeProperty")
 		.attr("onclick", "dataSet_Click('dataSetText" + d + "','" + d + "')");
 
 	theSelfObj.append("rect")
@@ -143,7 +144,7 @@ var dataSet_Click = function(headerTxt, gId) {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		document.getElementById("divleftdatasetproperty").style.display = "block";
-		document.getElementById("datasetcssheader").innerHTML = document.getElementById(headerTxt).innerHTML;
+		document.getElementById("datasetcssheaderstring").innerHTML = document.getElementById(headerTxt).innerHTML;
 		each(dataSetList, function() {
 			if(this.k.toString().localeCompare(gId) == 0) {
 				console.log(this.v);
@@ -165,18 +166,156 @@ var changeDataSetProeroty = function() {
 	var o = getEventSources(e);
 	var tempId = o.getAttribute("id");
 	var tempProperty = tempId.substring(tempId.lastIndexOf("_") + 1);
-	console.log("------------------------------------------");
 	var gId = $("#hidDataSetId").val();
 	each(dataSetList, function() {
 		if(this.k.toString().localeCompare(gId) == 0) {
 			this.v[tempProperty] = o.value;
-			if(tempProperty.localeCompare("name")==0){
-				$("#datasetcssheader").html(o.value);
-				$("#dataSetText"+gId).html(o.value);
+			if(tempProperty.localeCompare("name") == 0) {
+				$("#datasetcssheaderstring").html(o.value);
+				$("#dataSetText" + gId).html(o.value);
 			}
 			return false;
 		} else {
 			return true;
 		}
 	});
+}
+
+/**
+ * 加载数据绑定对话框
+ */
+var showDataBang = function(nodeId, pathId) {
+	document.getElementById("hidDataSetNodeId").value = nodeId;
+	document.getElementById("hidDataSetPathId").value = pathId;
+	document.getElementById("divdatanode").style.display = "block";
+	$("#dataset_node_select").html("");
+	$("#dataset_node_name").val("");
+	console.log("dataSetList", dataSetList);
+
+	var tempTxt = "";
+	var tempSel = "";
+
+	each(nodeInLets, function() {
+		if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
+			tempTxt = this.v.name;
+			tempSel = this.v.dataName;
+			return false;
+		}
+		return true;
+	});
+
+	if(tempTxt.localeCompare("") == 0 || tempSel.localeCompare("") == 0) {
+		each(nodeOutLets, function() {
+			if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
+				tempTxt = this.v.name;
+				tempSel = this.v.dataName;
+				return false;
+			}
+			return true;
+		});
+	}
+
+	$("#dataset_node_name").val(tempTxt);
+
+	each(dataSetList, function() {
+		if(this.k.localeCompare(tempSel) == 0) {
+			$("#dataset_node_select").append("<option value='" + this.k + "' selected='selected'>" + this.v.name + "</option>");
+		} else {
+			$("#dataset_node_select").append("<option value='" + this.k + "'>" + this.v.name + "</option>");
+		}
+		return true;
+	});
+}
+
+/**
+ * 改变对话框的数据
+ */
+var changeShowDataBang = function() {
+	var e = window.event || arguments.callee.caller.arguments[0];
+	var o = getEventSources(e);
+	var args_self = "";
+
+	var tempNodeId = document.getElementById("hidDataSetNodeId").value;
+	var tempPathId = document.getElementById("hidDataSetPathId").value;
+	var txt = document.getElementById("dataset_node_name").value;
+	var sel = document.getElementById("dataset_node_select").value;
+
+	if(tempPathId.indexOf("inlets") > -1) {
+		args_self = "inlets";
+	} else if(tempPathId.indexOf("outlets") > -1) {
+		args_self = "outlets";
+	}
+
+	var obj = {
+		name: txt,
+		dataName: sel
+	};
+
+	var booleanIsAdd = true;
+	switch(args_self) {
+		case "inlets":
+			{
+				each(nodeInLets, function() {
+					if(this.k.localeCompare(tempNodeId) == 0 && this.dsk.localeCompare(tempPathId) == 0) {
+						this.v = obj;
+						booleanIsAdd = false;
+						return false;
+					}
+					return true;
+				});
+				if(booleanIsAdd) {
+					nodeInLets.push({
+						k: tempNodeId,
+						dsk: tempPathId,
+						v: obj
+					});
+				}
+			}
+			break;
+		case "outlets":
+			{
+				each(nodeOutLets, function() {
+					if(this.k.localeCompare(tempNodeId) == 0 && this.dsk.localeCompare(tempPathId) == 0) {
+						this.v = obj;
+						booleanIsAdd = false;
+						return false;
+					}
+					return true;
+				});
+				if(booleanIsAdd) {
+					nodeOutLets.push({
+						k: tempNodeId,
+						dsk: tempPathId,
+						v: obj
+					});
+				}
+			}
+			break;
+	}
+	console.log("nodeInLets", nodeInLets);
+	console.log("nodeOutLets", nodeOutLets);
+}
+
+/**
+ * 确定是否已经进行编辑了
+ */
+var checkedWeatherEdit = function(nodeKey, pathKey) {
+	var booleanIsEdit = false;
+	each(nodeInLets, function() {
+		if(this.k.toString().localeCompare(nodeKey) == 0 && this.dsk.toString().localeCompare(pathKey) == 0 && this.v.name.length > 0) {
+			booleanIsEdit = true;
+			return false;
+		}
+		return true;
+	});
+	if(!booleanIsEdit) {
+		each(nodeOutLets, function() {
+			if(this.k.toString().localeCompare(nodeKey) == 0 && this.dsk.toString().localeCompare(pathKey) == 0 && this.v.name.length > 0) {
+				booleanIsEdit = true;
+				return false;
+			}
+			return true;
+		});
+	}
+	return booleanIsEdit;
 }
