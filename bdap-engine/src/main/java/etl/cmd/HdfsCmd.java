@@ -19,8 +19,12 @@ public class HdfsCmd extends ETLCmd{
 	
 	//cfgkey
 	public static final String cfgkey_rm_folders = "rm.folders";
+	public static final String cfgkey_mv_from = "rm.from";
+	public static final String cfgkey_mv_to = "rm.to";
 	
 	private String[] rmFolders;
+	private String[] mvFrom;
+	private String[] mvTo;
 	
 	public HdfsCmd(){
 		super();
@@ -46,18 +50,33 @@ public class HdfsCmd extends ETLCmd{
 		for (int i=0; i<rmFolderExps.length; i++){
 			rmFolders[i] = (String) ScriptEngineUtil.eval(rmFolderExps[i], VarType.STRING, super.getSystemVariables());
 		}
+		String[] mvFromExps = super.getCfgStringArray(cfgkey_mv_from);
+		String[] mvToExps = super.getCfgStringArray(cfgkey_mv_to);
+		if (mvFromExps.length==mvToExps.length){
+			mvFrom = new String[mvFromExps.length];
+			mvTo = new String[mvFromExps.length];
+			for (int i=0; i<mvFromExps.length; i++){
+				mvFrom[i] = (String) ScriptEngineUtil.eval(mvFromExps[i], VarType.STRING, super.getSystemVariables());
+				mvTo[i] = (String) ScriptEngineUtil.eval(mvToExps[i], VarType.STRING, super.getSystemVariables());
+			}
+		}else{
+			logger.error(String.format("mv folder from and to should have same number:%s, %s", Arrays.asList(mvFrom), Arrays.asList(mvTo)));
+		}
 	}
 
 	@Override
 	public List<String> sgProcess(){
 		try {
 			for (String rmFolder: rmFolders){
-				super.getFs().delete(new Path(rmFolder), true);
+				getFs().delete(new Path(rmFolder), true);
+			}
+			for (int i=0; i<mvFrom.length; i++){
+				getFs().rename(new Path(mvFrom[i]), new Path(mvTo[i]));
 			}
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		return Arrays.asList(new String[]{String.valueOf(rmFolders.length)});
+		return Arrays.asList(new String[]{String.valueOf(rmFolders.length + mvFrom.length)});
 	}
 	
 
@@ -67,5 +86,13 @@ public class HdfsCmd extends ETLCmd{
 
 	public void setRmFolders(String[] rmFolders) {
 		this.rmFolders = rmFolders;
+	}
+
+	public String[] getMvFrom() {
+		return mvFrom;
+	}
+
+	public String[] getMvTo() {
+		return mvTo;
 	}
 }
