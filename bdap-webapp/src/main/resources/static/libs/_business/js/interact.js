@@ -104,6 +104,13 @@ var interact = {
 			return interact.ajaxGet(requestURL);
 		},
 		
+		/**
+		 * get all properties type/valuelist/rule and so on.
+		 */
+		getFlowSchema : function(){
+			var requestURL = "/dashview/{userName}/flow/schema";
+			return interact.ajaxGet(requestURL);
+		}
 		
 		
 		
