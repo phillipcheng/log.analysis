@@ -20,6 +20,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import scala.Tuple2;
+import scala.Tuple3;
 //
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
@@ -109,7 +110,8 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 	
 	//tableName to csv
-	public List<Tuple2<String, String>> flatMapToPair(String text, Mapper<LongWritable, Text, Text, Text>.Context context){
+	@Override
+	public List<Tuple2<String, String>> flatMapToPair(String key, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		try {
 			DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
@@ -175,19 +177,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 		return null;
 	}
-
-	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		JavaPairRDD<String, String> ret = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public Iterator<Tuple2<String, String>> call(Tuple2<String,String> t) throws Exception {
-				return flatMapToPair(t._2, null).iterator();
-			}
-		});
-		return ret;
-	}
 	
 	/**
 	 * @param row: each row is a xml file name
@@ -195,7 +184,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	@Override
 	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		try {
-			List<Tuple2<String, String>> pairs = flatMapToPair(text, context);
+			List<Tuple2<String, String>> pairs = flatMapToPair(null, text, context);
 			if (pairs!=null){
 				for (Tuple2<String, String> pair: pairs){
 					context.write(new Text(pair._1), new Text(pair._2));
@@ -207,15 +196,36 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		return null;
 	}
 	
+	@Override
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		List<Tuple3<String,String,String>> out = new ArrayList<Tuple3<String,String,String>>();
+		for (String v: values){
+			if(mos!=null){
+				mos.write(new Text(v), null, key);
+			}else{
+				out.add(new Tuple3<String,String,String>(v, null, key));
+			}
+		}
+		return out;
+	}
+	
 	/**
 	 * @return newKey, newValue, baseOutputPath
 	 */
 	@Override
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		for (Text v: values){
-			mos.write(new Text(v.toString()), null, key.toString());
+		List<String> svalues = new ArrayList<String>();
+		Iterator<Text> vit = values.iterator();
+		while (vit.hasNext()){
+			svalues.add(vit.next().toString());
 		}
-		return null;
+		List<String[]> ret = new ArrayList<String[]>();	
+		List<Tuple3<String, String, String>> output = reduceByKey(key.toString(), svalues, context, mos);
+		for (Tuple3<String, String, String> t: output){
+			ret.add(new String[]{t._1(), t._2(), t._3()});
+		}
+		return ret;
 	}
 }

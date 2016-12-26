@@ -2,9 +2,12 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +18,11 @@ import bdap.util.HdfsUtil;
 import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
 import etl.util.GroupFun;
+import scala.Tuple2;
 
 public class TestCsvAggregateCmd extends TestETLCmd {
+	private static final long serialVersionUID = 1L;
+	
 	public static final Logger logger = LogManager.getLogger(TestCsvAggregateCmd.class);
 	public static final String testCmdClass = "etl.cmd.CsvAggregateCmd";
 
@@ -45,6 +51,28 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 	}
 	
 	@Test
+	public void testLeftJoinSpark() throws Exception{
+		String remoteInputFolder = "/etltest/csvaggr/";
+		String csvtransProp = "csvaggr.mergetable.leftjoin.properties";
+		String[] csvFiles = new String[] {"femto-r-00000", "RRC_connection_establishments-r-00000"};
+		//prepare schema
+		String cfgFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
+		String schemaFile = "om_map_merged.schema";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
+		
+		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
+				etl.cmd.CsvAggregateCmd.class, TextInputFormat.class);
+		List<String> output = ret._2;
+		//assertion
+		logger.info("Output is:\n"+String.join("\n", output));
+		assertEquals(4, output.size());
+		assertTrue(output.contains("A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(output.contains("A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,71DB021D7868,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
+	}
+	
+	@Test
 	public void noSchemaSum() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -52,6 +80,27 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
 		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:\n"+ String.join("\n", output));
+		
+		// assertion
+		assertTrue(output.size() ==12);
+		String sampleOutput = output.get(6);
+		String[] csvs = sampleOutput.split(",", -1);
+		assertTrue("2.0".equals(csvs[6]));
+	}
+	
+	@Test
+	public void noSchemaSumSpark() throws Exception {
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String csvtransProp = "NoSchemaSum.properties";
+		String[] csvFiles = new String[] {"csvaggregate.csv"};
+		
+		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
+				TextInputFormat.class);
+		List<String> values = ret._2;
+		ArrayList<String> output = new ArrayList<String>();
+		output.addAll(values);
+		Collections.sort(output);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		
 		// assertion
@@ -120,7 +169,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		assertTrue(output.size()==4);
 	}
 	
-	@Test //TODO
+	@Test
 	public void mergeIntoOneTable() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -162,7 +211,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		assertTrue("1.0".equals(csvs[0]));
 	}
 	
-	@Test //TODO
+	@Test
 	public void mergeIntoMultiple() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -265,7 +314,6 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String expectedNames = "[endTimeHour, endTimeDay, duration, SubNetwork, ManagedElement, Machine, MyCoreA_VS.avePerCoreCpuUsage, "
 				+ "MyCoreA_VS.peakPerCoreCpuUsage, MyCoreZ_MyCore, MyCoreZ_VS.avePerCoreCpuUsage, MyCoreZ_VS.peakPerCoreCpuUsage]";
 		assertTrue(expectedNames.equals(mergeAttrNames.toString()));
-		
 	}
 	
 }

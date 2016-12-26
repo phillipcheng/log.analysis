@@ -1,7 +1,9 @@
 package etl.engine;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,20 +23,22 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFunction;
-
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import etl.spark.SparkProcessor;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
 import scala.Tuple2;
+import scala.Tuple3;
 
 public abstract class ETLCmd implements Serializable, SparkProcessor{
 	private static final long serialVersionUID = 1L;
@@ -49,6 +53,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public static final String cfgkey_vars="vars";
 	public static final String cfgkey_skip_header="skip.header";
 	public static final String cfgkey_skip_header_exp="skip.header.exp";
+	public static final String cfgkey_file_table_map="file.table.map";
 	
 	//system variables
 	public static final String VAR_NAME_TABLE_NAME="tablename";
@@ -67,6 +72,8 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	protected boolean skipHeader=false;
 	protected transient CompiledScript skipHeaderCS;
+	protected String strFileTableMap;
+	protected transient CompiledScript expFileTableMap;
 	
 	protected transient FileSystem fs;
 	private transient PropertiesConfiguration pc;
@@ -95,6 +102,10 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	
 	public ETLCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public ETLCmd(String wfName, String wfid, String staticCfg, String defaultFs){
+		init(wfName, wfid, staticCfg, null, defaultFs, null, ProcessMode.Single);
 	}
 	
 	/**
@@ -144,6 +155,13 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		if (skipHeaderExpStr!=null){
 			this.skipHeaderCS = ScriptEngineUtil.compileScript(skipHeaderExpStr);
 		}
+		strFileTableMap = getCfgString(cfgkey_file_table_map, null);
+		logger.info(String.format("fileTableMap:%s", strFileTableMap));
+		if (strFileTableMap!=null){
+			expFileTableMap = ScriptEngineUtil.compileScript(strFileTableMap);
+			logger.info(String.format("fileTableMapExp:%s", expFileTableMap));
+		}
+		
 	}
 	
 	public void init(){
@@ -160,12 +178,94 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		return systemVariables;
 	}
 	
-	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		logger.error("empty sparkProcessKeyValue impl, should not be invoked.");
+	//copy propertiesConf to jobConf
+	private void copyConf(){
+		Iterator it = pc.getKeys();
+		while (it.hasNext()){
+			String key = (String) it.next();
+			String value = pc.getString(key);
+			this.conf.set(key, value);
+		}
+	}
+	
+	public void copyConf(Map<String, String> inPc){
+		for (String key: inPc.keySet()){
+			String value = inPc.get(key);
+			this.conf.set(key, value);
+		}
+	}
+	
+	//will be overriden by schema-etl-cmd
+	public String mapKey(String key){
+		return key;
+	}
+	
+	public String getTableNameSetFileName(String pathName){
+		getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+		int lastSep = pathName.lastIndexOf("/");
+		String fileName = pathName.substring(lastSep+1);
+		getSystemVariables().put(VAR_NAME_FILE_NAME, fileName);
+		if (expFileTableMap!=null){
+			return ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+		}else{
+			return pathName;
+		}
+	}
+	
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		logger.error("empty flatMapToPair impl, should not be invoked.");
 		return null;
 	}
 	
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		logger.error("empty reduceByKey impl, should not be invoked.");
+		return null;
+	}
+	
+	@Override
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
+				List<Tuple2<String, String>> ret = flatMapToPair(t._1, t._2, null);
+				if (ret!=null){
+					return ret.iterator();
+				}else{
+					return Collections.emptyIterator();
+				}
+			}
+		}).filter(new Function<Tuple2<String, String>, Boolean>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Boolean call(Tuple2<String, String> v1) throws Exception {
+				if (v1==null){
+					return false;
+				}else{
+					return true;
+				}
+			}
+		});
+		
+		JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().flatMapToPair(new PairFlatMapFunction<Tuple2<String, Iterable<String>>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Iterator<Tuple2<String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				List<Tuple3<String, String, String>> t3l = reduceByKey(t._1, t._2, null, null);
+				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
+				for (Tuple3<String, String, String> t3:t3l){
+					if (t3._2()!=null){
+						ret.add(new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2()));
+					}else{
+						ret.add(new Tuple2<String, String>(t3._3(), t3._1()));
+					}
+				}
+				return ret.iterator();
+			}
+		});
+		return csvaggr;
+	}
 	
 	@Override
 	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc){
@@ -179,35 +279,45 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		return null;
 	}
 	
-	//copy propertiesConf to jobConf
-	private void copyConf(){
-		Iterator it = pc.getKeys();
-		while (it.hasNext()){
-			String key = (String) it.next();
-			String value = pc.getString(key);
-			this.conf.set(key, value);
-		}
-	}
-	
-	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, Class inputFormatClass){
+	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, 
+			Class<? extends InputFormat> inputFormatClass){
 		JavaPairRDD<String, String> prdd = null;
 		for (String file:inputfiles.collect()){
 			copyConf();
 			JobConf jobConf = new JobConf(this.getHadoopConf());
 			FileInputFormat.addInputPath(jobConf, new Path(file));
-			JavaPairRDD<LongWritable, Text> content = jsc.hadoopRDD(jobConf, inputFormatClass, LongWritable.class, Text.class);
-			if (skipHeader){
-				content = content.filter(new Function<Tuple2<LongWritable, Text>, Boolean>(){
-					@Override
-					public Boolean call(Tuple2<LongWritable, Text> v1) throws Exception {
-						return v1._1.get()>0;
-					}
-				});
-			};
-			JavaPairRDD<String, String> tprdd = content.mapToPair(new PairFunction<Tuple2<LongWritable, Text>, String, String>(){
+			JavaPairRDD<LongWritable, Text> content = jsc.newAPIHadoopRDD(jobConf, inputFormatClass, LongWritable.class, Text.class);
+			String key = mapKey(file);
+			JavaPairRDD<String, String> tprdd = content.flatMapToPair(new PairFlatMapFunction<Tuple2<LongWritable, Text>, String, String>(){
+				private static final long serialVersionUID = 1L;
 				@Override
-				public Tuple2<String, String> call(Tuple2<LongWritable, Text> t) throws Exception {
-					return new Tuple2<String, String>(file, t._2.toString());
+				public Iterator<Tuple2<String, String>> call(Tuple2<LongWritable, Text> t) throws Exception {
+					List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
+					if (inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
+						String row = t.toString();
+						String[] lines = row.split("\n");
+						String pathName = null;
+						pathName = lines[0];
+						boolean skipFirstLine = skipHeader;
+						if (!skipHeader && skipHeaderCS!=null){
+							getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+							getTableNameSetFileName(pathName);
+							boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, getSystemVariables());
+							skipFirstLine = skipFirstLine || skip;
+						}
+						int start=1;
+						if (skipFirstLine) start=2;
+						List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
+						for (int i=start; i<lines.length; i++){
+							String line = lines[i];
+							ret.add(new Tuple2<String, String>(pathName, line));
+						}
+					}else{
+						if (!(skipHeader && t._1.get()==0)){
+							ret.add(new Tuple2<String, String>(key, t._2.toString()));
+						};
+					}
+					return ret.iterator();
 				}
 				
 			});
@@ -361,12 +471,9 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	}
 	
 	///
-
 	public Configuration getHadoopConf(){
 		return conf;
 	}
-	
-
 	
 	public MRMode getMrMode() {
 		return mrMode;

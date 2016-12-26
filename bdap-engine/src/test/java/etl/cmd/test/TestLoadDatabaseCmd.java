@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 
 //log4j2
@@ -25,6 +26,7 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
+import etl.spark.SparkUtil;
 import etl.util.CombineFileNameInputFormat;
 import etl.util.DBType;
 import etl.util.DBUtil;
@@ -220,16 +222,12 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		//generate all the data files
 		getFs().delete(new Path(remoteCsvInputFolder), true);
 		getFs().delete(new Path(remoteCsvOutputFolder), true);
-		getFs().delete(new Path(schemaFolder), true);
 		//
-		getFs().mkdirs(new Path(remoteCsvInputFolder));
-		getFs().mkdirs(new Path(remoteCsvOutputFolder));
-		getFs().mkdirs(new Path(schemaFolder));
 		//copy schema file
-		getFs().copyFromLocalFile(new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
 		//copy csv file
 		for (String csvFileName: csvFileNames){
-			getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
 		}
 		
 		LoadDataCmd cmd = new LoadDataCmd("wf1", "wfid1", this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
@@ -241,43 +239,27 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		
 		List<String> output = super.mrTest(rfifs, remoteCsvOutputFolder, staticCfgName, testCmdClass, CombineFileNameInputFormat.class, 5);
 		logger.info("Output is:"+output);
+		assertTrue(output.size()>0);
 		
-		List<String> fl = HdfsUtil.listDfsFile(getFs(), "/test/loadcsv/output");
-		//assert
-		logger.info(fl);
 	}
 	
 	@Test
 	public void testSpark1() throws Exception{
 		String staticCfgName = "loadcsv.spark.properties";
-		String wfid="wfid1";
 		String localSchemaFileName = "test1_schemas.txt";
-		String csvFileName = "MyCore_.csv";
-		String tableName = "MyCore_";
-
+		String[] csvFileNames = new String[]{"MyCore_.csv"};
+		
 		String inputFolder = "/test/loadcsv/input/";
 		String schemaFolder="/test/loadcsv/schema/";
 		
 		//copy schema file
-		getFs().delete(new Path(inputFolder), true);
-		getFs().mkdirs(new Path(inputFolder));
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
-		//run cmd
-		LoadDataCmd cmd = new LoadDataCmd("wf1", wfid, this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
-		SparkConf conf = new SparkConf().setAppName(wfid).setMaster("local[3]");
-		JavaSparkContext jsc = new JavaSparkContext(conf);
-		JavaRDD<String> lines = jsc.textFile("file:///" + getLocalFolder() + csvFileName);
-		JavaPairRDD<String, String> input = lines.mapToPair(new PairFunction<String,String,String>(){
-			@Override
-			public Tuple2<String, String> call(String t) throws Exception {
-				return new Tuple2<String, String>(tableName, t);
-			}
-		});
-		cmd.sparkProcessKeyValue(input, jsc);
+		Tuple2<List<String>, List<String>> output = super.sparkTestKV(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, 
+				TextInputFormat.class);
 		//check hdfs
-		String dbFilesFolder = cmd.getDbInputPath();
-		List<String> files = HdfsUtil.listDfsFile(super.getFs(), dbFilesFolder);
-		logger.info(files);
-		assertTrue(files.contains(tableName));
+		List<String> keys = output._1;
+		logger.info(String.format("output keys:\n %s", String.join("\n", keys)));
+		assertTrue(keys.contains("MyCore_"));
+		
 	}
 }

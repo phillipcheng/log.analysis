@@ -2,16 +2,21 @@ package etl.cmd.test;
 
 import java.io.File;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -19,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
@@ -29,7 +35,10 @@ import org.junit.Before;
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
+import etl.engine.DataType;
+import etl.engine.ETLCmd;
 import etl.engine.InvokeMapper;
+import etl.spark.SparkUtil;
 import etl.util.FilenameInputFormat;
 import etl.util.GlobExpPathFilter;
 import scala.Tuple2;
@@ -100,9 +109,18 @@ public abstract class TestETLCmd implements Serializable{
 		}
     }
 	
+	//map test for cmd
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
 			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass) throws Exception {
 		return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, inputFormatClass, null, false);
+	}
+	
+	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
+		if (useFileNames)
+			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, FilenameInputFormat.class);
+		else
+			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, NLineInputFormat.class);
 	}
 	
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
@@ -156,6 +174,7 @@ public abstract class TestETLCmd implements Serializable{
 		}
 	}
 	
+	//map-reduce test for cmd
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
 			String staticProperties, String cmdClassName, Class inputFormatClass, int numReducer) throws Exception {
 		getFs().delete(new Path(remoteOutputFolder), true);
@@ -194,8 +213,6 @@ public abstract class TestETLCmd implements Serializable{
 		
 		FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 		job.waitForCompletion(true);
-
-		// assertion
 		List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
 		return output;
 		
@@ -205,35 +222,7 @@ public abstract class TestETLCmd implements Serializable{
 			String staticProperties, String cmdClassName, Class inputFormatClass) throws Exception {
 		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, 1);
 	}
-	/**
-	 * 
-	 * @param remoteInputFolder
-	 * @param remoteOutputFolder
-	 * @param staticProperties
-	 * @param inputDataFiles
-	 * @param cmdClassName
-	 * @param useFileNames
-	 * @return
-	 * @throws Exception
-	 */
-	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
-		if (useFileNames)
-			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, FilenameInputFormat.class);
-		else
-			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, NLineInputFormat.class);
-	}
 	
-	/**
-	 * 
-	 * @param remoteFolderInputFiles
-	 * @param remoteOutputFolder
-	 * @param staticProperties
-	 * @param cmdClassName
-	 * @param useFileNames
-	 * @return
-	 * @throws Exception
-	 */
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
 			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
 		if (useFileNames)
@@ -242,18 +231,6 @@ public abstract class TestETLCmd implements Serializable{
 			return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, NLineInputFormat.class);
 	}
 	
-	/**
-	 * 
-	 * @param remoteCfgFolder
-	 * @param remoteInputFolder
-	 * @param remoteOutputFolder
-	 * @param staticProperties
-	 * @param inputDataFiles
-	 * @param cmdClassName
-	 * @param useFileNames: 
-	 * @return
-	 * @throws Exception
-	 */
 	public List<String> mrTest(String remoteInputFolder, String remoteOutputFolder, String staticProperties, 
 			String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
 		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
@@ -264,6 +241,47 @@ public abstract class TestETLCmd implements Serializable{
 			return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, NLineInputFormat.class);
 	}
 	
+	//spark test for cmd
+	//spark test for cmd
+	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null);
+	}
+	
+	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+			String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass, 
+			Map<String, String> addConf) throws Exception{
+		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
+		JavaSparkContext jsc = new JavaSparkContext(conf);
+		try {
+			getFs().delete(new Path(remoteInputFolder), true);
+			List<String> inputPaths = new ArrayList<String>();
+			for (String inputFile : inputDataFiles) {
+				getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + inputFile), new Path(remoteInputFolder + inputFile));
+				inputPaths.add(remoteInputFolder + inputFile);
+			}
+			if (inputFormatClass == FilenameInputFormat.class){
+				inputPaths.clear();
+				inputPaths.add(remoteInputFolder);
+			}
+			Constructor<? extends ETLCmd> constr = cmdClass.getConstructor(String.class, String.class, String.class, String.class, String[].class);
+			String cfgProperties = cmdProperties;
+			if (this.getResourceSubFolder()!=null){
+				cfgProperties = this.getResourceSubFolder() + cmdProperties;
+			}
+			String wfName = "wfName";
+			ETLCmd cmd = constr.newInstance(wfName, "wfId", cfgProperties, this.getDefaultFS(), null);
+			if (addConf!=null){
+				cmd.copyConf(addConf);
+			}
+			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass);
+			List<String> keys = result.keys().collect();
+			List<String> values = result.values().collect();
+			return new Tuple2<List<String>, List<String>>(keys, values);
+		}finally{
+			jsc.close();
+		}
+	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 
 			String localLibFolder, String verticaLibName) throws Exception{

@@ -83,7 +83,7 @@ var loadProperty = function(d, nodeData) {
 				.attr("height", 10)
 				.attr("self", "RECT")
 				.attr("x", 10)
-				.attr("y", 25);
+				.attr("y", 35);
 			var _index = 0;
 			var svgrect = d3.select("#propertylist_" + d);
 			$.each(v.v, function(key, value) {
@@ -100,7 +100,7 @@ var loadProperty = function(d, nodeData) {
 					svgrect.append("text")
 						.attr("id", "propertylist_" + d + "_" + _index)
 						.attr("x", 15).attr("G", d)
-						.attr("y", 22 + (_index * 17))
+						.attr("y", 32 + (_index * 17))
 						.text(key + ":" + value);
 				}
 			});

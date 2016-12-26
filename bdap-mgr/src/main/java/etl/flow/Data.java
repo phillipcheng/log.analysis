@@ -2,6 +2,9 @@ package etl.flow;
 
 import java.util.Objects;
 
+import etl.engine.DataType;
+import etl.engine.InputFormatType;
+
 public class Data {
 	
 	private String name;

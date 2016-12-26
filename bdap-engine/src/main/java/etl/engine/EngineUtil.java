@@ -236,7 +236,6 @@ public class EngineUtil {
 			}
 		}catch(Throwable t){
 			logger.error(new ETLLog(cmd, null, t), t);
-		
 		}
 	}
 
@@ -289,9 +288,11 @@ public class EngineUtil {
 					}else if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2)){//for map-reduce mapper phrase, the result is key-value pair
 						if (alloutputs!=null && context!=null){
 							List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
-							for (Tuple2<String, String> kv: tl){
-								if (kv!=null){
-									context.write(new Text(kv._1), new Text(kv._2));
+							if (tl!=null){
+								for (Tuple2<String, String> kv: tl){
+									if (kv!=null){
+										context.write(new Text(kv._1), new Text(kv._2));
+									}
 								}
 							}
 						}
