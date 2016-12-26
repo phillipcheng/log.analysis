@@ -1,3 +1,32 @@
+document.onmousemove = function(event) {
+	if(boolean_divdatanode_mouse) {
+		var e = event || window.event || arguments.callee.caller.arguments[0];
+		var x = e.x || e.clientX;
+		var y = e.y || e.clientY;
+		var move_left = x - divdatanode_old_left;
+		var move_top = y - divdatanode_old_top;
+		var old_left = parseInt(document.getElementById(div_id_divdatanode_mouse).style.left);
+		var old_top = parseInt(document.getElementById(div_id_divdatanode_mouse).style.top);
+		old_left += move_left;
+		old_top += move_top;
+		document.getElementById(div_id_divdatanode_mouse).style.left = old_left + "px";
+		document.getElementById(div_id_divdatanode_mouse).style.top = old_top + "px";
+		divdatanode_old_left = x;
+		divdatanode_old_top = y;
+	}
+}
+
+document.onmouseup = function(event) {
+	if(boolean_divdatanode_mouse) {
+		boolean_divdatanode_mouse = false;
+		var e = event || window.event || arguments.callee.caller.arguments[0];
+		var y = e.y || e.clientY;
+		console.log("y", y);
+		console.log("divdatanode_top", divdatanode_top);
+		console.log("height", (y - divdatanode_top));
+	}
+}
+
 var svg_document_onkeydown = function() {
 	var e = window.event || arguments.callee.caller.arguments[0];
 	console.log(e);
@@ -118,8 +147,12 @@ var svg_document_onmousedown = function() {
 				{
 					clearTempLine();
 					document.getElementById("svg").style.cursor = "move";
-					document.getElementById("divdatanode").style.display = "none";
+					//document.getElementById("divdatanode").style.display = "none";
 					document.getElementById("divleftdatasetproperty").style.display = "none";
+					
+					document.getElementById("d3contextmenu").style.left = "0px";
+					document.getElementById("d3contextmenu").style.top = "0px";
+					document.getElementById("d3contextmenu").style.display = "none";
 				}
 				break;
 		}
@@ -385,8 +418,8 @@ var d3contextmenuShow = function() {
 
 						var tempG = o.getAttribute("G");
 						var tempId = o.getAttribute("id");
-						
-						removeInletsPoint(tempG,tempId);
+
+						removeInletsPoint(tempG, tempId);
 
 						document.getElementById("d3contextmenu").style.left = "0px";
 						document.getElementById("d3contextmenu").style.top = "0px";
@@ -399,11 +432,11 @@ var d3contextmenuShow = function() {
 					document.getElementById("d3contextmenu").style.top = e.clientY + "px";
 					document.getElementById("d3contextmenu").style.display = "block";
 					document.getElementById("d3contextmenu").onclick = function() {
-						
+
 						var tempG = o.getAttribute("G");
-						var tempId = o.getAttribute("id");						
-						
-						removeOutletsPoint(tempG,tempId);
+						var tempId = o.getAttribute("id");
+
+						removeOutletsPoint(tempG, tempId);
 
 						document.getElementById("d3contextmenu").style.left = "0px";
 						document.getElementById("d3contextmenu").style.top = "0px";

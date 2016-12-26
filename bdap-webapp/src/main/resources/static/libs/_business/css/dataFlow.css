@@ -264,7 +264,6 @@ body {
 	position: absolute;
 	border: 1px solid rgb(155, 155, 155);
 	background: #FFF;
-	z-index: 5;
 	opacity: 0.5;
 }
 

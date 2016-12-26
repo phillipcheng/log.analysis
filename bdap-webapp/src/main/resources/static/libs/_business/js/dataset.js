@@ -185,46 +185,98 @@ var changeDataSetProeroty = function() {
  * 加载数据绑定对话框
  */
 var showDataBang = function(nodeId, pathId) {
-	document.getElementById("hidDataSetNodeId").value = nodeId;
-	document.getElementById("hidDataSetPathId").value = pathId;
-	document.getElementById("divdatanode").style.display = "block";
-	$("#dataset_node_select").html("");
-	$("#dataset_node_name").val("");
-	console.log("dataSetList", dataSetList);
-
-	var tempTxt = "";
+	var tempTxt = nodeId + "_" + pathId;
 	var tempSel = "";
-
+	if(document.getElementById(tempTxt)) {
+		return false;
+	}
 	each(nodeInLets, function() {
 		if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
-			tempTxt = this.v.name;
 			tempSel = this.v.dataName;
 			return false;
 		}
 		return true;
 	});
-
-	if(tempTxt.localeCompare("") == 0 || tempSel.localeCompare("") == 0) {
-		each(nodeOutLets, function() {
-			if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
-				tempTxt = this.v.name;
-				tempSel = this.v.dataName;
-				return false;
-			}
-			return true;
-		});
-	}
-
-	$("#dataset_node_name").val(tempTxt);
-
+	var optiontxt = "";
 	each(dataSetList, function() {
 		if(this.k.localeCompare(tempSel) == 0) {
-			$("#dataset_node_select").append("<option value='" + this.k + "' selected='selected'>" + this.v.name + "</option>");
+			optiontxt += "<option value='" + this.k + "' selected='selected'>" + this.v.name + "</option>";
 		} else {
-			$("#dataset_node_select").append("<option value='" + this.k + "'>" + this.v.name + "</option>");
+			optiontxt += "<option value='" + this.k + "'>" + this.v.name + "</option>";
 		}
 		return true;
 	});
+
+	divdatanode_number++;
+	
+	var initleft = clientwidth - 305;
+	var inittop = 2;
+
+	var txt = "<div id='" + tempTxt + "' style='left:"+initleft+"px;top:"+inittop+"px' class='divdatanode' onmousedown = 'ShowDataBang_mouse_down(\"" + tempTxt + "\")'>";
+	txt += "<div class='rightupcssheader'>";
+	txt += "<strong>Data Information</strong>&nbsp;&nbsp;&nbsp;&nbsp;";
+	txt += "<a href='javascript: ;	' class='imgclose' onclick='ShowDataBang_closeed(\""+tempTxt+"\")'>&nbsp;</a>";
+	txt += "</div>";
+	txt += "<div class='divdatanodebody'>";
+	txt += "<input type='hidden' id='hidDataSetNodeId_'" + divdatanode_number + " value='' />";
+	txt += "<input type='hidden' id='hidDataSetPathId_'" + divdatanode_number + " value='' />";
+	txt += "<div class='sublistgroup'>";
+	txt += "<strong>name:</strong>";
+	txt += "<input type='text' readonly='readonly' value=" + tempTxt + " placeholder='...' />";
+	txt += "</div>";
+	txt += "<div class='sublistgroup'>";
+	txt += "<strong>dataSetList:</strong>";
+	txt += "<select id='dataset_node_select_" + divdatanode_number + "' style='width: 100%;' onkeyup='changeShowDataBang()' />";
+	txt += optiontxt;
+	txt += "</select>";
+	txt += "</div>";
+	txt += "</div>";
+	txt += "</div>";
+
+	var temp = $("#divdatanode_Container").html();
+	temp += txt;
+	console.log("temp", temp);
+	$("#divdatanode_Container").html(temp);
+	//	document.getElementById("hidDataSetNodeId").value = nodeId;
+	//	document.getElementById("hidDataSetPathId").value = pathId;
+	//	document.getElementById("divdatanode").style.display = "block";
+	//	$("#dataset_node_select").html("");
+	//	$("#dataset_node_name").val("");
+	//	console.log("dataSetList", dataSetList);
+	//
+	//	var tempTxt = "";
+	//	var tempSel = "";
+	//
+	//	each(nodeInLets, function() {
+	//		if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
+	//			tempTxt = this.v.name;
+	//			tempSel = this.v.dataName;
+	//			return false;
+	//		}
+	//		return true;
+	//	});
+	//
+	//	if(tempTxt.localeCompare("") == 0 || tempSel.localeCompare("") == 0) {
+	//		each(nodeOutLets, function() {
+	//			if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
+	//				tempTxt = this.v.name;
+	//				tempSel = this.v.dataName;
+	//				return false;
+	//			}
+	//			return true;
+	//		});
+	//	}
+	//
+	//	$("#dataset_node_name").val(tempTxt);
+	//
+	//	each(dataSetList, function() {
+	//		if(this.k.localeCompare(tempSel) == 0) {
+	//			$("#dataset_node_select").append("<option value='" + this.k + "' selected='selected'>" + this.v.name + "</option>");
+	//		} else {
+	//			$("#dataset_node_select").append("<option value='" + this.k + "'>" + this.v.name + "</option>");
+	//		}
+	//		return true;
+	//	});
 }
 
 /**
@@ -318,4 +370,28 @@ var checkedWeatherEdit = function(nodeKey, pathKey) {
 		});
 	}
 	return booleanIsEdit;
+}
+
+/**
+ * 
+ * @param {Object} divId
+ */
+var ShowDataBang_mouse_down = function(divId) {
+	var e = window.event || arguments.callee.caller.arguments[0];
+	var o = document.getElementById(divId);
+	var x = e.x || e.clientX;
+	var y = e.y || e.clientY;
+	divdatanode_old_left = x;
+	divdatanode_old_top = y;
+	o.style.cursor = "move";
+	boolean_divdatanode_mouse = true;
+	div_id_divdatanode_mouse = divId;
+}
+
+/**
+ * 
+ * @param {Object} divId
+ */
+var ShowDataBang_closeed = function(divId){
+	d3.select("#divdatanode_Container").select("#"+divId).remove();
 }

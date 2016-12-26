@@ -2,6 +2,16 @@ var inLetsNumber = 0;
 
 var outLetsNumber = 0;
 
+var divdatanode_number = 0;
+
+var boolean_divdatanode_mouse = false;
+
+var div_id_divdatanode_mouse = "";
+
+var divdatanode_old_left = 0;
+
+var divdatanode_old_top = 0;
+
 var g_mouse_down = "";
 
 var g_mouse_up = "";
