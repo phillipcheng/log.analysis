@@ -44,10 +44,10 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:\n"+String.join("\n", output));
 		assertEquals(4, output.size());
-		assertTrue(output.contains("A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
-		assertTrue(output.contains("A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,71DB021D7868,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("71DB021D7868,A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
 	}
 	
 	@Test
@@ -66,10 +66,10 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		//assertion
 		logger.info("Output is:\n"+String.join("\n", output));
 		assertEquals(4, output.size());
-		assertTrue(output.contains("A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
-		assertTrue(output.contains("A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,000003FE234C,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,71DB021D7868,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("71DB021D7868,A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
 	}
 	
 	@Test
@@ -314,6 +314,23 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String expectedNames = "[endTimeHour, endTimeDay, duration, SubNetwork, ManagedElement, Machine, MyCoreA_VS.avePerCoreCpuUsage, "
 				+ "MyCoreA_VS.peakPerCoreCpuUsage, MyCoreZ_MyCore, MyCoreZ_VS.avePerCoreCpuUsage, MyCoreZ_VS.peakPerCoreCpuUsage]";
 		assertTrue(expectedNames.equals(mergeAttrNames.toString()));
+	}
+	
+	@Test
+	public void noSchemaSumFiterGroupKeys() throws Exception {
+		String remoteCsvFolder = "/etltest/csvaggr/";
+		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
+		String csvtransProp = "NoSchemaSumFilterGroupKeys.properties";
+		String[] csvFiles = new String[] {"csvaggregate.csv"};
+		
+		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:\n"+ String.join("\n", output));
+		
+		// assertion
+		assertTrue(output.size() ==12);
+		String sampleOutput = output.get(6);
+		String[] csvs = sampleOutput.split(",", -1);
+		assertTrue("2.0".equals(csvs[1]));
 	}
 	
 }
