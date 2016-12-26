@@ -119,5 +119,12 @@ var app = {
 			dataType: 'IN'
 		};
 		layOutDataSet(temp_g,obj);
+	},
+	dataSetShow:function(){
+		document.getElementById("dataset_svg").style.display = "block";
+	},
+	dataSetHide:function(){
+		document.getElementById("dataset_svg").style.display = "none";
+		document.getElementById("divleftdatasetproperty").style.display = "none";
 	}
 }
