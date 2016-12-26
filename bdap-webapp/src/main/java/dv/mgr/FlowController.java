@@ -14,6 +14,8 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.schema.JsonSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -75,6 +77,14 @@ public class FlowController {
 	private final AccountRepository accountRepository;
 	private final FlowMgr flowMgr;
 	private final FlowDeployer flowDeployer;
+	
+	@RequestMapping(value = "/schema", method = RequestMethod.GET)
+	String getFlowSchema() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+	    JsonSchema schema = mapper.generateJsonSchema(Flow.class);
+	    String schemaText = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+	    return schemaText;
+	}
 
 	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
 	Map<String, List<String>> getActionNodeCommands() {
