@@ -14,8 +14,6 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.schema.JsonSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -30,6 +28,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
@@ -79,11 +81,11 @@ public class FlowController {
 	private final FlowDeployer flowDeployer;
 	
 	@RequestMapping(value = "/schema", method = RequestMethod.GET)
-	String getFlowSchema() throws Exception {
+	JsonSchema getFlowSchema() throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
-	    JsonSchema schema = mapper.generateJsonSchema(Flow.class);
-	    String schemaText = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
-	    return schemaText;
+		JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+		JsonSchema schema = schemaGen.generateSchema(Flow.class);
+	    return schema;
 	}
 
 	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
