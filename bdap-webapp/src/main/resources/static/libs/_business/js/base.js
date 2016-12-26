@@ -126,8 +126,7 @@ var _base = {
 				var pro = g.edge(d);
 				var points = pro.points;
 
-				var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge")
-					.on("contextmenu", d3.contextMenu(pathmenu));
+				var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge");
 
 				linegroup.append("path")
 					.transition()
@@ -239,33 +238,102 @@ var addOutLetsButton = function(theSelfObj, d, nodeData) {
 		.attr("d", "M-3,0L3,0M0,-3L0,3");
 }
 
+/**
+ * 
+ * @param {Object} nodeId
+ * @param {Object} pathId
+ */
+var removeInletsPoint = function(nodeId, pathId) {
+	each(nodeInLets, function(i, o) {
+		if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
+			nodeInLets.splice(i, 1);
+			return false;
+		}
+		return true;
+	});
+
+	d3.select("#" + nodeId).selectAll(".inPath")
+		.each(function() {
+			d3.select(this).remove();
+		});
+
+	var tempNode = d3.select("#" + nodeId);
+	each(nodeInLets, function(i) {
+		var x = i * 18 + 25;
+		tempNode.append("circle")
+			.attr("id", this.dsk)
+			.attr("G", this.k)
+			.attr("self", "inlets")
+			.attr("class", "inPath")
+			.attr("r", "4")
+			.attr("cx", x)
+			.attr("cy", 5);
+		return true;
+	});
+}
+
+/**
+ * 
+ * @param {Object} nodeId
+ * @param {Object} pathId
+ */
+var removeOutletsPoint = function(nodeId, pathId) {
+	each(nodeOutLets, function(i, o) {
+		if(this.k.localeCompare(nodeId) == 0 && this.dsk.localeCompare(pathId) == 0) {
+			nodeOutLets.splice(i, 1);
+			return false;
+		}
+		return true;
+	});
+
+	d3.select("#" + nodeId).selectAll(".outPath")
+		.each(function() {
+			d3.select(this).remove();
+		});
+
+	var nodeData = g.node(nodeId);
+	var tempNode = d3.select("#" + nodeId);
+	each(nodeOutLets, function(i) {
+		var x = i * 18 + 25;
+		tempNode.append("circle")
+			.attr("id", this.dsk)
+			.attr("G", this.k)
+			.attr("self", "outlets")
+			.attr("class", "outPath")
+			.attr("r", "4")
+			.attr("cx", x)
+			.attr("cy", (nodeData.height - 5));
+		return true;
+	});
+}
+
 var addInletsPoint = function(node, nodeData, g_mouse_down) {
 	var points = node.selectAll(".inPath");
 	var length = points[0].length;
 	if(length >= 8) {
-		return;
+		return false;
 	}
-	var number = 1;
-	if(length > 0) {
-		var point = points[0][length - 1]
-		number = point.getAttribute("number");
-		number = Number.parseInt(number);
-		number += 1;
-	}
+
+	inLetsNumber++;
 	var x = length * 18 + 25;
-	//	if(length == 0){
-	//		x += 20;
-	//	}
 
 	node.append("circle")
-		.attr("id", "inlets" + number)
+		.attr("id", "inlets" + inLetsNumber)
 		.attr("G", g_mouse_down)
-		.attr("self", "inletsPoint")
+		.attr("self", "inlets")
 		.attr("class", "inPath")
-		.attr("r", "4")
-		.attr("number", number)
-		.attr("transform", "translate(" + x + ",5)scale(1,1)");
+		.attr("r", 4)
+		.attr("cx", x)
+		.attr("cy", 5);
 
+	nodeInLets.push({
+		k: g_mouse_down,
+		dsk: "inlets" + inLetsNumber,
+		v: {
+			name: '',
+			dataName: ''
+		}
+	});
 }
 
 var addOutletsPoint = function(node, nodeData, g_mouse_down) {
@@ -274,25 +342,25 @@ var addOutletsPoint = function(node, nodeData, g_mouse_down) {
 	if(length >= 8) {
 		return;
 	}
-	var number = 1;
-	if(length > 0) {
-		number = points[0][length - 1].getAttribute("number");
-		number = Number.parseInt(number);
-		number += 1;
-	}
+	outLetsNumber++;
 	var x = length * 18 + 25;
-	//	if(length == 0){
-	//		x += 20;
-	//	}
 	node.append("circle")
-		.attr("id", "outlets" + number)
+		.attr("id", "outlets" + outLetsNumber)
 		.attr("G", g_mouse_down)
-		.attr("self", "outletsPoint")
+		.attr("self", "outlets")
 		.attr("class", "outPath")
-		.attr("r", "4")
-		.attr("number", number)
-		.attr("transform", "translate(" + x + "," + (nodeData.height - 5) + ")scale(1,1)");
+		.attr("r", 4)
+		.attr("cx", x)
+		.attr("cy", (nodeData.height - 5));
 
+	nodeOutLets.push({
+		k: g_mouse_down,
+		dsk: "outlets" + outLetsNumber,
+		v: {
+			name: '',
+			dataName: ''
+		}
+	});
 }
 
 /**
@@ -322,7 +390,7 @@ var actionEnter = function(theSelf, d, nodeData) {
 		.attr("G", d)
 		.attr("id", "text_" + d)
 		.attr("x", 20)
-		.attr("y", 20).text(nodeData.label);
+		.attr("y", 30).text(nodeData.label);
 
 	theSelfObj.append("circle") //circle
 		.attr("G", d)
@@ -360,18 +428,15 @@ var actionEnter = function(theSelf, d, nodeData) {
 	if(nodeData.nodeType.localeCompare("start") == 0) {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG start")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
-			.on("contextmenu", d3.contextMenu(menu));
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 	} else if(nodeData.nodeType.localeCompare("end") == 0) {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG end")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
-			.on("contextmenu", d3.contextMenu(menu));
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 	} else {
 		theSelfObj.attr("id", d)
 			.attr("class", "nodeG action")
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)")
-			.on("contextmenu", d3.contextMenu(menu));
+			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 
 		addInLetsButton(theSelfObj, d, nodeData);
 		addOutLetsButton(theSelfObj, d, nodeData);
@@ -482,7 +547,8 @@ var actionUpdate = function(theSelf, d, nodeData) {
 			}
 			outnumber++;
 			d3.select(this).transition().duration(500)
-				.attr("transform", "translate(" + x + "," + (nodeData.height - 5) + ")scale(1,1)");
+				.attr("cx", x)
+				.attr("cy", (nodeData.height - 5));
 		});
 
 	var theSelfObjChild = theSelfObj.select("g");
@@ -603,23 +669,59 @@ var saveAsJson = function() {
 		'inLets': [],
 		'wfName': 'flow1'
 	};
+
+	var nodeInletObjs = getNodeInlets(nodeInLets);
+	var nodeOutletObjs = getNodeOutlets(nodeOutLets);
+	
 	each(nodeLists, function() {
-		var tempkeys = this.k.toString();
 		var propertyObj = {};
+		var tempkeys = this.k.toString();
 		each(propertyList, function() {
 			if(this.k.toString().localeCompare(tempkeys) == 0) {
 				propertyObj = this.v;
 				if(propertyObj.name.indexOf("g_") == -1) {
 					propertyObj.name = propertyObj.name + tempkeys;
 				}
-				result.nodes.push(propertyObj);
+				propertyObj.inLets = [];
+				propertyObj.outlets = [];
+
+				each(nodeInLets, function() {
+					if(this.k.localeCompare(tempkeys) == 0) {
+						var v = this.v;
+						each(dataSetList,function(){
+							if(this.k.localeCompare(v.dataName)==0){
+								v.dataName = this.v.name + "_" + v.dataName;
+								return false;
+							}
+							return true;
+						});
+						propertyObj.inLets.push(v);
+					}
+					return true;
+				});
+
+				each(nodeOutLets, function() {
+					if(this.k.localeCompare(tempkeys) == 0) {
+						var v = this.v;
+						each(dataSetList,function(){
+							if(this.k.localeCompare(v.dataName)==0){
+								v.dataName = this.v.name + "_" + v.dataName;
+								return false;
+							}
+							return true;
+						});						
+						propertyObj.outlets.push(this.v);
+					}
+					return true;
+				});
+
 				return false;
-			} else {
-				return true;
 			}
+			return true;
 		});
+		result.nodes.push(propertyObj);
 		return true;
-	});
+	})
 
 	//	result.links = pathLists;
 
@@ -640,6 +742,54 @@ var saveAsJson = function() {
 	});
 
 	result.links = pathLists;
+
+	$.each(dataSetList, function(i, obj) {
+		var v = obj.v;
+		v.name = v.name + "_" + obj.k;
+		result.data.push(obj.v);
+	});
+	//	result.data = dataList;
+
+	/**
+	 * add node inlets
+	 * 节点的进入数据
+	 * k:'节点ID',dsk:'',v:{name:'',dataName:''}
+	 */
+	function getNodeInlets(nodeInLets) {
+		var nodeInletObjs = {};
+		$.each(nodeInLets, function(i, obj) {
+			var k = obj.k;
+			var v = obj.v;
+			if(nodeInletObjs[k] == undefined) {
+				nodeInletObjs[k] = [];
+				nodeInletObjs[k].push(v);
+			} else {
+				nodeInletObjs[k].push(v);
+			}
+		});
+		return nodeInletObjs;
+	}
+
+	/**
+	 * add node outlets
+	 * 节点的outlets数据
+	 * k:'节点ID',dsk:'',v:{name:'',dataName:''}
+	 */
+	function getNodeOutlets(nodeOutLets) {
+		var nodeOutletObjs = {};
+		$.each(nodeOutLets, function(i, obj) {
+			var k = obj.k;
+			var v = obj.v;
+			if(nodeOutletObjs[k] == undefined) {
+				nodeOutletObjs[k] = [];
+				nodeOutletObjs[k].push(v);
+			} else {
+				nodeOutletObjs[k].push(v);
+			}
+		});
+		return nodeOutletObjs;
+	}
+	
 	console.log("result", JSON.stringify(result));
 
 	$.ajax({

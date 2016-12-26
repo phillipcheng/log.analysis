@@ -99,7 +99,7 @@
             </fileset>
         </copy>
 		<tar destfile="${src}/bdap-VVERSIONN.tar" basedir="${dist}"/>
-		<gzip destfile="${src}/bdap-VVERSIONN.tar.gz" src="${src}/bdap-VVERSIONN.tar"/>
+		<!--gzip destfile="${src}/bdap-VVERSIONN.tar.gz" src="${src}/bdap-VVERSIONN.tar"/>-->
 	</target>
 	
 	<target name="clean">

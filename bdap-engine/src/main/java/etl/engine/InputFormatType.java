@@ -1,4 +1,4 @@
-package etl.flow;
+package etl.engine;
 
 //used when the dataType has path, describe the content within the file, which inputFormat
 public enum InputFormatType {
@@ -9,4 +9,5 @@ public enum InputFormatType {
 	Section,//for kcv
 	Mixed,//join will follow
 	FileName,//used for input is a directory
+	SequenceFile,
 }

@@ -108,6 +108,7 @@ public class FlowTest {
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
 		initData(localDeployer, ftpInfo);
 		
+		//synchronous
 		Flow1SparkCmd psf = new Flow1SparkCmd(wfName, wfId, null, localDeployer.getDefaultFS(), null);
 		psf.setResFolder("src/test/resources/flow1_oozie/");
 		psf.setMasterUrl("local[5]");

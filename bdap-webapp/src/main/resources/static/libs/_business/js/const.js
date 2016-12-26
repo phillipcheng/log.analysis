@@ -1,3 +1,17 @@
+var inLetsNumber = 0;
+
+var outLetsNumber = 0;
+
+var divdatanode_number = 0;
+
+var boolean_divdatanode_mouse = false;
+
+var div_id_divdatanode_mouse = "";
+
+var divdatanode_old_left = 0;
+
+var divdatanode_old_top = 0;
+
 var g_mouse_down = "";
 
 var g_mouse_up = "";
@@ -52,7 +66,19 @@ var display_off_top = 0;
 
 var remoteActionObj = {};
 
+/**
+ * 节点的进入数据
+ * k:'节点ID',dsk:'',v:{name:'',dataName:''}
+ */
+var nodeInLets = [];
+
 var dataWindowIDs = [];
+
+/**
+ * 节点的流出数据
+ * 同理  nodeInLets = []
+ */
+var nodeOutLets = [];
 
 /**
  * 用于记录临时点的线的集合
@@ -86,6 +112,10 @@ var propertyList = [];
 //var dataList = [];
 
 var nodeArgs = [];
+
+var nodeInLets = [];
+
+var nodeOutLets = [];
 
 // Create a new directed graph---------start------------------------------------------------------
 /**
@@ -298,8 +328,8 @@ var loadinit = function() {
 	/**
 	 * 
 	 */
-	//d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {
-	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
+	d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {
+	//d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
 		remoteActionObj = data;
 		$.each(data, function(k, v) {
 			var temp = k;

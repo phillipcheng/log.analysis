@@ -6,7 +6,8 @@
 	border: 1px solid rgb(155, 155, 155);
 	background: #FFF;
 	z-index: 1;
-	opacity: 0.5;
+	opacity: 0.9;
+	display: none;
 }
 
 .dataSetG {}
@@ -17,17 +18,17 @@
 	stroke-width: 1;
 }
 
-#divleftdatasetproperty{
+#divleftdatasetproperty {
 	position: absolute;
-	left:270px;
-	top:2px;
+	left: 270px;
+	top: 2px;
 	width: 297px;
 	height: 350px;
 	border: 1px solid rgb(155, 155, 155);
 	display: none;
 }
 
-#datasetcssheader {
+/*#datasetcssheader {
 	width: 297px;
 	height: 30px;
 	background: #e9e9e9;
@@ -35,13 +36,27 @@
 	padding: 10px;
 	font-size: 14pt;
 	font-family: 'Roboto', sans-serif;
-}
+	vertical-align: middle;
+}*/
 
 .propertycssbody {
-	height: 90%;
+	background: white;
 }
 
+.divdatanode {
+	position: absolute;
+	width: 297px;
+	height: 200px;
+	border: 1px solid rgb(155, 155, 155);
+	z-index: 10;
+	display: block;
+}
 
-/* .panel-tool-close{
+.divdatanodebody{
+	background: white;
+}
+
+.imgclose{
+	text-decoration: none;
 	background: url(../img/panel_tools.png) no-repeat -16px 0px;
-} */
+}
