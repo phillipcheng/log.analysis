@@ -237,7 +237,8 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
 				for (int i=start; i<lines.length; i++){
 					String line = lines[i];
-					output.addAll(flatMapToPair(pathName, line, context));
+					List<Tuple2<String, String>> ret = flatMapToPair(pathName, line, context);
+					if (ret!=null) output.addAll(ret);
 				}
 				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, output);
 			}else{
