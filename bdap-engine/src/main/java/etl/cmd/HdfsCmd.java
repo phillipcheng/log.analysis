@@ -19,8 +19,8 @@ public class HdfsCmd extends ETLCmd{
 	
 	//cfgkey
 	public static final String cfgkey_rm_folders = "rm.folders";
-	public static final String cfgkey_mv_from = "rm.from";
-	public static final String cfgkey_mv_to = "rm.to";
+	public static final String cfgkey_mv_from = "mv.from";
+	public static final String cfgkey_mv_to = "mv.to";
 	
 	private String[] rmFolders;
 	private String[] mvFrom;
