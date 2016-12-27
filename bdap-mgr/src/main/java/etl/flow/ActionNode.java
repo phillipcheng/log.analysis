@@ -20,7 +20,7 @@ public class ActionNode extends Node{
 	
 	public static List<String> sysProperties = null;
 	
-	private Map<String, String> properties = new LinkedHashMap<String, String>();//preserving the insertion order
+	private Map<String, Object> properties = new LinkedHashMap<String, Object>();//preserving the insertion order
 	private List<String> addArgs = new ArrayList<String>();//additional list of arguments
 	
 	public ActionNode(){
@@ -71,8 +71,8 @@ public class ActionNode extends Node{
 	}
 	
 	@JsonIgnore
-	public LinkedHashMap<String, String> getUserProperties(){
-		LinkedHashMap<String, String> userProperties = new LinkedHashMap<String, String>();
+	public LinkedHashMap<String, Object> getUserProperties(){
+		LinkedHashMap<String, Object> userProperties = new LinkedHashMap<String, Object>();
 		for (String key: properties.keySet()){
 			if (!getSysProperties().contains(key)){
 				userProperties.put(key, properties.get(key));
@@ -81,19 +81,19 @@ public class ActionNode extends Node{
 		return userProperties;
 	}
 
-	public String getProperty(String key){
+	public Object getProperty(String key){
 		return properties.get(key);
 	}
 	@JsonAnySetter
-	public void putProperty(String key, String value){
+	public void putProperty(String key, Object value){
 		properties.put(key, value);
 	}
 	@JsonAnyGetter
-	public Map<String, String> getProperties() {
+	public Map<String, Object> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(Map<String, String> properties) {
+	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
 	}
 
