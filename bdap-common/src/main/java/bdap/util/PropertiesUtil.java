@@ -5,14 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -22,11 +20,19 @@ import org.apache.logging.log4j.Logger;
 public class PropertiesUtil {
 	public static final Logger logger = LogManager.getLogger(PropertiesUtil.class);
 	
-	public static byte[] getPropertyFileContent(LinkedHashMap<String, String> props){
+	public static byte[] getPropertyFileContent(LinkedHashMap<String, Object> props){
 		StringBuffer sb = new StringBuffer();
+		String str;
 		for (String key: props.keySet()){
-			String str = String.format("%s=%s", key, props.get(key));
-			sb.append(str).append("\n");
+			if (props.get(key) instanceof List) {
+				for (String value: (List<String>)props.get(key)) {
+					str = String.format("%s=%s", key, value);
+					sb.append(str).append("\n");
+				}
+			} else {
+				str = String.format("%s=%s", key, props.get(key));
+				sb.append(str).append("\n");
+			}
 		}
 		return sb.toString().getBytes();
 	}
