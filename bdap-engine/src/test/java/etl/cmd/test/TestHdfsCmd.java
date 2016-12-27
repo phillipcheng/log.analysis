@@ -71,6 +71,11 @@ public class TestHdfsCmd extends TestETLCmd{
 		for (String f:fromFiles){
 			getFs().copyFromLocalFile(new Path(this.getLocalFolder()+"abc.txt"), new Path(f));
 		}
+		for (String f:toFiles){
+			if (getFs().exists(new Path(f))){
+				getFs().delete(new Path(f), true);
+			}
+		}
 		cmd.sgProcess();
 		//assertion
 		for (String f:fromFiles){
@@ -78,6 +83,27 @@ public class TestHdfsCmd extends TestETLCmd{
 		}
 		for (String f:toFiles){
 			assertTrue(getFs().exists(new Path(f)));
+		}
+	}
+	
+	@Test
+	public void testMkdir() throws Exception{
+		String wfName = "wfName";
+		String wfId = "wfid";
+		String cfg = "hdfsMkdir.properties";
+		
+		HdfsCmd cmd = new HdfsCmd(wfName, wfId, this.getResourceSubFolder() + cfg, null, super.getDefaultFS(), null);
+		String[] mkdirFolders = cmd.getMkdirFolders();
+		for (String f:mkdirFolders){
+			if (getFs().exists(new Path(f))){
+				getFs().delete(new Path(f), true);
+			}
+		}
+		cmd.sgProcess();
+		//assertion
+		for (String f:mkdirFolders){
+			getFs().exists(new Path(f));
+			//how to check permission //TODO
 		}
 	}
 }

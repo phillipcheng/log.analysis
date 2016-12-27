@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,10 +21,12 @@ public class HdfsCmd extends ETLCmd{
 	
 	//cfgkey
 	public static final String cfgkey_rm_folders = "rm.folders";
+	public static final String cfgkey_mkdir_folders = "mkdir.folders";
 	public static final String cfgkey_mv_from = "mv.from";
 	public static final String cfgkey_mv_to = "mv.to";
 	
 	private String[] rmFolders;
+	private String[] mkdirFolders;
 	private String[] mvFrom;
 	private String[] mvTo;
 	
@@ -50,6 +54,11 @@ public class HdfsCmd extends ETLCmd{
 		for (int i=0; i<rmFolderExps.length; i++){
 			rmFolders[i] = (String) ScriptEngineUtil.eval(rmFolderExps[i], VarType.STRING, super.getSystemVariables());
 		}
+		String[] mkdirFolderExps = super.getCfgStringArray(cfgkey_mkdir_folders);
+		mkdirFolders = new String[mkdirFolderExps.length];
+		for (int i=0; i<mkdirFolderExps.length; i++){
+			mkdirFolders[i] = (String) ScriptEngineUtil.eval(mkdirFolderExps[i], VarType.STRING, super.getSystemVariables());
+		}
 		String[] mvFromExps = super.getCfgStringArray(cfgkey_mv_from);
 		String[] mvToExps = super.getCfgStringArray(cfgkey_mv_to);
 		if (mvFromExps.length==mvToExps.length){
@@ -69,6 +78,10 @@ public class HdfsCmd extends ETLCmd{
 		try {
 			for (String rmFolder: rmFolders){
 				getFs().delete(new Path(rmFolder), true);
+			}
+			for (String mkdirFolder: mkdirFolders){
+				getFs().mkdirs(new Path(mkdirFolder));
+				getFs().setPermission(new Path(mkdirFolder), new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));
 			}
 			for (int i=0; i<mvFrom.length; i++){
 				getFs().rename(new Path(mvFrom[i]), new Path(mvTo[i]));
@@ -94,5 +107,13 @@ public class HdfsCmd extends ETLCmd{
 
 	public String[] getMvTo() {
 		return mvTo;
+	}
+
+	public String[] getMkdirFolders() {
+		return mkdirFolders;
+	}
+
+	public void setMkdirFolders(String[] mkdirFolders) {
+		this.mkdirFolders = mkdirFolders;
 	}
 }
