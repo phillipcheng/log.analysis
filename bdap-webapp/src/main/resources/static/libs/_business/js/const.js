@@ -66,6 +66,8 @@ var display_off_top = 0;
 
 var remoteActionObj = {};
 
+var CONST_DURATION =500;
+
 /**
  * 节点的进入数据
  * k:'节点ID',dsk:'',v:{name:'',dataName:''}

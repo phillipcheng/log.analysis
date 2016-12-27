@@ -1,0 +1,31 @@
+2016年12月26日session
+参与人员：chengyi/chenhuanzhang/yueximing/huangpeng
+
+会议纪要：
+chengyi记录：
+
+1.	Design time dataset using scrollable panel on the left, each dataset can expand and collapse
+2.	Design time, SVG action node can expand any 1 or more inlets, outlets, properties for view, and for edit panel, all use the panel on the upper right, only 1 active.
+3.	Runtime, after select the instance id, go into the runtime
+4.	In runtime we will go to all SVG mode if we have time, now if we do not have time, then display log in boxes, we need to display multiple in data and multiple out data at the same time.
+5.	For properties on the action node, only display properties has values.
+
+
+ximing记录：
+
+1、dataset可增加、删除
+2、dataset click不显示data数据，只是编辑属性，只要点击inlet/outlet point时，才显示data数据
+3、多个data information window 窗口位置不重叠
+4、data information title尽量小
+5、data file list做成select option,选中哪个，动态显示数据
+6、inlet/outlet point再大点
+7、same inlet/outlet画虚线（不管是否有上下游关系）
+8、data information name 可编辑
+9、dataset做成panel，list显示（折叠菜单，上面title, 下面properties），可展开显示多个，带有滚动条
+10、design state  log蓝点隐藏， run state log蓝点显示
+11、inlet/outlet属性可展开和折叠，同时可编辑
+12、properties属性、数据类型、校验规则都从后台取
+
+
+
+

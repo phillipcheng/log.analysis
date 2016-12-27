@@ -27,22 +27,26 @@ var interact = {
 		 * common function for Ajax get request.
 		 */
 		ajaxGet : function(requestURL, dataParam, errorTips){
+			var returnVal;
 			if(dataParam == undefined || dataParam == ""){
 				dataParam = {};
 			}
 			$.ajax({
                 type: "get",
+                async : false,
                 url: getAjaxAbsolutePath(requestURL),
                 data:dataParam,
                 success: function(data, textStatus){
 				  console.info(data);
-				  return data;
+				  returnVal = data;
+//				  return data;
                 },
                 error: function(e){
                 	console.info(e);
                 	//TODO popup errorTips
                 }
 			});
+			return returnVal;
 		},
 		
 		/**
@@ -104,6 +108,25 @@ var interact = {
 			return interact.ajaxGet(requestURL);
 		},
 		
+		/**
+		 * get all properties type/valuelist/rule and so on.
+		 */
+		getFlowSchema : function(){
+			var requestURL = "/dashview/{userName}/flow/schema";
+			return interact.ajaxGet(requestURL);
+		},
+		
+		/**
+		 * get Flow defined content by flowid.
+		 */
+		getFlow : function(flowId){
+			var requestURL = "/dashview/{userName}/flow/{flowId}";
+			if(flowId == undefined || flowId == "") {
+				return;
+			}
+			requestURL = requestURL.replace("{flowId}",flowId);
+			return interact.ajaxGet(requestURL);
+		}
 		
 		
 		

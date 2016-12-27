@@ -29,6 +29,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+
 import bdap.util.EngineConf;
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
@@ -75,6 +79,14 @@ public class FlowController {
 	private final AccountRepository accountRepository;
 	private final FlowMgr flowMgr;
 	private final FlowDeployer flowDeployer;
+	
+	@RequestMapping(value = "/schema", method = RequestMethod.GET)
+	JsonSchema getFlowSchema() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+		JsonSchema schema = schemaGen.generateSchema(Flow.class);
+	    return schema;
+	}
 
 	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
 	Map<String, List<String>> getActionNodeCommands() {

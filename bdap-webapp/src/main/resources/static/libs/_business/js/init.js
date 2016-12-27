@@ -259,3 +259,10 @@ var getAjaxAbsolutePath = function(relativePath) {
 	}
 	return httpPath;
 }
+
+var isEmpty = function(str) {
+	if(str == undefined || str == null || str == '') {
+		return true;
+	}
+	return false;
+}
