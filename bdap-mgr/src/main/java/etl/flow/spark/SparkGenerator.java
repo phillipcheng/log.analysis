@@ -94,7 +94,7 @@ public class SparkGenerator {
 		for (Node node:nodes){
 			if (node instanceof ActionNode){
 				ActionNode anode = (ActionNode)node;
-				String cmdClass = anode.getProperty(ActionNode.key_cmd_class);
+				String cmdClass = (String) anode.getProperty(ActionNode.key_cmd_class);
 				String propertyFileName = FlowMgr.getPropFileName(anode.getName());
 				String cmdVarName = anode.getName() + "Cmd";
 				//cmd declaration line
@@ -139,9 +139,13 @@ public class SparkGenerator {
 					logger.error(String.format("input:%s, output:%s pair on action:%s not supported.", inputDataType, outputDataType, anode.getName()));
 				}
 				if (inputDataType.equals(DataType.Path) || inputDataType.equals(DataType.KeyPath)){
-					inputFormat = "org.apache.hadoop.mapred.TextInputFormat";
+					inputFormat = "org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
 					if (inData.getDataFormat().equals(InputFormatType.XML)){
-						inputFormat = "etl.util.mapred.XmlInputFormat";
+						inputFormat = "etl.util.XmlInputFormat";
+					}else if (inData.getDataFormat().equals(InputFormatType.SequenceFile)){
+						inputFormat = "org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
+					}else if (inData.getDataFormat().equals(InputFormatType.FileName)){
+						inputFormat = "etl.util.FilenameInputFormat";
 					}
 				}
 				if (inputFormat==null){

@@ -33,12 +33,12 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 
 	public static final Logger logger = LogManager.getLogger(SampleXml2CsvCmd.class);
 	
-	private transient List<String> keyWithValue = Arrays.asList(new String[]{"PoolType"});
-	private transient List<String> keySkip = Arrays.asList(new String[]{"Machine","UUID","PoolId","PoolMember"});
-	private transient List<String> fileLvlSystemFieldNames = Arrays.asList(new String[]{"SubNetwork", "ManagedElement"});
-	private transient List<FieldType> fileLvlSystemFieldTypes = Arrays.asList(new FieldType[]{new FieldType(VarType.STRING, 70), new FieldType(VarType.STRING, 70)});
-	private transient List<String> tableLvlSystemFieldNames = Arrays.asList(new String[]{"endTime", "duration"});
-	private transient List<FieldType> tableLvlSystemFieldTypes = Arrays.asList(new FieldType[]{new FieldType(VarType.TIMESTAMP), new FieldType(VarType.STRING, 10)});
+	private transient List<String> keyWithValue = null;
+	private transient List<String> keySkip = null;
+	private transient List<String> fileLvlSystemFieldNames = null;
+	private transient List<FieldType> fileLvlSystemFieldTypes = null;
+	private transient List<String> tableLvlSystemFieldNames = null;
+	private transient List<FieldType> tableLvlSystemFieldTypes = null;
 	//
 	private transient XPathExpression fileLvlSystemAttrsXpath;//file level
 	private transient XPathExpression xpathExpTable;
@@ -51,9 +51,13 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 	
 	private transient Document doc;
 	private transient Node table;
-	private transient List<String> tableLvlSystemAttValues = new ArrayList<String>();
+	private transient List<String> tableLvlSystemAttValues = null;
 	private transient Map<String, String> localDnMap = null;
 
+	public SampleXml2CsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
 	public SampleXml2CsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
@@ -61,8 +65,16 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
+		keyWithValue = Arrays.asList(new String[]{"PoolType"});
+		keySkip = Arrays.asList(new String[]{"Machine","UUID","PoolId","PoolMember"});
+		fileLvlSystemFieldNames = Arrays.asList(new String[]{"SubNetwork", "ManagedElement"});
+		fileLvlSystemFieldTypes = Arrays.asList(new FieldType[]{new FieldType(VarType.STRING, 70), new FieldType(VarType.STRING, 70)});
+		tableLvlSystemFieldNames = Arrays.asList(new String[]{"endTime", "duration"});
+		tableLvlSystemFieldTypes = Arrays.asList(new FieldType[]{new FieldType(VarType.TIMESTAMP), new FieldType(VarType.STRING, 10)});
+		
 		XPathFactory xPathfactory = XPathFactory.newInstance();
 		XPath xpath = xPathfactory.newXPath();
+		tableLvlSystemAttValues = new ArrayList<String>();
 		try {
 			fileLvlSystemAttrsXpath = xpath.compile("/measCollecFile/fileHeader/fileSender/@localDn");
 			xpathExpTableSystemAttrs = new XPathExpression[]{xpath.compile("./granPeriod/@endTime"), xpath.compile("./granPeriod/@duration")};

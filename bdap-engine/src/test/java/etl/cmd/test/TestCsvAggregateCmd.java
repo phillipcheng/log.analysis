@@ -2,24 +2,23 @@ package etl.cmd.test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Assert;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
-import etl.spark.SparkUtil;
 import etl.util.GroupFun;
+import scala.Tuple2;
 
 public class TestCsvAggregateCmd extends TestETLCmd {
 	private static final long serialVersionUID = 1L;
@@ -61,16 +60,9 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String schemaFile = "om_map_merged.schema";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
 		
-		List<String> output = null;
-		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
-		JavaSparkContext jsc = new JavaSparkContext(conf);
-		try {
-			JavaPairRDD<String, String> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
-					TextInputFormat.class, jsc);
-			output = SparkUtil.getValues(ret);
-		}finally{
-			jsc.close();
-		}
+		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
+				etl.cmd.CsvAggregateCmd.class, TextInputFormat.class);
+		List<String> output = ret._2;
 		//assertion
 		logger.info("Output is:\n"+String.join("\n", output));
 		assertEquals(4, output.size());
@@ -103,18 +95,14 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String csvtransProp = "NoSchemaSum.properties";
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
-		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
-		JavaSparkContext jsc = new JavaSparkContext(conf);
-		List<String> output = null;
-		try {
-			JavaPairRDD<String, String> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
-					TextInputFormat.class, jsc);
-			ret = SparkUtil.flip(ret).sortByKey();
-			output = SparkUtil.getKeys(ret);
-		}finally{
-			jsc.close();
-		}
+		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
+				TextInputFormat.class);
+		List<String> values = ret._2;
+		ArrayList<String> output = new ArrayList<String>();
+		output.addAll(values);
+		Collections.sort(output);
 		logger.info("Output is:\n"+ String.join("\n", output));
+		
 		// assertion
 		assertTrue(output.size() ==12);
 		String sampleOutput = output.get(6);
@@ -181,7 +169,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		assertTrue(output.size()==4);
 	}
 	
-	@Test //TODO
+	@Test
 	public void mergeIntoOneTable() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -223,7 +211,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		assertTrue("1.0".equals(csvs[0]));
 	}
 	
-	@Test //TODO
+	@Test
 	public void mergeIntoMultiple() throws Exception {
 		String remoteCsvFolder = "/etltest/csvaggr/";
 		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
@@ -326,7 +314,6 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String expectedNames = "[endTimeHour, endTimeDay, duration, SubNetwork, ManagedElement, Machine, MyCoreA_VS.avePerCoreCpuUsage, "
 				+ "MyCoreA_VS.peakPerCoreCpuUsage, MyCoreZ_MyCore, MyCoreZ_VS.avePerCoreCpuUsage, MyCoreZ_VS.peakPerCoreCpuUsage]";
 		assertTrue(expectedNames.equals(mergeAttrNames.toString()));
-		
 	}
 	
 }

@@ -174,6 +174,7 @@ public class SftpUtil {
 		try {
 			// connect
 			session = getSession(ftpInfo.ip, ftpInfo.port, ftpInfo.user, ftpInfo.passwd);
+			sftpFromLocal(session, localFile, remoteFile);
 			
 		} catch (Exception e) {
 			logger.error("Exception while processing SFTP:", e);

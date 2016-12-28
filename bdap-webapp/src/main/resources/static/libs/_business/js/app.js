@@ -1,7 +1,17 @@
 var app = {
-	start: function() {
+	/**
+	 * mainkey is main key. 
+	 * if key is null, it will generate a new key.
+	 * when load action, it will put the parameter.
+	 * mainkey is only used by load flow.
+	 * 
+	 */
+	start: function(mainkey) {
 		nodeIndex++;
 		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
+		if(!isEmpty(mainkey)){
+			temp_g = mainkey;
+		}
 		nodeArgs.push({
 			k: temp_g,
 			vmax: {
@@ -32,9 +42,19 @@ var app = {
 		setPropertySelf(temp_g, propertyObj, 4);
 		_base._build();
 	},
-	end: function() {
+	/**
+	 * mainkey is main key. 
+	 * if key is null, it will generate a new key.
+	 * when load action, it will put the parameter.
+	 * mainkey is only used by load flow.
+	 * 
+	 */
+	end: function(mainkey) {
 		nodeIndex++;
 		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
+		if(!isEmpty(mainkey)){
+			temp_g = mainkey;
+		}
 		nodeArgs.push({
 			k: temp_g,
 			vmax: {
@@ -64,9 +84,19 @@ var app = {
 		setPropertySelf(temp_g, propertyObj, 4);
 		_base._build();
 	},
-	action: function(jsonObj) {
+	/**
+	 * mainkey is main key. 
+	 * if key is null, it will generate a new key.
+	 * when load action, it will put the parameter.
+	 * mainkey is only used by load flow.
+	 * 
+	 */
+	action: function(jsonObj, mainkey) {
 		nodeIndex++;
 		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
+		if(!isEmpty(mainkey)){
+			temp_g = mainkey;
+		}
 		nodeArgs.push({
 			k: temp_g,
 			vmax: {

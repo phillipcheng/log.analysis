@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -22,8 +23,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
@@ -212,8 +213,6 @@ public abstract class TestETLCmd implements Serializable{
 		
 		FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 		job.waitForCompletion(true);
-
-		// assertion
 		List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
 		return output;
 		
@@ -243,22 +242,45 @@ public abstract class TestETLCmd implements Serializable{
 	}
 	
 	//spark test for cmd
-	public JavaPairRDD<String, String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
-			String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass, JavaSparkContext jsc) throws Exception{
-		List<String> inputPaths = new ArrayList<String>();
-		for (String inputFile : inputDataFiles) {
-			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + inputFile), new Path(remoteInputFolder + inputFile));
-			inputPaths.add(remoteInputFolder + inputFile);
+	//spark test for cmd
+	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null);
+	}
+	
+	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+			String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass, 
+			Map<String, String> addConf) throws Exception{
+		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
+		JavaSparkContext jsc = new JavaSparkContext(conf);
+		try {
+			getFs().delete(new Path(remoteInputFolder), true);
+			List<String> inputPaths = new ArrayList<String>();
+			for (String inputFile : inputDataFiles) {
+				getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + inputFile), new Path(remoteInputFolder + inputFile));
+				inputPaths.add(remoteInputFolder + inputFile);
+			}
+			if (inputFormatClass == FilenameInputFormat.class){
+				inputPaths.clear();
+				inputPaths.add(remoteInputFolder);
+			}
+			Constructor<? extends ETLCmd> constr = cmdClass.getConstructor(String.class, String.class, String.class, String.class, String[].class);
+			String cfgProperties = cmdProperties;
+			if (this.getResourceSubFolder()!=null){
+				cfgProperties = this.getResourceSubFolder() + cmdProperties;
+			}
+			String wfName = "wfName";
+			ETLCmd cmd = constr.newInstance(wfName, "wfId", cfgProperties, this.getDefaultFS(), null);
+			if (addConf!=null){
+				cmd.copyConf(addConf);
+			}
+			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass);
+			List<String> keys = result.keys().collect();
+			List<String> values = result.values().collect();
+			return new Tuple2<List<String>, List<String>>(keys, values);
+		}finally{
+			jsc.close();
 		}
-		Constructor<? extends ETLCmd> constr = cmdClass.getConstructor(String.class, String.class, String.class, String.class, String[].class);
-		String cfgProperties = cmdProperties;
-		if (this.getResourceSubFolder()!=null){
-			cfgProperties = this.getResourceSubFolder() + cmdProperties;
-		}
-		String wfName = "wfName";
-		ETLCmd cmd = constr.newInstance(wfName, "wfId", cfgProperties, this.getDefaultFS(), null);
-		JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass);
-		return result;
 	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 
