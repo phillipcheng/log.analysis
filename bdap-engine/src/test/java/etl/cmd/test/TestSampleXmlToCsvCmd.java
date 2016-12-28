@@ -3,7 +3,9 @@ package etl.cmd.test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
@@ -16,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class TestSampleXmlToCsvCmd extends TestETLCmd{
+	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(TestSampleXmlToCsvCmd.class);
 	
@@ -62,6 +65,38 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		assertTrue(contents.size()==14);
 		
 		String firstLine = contents.get(0);
+		String[] fields = firstLine.split(",", -1);
+		assertTrue(fields.length==9);
+	}
+	
+	@Test
+	public void test1Spark() throws Exception{
+		//
+		String inputFolder = "/test/xml2csv/input/";
+		String schemaFolder="/test/xml2csv/schema/";
+		
+		String staticCfgName = "xml2csv1.properties";
+		String[] inputFiles = new String[]{"dynschema_test1_data.xml"};
+		String localSchemaFile = "dynschema_test1_schemas.txt";
+		String remoteSchemaFile = "schemas.txt";
+		
+		//schema
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFile), new Path(schemaFolder + remoteSchemaFile));
+		
+		Map<String, String> addConf = new HashMap<String, String>();
+		addConf.put("xmlinput.start", "<measInfo>");
+		addConf.put("xmlinput.end", "</measInfo>");
+		addConf.put("xmlinput.row.start", "<measValue");
+		addConf.put("xmlinput.row.end", "</measValue>");
+		addConf.put("xmlinput.row.max.number", "3");
+	
+		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, 
+				etl.cmd.testcmd.SampleXml2CsvCmd.class, etl.util.XmlInputFormat.class, addConf);
+		List<String> output = ret._2;
+		logger.info(String.format("output:\n%s", String.join("\n", output)));
+		//check results
+		assertTrue(output.size()==14);
+		String firstLine = output.get(0);
 		String[] fields = firstLine.split(",", -1);
 		assertTrue(fields.length==9);
 	}

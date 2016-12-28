@@ -54,7 +54,6 @@ public abstract class SchemaETLCmd extends ETLCmd{
 
 	//cfgkey
 	public static final String cfgkey_schema_file="schema.file";
-	public static final String cfgkey_file_table_map="file.table.map";
 	public static final String cfgkey_create_sql="create.sql";
 	public static final String cfgkey_db_prefix="db.prefix"; //db schema
 	public static final String cfgkey_db_type="db.type";
@@ -72,8 +71,6 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	protected String dbPrefix;
 	protected LogicSchema logicSchema;
 	protected String createTablesSqlFileName;
-	protected String strFileTableMap;
-	protected transient CompiledScript expFileTableMap;
 	protected OutputType outputType = OutputType.multiple;
 	
 	private DBType dbtype = DBType.NONE;
@@ -131,12 +128,6 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		this.getSystemVariables().put(VAR_DB_TYPE, strDbType);
 		if (strDbType!=null){
 			dbtype = DBType.fromValue(strDbType);
-		}
-		strFileTableMap = super.getCfgString(cfgkey_file_table_map, null);
-		logger.info(String.format("fileTableMap:%s", strFileTableMap));
-		if (strFileTableMap!=null){
-			expFileTableMap = ScriptEngineUtil.compileScript(strFileTableMap);
-			logger.info(String.format("fileTableMapExp:%s", expFileTableMap));
 		}
 		String strOutputType = super.getCfgString(cfgkey_output_type, null);
 		if (strOutputType!=null){
@@ -513,18 +504,6 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	@Override
 	public String mapKey(String key){
 		return getTableNameSetFileName(key);
-	}
-	
-	public String getTableNameSetFileName(String pathName){
-		getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		int lastSep = pathName.lastIndexOf("/");
-		String fileName = pathName.substring(lastSep+1);
-		getSystemVariables().put(VAR_NAME_FILE_NAME, fileName);
-		if (expFileTableMap!=null){
-			return ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
-		}else{
-			return pathName;
-		}
 	}
 	
 	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){

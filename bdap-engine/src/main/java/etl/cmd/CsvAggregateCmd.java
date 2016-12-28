@@ -22,11 +22,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.PairFunction;
-
 import bdap.util.Util;
 
 import etl.cmd.transform.AggrOp;
@@ -356,13 +351,13 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	}
 
 	/**
-	 * 
 	 * @param tableName: oldTableName or empty
 	 * @param value : tableKey.aggrKeys,aggrValues
 	 * @param context
 	 * @return
 	 */
-	private List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
+	@Override
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		
 		if (inputEndWithComma){
@@ -611,16 +606,14 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		return fieldValues;
 	}
 	
-	private List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it){
+	@Override
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
 		super.init();
 		/*
 		* key= newtablename,expKey1,expKey2,...commonkey1,commonkey2...
 		* value array=[oldtablename1, {raw data}] , [oldtablename2, {raw data}]....
 		*/
-		
-		if(key.contains("PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00")){
-			System.out.println("entry");
-		}
 		String[] kl = key.toString().split(KEY_SEP, -1);
 		String tableName = kl[0];
 		List<String> ks = new ArrayList<String>();
@@ -656,7 +649,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 					retList.add(new Tuple3<String, String, String>(Util.getCsv(record, false),null,newTableName));
 				}
 			}
-			
 			return retList;
 		}else{
 			int grpIdx = Arrays.asList(newTables).indexOf(tableName);
@@ -770,38 +762,11 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		while (vit.hasNext()){
 			svalues.add(vit.next().toString());
 		}
-		List<Tuple3<String, String, String>> retList = reduceByKey(key.toString(), svalues);
-		List<String[]> retStringlist = new ArrayList<String[]>();
-		for(Tuple3<String, String, String> ret:retList){
-			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
-		}		
-		return retStringlist;
-	}
-	
-	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-				List<Tuple2<String, String>> ret = flatMapToPair(t._1, t._2, null);
-				return ret.iterator();
-			}
-		});
-		
-		JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().flatMapToPair(new PairFlatMapFunction<Tuple2<String, Iterable<String>>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Iterator<Tuple2<String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
-				List<Tuple3<String, String, String>> t3l = reduceByKey(t._1, t._2);
-				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
-				for (Tuple3<String, String, String> t3:t3l){
-					ret.add(new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2()));
-				}
-				return ret.iterator();
-			}
-		});
-		return csvaggr;
-		
+		List<String[]> ret = new ArrayList<String[]>();	
+		List<Tuple3<String, String, String>> output = reduceByKey(key.toString(), svalues, context, mos);
+		for (Tuple3<String, String, String> t: output){
+			ret.add(new String[]{t._1(), t._2(), t._3()});
+		}
+		return ret;
 	}
 }
