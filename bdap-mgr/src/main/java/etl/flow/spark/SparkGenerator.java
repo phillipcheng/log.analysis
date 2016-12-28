@@ -94,7 +94,7 @@ public class SparkGenerator {
 		for (Node node:nodes){
 			if (node instanceof ActionNode){
 				ActionNode anode = (ActionNode)node;
-				String cmdClass = anode.getProperty(ActionNode.key_cmd_class);
+				String cmdClass = (String) anode.getProperty(ActionNode.key_cmd_class);
 				String propertyFileName = FlowMgr.getPropFileName(anode.getName());
 				String cmdVarName = anode.getName() + "Cmd";
 				//cmd declaration line

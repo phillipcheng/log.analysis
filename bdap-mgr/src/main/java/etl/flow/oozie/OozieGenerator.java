@@ -94,7 +94,7 @@ public class OozieGenerator {
 	
 	private static ETLCmd getCmd(ActionNode an) {
 		try{
-			String cmdClazz = an.getProperties().get(ActionNode.key_cmd_class);
+			String cmdClazz = (String) an.getProperties().get(ActionNode.key_cmd_class);
 			return (ETLCmd) Class.forName(cmdClazz).newInstance();
 		}catch(Exception e){
 			logger.error("", e);
@@ -254,7 +254,7 @@ public class OozieGenerator {
 		ja.setJobTracker(jobTrackValue);
 		ja.setNameNode(nameNodeValue);
 		ja.setMainClass(EngineConf.etlcmd_main_class);
-		ja.getArg().add(an.getProperty(ActionNode.key_cmd_class));
+		ja.getArg().add((String) an.getProperty(ActionNode.key_cmd_class));
 		ja.getArg().add(flow.getName());
 		if (!hasInstanceId){
 			ja.getArg().add(wfid);	
@@ -433,7 +433,7 @@ public class OozieGenerator {
 				//gen node
 				if (node instanceof ActionNode){
 					ActionNode an = (ActionNode)node;
-					ExeType exeType = ExeType.valueOf(an.getProperty(ActionNode.key_exe_type));
+					ExeType exeType = ExeType.valueOf((String) an.getProperty(ActionNode.key_exe_type));
 					if (exeType==ExeType.mr){
 						act.setMapReduce(genMRAction(flow, an, hasInstanceId));
 					}else if (exeType==ExeType.java){
