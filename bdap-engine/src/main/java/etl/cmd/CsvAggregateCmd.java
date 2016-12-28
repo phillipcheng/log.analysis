@@ -36,6 +36,10 @@ import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
 import scala.Tuple3;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.api.java.function.PairFunction;
 
 public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
@@ -55,7 +59,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	public static final String cfgkey_aggr_new_table="new.table";
 	
 	public static final String cfgkey_join_type="join.type";
-	public static final String cfgkey_groupkey_output="groupkey.output";
+	public static final String cfgkey_groupkey_output_flag="groupkey.output.flag";
 	
 	private boolean inputEndWithComma=false;
 	private int oldTableCnt=0;
@@ -66,10 +70,11 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	private transient Map<String, AggrOps> aoMapMap; //old table name to AggrOps
 	private transient Map<String, GroupOp> groupKeysMap; //old table name to groupOp
 	
-	private boolean mergeTable = false;
-	
+	private boolean mergeTable = false;	
 	private String joinType="outer";
-	private boolean groupKeyOutput=true;
+	
+	//new table/single table: flag of each group key
+	private transient Map<String,List<Boolean>> groupKeyOutputFlagMap=new HashMap<String, List<Boolean>>();
 	
 	private GroupOp getGroupOp(String keyPrefix){
 		String groupKey = keyPrefix==null? cfgkey_aggr_groupkey:keyPrefix+"."+cfgkey_aggr_groupkey;
@@ -89,6 +94,21 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			}
 		}
 		return new GroupOp(groupKeyExpNames, groupKeyExpTypes, groupKeyExps, groupKeyExpScripts, commonGroupKeys);
+	}
+	
+	private List<Boolean> getGroupKeyOutputFlag(String keyPrefix){
+		List<Boolean> groupKeyOutputFlagList=new ArrayList<Boolean>();
+		
+		String gouupKeyOutputFlagKey = keyPrefix==null? cfgkey_groupkey_output_flag: keyPrefix+"."+cfgkey_groupkey_output_flag;
+		String[] groupKeyOutputFlags=super.getCfgStringArray(gouupKeyOutputFlagKey);
+		
+		if(groupKeyOutputFlags!=null && groupKeyOutputFlags.length>0){
+			for(String flag:groupKeyOutputFlags){
+				groupKeyOutputFlagList.add(Boolean.parseBoolean(flag));
+			}
+		}
+		
+		return groupKeyOutputFlagList;
 	}
 	
 	public CsvAggregateCmd(){
@@ -126,10 +146,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		}
 		if (super.cfgContainsKey(cfgkey_join_type)){
 			this.joinType=super.getCfgString(cfgkey_join_type, "outer");
-		}
-		
-		if(super.cfgContainsKey(cfgkey_groupkey_output)){
-			this.groupKeyOutput=super.getCfgBoolean(cfgkey_groupkey_output, true);
 		}
 		
 		if (oldTables==null){//not using schema
@@ -172,6 +188,19 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				}
 			}
 		}
+		
+		if(newTables==null){
+			//Get the output flag, which set on the new table only.
+			List<Boolean> groupKeyOutputFlag=getGroupKeyOutputFlag(null);
+			groupKeyOutputFlagMap.put(SINGLE_TABLE, groupKeyOutputFlag);
+		}else{
+			for(String newTable:newTables){
+				//Get the output flag for each new table
+				List<Boolean> groupKeyOutputFlag=getGroupKeyOutputFlag(newTable);
+				groupKeyOutputFlagMap.put(newTable, groupKeyOutputFlag);
+			}
+		}
+		
 		this.mergeTable = oldnewTableMap!=null && this.oldTableCnt>this.newTables.length;
 		if (oldTables!=null){
 			unSortedOldTables=new String[oldTables.length][];
@@ -358,15 +387,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	 */
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
-		super.init();
-		
-		if (inputEndWithComma){
-			value = value.trim();
-			if (value.endsWith(",")){
-				value = value.replaceAll(",$", "");
-			}
-		}
-		
+		super.init();		
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
 			String row = value.toString();
@@ -437,8 +458,13 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		if (skipHeader && offset==0) {
 			logger.info("skip header:" + row);
 			return null;
-		}
-		
+		}		
+		if (inputEndWithComma){
+			row = row.trim();
+			if (row.endsWith(",")){
+				row = row.replaceAll(",$", "");
+			}
+		}		
 		try {
 			String tableName = getTableNameSetFileNameByContext(context);
 			logger.debug(String.format("in map tableName:%s", tableName));
@@ -606,21 +632,43 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		return fieldValues;
 	}
 	
-	@Override
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
+	//it will select the group key as output by the flags, by default each key will be output unless it's flag set as false
+	private List<String> selectGroupKeys(String newTableName,List<String> keys){
+		List<String> newKeys=new ArrayList<String>();
+		
+		List<Boolean> flags=groupKeyOutputFlagMap.get(newTableName);
+		if(flags==null || flags.size()==0){ //by default, output all keys
+			newKeys.addAll(keys);
+		}else{
+			int i=0;
+			for(i=0;i<keys.size();i++){
+				if(i<flags.size()){
+					if(flags.get(i)==true){
+						newKeys.add(keys.get(i));
+					}
+				}else{
+					//it will output the key if no flag set
+					newKeys.add(keys.get(i));
+				}
+			}
+		}		
+		return newKeys;
+	}
+	
+	private List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it){
 		super.init();
 		/*
 		* key= newtablename,expKey1,expKey2,...commonkey1,commonkey2...
 		* value array=[oldtablename1, {raw data}] , [oldtablename2, {raw data}]....
 		*/
+		
 		String[] kl = key.toString().split(KEY_SEP, -1);
 		String tableName = kl[0];
 		List<String> ks = new ArrayList<String>();
 		for (int i=1; i<kl.length; i++){
 			ks.add(kl[i]);
 		}
-		String newKey = String.join(KEY_SEP, ks);
+		
 		if (!mergeTable){
 			List<CSVRecord> rl = new ArrayList<CSVRecord>();
 			Iterator<String> its = it.iterator();
@@ -635,19 +683,21 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				}
 			}
 			String newTableName = tableName;
+			
+			//TODO: still need following code? as if mergeTable is false, looks oldNetTableMap won't have it.
 			if (oldnewTableMap!=null && oldnewTableMap.containsKey(tableName)){
 				newTableName = oldnewTableMap.get(tableName).get(0);
 			}
+			
+			//Select group keys
+			ks=selectGroupKeys(newTableName,ks);
+			String newKey = String.join(KEY_SEP, ks);
 			
 			List<Tuple3<String, String, String>> retList=new ArrayList<Tuple3<String, String, String>>();
 			
 			List<List<String>> records=getAggrValues(tableName, rl);
 			for(List<String> record:records){
-				if(this.groupKeyOutput==true){
-					retList.add(new Tuple3<String, String, String>(newKey,Util.getCsv(record, false),newTableName));
-				}else{
-					retList.add(new Tuple3<String, String, String>(Util.getCsv(record, false),null,newTableName));
-				}
+				retList.add(new Tuple3<String, String, String>(newKey,Util.getCsv(record, false),newTableName));
 			}
 			return retList;
 		}else{
@@ -725,6 +775,10 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				}
 			}
 			
+			//Select group keys
+			ks=selectGroupKeys(tableName,ks);
+			String newKey = String.join(KEY_SEP, ks);
+			
 			//output join result						
 			for(int rowNum=0;rowNum<rows;rowNum++){
 				List<String> fieldValues = new ArrayList<String>();
@@ -742,12 +796,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 					}
 				}
 				
-				if(groupKeyOutput==false){
-					retList.add(new Tuple3<String, String, String>(Util.getCsv(fieldValues, false),null,newTables[grpIdx]));
-				}else{
-					retList.add(new Tuple3<String, String, String>(newKey,Util.getCsv(fieldValues, false),newTables[grpIdx]));
-				}
-				
+				retList.add(new Tuple3<String, String, String>(newKey,Util.getCsv(fieldValues, false),newTables[grpIdx]));				
 			}			
 			
 			return retList;
@@ -762,11 +811,39 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		while (vit.hasNext()){
 			svalues.add(vit.next().toString());
 		}
-		List<String[]> ret = new ArrayList<String[]>();	
-		List<Tuple3<String, String, String>> output = reduceByKey(key.toString(), svalues, context, mos);
-		for (Tuple3<String, String, String> t: output){
-			ret.add(new String[]{t._1(), t._2(), t._3()});
-		}
-		return ret;
+		List<Tuple3<String, String, String>> retList = reduceByKey(key.toString(), svalues);
+		List<String[]> retStringlist = new ArrayList<String[]>();
+		for(Tuple3<String, String, String> ret:retList){
+			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
+		}		
+		return retStringlist;
+	}
+	
+	@Override
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
+				List<Tuple2<String, String>> ret = flatMapToPair(t._1, t._2, null);
+				return ret.iterator();
+			}
+		});
+		
+		JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				//FIXME
+				/*
+				Tuple3<String, String, String> t3 = reduceByKey(t._1, t._2);
+				return new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2());
+				*/
+				return null;
+			}
+		});
+		
+		return csvaggr;
+		
 	}
 }
