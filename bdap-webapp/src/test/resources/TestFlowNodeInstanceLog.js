@@ -1,4 +1,4 @@
-var wsUri = "ws://127.0.0.1/dashview/ws/player/flow/instances/0000000-161227082021478-oozie-play-W/nodes/sftp/log";
+var wsUri = "ws://127.0.0.1/dashview/ws/dbadmin/flow/instances/0000000-161227082021478-oozie-play-W/nodes/sftp/log";
   var i = 0;
   var closed = false;
 
@@ -31,7 +31,7 @@ var wsUri = "ws://127.0.0.1/dashview/ws/player/flow/instances/0000000-1612270820
     if (i > 0) {
     	websocket.close();
     } else {
-	    doSend("{\"filePath\": \"/project1/logs/0000000-161227082021478-oozie-play-W/container_1482793884481_0001_01_000001/job_1482793884481_0001/player/stderr\", \"startLine\": 10, \"endLine\": 20}");
+	    doSend("{\"filePath\": \"/project1/logs/0000000-161227082021478-oozie-play-W/container_1482793884481_0001_01_000001/job_1482793884481_0001/dbadmin/stderr\", \"startLine\": 10, \"endLine\": 20}");
 	    i++;
     }
   }

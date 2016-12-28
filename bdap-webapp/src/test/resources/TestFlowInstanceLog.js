@@ -1,4 +1,4 @@
-var wsUri = "ws://127.0.0.1/dashview/ws/player/flow/instances/0000000-161227082021478-oozie-play-W/log";
+var wsUri = "ws://127.0.0.1/dashview/ws/dbadmin/flow/instances/0000000-161227082021478-oozie-play-W/log";
   var i = 0;
   var closed = false;
 

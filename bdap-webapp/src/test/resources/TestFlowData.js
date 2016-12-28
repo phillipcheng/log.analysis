@@ -1,4 +1,4 @@
-var wsUri = "ws://127.0.0.1/dashview/ws/player/flow/flow1_oozie/data/sftp.map";
+var wsUri = "ws://127.0.0.1/dashview/ws/dbadmin/flow/flow1_oozie/data/sftp.map";
   var i = 0;
   var closed = false;
 
