@@ -32,6 +32,8 @@
 
 		<script type="text/javascript" src="../libs/_business/js/dataset.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/dywindow.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/interact.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/load.js"></script>
 	</head>
 
 	<body onload="loadinit()" oncontextmenu="return false">
@@ -46,6 +48,9 @@
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild();">loadFlow</a>
+						</li>
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSet();">dataSet</a>
 						</li>
