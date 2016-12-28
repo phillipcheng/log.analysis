@@ -14,13 +14,11 @@ import javax.websocket.server.ServerEndpoint;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Component;
 
 import bdap.util.JsonUtil;
 
 
 @ServerEndpoint(value = "/websocket")
-@Component
 public class WebSocketManager {
 	public static final Logger logger = LogManager.getLogger(WebSocketManager.class);
 	//concurrent is safe thread, to save each connection.
@@ -60,7 +58,7 @@ public class WebSocketManager {
      * @param session
      */
     @OnMessage
-    public void onMessage(String message, Session session) {
+    public void onMessage(Session session, String message) throws IOException {
     	logger.info(message);
     	try {
 			this.sendMessage(message);
