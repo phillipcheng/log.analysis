@@ -1,8 +1,6 @@
 package dv.ws;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.websocket.OnClose;
@@ -15,12 +13,10 @@ import javax.websocket.server.ServerEndpoint;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import bdap.util.JsonUtil;
-
-
-@ServerEndpoint(value = "/websocket")
-public class WebSocketManager {
+@ServerEndpoint(value = "/ws/{userName}/flow/instances/{instanceId}", configurator = SpringEndpointConfigurator.class)
+public class WebSocketManager extends WebSocketServerEndpoint {
 	public static final Logger logger = LogManager.getLogger(WebSocketManager.class);
+	private static final String INSTANCE_ID = "FlowInstanceId";
 	//concurrent is safe thread, to save each connection.
     private static CopyOnWriteArraySet<WebSocketManager> webSocketSet = new CopyOnWriteArraySet<WebSocketManager>();
     //session, send messages by it.
@@ -33,13 +29,23 @@ public class WebSocketManager {
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
+        
+        String userName;
+        String instanceId;
+    	if (session.getPathParameters() != null) {
+    		userName = session.getPathParameters().get("userName");
+    		instanceId = session.getPathParameters().get("instanceId");
+    	} else {
+    		userName = null;
+    		instanceId = null;
+    	}
+		
+    	validateUser(userName);
+    	
+    	session.getUserProperties().put(INSTANCE_ID, instanceId);
+        
       //add to set
         webSocketSet.add(this);
-        try {
-            sendMessage("test");
-        } catch (IOException e) {
-        	logger.error(e.getMessage(), e);
-        }
     }
 
     /**
@@ -59,12 +65,7 @@ public class WebSocketManager {
      */
     @OnMessage
     public void onMessage(Session session, String message) throws IOException {
-    	logger.info(message);
-    	try {
-			this.sendMessage(message);
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-		}
+    	logger.debug(message);
     }
 
     /**
@@ -84,38 +85,26 @@ public class WebSocketManager {
     public void sendMessage(String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
     }
-    
-    /**
-     * only test send message.
-     */
-    public void testSendMessage(){
-    	//below is sending a JSON string case.
-        Map map = new HashMap();
-        map.put("info", "this is info log");
-        map.put("debug", "this is debug log");
-        map.put("warning", "this is warning log");
-        map.put("error", "this is error log");
-        map.put("key5", "value1");
-        String json = JsonUtil.toJsonString(map);
-        try {
-			sendMessage(json);
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-		}
-    }
 
+	private boolean subscribed(String instanceId) {
+		return this.session != null && this.session.getUserProperties() != null && instanceId != null &&
+				instanceId.equals(this.session.getUserProperties().get(INSTANCE_ID));
+	}
+    
     /**
      * send mass messages 
      * */
-    public static void sendMassMessage(String message) throws IOException {
+    public static void sendMassMessage(String instanceId, String message) throws IOException {
         for (WebSocketManager item : webSocketSet) {
-            try {
-                item.sendMessage(message);
-            } catch (IOException e) {
-                continue;
-            }
+        	if (item.subscribed(instanceId)) {
+	            try {
+	                item.sendMessage(message);
+	            } catch (IOException e) {
+	            	logger.error(e.getMessage(), e);
+	                continue;
+	            }
+        	}
         }
     }
-    
     
 }
