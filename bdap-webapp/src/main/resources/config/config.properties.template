@@ -19,7 +19,7 @@ defaultFs=hdfs://192.85.247.104:19000
 
 hdfs.user=dbadmin
 
-platform.remote.dist=/bdap-VVERSIONN/engine/lib
+platform.remote.dist=/bdap-VVERSIONN/engine
 
 projects=project1
 project1.hdfs.dir=/project1/

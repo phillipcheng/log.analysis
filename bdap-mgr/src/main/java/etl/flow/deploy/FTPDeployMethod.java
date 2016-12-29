@@ -50,8 +50,22 @@ public class FTPDeployMethod implements DeployMethod {
 	}
 
 	public void createFile(String remotePath, byte[] content) {
-		FTPClient f = null;
 		InputStream in = null;
+		try {
+		    in = new ByteArrayInputStream(content);
+			createFile(remotePath, in);
+		} finally {
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+		}
+	}
+
+	public void createFile(String remotePath, InputStream inputStream) {
+		FTPClient f = null;
 		try {
 			f = new FTPClient();
 			FTPClientConfig config = new FTPClientConfig();
@@ -65,19 +79,12 @@ public class FTPDeployMethod implements DeployMethod {
 			remotePath = HdfsUtil.getRootPath(remotePath);
 			
 		    f.deleteFile(remotePath);
-		    in = new ByteArrayInputStream(content);
-		    f.storeFile(remotePath, in);
+		    f.storeFile(remotePath, inputStream);
 		    
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			
 		} finally {
-			if (in != null)
-				try {
-					in.close();
-				} catch (IOException e) {
-					logger.error(e.getMessage(), e);
-				}
 			if (f != null)
 				try {
 					f.disconnect();

@@ -203,7 +203,7 @@ public class FlowController {
 		return this.flowMgr.getFlowLog("project1", oc, instanceId);
 	}
 	
-	@RequestMapping(value = "/instances/{instanceId}/data/{dataName}", method = RequestMethod.GET)
+	@RequestMapping(value = "/instances/{instanceId}/data/{dataName:.+}", method = RequestMethod.GET)
 	InMemFile getFlowInstanceData(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String dataName) {
 		this.validateUser(userName);
 		OozieConf oc = flowDeployer.getOozieServerConf();

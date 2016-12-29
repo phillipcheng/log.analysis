@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.Resource;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
@@ -157,6 +158,7 @@ public abstract class FlowMgr {
 	 * @return log content
 	 */
 	public abstract String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId);
+	public abstract Resource getFlowLogResource(String projectName, FlowServerConf fsconf, String instanceId);
 	
 	/**
 	 * get the action node log of submitted instance
@@ -167,6 +169,7 @@ public abstract class FlowMgr {
 	 * @return log content
 	 */
 	public abstract InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	public abstract Resource[] getNodeLogResources(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
 	
 	/**
 	 * get the action node info of submitted instance
@@ -233,6 +236,16 @@ public abstract class FlowMgr {
 	 * @return file content
 	 */
 	public abstract InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize);
+
+	/**
+	 * get the distributed file
+	 * @param engineConfig
+	 * @param filePath
+	 * @param startLine
+	 * @param endLine
+	 * @return
+	 */
+	public abstract InMemFile getDFSFile(EngineConf ec, String filePath, long startLine, long endLine);
 
 	/**
 	 * put the distributed file
