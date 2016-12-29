@@ -118,6 +118,16 @@ public abstract class FlowMgr {
 			prjNameProp.setName(OozieConf.key_prjName);
 			prjNameProp.setValue(prjName);
 			bodyConf.getProperty().add(prjNameProp);
+		} if (oc.getOozieWfNtfUrl() != null && oc.getOozieWfNtfUrl().length() > 0) {
+			bdap.xml.config.Configuration.Property oozieWfNtfUrlProp = new bdap.xml.config.Configuration.Property();
+			oozieWfNtfUrlProp.setName(OozieConf.key_oozieWfNtfUrl);
+			oozieWfNtfUrlProp.setValue(oc.getOozieWfNtfUrl());
+			bodyConf.getProperty().add(oozieWfNtfUrlProp);
+		} if (oc.getOozieWfActionNtfUrl() != null && oc.getOozieWfActionNtfUrl().length() > 0) {
+			bdap.xml.config.Configuration.Property oozieWfActionNtfUrlProp = new bdap.xml.config.Configuration.Property();
+			oozieWfActionNtfUrlProp.setName(OozieConf.key_oozieWfActionNtfUrl);
+			oozieWfActionNtfUrlProp.setValue(oc.getOozieWfActionNtfUrl());
+			bodyConf.getProperty().add(oozieWfActionNtfUrlProp);
 		}
 		return bodyConf;
 	}

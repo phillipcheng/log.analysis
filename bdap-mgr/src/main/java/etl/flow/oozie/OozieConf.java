@@ -22,6 +22,8 @@ public class OozieConf implements FlowServerConf {
 	public static final String key_useSystemPath="oozie.use.system.libpath";
 	public static final String key_oozieWfAppPath="oozie.wf.application.path";
 	public static final String key_oozieCoordinateAppPath="oozie.coord.application.path";
+	public static final String key_oozieWfNtfUrl="oozie.wf.workflow.notification.url";
+	public static final String key_oozieWfActionNtfUrl="oozie.wf.action.notification.url";
 	public static final String key_user_name="user.name";
 	public static final String key_yarn_historyserver="yarn_historyserver";
 	public static final String key_cmdClassName="cmdClassName";
@@ -37,6 +39,8 @@ public class OozieConf implements FlowServerConf {
 	private String rmWebApp;
 	private String queueName = "default";
 	private String oozieLibPath;//bdap platform lib path
+	private String oozieWfNtfUrl;
+	private String oozieWfActionNtfUrl;
 	private String userName;
 	private String yarnHistoryServer;
 	
@@ -48,7 +52,9 @@ public class OozieConf implements FlowServerConf {
 		jobTracker =pc.getString(key_jobTracker);
 		rmWebApp = pc.getString(key_rmWebApp);
 		historyServer = pc.getString(key_historyServer);
-		setYarnHistoryServer(pc.getString(key_yarn_historyserver));
+		yarnHistoryServer = pc.getString(key_yarn_historyserver);
+		oozieWfNtfUrl = pc.getString(key_oozieWfNtfUrl);
+		oozieWfActionNtfUrl = pc.getString(key_oozieWfActionNtfUrl);
 	}
 	
 	public OozieConf(String oozieServerIp, int oozieServerPort, String nameNode, String jobTracker, String oozieLibPath){
@@ -121,5 +127,21 @@ public class OozieConf implements FlowServerConf {
 
 	public void setYarnHistoryServer(String yarnHistoryServer) {
 		this.yarnHistoryServer = yarnHistoryServer;
+	}
+
+	public String getOozieWfNtfUrl() {
+		return oozieWfNtfUrl;
+	}
+
+	public void setOozieWfNtfUrl(String oozieWfNtfUrl) {
+		this.oozieWfNtfUrl = oozieWfNtfUrl;
+	}
+
+	public String getOozieWfActionNtfUrl() {
+		return oozieWfActionNtfUrl;
+	}
+
+	public void setOozieWfActionNtfUrl(String oozieWfActionNtfUrl) {
+		this.oozieWfActionNtfUrl = oozieWfActionNtfUrl;
 	}
 }
