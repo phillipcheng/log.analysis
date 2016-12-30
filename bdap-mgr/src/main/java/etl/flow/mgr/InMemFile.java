@@ -11,6 +11,7 @@ public class InMemFile {
 	private String fileName;
 	private byte[] content;
 	private String textContent;
+	private boolean partial;
 	
 	public InMemFile(){
 	}
@@ -31,6 +32,13 @@ public class InMemFile {
 		this.fileType = fileType;
 		this.fileName = fileName;
 		this.textContent = textContent;
+	}
+
+	public InMemFile(FileType fileType, String fileName, String textContent, boolean partial) {
+		this.fileType = fileType;
+		this.fileName = fileName;
+		this.textContent = textContent;
+		this.partial = partial;
 	}
 
 	public String toString(){
@@ -69,5 +77,13 @@ public class InMemFile {
 	
 	public void setTextContent(String textContent) {
 		this.textContent = textContent;
+	}
+
+	public boolean isPartial() {
+		return partial;
+	}
+
+	public void setPartial(boolean partial) {
+		this.partial = partial;
 	}
 }

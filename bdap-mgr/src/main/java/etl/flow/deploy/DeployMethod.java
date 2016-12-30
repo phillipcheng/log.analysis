@@ -1,5 +1,6 @@
 package etl.flow.deploy;
 
+import java.io.InputStream;
 import java.util.List;
 
 public interface DeployMethod {
@@ -8,6 +9,7 @@ public interface DeployMethod {
 	public static final String DEFAULT = "default";
 	
 	public void createFile(String remotePath, byte[] content);
+	public void createFile(String remotePath, InputStream inputStream);
 	public void delete(String remotePath, boolean recursive);
 	public void copyFromLocalFile(String localPath, String remotePath);
 	public void copyFromLocalFile(boolean delSrc, boolean overwrite, String localPath, String remotePath);

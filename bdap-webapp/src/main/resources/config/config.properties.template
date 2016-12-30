@@ -9,6 +9,8 @@ tableau.server.port=80
 #oozie config
 oozie.server.ip=192.85.247.104
 oozie.server.port=11000
+#oozie.wf.workflow.notification.url=http://APP_HOST:APP_PORT/dashview/dbadmin/flow/instances/$jobId/status?status=$status
+#oozie.wf.action.notification.url=http://APP_HOST:APP_PORT/dashview/dbadmin/flow/instances/$jobId/nodes/$nodeName/status?status=$status
 jobTracker=192.85.247.104:8032
 nameNode=hdfs://192.85.247.104:19000
 rmWebApp=http://192.85.247.104:8088
@@ -19,7 +21,7 @@ defaultFs=hdfs://192.85.247.104:19000
 
 hdfs.user=dbadmin
 
-platform.remote.dist=/bdap-VVERSIONN/engine/lib
+platform.remote.dist=/bdap-VVERSIONN/engine
 
 projects=project1
 project1.hdfs.dir=/project1/

@@ -1,6 +1,7 @@
 package etl.flow.oozie;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -41,6 +42,7 @@ import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
+import etl.flow.mgr.LogResource;
 import etl.flow.mgr.NodeInfo;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 
@@ -50,6 +52,7 @@ public class OozieFlowMgr extends FlowMgr{
 	private static final int DEFAULT_MAX_FILE_SIZE = 1048576; /* 1MB */
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	private static final InMemFile[] EMPTY_LOG_FILES = new InMemFile[0];
+	private static final Resource[] EMPTY_LOG_RESOURCES = new Resource[0];
 	private String dateTimePattern;
 	private FileSystem fs;
 	
@@ -315,19 +318,29 @@ public class OozieFlowMgr extends FlowMgr{
 	@Override
 	public String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId) {
 		Resource resource = getFlowLogResource(projectName, fsconf, instanceId);
+		InputStream in = null;
 		try {
-			if (resource.isReadable())
-				return IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
-			else
+			if (resource != null && resource.isReadable()) {
+				in = resource.getInputStream();
+				return IOUtils.toString(in, StandardCharsets.UTF_8);
+			} else
 				return "";
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
+		} finally {
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
 		}
 		return "";
 	}
 
 	@Override
-	public InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public Resource[] getNodeLogResources(String projectName, FlowServerConf fsconf, String instanceId,
+			String nodeName) {
 		if (nodeName != null) {
 			OozieConf oc = (OozieConf)fsconf;
 			String jobInfoUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
@@ -345,7 +358,7 @@ public class OozieFlowMgr extends FlowMgr{
 				if (action != null) {
 					String launcherJobId = null;
 					String childJobIds[] = null;
-					List<InMemFile> logFiles = new ArrayList<InMemFile>();
+					List<Resource> logFiles = new ArrayList<Resource>();
 					ArrayList<Map<String, Object>> jobAttempts;
 					String url;
 					Object t;
@@ -408,9 +421,55 @@ public class OozieFlowMgr extends FlowMgr{
 						}
 					}
 					
-					return logFiles.toArray(EMPTY_LOG_FILES);
+					return logFiles.toArray(EMPTY_LOG_RESOURCES);
 				}
 			}
+		}
+		return EMPTY_LOG_RESOURCES;
+	}
+
+	@Override
+	public InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		Resource[] resources = getNodeLogResources(projectName, fsconf, instanceId, nodeName);
+		if (resources != null) {
+			List<InMemFile> logFiles = new ArrayList<InMemFile>();
+			String log;
+    		InputStream in;
+			for (Resource r: resources) {
+				if (r instanceof LogResource) {
+					if (r != null && r.isReadable()) {
+						in = null;
+						try {
+							in = r.getInputStream();
+							log = IOUtils.toString(in, StandardCharsets.UTF_8);
+						} catch (IOException e) {
+							logger.error(e.getMessage(), e);
+							log = "";
+						} finally {
+							if (in != null)
+								try {
+									in.close();
+								} catch (IOException e) {
+									logger.error(e.getMessage(), e);
+								}
+						}
+					} else
+						log = "";
+					int logStart = log.indexOf("<pre>");
+					int logEnd = log.indexOf("</pre>");
+					if (logStart != -1 && logEnd != -1)
+						log = log.substring(logStart + 5, logEnd);
+					else
+						log = "";
+					
+					InMemFile logFile = new InMemFile();
+					logFile.setFileName(r.getFilename());
+					logFile.setFileType(((LogResource) r).getFiletype());
+					logFile.setTextContent(log);
+					logFiles.add(logFile);
+				}
+			}
+			return logFiles.toArray(EMPTY_LOG_FILES);
 		}
 		return EMPTY_LOG_FILES;
 	}
@@ -430,25 +489,16 @@ public class OozieFlowMgr extends FlowMgr{
 		return "";
 	}
 
-	private void appendLog(List<InMemFile> logFiles, FileType fileType, String url) {
+	private void appendLog(List<Resource> logFiles, FileType fileType, String url) {
 		Map<String, String> headMap = new HashMap<String, String>();
-		String log = RequestUtil.get(url, null, 0, headMap);
-		int logStart = log.indexOf("<pre>");
-		int logEnd = log.indexOf("</pre>");
-		if (logStart != -1 && logEnd != -1)
-			log = log.substring(logStart + 5, logEnd);
-		else
-			log = "";
+		Resource log = RequestUtil.getResource(url, null, 0, headMap);
+
+		if (fileType == null)
+			fileType = FileType.textData;
 		
-		InMemFile logFile = new InMemFile();
-		logFile.setFileName(url);
-		if (fileType != null)
-			/* Log file type STDOUT/ERROR/SYS */
-			logFile.setFileType(fileType);
-		else
-			logFile.setFileType(FileType.textData);
-		logFile.setTextContent(log);
-		logFiles.add(logFile);
+		/* Log file type STDOUT/ERROR/SYS */
+		LogResource logResource = new LogResource(log, url, fileType);
+		logFiles.add(logResource);
 	}
 
 	@Override
@@ -729,7 +779,7 @@ public class OozieFlowMgr extends FlowMgr{
 		StringBuilder buffer = new StringBuilder();
 		if (list != null) {
 			for (String f: list) {
-				buffer.append(f);
+				buffer.append(HdfsUtil.getRootPath(f));
 				buffer.append("\n");
 			}
 		}
@@ -771,6 +821,23 @@ public class OozieFlowMgr extends FlowMgr{
 				else
 					return null;
 			}
+		}
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, String filePath, long startLine, long endLine) {
+		if (filePath != null) {
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			String text = HdfsUtil.readDfsTextFile(fileSystem, filePath, startLine, endLine);
+			if (text != null)
+				return new InMemFile(FileType.textData, filePath, text, true);
+			else
+				return null;
 		}
 		return null;
 	}

@@ -1,6 +1,7 @@
 package etl.flow.deploy;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +65,21 @@ public class SSHDeployMethod extends SftpInfo implements DeployMethod {
 	}
 
 	public void createFile(String remotePath, byte[] content) {
+		InputStream in = null;
+		try {
+			in = new ByteArrayInputStream(content);
+			createFile(remotePath, in);
+		} finally {
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+		}
+	}
+
+	public void createFile(String remotePath, InputStream inputStream) {
 		/* Try to get the root path from it if it's a URL */
 		remotePath = HdfsUtil.getRootPath(remotePath);
 		
@@ -79,17 +95,8 @@ public class SSHDeployMethod extends SftpInfo implements DeployMethod {
 	
 			SftpUtil.sftpMkdir(channel, tmpRemotePath);
 			
-			InputStream in = null;
-	
-			try {
-				in = new ByteArrayInputStream(content);
-				channel.put(in, tmpRemotePath, ChannelSftp.OVERWRITE);
-				logger.info("put the file: {}", remotePath);
-				
-			} finally {
-				if (in != null)
-					in.close();
-			}
+			channel.put(inputStream, tmpRemotePath, ChannelSftp.OVERWRITE);
+			logger.info("put the file: {}", remotePath);
 
 			String output = SftpUtil.sendCommand(hadoopHome + "bin/hdfs dfs -copyFromLocal -f " + tmpRemotePath + " " + remotePath, session);
 			logger.debug(output);

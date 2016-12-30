@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,6 +96,43 @@ public class HdfsUtil {
 		return null;
 	}
 	
+	public static String readDfsTextFile(FileSystem fs, String path, long startLine, long endLine) {
+		FSDataInputStream in = null;
+		try {
+			in = fs.open(new Path(path));
+			LineIterator it = IOUtils.lineIterator(in, StandardCharsets.UTF_8);
+			int i = 0;
+			StringBuilder buffer = new StringBuilder();
+			while (it.hasNext()) {
+				if (i >= startLine) {
+					if (i < endLine) {
+						buffer.append(it.next());
+						buffer.append(IOUtils.LINE_SEPARATOR);
+					} else {
+						break;
+					}
+				} else {
+					it.next();
+				}
+				i ++;
+			}
+			return buffer.toString();
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+		} finally {
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+		}
+		
+		return null;
+	}
+	
 	public static byte[] readDfsFile(FileSystem fs, String path, int maxFileSize) {
 		FSDataInputStream in = null;
 		BoundedInputStream boundedIn = null;
@@ -145,6 +184,26 @@ public class HdfsUtil {
 	
 	public static boolean writeDfsFile(FileSystem fs, String path, byte[] content){
 		return writeDfsFile(fs, path, content, true);
+	}
+
+	public static boolean writeDfsFile(FileSystem fs, String path, InputStream inputStream) {
+		FSDataOutputStream out = null;
+		try {
+			out = fs.create(new Path(path), true);
+			IOUtils.copy(inputStream, out);
+		}catch(Exception e){
+			logger.error("",e);
+			return false;
+		}finally{
+			if (out!=null){
+				try {
+					out.close();
+				}catch(Exception e){
+					logger.error("", e);
+				}
+			}
+		}
+		return true;
 	}
 	
 	public static int writeDfsFile(FileSystem fs, String fileName, Iterable<String> contents){

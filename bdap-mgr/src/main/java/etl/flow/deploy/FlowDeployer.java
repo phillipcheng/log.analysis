@@ -1,6 +1,7 @@
 package etl.flow.deploy;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -217,6 +218,10 @@ public class FlowDeployer {
 	
 	public void deploy(String path, byte[] content) {
     	deployMethod.createFile(path, content);
+	}
+	
+	public void deploy(String path, InputStream inputStream) {
+    	deployMethod.createFile(path, inputStream);
 	}
 	
 	public void copyFromLocalFile(String localPath, String remotePath) {
