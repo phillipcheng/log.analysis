@@ -11,7 +11,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
-import etl.cmd.CsvMergeCmd;
+import etl.cmd.CsvAggregateCmd;
 import etl.cmd.CsvTransformCmd;
 import etl.cmd.SaveDataCmd;
 import etl.cmd.SftpCmd;
@@ -76,7 +76,7 @@ public class Flow1SparkCmd extends ETLCmd implements Serializable{
 		CsvTransformCmd d2csvTransformCmd = new CsvTransformCmd(wfName, wfid, resFolder + "action_d2csvtransform.properties", defaultFs, null, ProcessMode.Single);
 		data2trans = d2csvTransformCmd.sparkProcessFilesToKV(data2, jsc, TextInputFormat.class);
 		
-		CsvMergeCmd mergeCmd = new CsvMergeCmd(wfName, wfid, resFolder + "action_csvmerge.properties", defaultFs, null);
+		CsvAggregateCmd mergeCmd = new CsvAggregateCmd(wfName, wfid, resFolder + "action_csvaggr.properties", defaultFs, null);
 		mergeCsvs = mergeCmd.sparkProcessKeyValue(data1trans.union(data2trans), jsc);
 		
 		SaveDataCmd saveCmd = new SaveDataCmd(wfName, wfid, resFolder + "action_csvsave.properties", defaultFs, null);

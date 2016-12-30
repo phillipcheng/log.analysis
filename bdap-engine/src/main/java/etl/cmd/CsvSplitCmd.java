@@ -47,6 +47,10 @@ public class CsvSplitCmd extends ETLCmd {
 	
 	private CompiledScript splitKeysReduce;
 	
+	public CsvSplitCmd(){
+		super();
+	}
+	
 	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
 	}

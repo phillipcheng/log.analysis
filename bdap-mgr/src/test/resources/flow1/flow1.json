@@ -1,6 +1,6 @@
 {
   "@class" : "flow",
-  "name" : "flow1_spark",
+  "name" : "flow1",
   "outlets" : [ ],
   "nodes" : [ {
     "@class" : "start",
@@ -29,13 +29,13 @@
       "dataName" : "sftp.map"
     } ],
     "exe.type" : "mr",
+    "cmd.class" : "etl.cmd.SftpCmd",
     "sftp.host" : "192.85.247.104",
     "sftp.user" : "dbadmin",
     "sftp.port" : "22",
     "sftp.pass" : "password",
     "sftp.names.only" : "false",
-    "sftp.clean" : "false",
-    "cmd.class" : "etl.cmd.SftpCmd"
+    "sftp.clean" : "false"
   }, {
     "@class" : "action",
     "name" : "d1csvtransform",
@@ -49,13 +49,13 @@
       "dataName" : "data1"
     } ],
     "exe.type" : "mr",
+    "cmd.class" : "etl.cmd.CsvTransformCmd",
     "skip.header" : "true",
     "input.endwithcomma" : "true",
-    "col.op" : "i|8:var groupFunClass = Java.type(\\\"etl.util.GroupFun\\\"); groupFunClass.getParentFolderName(pathname)",
-    "cmd.class" : "etl.cmd.CsvTransformCmd"
+    "col.op" : "i|6:var groupFunClass = Java.type(\\\"etl.util.GroupFun\\\"); groupFunClass.getParentFolderName(pathname)"
   }, {
     "@class" : "action",
-    "name" : "d2csvtransform",
+    "name" : "d2xml2csv",
     "outlets" : [ {
       "name" : "0",
       "dataName" : "data2trans"
@@ -66,9 +66,15 @@
       "dataName" : "data2"
     } ],
     "exe.type" : "mr",
-    "skip.header" : "true",
-    "input.endwithcomma" : "true",
-    "cmd.class" : "etl.cmd.CsvTransformCmd"
+    "cmd.class" : "etl.flow.test.cmd.Flow1Xml2CsvCmd",
+    "sys.mapreduce.input.fileinputformat.split.maxsize":268435456,
+    "sys.xmlinput.start":"<info",
+    "sys.xmlinput.end":"</info>",
+    "sys.xmlinput.row.start":"<values",
+    "sys.xmlinput.row.end":"</values>",
+    "sys.xmlinput.row.max.number":"3000",
+    "schema.file": "/flow1/schema/flow1.schema",
+    "process.type": "genCsv"
   }, {
     "@class" : "action",
     "name" : "csvmerge",
@@ -85,12 +91,17 @@
       "dataName" : "data2trans"
     } ],
     "exe.type" : "mr",
-    "src.entity" : "'/flow1/data1/'+WFID+'/*','/flow1/data2/'+WFID+'/*'",
-    "src.keys" : "1,0",
-    "src.skipHeader" : "false, true",
-    "join.type" : "inner",
-    "ret.value" : "csv0.concat('\\\\,').concat(table1[1]).concat('\\\\,').concat(table1[2]).concat('\\\\,').concat(table1[3]).concat('\\\\,').concat(table1[4])",
-    "cmd.class" : "etl.cmd.CsvMergeCmd"
+    "cmd.class" : "etl.cmd.CsvAggregateCmd",
+    "sys.mapreduce.output.textoutputformat.separator":",",
+    "old.table": "data1;data2",
+    "new.table": "datamerge",
+    "data1.aggr.op":"keep|0;2-",
+    "data2.aggr.op":"keep|1-",
+    "data1.aggr.groupkey":"1",
+    "data2.aggr.groupkey":"0",
+    "schema.file": "/flow1/schema/flow1.schema",
+    "db.prefix" : "mgrtest",
+    "file.table.map":"filename.substring(0\\,5)"
   },{
     "@class" : "action",
     "name" : "csvsave",
@@ -114,14 +125,14 @@
     "linkType" : "success"
   }, {
     "fromNodeName" : "sftp",
-    "toNodeName" : "d2csvtransform",
+    "toNodeName" : "d2xml2csv",
     "linkType" : "success"
   }, {
     "fromNodeName" : "d1csvtransform",
     "toNodeName" : "csvmerge",
     "linkType" : "success"
   }, {
-    "fromNodeName" : "d2csvtransform",
+    "fromNodeName" : "d2xml2csv",
     "toNodeName" : "csvmerge",
     "linkType" : "success"
   }, {
@@ -148,7 +159,7 @@
   }, {
     "name" : "data2",
     "location" : "/flow1/data2/",
-    "dataFormat" : "Text",
+    "dataFormat" : "CombineXML",
     "recordType" : "Path",
     "instance" : true
   }, {

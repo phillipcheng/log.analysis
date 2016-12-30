@@ -47,6 +47,10 @@ public class UnpackCmd extends ETLCmd {
 	private FilenameFilter outputFileFilter;
 	private boolean sequenceFile;
 	
+	public UnpackCmd(){
+		super();
+	}
+	
 	public UnpackCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs) {
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
 	}

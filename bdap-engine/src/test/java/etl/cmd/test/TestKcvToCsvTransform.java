@@ -15,7 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import etl.util.KCVInputFormat;
+import etl.input.KCVInputFormat;
 
 public class TestKcvToCsvTransform extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestKcvToCsvTransform.class);

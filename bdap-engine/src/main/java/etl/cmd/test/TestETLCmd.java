@@ -38,8 +38,8 @@ import bdap.util.PropertiesUtil;
 import etl.engine.DataType;
 import etl.engine.ETLCmd;
 import etl.engine.InvokeMapper;
+import etl.input.FilenameInputFormat;
 import etl.spark.SparkUtil;
-import etl.util.FilenameInputFormat;
 import etl.util.GlobExpPathFilter;
 import scala.Tuple2;
 

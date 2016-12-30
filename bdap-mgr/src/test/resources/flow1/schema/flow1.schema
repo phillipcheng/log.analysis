@@ -1,42 +1,28 @@
 {
   "attrNameMap" : {
-    "MyCore_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ],
-    "MyCore1_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ]
+    "data1" : [ "startdt", "sid", "a1id", "p1id", "p1v1", "p1v2"],
+    "data2" : [ "sid", "a2id", "p2id", "p2v1", "p2v2" ],
+    "datamerge" : ["startdt", "sid", "a1id", "p1id", "p1v1", "p1v2", "wfid", "a2id", "p2id", "p2v1", "p2v2"]
   },
   "attrTypeMap" : {
-    "MyCore_" : [ {
+    "data1" : [ {
       "type" : "TIMESTAMP",
       "size" : 0,
       "precision" : 0,
       "scale" : 0
     }, {
       "type" : "STRING",
-      "size" : 10,
+      "size" : 20,
       "precision" : 0,
       "scale" : 0
     }, {
       "type" : "STRING",
-      "size" : 70,
+      "size" : 20,
       "precision" : 0,
       "scale" : 0
     }, {
       "type" : "STRING",
-      "size" : 70,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "STRING",
-      "size" : 54,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "NUMERIC",
-      "size" : 0,
-      "precision" : 15,
-      "scale" : 5
-    }, {
-      "type" : "STRING",
-      "size" : 72,
+      "size" : 20,
       "precision" : 0,
       "scale" : 0
     }, {
@@ -50,39 +36,50 @@
       "precision" : 15,
       "scale" : 5
     } ],
-    "MyCore1_" : [ {
+    "data2" : [ {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }],
+    "datamerge" : [ {
       "type" : "TIMESTAMP",
       "size" : 0,
       "precision" : 0,
       "scale" : 0
-    }, {
+    },{
       "type" : "STRING",
-      "size" : 10,
+      "size" : 20,
       "precision" : 0,
       "scale" : 0
     }, {
       "type" : "STRING",
-      "size" : 70,
+      "size" : 20,
       "precision" : 0,
       "scale" : 0
     }, {
       "type" : "STRING",
-      "size" : 70,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "STRING",
-      "size" : 54,
-      "precision" : 0,
-      "scale" : 0
-    }, {
-      "type" : "NUMERIC",
-      "size" : 0,
-      "precision" : 15,
-      "scale" : 5
-    }, {
-      "type" : "STRING",
-      "size" : 72,
+      "size" : 20,
       "precision" : 0,
       "scale" : 0
     }, {
@@ -95,6 +92,31 @@
       "size" : 0,
       "precision" : 15,
       "scale" : 5
-    } ]
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }]
   }
 }
