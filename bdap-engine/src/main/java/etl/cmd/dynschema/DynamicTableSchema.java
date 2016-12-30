@@ -13,6 +13,7 @@ public class DynamicTableSchema {
 	private String[] valueSample;//used to guess type, if type is not known before hand
 	private List<FieldType> types;//if this is not set, guess it from values
 	
+	//values can be null
 	public DynamicTableSchema(String name, List<String> fieldNames, String[] values, List<FieldType> types){
 		this.name = name;
 		this.fieldNames = fieldNames;

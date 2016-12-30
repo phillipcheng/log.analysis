@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.Resource;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
@@ -117,6 +118,16 @@ public abstract class FlowMgr {
 			prjNameProp.setName(OozieConf.key_prjName);
 			prjNameProp.setValue(prjName);
 			bodyConf.getProperty().add(prjNameProp);
+		} if (oc.getOozieWfNtfUrl() != null && oc.getOozieWfNtfUrl().length() > 0) {
+			bdap.xml.config.Configuration.Property oozieWfNtfUrlProp = new bdap.xml.config.Configuration.Property();
+			oozieWfNtfUrlProp.setName(OozieConf.key_oozieWfNtfUrl);
+			oozieWfNtfUrlProp.setValue(oc.getOozieWfNtfUrl());
+			bodyConf.getProperty().add(oozieWfNtfUrlProp);
+		} if (oc.getOozieWfActionNtfUrl() != null && oc.getOozieWfActionNtfUrl().length() > 0) {
+			bdap.xml.config.Configuration.Property oozieWfActionNtfUrlProp = new bdap.xml.config.Configuration.Property();
+			oozieWfActionNtfUrlProp.setName(OozieConf.key_oozieWfActionNtfUrl);
+			oozieWfActionNtfUrlProp.setValue(oc.getOozieWfActionNtfUrl());
+			bodyConf.getProperty().add(oozieWfActionNtfUrlProp);
 		}
 		return bodyConf;
 	}
@@ -157,6 +168,7 @@ public abstract class FlowMgr {
 	 * @return log content
 	 */
 	public abstract String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId);
+	public abstract Resource getFlowLogResource(String projectName, FlowServerConf fsconf, String instanceId);
 	
 	/**
 	 * get the action node log of submitted instance
@@ -167,6 +179,7 @@ public abstract class FlowMgr {
 	 * @return log content
 	 */
 	public abstract InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
+	public abstract Resource[] getNodeLogResources(String projectName, FlowServerConf fsconf, String instanceId, String nodeName);
 	
 	/**
 	 * get the action node info of submitted instance
@@ -233,6 +246,16 @@ public abstract class FlowMgr {
 	 * @return file content
 	 */
 	public abstract InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize);
+
+	/**
+	 * get the distributed file
+	 * @param engineConfig
+	 * @param filePath
+	 * @param startLine
+	 * @param endLine
+	 * @return
+	 */
+	public abstract InMemFile getDFSFile(EngineConf ec, String filePath, long startLine, long endLine);
 
 	/**
 	 * put the distributed file

@@ -28,13 +28,15 @@ public class FlowTest {
 	
 	private FlowDeployer apacheDeployer = new FlowDeployer("testFlow.apache.properties");
 	private FlowDeployer localDeployer = new FlowDeployer("testFlow.local.properties");
-	
+	private String[] jars = new String[]{"target/bdap.mgr-VVERSIONN-tests.jar"};
 	public void initData(FlowDeployer deployer, SftpInfo ftpInfo){
 		SftpUtil.sftpFromLocal(ftpInfo, String.format("%sdata", getRelativeResourceFolder()), 
 				String.format("/data/flow1/"));
 		try {
-			deployer.copyFromLocalFile(String.format("%sdata/sftpcfg/test1.sftp.map.properties", getRelativeResourceFolder()), 
+			deployer.copyFromLocalFile(false, true, String.format("%sdata/sftpcfg/test1.sftp.map.properties", getRelativeResourceFolder()), 
 					"/flow1/sftpcfg/test1.sftp.map.properties");
+			deployer.copyFromLocalFile(false, true, String.format("%sschema/flow1.schema", getRelativeResourceFolder()), 
+					"/flow1/schema/flow1.schema");
 		}catch(Exception e){
 			logger.error("", e);
 		}
@@ -67,14 +69,13 @@ public class FlowTest {
 		genProperties(localDeployer);
 	}
 	
-	@Test
-	public void testApacheOozieJson() throws Exception{
+	public void testApacheOozieJson(boolean useJson) throws Exception{
 		apacheDeployer.installEngine(false);
 		String projectName = "project1";
-		String flowName="flow1_oozie";
+		String flowName="flow1";
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
 		initData(apacheDeployer, ftpInfo);
-		apacheDeployer.runDeploy(projectName, flowName, null, true, EngineType.oozie);
+		apacheDeployer.runDeploy(projectName, flowName, jars, useJson, EngineType.oozie);
 		String wfId = apacheDeployer.runExecute(projectName, flowName, EngineType.oozie);
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		FlowInfo fi=null;
@@ -92,12 +93,22 @@ public class FlowTest {
 		}
 		//assertion after finished
 		List<String> ls = apacheDeployer.listFiles(String.format("/flow1/csvmerge/%s", wfId));
-		String fileName="singleTable-r-00000";
+		String fileName="datamerge-r-00000";
 		assertTrue(ls.contains(fileName));
 		List<String> contents = apacheDeployer.readFile(String.format("/flow1/csvmerge/%s/%s", wfId, fileName));
 		logger.info(String.format("contents:\n%s", String.join("\n", contents)));
 		String[] csv = contents.get(0).split(",");
-		assertTrue(csv[8].equals(wfId));
+		assertTrue(csv[6].equals(wfId));
+	}
+	
+	@Test
+	public void testOozieFromXml() throws Exception{
+		testApacheOozieJson(false);
+	}
+	
+	@Test
+	public void testOozieFromJson() throws Exception{
+		testApacheOozieJson(true);
 	}
 	
 	@Test

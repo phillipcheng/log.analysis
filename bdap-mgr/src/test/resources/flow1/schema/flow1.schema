@@ -1,0 +1,122 @@
+{
+  "attrNameMap" : {
+    "data1" : [ "startdt", "sid", "a1id", "p1id", "p1v1", "p1v2"],
+    "data2" : [ "sid", "a2id", "p2id", "p2v1", "p2v2" ],
+    "datamerge" : ["startdt", "sid", "a1id", "p1id", "p1v1", "p1v2", "wfid", "a2id", "p2id", "p2v1", "p2v2"]
+  },
+  "attrTypeMap" : {
+    "data1" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    } ],
+    "data2" : [ {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }],
+    "datamerge" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    },{
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }]
+  }
+}

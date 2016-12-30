@@ -17,6 +17,7 @@ public class ActionNode extends Node{
 	
 	public static final String key_exe_type="exe.type";//etl.flow.ExeType
 	public static final String key_cmd_class="cmd.class";//the fully qualified class name of the cmd
+	public static final String sys_prop_prefix="sys.";
 	
 	public static List<String> sysProperties = null;
 	
@@ -63,7 +64,7 @@ public class ActionNode extends Node{
 		return true;
 	}
 	
-	public static List<String> getSysProperties(){
+	private static List<String> getSysPropertyNames(){
 		if (sysProperties==null){
 			sysProperties = Arrays.asList(new String[]{key_exe_type, key_cmd_class});
 		}
@@ -74,11 +75,22 @@ public class ActionNode extends Node{
 	public LinkedHashMap<String, Object> getUserProperties(){
 		LinkedHashMap<String, Object> userProperties = new LinkedHashMap<String, Object>();
 		for (String key: properties.keySet()){
-			if (!getSysProperties().contains(key)){
+			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)){
 				userProperties.put(key, properties.get(key));
 			}
 		}
 		return userProperties;
+	}
+	
+	@JsonIgnore
+	public LinkedHashMap<String, Object> getSysProperties(){
+		LinkedHashMap<String, Object> out = new LinkedHashMap<String, Object>();
+		for (String key: properties.keySet()){
+			if (key.startsWith(sys_prop_prefix)){
+				out.put(key.substring(sys_prop_prefix.length()), properties.get(key));
+			}
+		}
+		return out;
 	}
 
 	public Object getProperty(String key){

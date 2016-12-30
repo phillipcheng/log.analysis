@@ -26,11 +26,11 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
+import etl.input.CombineFileNameInputFormat;
+import etl.input.FilenameInputFormat;
 import etl.spark.SparkUtil;
-import etl.util.CombineFileNameInputFormat;
 import etl.util.DBType;
 import etl.util.DBUtil;
-import etl.util.FilenameInputFormat;
 import scala.Tuple2;
 
 public class TestLoadDatabaseCmd extends TestETLCmd {

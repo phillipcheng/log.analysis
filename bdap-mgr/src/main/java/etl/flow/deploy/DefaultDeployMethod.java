@@ -1,5 +1,6 @@
 package etl.flow.deploy;
 
+import java.io.InputStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,10 @@ public class DefaultDeployMethod implements DeployMethod {
 	public void createFile(String remotePath, byte[] content) {
 		HdfsUtil.writeDfsFile(fs, remotePath, content);
 	}
+
+	public void createFile(String remotePath, InputStream inputStream) {
+		HdfsUtil.writeDfsFile(fs, remotePath, inputStream);
+	}
 	
 	public void delete(String remotePath, boolean recursive) {
 		try {
@@ -80,5 +85,4 @@ public class DefaultDeployMethod implements DeployMethod {
 	public List<String> readFile(String path) {
 		return HdfsUtil.stringsFromDfsFile(fs, path);
 	}
-	
 }

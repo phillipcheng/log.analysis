@@ -1,5 +1,6 @@
 package dv.mgr;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -42,6 +44,7 @@ import dv.db.dao.AccountRepository;
 import dv.db.dao.FlowRepository;
 import dv.db.entity.AccountEntity;
 import dv.db.entity.FlowEntity;
+import dv.ws.WebSocketManager;
 import etl.engine.ETLCmd;
 import etl.flow.Data;
 import etl.flow.Flow;
@@ -189,6 +192,52 @@ public class FlowController {
 		}
 	}
 	
+	@RequestMapping(value = "/instances/{instanceId}/status", method = RequestMethod.GET)
+	String notifyFlowInstanceStatus(@PathVariable String userName, @PathVariable String instanceId, @RequestParam(value = "status") String status) throws IOException {
+		String message = "{\"instanceId\": \"" + instanceId + "\", " + "\"status\": \"" + status + "\"}";
+		logger.debug(message);
+		WebSocketManager.sendMassMessage(instanceId, message);
+		return "";
+	}
+	
+	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/status", method = RequestMethod.GET)
+	String notifyFlowNodeStatus(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName, @RequestParam(value = "status") String status) throws IOException {
+		String message;
+		if (status != null && status.startsWith("T:")) {
+			String targetNode = status.substring(2);
+			if ("*".equals(targetNode)) {
+				status = "OK";
+				
+			} else if ("null".equals(targetNode)) {
+				status = "OK";
+				
+			} else if ("fail".equals(targetNode)) {
+				status = "ERROR";
+				message = "{\"instanceId\": \"" + instanceId + "\", " + "\"nodeName\": \"" + nodeName + "\", " + "\"status\": \"" + status + "\"}";
+				logger.debug(message);
+				WebSocketManager.sendMassMessage(instanceId, message);
+
+				nodeName = targetNode;
+				status = "PREP";
+				
+			} else {
+				status = "OK";
+				message = "{\"instanceId\": \"" + instanceId + "\", " + "\"nodeName\": \"" + nodeName + "\", " + "\"status\": \"" + status + "\"}";
+				logger.debug(message);
+				WebSocketManager.sendMassMessage(instanceId, message);
+				
+				nodeName = targetNode;
+				status = "PREP";
+			}
+		} else if (status != null && status.startsWith("S:"))
+			status = status.substring(2);
+		
+		message = "{\"instanceId\": \"" + instanceId + "\", " + "\"nodeName\": \"" + nodeName + "\", " + "\"status\": \"" + status + "\"}";
+		logger.debug(message);
+		WebSocketManager.sendMassMessage(instanceId, message);
+		return "";
+	}
+	
 	@RequestMapping(value = "/instances/{instanceId}", method = RequestMethod.GET)
 	FlowInfo getFlowInstance(@PathVariable String userName, @PathVariable String instanceId) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
@@ -203,7 +252,7 @@ public class FlowController {
 		return this.flowMgr.getFlowLog("project1", oc, instanceId);
 	}
 	
-	@RequestMapping(value = "/instances/{instanceId}/data/{dataName}", method = RequestMethod.GET)
+	@RequestMapping(value = "/instances/{instanceId}/data/{dataName:.+}", method = RequestMethod.GET)
 	InMemFile getFlowInstanceData(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String dataName) {
 		this.validateUser(userName);
 		OozieConf oc = flowDeployer.getOozieServerConf();

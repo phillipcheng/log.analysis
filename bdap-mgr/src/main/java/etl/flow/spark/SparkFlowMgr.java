@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.Resource;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
@@ -137,7 +138,20 @@ public class SparkFlowMgr extends FlowMgr{
 	}
 
 	@Override
+	public Resource getFlowLogResource(String projectName, FlowServerConf fsconf, String instanceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Resource[] getNodeLogResources(String projectName, FlowServerConf fsconf, String instanceId,
+			String nodeName) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -200,9 +214,14 @@ public class SparkFlowMgr extends FlowMgr{
 	}
 
 	@Override
+	public InMemFile getDFSFile(EngineConf ec, String filePath, long startLine, long endLine) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public boolean putDFSFile(EngineConf ec, String filePath, InMemFile file) {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 }
