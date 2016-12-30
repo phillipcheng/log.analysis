@@ -26,8 +26,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import etl.util.CombineWithFileNameTextInputFormat;
-import etl.util.FilenameInputFormat;
+import etl.input.CombineWithFileNameTextInputFormat;
+import etl.input.FilenameInputFormat;
 import scala.Tuple2;
 
 public class TestCsvTransformCmd extends TestETLCmd {

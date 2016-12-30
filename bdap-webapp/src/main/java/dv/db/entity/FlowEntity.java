@@ -20,7 +20,7 @@ public class FlowEntity {
 	private String name;
 	
 	private String owner;
-	@Column(length=10000)  
+	@Column(length=100000)  
 	private String jsonContent;
 
 	public String getName() {

@@ -51,7 +51,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		getConf().set("xmlinput.row.start", "<measValue");
 		getConf().set("xmlinput.row.end", "</measValue>");
 		getConf().set("xmlinput.row.max.number", "3");
-		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, etl.util.XmlInputFormat.class);
+		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, etl.input.XmlInputFormat.class);
 		
 		//check results
 		//outputFolder should have the csv file
@@ -91,7 +91,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		addConf.put("xmlinput.row.max.number", "3");
 	
 		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, 
-				etl.cmd.testcmd.SampleXml2CsvCmd.class, etl.util.XmlInputFormat.class, addConf);
+				etl.cmd.testcmd.SampleXml2CsvCmd.class, etl.input.XmlInputFormat.class, addConf);
 		List<String> output = ret._2;
 		logger.info(String.format("output:\n%s", String.join("\n", output)));
 		//check results
@@ -122,7 +122,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		rfifs.add(new Tuple2<String, String[]>(inputFolder, inputFiles));
 		getConf().set("xmlinput.start", "<measInfo>");
 		getConf().set("xmlinput.end", "</measInfo>");
-		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, etl.util.XmlInputFormat.class);
+		super.mrTest(rfifs, outputFolder, staticCfgName, cmdClassName, etl.input.XmlInputFormat.class);
 		
 		//check results
 		//outputFolder should have the csv file

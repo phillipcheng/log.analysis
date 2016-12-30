@@ -63,7 +63,7 @@
         <error to="fail"/>
     </action>
     <fork name="sftp_fork">
-        <path start="d2csvtransform"/>
+        <path start="d2xml2csv"/>
         <path start="d1csvtransform"/>
     </fork>
     <action name="d1csvtransform">
@@ -139,8 +139,7 @@
         <ok to="csvmerge_join"/>
         <error to="fail"/>
     </action>
-    <join name="csvmerge_join" to="csvmerge"/>
-    <action name="d2csvtransform">
+    <action name="d2xml2csv">
         <map-reduce>
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
@@ -174,7 +173,31 @@
                 </property>
                 <property>
                     <name>mapreduce.job.inputformat.class</name>
-                    <value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
+                    <value>etl.input.CombineXmlInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.split.maxsize</name>
+                    <value>268435456</value>
+                </property>
+                <property>
+                    <name>xmlinput.start</name>
+                    <value>&lt;info</value>
+                </property>
+                <property>
+                    <name>xmlinput.end</name>
+                    <value>&lt;/info&gt;</value>
+                </property>
+                <property>
+                    <name>xmlinput.row.start</name>
+                    <value>&lt;values</value>
+                </property>
+                <property>
+                    <name>xmlinput.row.end</name>
+                    <value>&lt;/values&gt;</value>
+                </property>
+                <property>
+                    <name>xmlinput.row.max.number</name>
+                    <value>3000</value>
                 </property>
                 <property>
                     <name>mapreduce.output.fileoutputformat.outputdir</name>
@@ -194,7 +217,7 @@
                 </property>
                 <property>
                     <name>cmdClassName</name>
-                    <value>etl.cmd.CsvTransformCmd</value>
+                    <value>etl.flow.test.cmd.Flow1Xml2CsvCmd</value>
                 </property>
                 <property>
                     <name>wfName</name>
@@ -206,13 +229,14 @@
                 </property>
                 <property>
                     <name>staticConfigFile</name>
-                    <value>action_d2csvtransform.properties</value>
+                    <value>action_d2xml2csv.properties</value>
                 </property>
             </configuration>
         </map-reduce>
         <ok to="csvmerge_join"/>
         <error to="fail"/>
     </action>
+    <join name="csvmerge_join" to="csvmerge"/>
     <action name="csvmerge">
         <map-reduce>
             <job-tracker>${jobTracker}</job-tracker>
@@ -262,12 +286,16 @@
                     <value>org.apache.hadoop.io.Text</value>
                 </property>
                 <property>
+                    <name>mapreduce.output.textoutputformat.separator</name>
+                    <value>,</value>
+                </property>
+                <property>
                     <name>mapreduce.job.outputformat.class</name>
                     <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
                 </property>
                 <property>
                     <name>cmdClassName</name>
-                    <value>etl.cmd.CsvMergeCmd</value>
+                    <value>etl.cmd.CsvAggregateCmd</value>
                 </property>
                 <property>
                     <name>wfName</name>
@@ -279,7 +307,7 @@
                 </property>
                 <property>
                     <name>staticConfigFile</name>
-                    <value>action_csvmerge.properties</value>
+                    <value>action_csvaggr.properties</value>
                 </property>
             </configuration>
         </map-reduce>

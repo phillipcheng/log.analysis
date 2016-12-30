@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +42,7 @@ import etl.flow.oozie.wf.PARAMETERS;
 import etl.flow.oozie.wf.PREPARE;
 import etl.flow.oozie.wf.START;
 import etl.flow.oozie.wf.WORKFLOWAPP;
+import etl.util.GlobExpPathFilter;
 
 public class OozieGenerator {
 	public static final Logger logger = LogManager.getLogger(OozieGenerator.class);
@@ -59,8 +61,11 @@ public class OozieGenerator {
 	//input output
 	public static final String prop_inputformat="mapreduce.job.inputformat.class";
 		public static final String prop_inputformat_line="org.apache.hadoop.mapreduce.lib.input.NLineInputFormat";
-		public static final String prop_inputformat_filename="etl.util.FilenameInputFormat";
 		public static final String prop_inputformat_textfile="org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
+		public static final String prop_inputformat_sequencefile="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
+		public static final String prop_inputformat_xmlfile="etl.input.XmlInputFormat";
+		public static final String prop_inputformat_combine_xmlfile="etl.input.CombineXmlInputFormat";
+		public static final String prop_inputformat_filename="etl.input.FilenameInputFormat";
 	public static final String prop_inputdirs="mapreduce.input.fileinputformat.inputdir";
 	public static final String prop_outputformat="mapreduce.job.outputformat.class";
 		public static final String prop_outputformat_null="org.apache.hadoop.mapreduce.lib.output.NullOutputFormat";
@@ -69,7 +74,8 @@ public class OozieGenerator {
 	public static final String prop_output_keyclass="mapreduce.job.output.key.class";
 	public static final String prop_output_valueclass="mapreduce.job.output.value.class";
 		public static final String prop_text_type="org.apache.hadoop.io.Text";
-	
+	public static final String prop_input_pathfilter="mapreduce.input.pathFilter.class";
+		public static final String prop_input_path_globexpfilter="etl.util.GlobExpPathFilter";
 	//command parameter are defined in the InvokerMapper
 	
 	private static String killName = "fail";
@@ -82,10 +88,16 @@ public class OozieGenerator {
 	private static String getInputFormat(InputFormatType ift){
 		if (InputFormatType.Line == ift){
 			return prop_inputformat_line;
-		}else if (InputFormatType.FileName == ift){
-			return prop_inputformat_filename;
 		}else if (InputFormatType.Text == ift){
 			return prop_inputformat_textfile;
+		}else if (InputFormatType.SequenceFile == ift){
+			return prop_inputformat_sequencefile;
+		}else if (InputFormatType.XML == ift){
+			return prop_inputformat_xmlfile;
+		}else if (InputFormatType.CombineXML == ift){
+			return prop_inputformat_combine_xmlfile;
+		}else if (InputFormatType.FileName == ift){
+			return prop_inputformat_filename;
 		}else{
 			logger.error(String.format("inputformat:%s not supported", ift));
 			return null;
@@ -155,7 +167,7 @@ public class OozieGenerator {
 					return null;
 				}else{
 					if (d.isInstance()){
-						inputDataDirs.add(d.getLocation()+wfid);
+						inputDataDirs.add(d.getLocation()+wfid+"/*");
 					}else{
 						inputDataDirs.add(d.getLocation());
 					}
@@ -245,7 +257,20 @@ public class OozieGenerator {
 		cfgPropertiesCp.setName(EngineConf.cfgkey_staticconfigfile);
 		cfgPropertiesCp.setValue(String.format("action_%s.properties", an.getName()));
 		pl.add(cfgPropertiesCp);
-		
+		//add system properties
+		Map<String, Object> sysProperties = an.getSysProperties();
+		for (String key: sysProperties.keySet()){
+			if (key.equals(GlobExpPathFilter.cfgkey_path_filters)){
+				CONFIGURATION.Property add = new CONFIGURATION.Property();
+				add.setName(prop_input_pathfilter);
+				add.setValue(prop_input_path_globexpfilter);
+				pl.add(add);
+			}
+			CONFIGURATION.Property cp = new CONFIGURATION.Property();
+			cp.setName(key);
+			cp.setValue(String.valueOf(sysProperties.get(key)));
+			pl.add(cp);
+		}
 		return mr;
 	}
 	

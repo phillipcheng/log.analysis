@@ -74,7 +74,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	private String joinType="outer";
 	
 	//new table/single table: flag of each group key
-	private transient Map<String,List<Boolean>> groupKeyOutputFlagMap=new HashMap<String, List<Boolean>>();
+	private transient Map<String,List<Boolean>> groupKeyOutputFlagMap;
 	
 	private GroupOp getGroupOp(String keyPrefix){
 		String groupKey = keyPrefix==null? cfgkey_aggr_groupkey:keyPrefix+"."+cfgkey_aggr_groupkey;
@@ -130,6 +130,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
+		groupKeyOutputFlagMap = new HashMap<String, List<Boolean>>();
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
 		aoMapMap = new HashMap<String, AggrOps>();
 		groupKeysMap = new HashMap<String, GroupOp>();

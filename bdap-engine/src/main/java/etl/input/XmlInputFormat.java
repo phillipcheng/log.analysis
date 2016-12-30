@@ -1,4 +1,4 @@
-package etl.util;
+package etl.input;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;

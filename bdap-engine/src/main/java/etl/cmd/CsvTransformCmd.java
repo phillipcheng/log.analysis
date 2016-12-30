@@ -32,7 +32,7 @@ import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.OutputType;
 import etl.engine.ProcessMode;
-import etl.util.CombineWithFileNameTextInputFormat;
+import etl.input.CombineWithFileNameTextInputFormat;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
 

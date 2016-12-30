@@ -1,4 +1,4 @@
-package etl.util;
+package etl.input;
 
 import java.io.BufferedReader;
 import java.io.IOException;

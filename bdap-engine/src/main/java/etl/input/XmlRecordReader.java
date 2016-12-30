@@ -1,4 +1,4 @@
-package etl.util;
+package etl.input;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
