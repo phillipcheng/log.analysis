@@ -2,14 +2,14 @@
 	"menus":{
 			"menus":
 				[{
-					"menuid":"account",
-					"menuname":"Account manager",
+					"menuid":"Account",
+					"menuname":"Account Manager",
 					"url":"login.html",
 					"icon":""
 				},{
-					"menuid":"flow",
-					"menuname":"Flow manager",
-					"url":"login.html",
+					"menuid":"Flow",
+					"menuname":"Flow Manager",
+					"url":"flowList.html",
 					"icon":""
 				},{
 					"menuid":"group",
