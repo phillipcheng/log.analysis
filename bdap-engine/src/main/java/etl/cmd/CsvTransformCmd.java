@@ -156,7 +156,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	}
 
 	@Override
-	public List<Tuple2<String, String>> flatMapToPair(String pathName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public List<Tuple2<String, String>> flatMapToPair(String tfName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		String row = value;
 		String output="";
@@ -176,9 +176,6 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				}
 			} /* If result is not boolean, the expression has no effect */
 		}
-		
-		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		String tableName = getTableNameSetFileName(pathName);
 		
 		//set the fieldsMap
 		Map<String, String> fieldMap = null;
@@ -207,13 +204,13 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		
 		//process operation
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
-		super.getSystemVariables().put(VAR_NAME_TABLE_NAME, tableName);
+		super.getSystemVariables().put(VAR_NAME_TABLE_NAME, tfName);
 		for (ColOp co: colOpList){
 			items = co.process(super.getSystemVariables(), items);
 		}
 		output = Util.getCsv(items, false);
-		logger.debug(String.format("tableName:%s, output:%s", tableName, output));
-		return Arrays.asList(new Tuple2<String, String>(tableName, output));
+		logger.debug(String.format("tableName:%s, output:%s", tfName, output));
+		return Arrays.asList(new Tuple2<String, String>(tfName, output));
 	}
 	
 	@Override
@@ -223,12 +220,11 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		try {
 			if (context.getInputFormatClass().isAssignableFrom(SequenceFileInputFormat.class)){
 				String[] lines = row.split("\n");
-				String pathName = null;
-				pathName = lines[0];
+				String pathName = lines[0];
+				this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+				String tfName = getTableNameSetPathFileName(pathName);
 				boolean skipFirstLine = skipHeader;
 				if (!skipHeader && skipHeaderCS!=null){
-					this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-					getTableNameSetFileName(pathName);
 					boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, super.getSystemVariables());
 					skipFirstLine = skipFirstLine || skip;
 				}
@@ -237,7 +233,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
 				for (int i=start; i<lines.length; i++){
 					String line = lines[i];
-					List<Tuple2<String, String>> ret = flatMapToPair(pathName, line, context);
+					List<Tuple2<String, String>> ret = flatMapToPair(tfName, line, context);
 					if (ret!=null) output.addAll(ret);
 				}
 				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, output);
@@ -257,17 +253,17 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				}else{
 					logger.error(String.format("unsupported input split:%s", context.getInputSplit()));
 				}
+				this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+				String tfName = getTableNameSetPathFileName(pathName);
 				//process skip header exp
 				if (skipHeaderCS!=null && offset==0){
-					this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-					getTableNameSetFileName(pathName);
 					boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, super.getSystemVariables());
 					if (skip){
 						logger.info("skip header:" + row);
 						return null;
 					}
 				}
-				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, flatMapToPair(pathName, row, null));
+				retMap.put(RESULT_KEY_OUTPUT_TUPLE2, flatMapToPair(tfName, row, null));
 			}
 		}catch(Exception e){
 			logger.error("", e);

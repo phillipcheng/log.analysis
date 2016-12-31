@@ -25,6 +25,7 @@ import etl.flow.Link;
 import etl.flow.Node;
 import etl.flow.NodeLet;
 import etl.flow.StartNode;
+import etl.flow.deploy.FlowDeployer;
 import etl.flow.oozie.coord.COORDINATORAPP;
 
 import etl.flow.oozie.wf.ACTION;
@@ -60,12 +61,7 @@ public class OozieGenerator {
 	public static final String prop_reduce_num ="mapreduce.job.reduces";//set this to 0 when there is no reducer
 	//input output
 	public static final String prop_inputformat="mapreduce.job.inputformat.class";
-		public static final String prop_inputformat_line="org.apache.hadoop.mapreduce.lib.input.NLineInputFormat";
-		public static final String prop_inputformat_textfile="org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
-		public static final String prop_inputformat_sequencefile="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
-		public static final String prop_inputformat_xmlfile="etl.input.XmlInputFormat";
-		public static final String prop_inputformat_combine_xmlfile="etl.input.CombineXmlInputFormat";
-		public static final String prop_inputformat_filename="etl.input.FilenameInputFormat";
+		
 	public static final String prop_inputdirs="mapreduce.input.fileinputformat.inputdir";
 	public static final String prop_outputformat="mapreduce.job.outputformat.class";
 		public static final String prop_outputformat_null="org.apache.hadoop.mapreduce.lib.output.NullOutputFormat";
@@ -84,25 +80,6 @@ public class OozieGenerator {
 	public static final String wfid = "${wf:id()}";
 	public static final String wfid_param_name="wfid";
 	public static final String wfid_param_exp= "${wfid}";
-	
-	private static String getInputFormat(InputFormatType ift){
-		if (InputFormatType.Line == ift){
-			return prop_inputformat_line;
-		}else if (InputFormatType.Text == ift){
-			return prop_inputformat_textfile;
-		}else if (InputFormatType.SequenceFile == ift){
-			return prop_inputformat_sequencefile;
-		}else if (InputFormatType.XML == ift){
-			return prop_inputformat_xmlfile;
-		}else if (InputFormatType.CombineXML == ift){
-			return prop_inputformat_combine_xmlfile;
-		}else if (InputFormatType.FileName == ift){
-			return prop_inputformat_filename;
-		}else{
-			logger.error(String.format("inputformat:%s not supported", ift));
-			return null;
-		}
-	}
 	
 	private static ETLCmd getCmd(ActionNode an) {
 		try{
@@ -190,7 +167,7 @@ public class OozieGenerator {
 		pl.add(inputDirsCp);
 		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
 		inputFormatTypeCp.setName(prop_inputformat);
-		inputFormatTypeCp.setValue(getInputFormat(ift));
+		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift));
 		pl.add(inputFormatTypeCp);
 		
 		//output properties

@@ -55,7 +55,7 @@ public class CsvNormalizeCmd extends SchemaETLCmd {
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
 		List<String[]> ret = new ArrayList<String[]>();
 		String inputFileName = key.toString();
-		String tableName = getTableNameSetFileName(inputFileName);
+		String tableName = getTableNameSetPathFileName(inputFileName);
 		LogicSchema logicSchema = getLogicSchema();
 		List<String> attributes = logicSchema.getAttrNames(tableName);
 		CSVParser parser = null;

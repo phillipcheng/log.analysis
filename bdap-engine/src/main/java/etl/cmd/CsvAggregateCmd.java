@@ -36,10 +36,6 @@ import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
 import scala.Tuple3;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.PairFunction;
 
 public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
@@ -388,7 +384,14 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	 */
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
-		super.init();		
+		super.init();
+		
+		if (inputEndWithComma){
+			value = value.trim();
+			if (value.endsWith(",")){
+				value = value.replaceAll(",$", "");
+			}
+		}
 		List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
 		try {
 			String row = value.toString();
@@ -403,7 +406,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 					oldTableName = tableName;
 					groupKeys = groupKeysMap.get(tableName);
 				}else{
-					logger.debug(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), tableName));
+					logger.warn(String.format("groupKeysMap %s does not have table %s", groupKeysMap.keySet(), tableName));
 					return ret;
 				}
 			}
@@ -459,12 +462,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		if (skipHeader && offset==0) {
 			logger.info("skip header:" + row);
 			return null;
-		}		
-		if (inputEndWithComma){
-			row = row.trim();
-			if (row.endsWith(",")){
-				row = row.replaceAll(",$", "");
-			}
 		}		
 		try {
 			String tableName = getTableNameSetFileNameByContext(context);
@@ -656,7 +653,9 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		return newKeys;
 	}
 	
-	private List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it){
+	@Override
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
 		super.init();
 		/*
 		* key= newtablename,expKey1,expKey2,...commonkey1,commonkey2...
@@ -716,7 +715,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				 */
 				try {
 					String s = its.next().toString();
-					logger.debug(String.format("reduce: key:%s, one value:%s", key, s));
+					logger.debug(String.format("reduce in: key:%s, one value:%s", key, s));
 					int firstComma =s.indexOf(KEY_SEP);
 					String oldTableName = s.substring(0, firstComma);
 					String vs = s.substring(firstComma+1);
@@ -796,10 +795,10 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 						fieldValues.addAll(record);
 					}
 				}
-				
-				retList.add(new Tuple3<String, String, String>(newKey,Util.getCsv(fieldValues, false),newTables[grpIdx]));				
-			}			
-			
+				String value = Util.getCsv(fieldValues, false);
+				logger.debug(String.format("reduce output: key:%s, valued;%s", newKey, value));
+				retList.add(new Tuple3<String, String, String>(newKey, value, newTables[grpIdx]));				
+			}
 			return retList;
 		}
 	}
@@ -812,39 +811,11 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		while (vit.hasNext()){
 			svalues.add(vit.next().toString());
 		}
-		List<Tuple3<String, String, String>> retList = reduceByKey(key.toString(), svalues);
+		List<Tuple3<String, String, String>> retList = reduceByKey(key.toString(), svalues, context, mos);
 		List<String[]> retStringlist = new ArrayList<String[]>();
 		for(Tuple3<String, String, String> ret:retList){
 			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
 		}		
 		return retStringlist;
-	}
-	
-	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-				List<Tuple2<String, String>> ret = flatMapToPair(t._1, t._2, null);
-				return ret.iterator();
-			}
-		});
-		
-		JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
-				//FIXME
-				/*
-				Tuple3<String, String, String> t3 = reduceByKey(t._1, t._2);
-				return new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2());
-				*/
-				return null;
-			}
-		});
-		
-		return csvaggr;
-		
 	}
 }

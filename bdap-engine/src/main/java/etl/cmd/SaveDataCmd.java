@@ -1,5 +1,7 @@
 package etl.cmd;
 
+import java.util.List;
+
 import javax.script.CompiledScript;
 
 import org.apache.hadoop.io.Text;
@@ -11,6 +13,7 @@ import etl.engine.ProcessMode;
 import etl.spark.RDDMultipleTextOutputFormat;
 import etl.spark.SparkUtil;
 import etl.util.ScriptEngineUtil;
+import scala.Tuple2;
 
 public class SaveDataCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;

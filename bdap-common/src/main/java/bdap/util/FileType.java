@@ -7,6 +7,7 @@ public enum FileType {
 	oozieCoordXml,
 	actionProperty,
 	engineProperty,
+	shell,
 	ftmappingFile, //file<-->table mapping file
 	log4j,
 	stdoutLog,

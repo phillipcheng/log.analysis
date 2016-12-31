@@ -184,6 +184,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		while (it.hasNext()){
 			String key = (String) it.next();
 			String value = pc.getString(key);
+			logger.debug(String.format("copy property:%s:%s", key, value));
 			this.conf.set(key, value);
 		}
 	}
@@ -200,7 +201,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 		return key;
 	}
 	
-	public String getTableNameSetFileName(String pathName){
+	public String getTableNameSetPathFileName(String pathName){
 		getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
 		int lastSep = pathName.lastIndexOf("/");
 		String fileName = pathName.substring(lastSep+1);
@@ -254,7 +255,7 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 			public Iterator<Tuple2<String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
 				List<Tuple3<String, String, String>> t3l = reduceByKey(t._1, t._2, null, null);
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
-				for (Tuple3<String, String, String> t3:t3l){
+				for (Tuple3<String, String, String> t3 : t3l){
 					if (t3._2()!=null){
 						ret.add(new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2()));
 					}else{
@@ -287,21 +288,19 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 			JobConf jobConf = new JobConf(this.getHadoopConf());
 			FileInputFormat.addInputPath(jobConf, new Path(file));
 			JavaPairRDD<LongWritable, Text> content = jsc.newAPIHadoopRDD(jobConf, inputFormatClass, LongWritable.class, Text.class);
-			String key = mapKey(file);
 			JavaPairRDD<String, String> tprdd = content.flatMapToPair(new PairFlatMapFunction<Tuple2<LongWritable, Text>, String, String>(){
 				private static final long serialVersionUID = 1L;
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<LongWritable, Text> t) throws Exception {
+					init();
 					List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 					if (inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
 						String row = t.toString();
 						String[] lines = row.split("\n");
-						String pathName = null;
-						pathName = lines[0];
+						String pathName = lines[0];
+						String key = mapKey(pathName);
 						boolean skipFirstLine = skipHeader;
 						if (!skipHeader && skipHeaderCS!=null){
-							getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-							getTableNameSetFileName(pathName);
 							boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, getSystemVariables());
 							skipFirstLine = skipFirstLine || skip;
 						}
@@ -310,9 +309,10 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 						List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
 						for (int i=start; i<lines.length; i++){
 							String line = lines[i];
-							ret.add(new Tuple2<String, String>(pathName, line));
+							ret.add(new Tuple2<String, String>(key, line));
 						}
 					}else{
+						String key = mapKey(file);
 						if (!(skipHeader && t._1.get()==0)){
 							ret.add(new Tuple2<String, String>(key, t._2.toString()));
 						};

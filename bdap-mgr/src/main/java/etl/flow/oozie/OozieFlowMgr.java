@@ -174,26 +174,23 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	//deploy all the in-mem files
-	public boolean deployFlowFromXml(String projectDir, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
+	public boolean deployFlowFromXml(String projectDir, String flowName, List<InMemFile> deployFiles, FlowDeployer fd){
 		//deploy to the server
-		deployFiles.add(super.genEnginePropertyFile(ec));
-		FileSystem fileSystem;
-		if (this.fs != null)
-			fileSystem = this.fs;
-		else
-			fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-		for (InMemFile im:deployFiles){
-			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
-			String path = String.format("%s%s", dir, im.getFileName());
-			HdfsUtil.writeDfsFile(fileSystem, path, im.getContent());
-		}
+		deployFiles.add(super.genEnginePropertyFile(fd.getEngineConfig()));
+		uploadFiles(projectDir, flowName, deployFiles, fd);
 		return true;
 	}
 	
 	//generate the wf.xml, action.properties, etlengine.propertis, and deploy it
 	@Override
-	public boolean deployFlowFromJson(String prjName, Flow flow, FlowDeployer fd) {
+	public boolean deployFlow(String prjName, Flow flow, String[] jars, FlowDeployer fd) throws Exception{
+		String localProjectFolder = fd.getProjectLocalDir(prjName);
+		String localFlowFolder = String.format("%s/%s", localProjectFolder, flow.getName());
+		
 		List<InMemFile> imFiles = new ArrayList<InMemFile>();
+		//get jar
+		List<InMemFile> jarDU = FlowDeployer.getJarDU(localFlowFolder, jars);
+		imFiles.addAll(jarDU);
 		//gen wf xml
 		InMemFile wfXml = genWfXml(flow, null, false);
 		imFiles.add(wfXml);
@@ -205,7 +202,7 @@ public class OozieFlowMgr extends FlowMgr{
 		imFiles.add(enginePropertyFile);
 		//deploy to the server
 		String projectDir = fd.getProjectHdfsDir(prjName);
-		uploadFiles(projectDir, flow.getName(), imFiles.toArray(new InMemFile[]{}), fd.getOozieServerConf(), fd);
+		uploadFiles(projectDir, flow.getName(), imFiles, fd);
 		return true;
 	}
 

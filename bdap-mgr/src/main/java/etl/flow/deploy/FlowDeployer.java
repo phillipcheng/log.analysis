@@ -20,8 +20,10 @@ import bdap.util.EngineConf;
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
+import etl.engine.InputFormatType;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
+import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.InMemFile;
 import etl.flow.oozie.OozieConf;
 import etl.flow.oozie.OozieFlowMgr;
@@ -32,6 +34,13 @@ public class FlowDeployer {
 
 	public static final Logger logger = LogManager.getLogger(FlowDeployer.class);
 	public static final String defaultCfgProperties = "testFlow.properties";
+	
+	public static final String prop_inputformat_line="org.apache.hadoop.mapreduce.lib.input.NLineInputFormat";
+	public static final String prop_inputformat_textfile="org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
+	public static final String prop_inputformat_sequencefile="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
+	public static final String prop_inputformat_xmlfile="etl.input.XmlInputFormat";
+	public static final String prop_inputformat_combine_xmlfile="etl.input.CombineXmlInputFormat";
+	public static final String prop_inputformat_filename="etl.input.FilenameInputFormat";
 	
 	public static String coordinator_xml="coordinator.xml";
 	public static String spark_wfxml="sparkcmd_workflow.xml";
@@ -64,6 +73,7 @@ public class FlowDeployer {
 		this(defaultCfgProperties);
 		this.cfgProperties = defaultCfgProperties;
 	}
+	
     public FlowDeployer(String properties) {
     	if (properties!=null){
     		cfgProperties = properties;
@@ -93,8 +103,31 @@ public class FlowDeployer {
 			return new DefaultDeployMethod(remoteUser, defaultFs);
 	}
     
+    public static String getInputFormat(InputFormatType ift){
+		if (InputFormatType.Line == ift){
+			return prop_inputformat_line;
+		}else if (InputFormatType.Text == ift){
+			return prop_inputformat_textfile;
+		}else if (InputFormatType.SequenceFile == ift){
+			return prop_inputformat_sequencefile;
+		}else if (InputFormatType.XML == ift){
+			return prop_inputformat_xmlfile;
+		}else if (InputFormatType.CombineXML == ift){
+			return prop_inputformat_combine_xmlfile;
+		}else if (InputFormatType.FileName == ift){
+			return prop_inputformat_filename;
+		}else{
+			logger.error(String.format("inputformat:%s not supported", ift));
+			return null;
+		}
+	}
+    
 	public String getProjectHdfsDir(String prjName){
     	return projectHdfsDirMap.get(prjName);
+    }
+	
+	public String getProjectLocalDir(String prjName){
+    	return projectLocalDirMap.get(prjName);
     }
     
     private void installPlatformLib(DirectoryStream<Path> stream) throws Exception{
@@ -152,7 +185,6 @@ public class FlowDeployer {
 	
 	public SparkServerConf getSparkServerConf(){
 		SparkServerConf ssc = new SparkServerConf(cfgProperties);
-		ssc.setOozieServerConf(getOozieServerConf());
 		return ssc;
 	}
 	
@@ -161,57 +193,59 @@ public class FlowDeployer {
 		return ec;
 	}
 	
+	
 	//action properties should prefix with action. mapping properties should suffix with mapping.properties
-	private List<InMemFile> getDeploymentUnits(String folder, String[] jarPaths, boolean fromJson, boolean skipSchema){
+	public static List<InMemFile> getJarDU(String folder, String[] jarPaths) throws Exception{
+		List<InMemFile> fl = new ArrayList<InMemFile>();
+		if (jarPaths!=null){
+			for (String jarPath: jarPaths){
+				Path jarFile = Paths.get(jarPath);
+				fl.add(new InMemFile(FileType.thirdpartyJar, jarFile.getFileName().toString(), Files.readAllBytes(jarFile)));
+			}
+		}
+		return fl;
+	}
+	
+	public static List<InMemFile> getDeploymentUnits(String folder, boolean fromJson, boolean skipSchema) throws Exception{
 		List<InMemFile> fl = new ArrayList<InMemFile>();
 		Path directoryPath = Paths.get(folder);
-		try {
-			if (Files.isDirectory(directoryPath)) {
-				DirectoryStream<Path> stream = null;
-				if (!fromJson){
-					stream = Files.newDirectoryStream(directoryPath, "action*.properties");
-					for (Path path : stream) {
-					    logger.info(String.format("action path:%s", path.getFileName().toString()));
-						byte[] content = Files.readAllBytes(path);
-						fl.add(new InMemFile(FileType.actionProperty, path.getFileName().toString(), content));
-					}
-					stream = Files.newDirectoryStream(directoryPath, "*workflow.xml");
-					for (Path path : stream) {
-					    logger.info(String.format("workflow path:%s", path.getFileName().toString()));
-						byte[] content = Files.readAllBytes(path);
-						fl.add(new InMemFile(FileType.oozieWfXml, path.getFileName().toString(), content));
-					}
-				}
-				if (!skipSchema){
-					stream = Files.newDirectoryStream(directoryPath, "*.schema");
-					for (Path path : stream) {
-					    logger.info(String.format("schema path:%s", path.getFileName().toString()));
-						byte[] content = Files.readAllBytes(path);
-						fl.add(new InMemFile(FileType.logicSchema, path.getFileName().toString(), content));
-					}
-				}
-				stream = Files.newDirectoryStream(directoryPath, "*_mapping.properties");
+		if (Files.isDirectory(directoryPath)) {
+			DirectoryStream<Path> stream = null;
+			if (!fromJson){
+				stream = Files.newDirectoryStream(directoryPath, "action*.properties");
 				for (Path path : stream) {
-				    logger.info(String.format("mapping path:%s", path.getFileName().toString()));
+				    logger.info(String.format("action path:%s", path.getFileName().toString()));
 					byte[] content = Files.readAllBytes(path);
-					fl.add(new InMemFile(FileType.ftmappingFile, path.getFileName().toString(), content));
+					fl.add(new InMemFile(FileType.actionProperty, path.getFileName().toString(), content));
 				}
-				stream = Files.newDirectoryStream(directoryPath, "log4j*");
+				stream = Files.newDirectoryStream(directoryPath, "*workflow.xml");
 				for (Path path : stream) {
-				    logger.info(String.format("log4j path:%s", path.getFileName().toString()));
+				    logger.info(String.format("workflow path:%s", path.getFileName().toString()));
 					byte[] content = Files.readAllBytes(path);
-					fl.add(new InMemFile(FileType.log4j, path.getFileName().toString(), content));
-				}
-				
-			}
-			if (jarPaths!=null){
-				for (String jarPath: jarPaths){
-					Path jarFile = Paths.get(jarPath);
-					fl.add(new InMemFile(FileType.thirdpartyJar, jarFile.getFileName().toString(), Files.readAllBytes(jarFile)));
+					fl.add(new InMemFile(FileType.oozieWfXml, path.getFileName().toString(), content));
 				}
 			}
-		}catch(Exception e){
-			logger.error("", e);
+			if (!skipSchema){
+				stream = Files.newDirectoryStream(directoryPath, "*.schema");
+				for (Path path : stream) {
+				    logger.info(String.format("schema path:%s", path.getFileName().toString()));
+					byte[] content = Files.readAllBytes(path);
+					fl.add(new InMemFile(FileType.logicSchema, path.getFileName().toString(), content));
+				}
+			}
+			stream = Files.newDirectoryStream(directoryPath, "*_mapping.properties");
+			for (Path path : stream) {
+			    logger.info(String.format("mapping path:%s", path.getFileName().toString()));
+				byte[] content = Files.readAllBytes(path);
+				fl.add(new InMemFile(FileType.ftmappingFile, path.getFileName().toString(), content));
+			}
+			stream = Files.newDirectoryStream(directoryPath, "log4j*");
+			for (Path path : stream) {
+			    logger.info(String.format("log4j path:%s", path.getFileName().toString()));
+				byte[] content = Files.readAllBytes(path);
+				fl.add(new InMemFile(FileType.log4j, path.getFileName().toString(), content));
+			}
+			
 		}
 		return fl;
 	}
@@ -247,21 +281,24 @@ public class FlowDeployer {
 	private void deploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
 		String localProjectFolder = this.projectLocalDirMap.get(projectName);
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
+		String localFlowFolder = String.format("%s/%s", localProjectFolder, flowName);
 		OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 		SparkFlowMgr sfm = new SparkFlowMgr();
 		if (!fromJson){
-			List<InMemFile> deployFiles = getDeploymentUnits(String.format("%s/%s", localProjectFolder, flowName), 
-					jars, fromJson, skipSchema);
+			List<InMemFile> deployFiles = getDeploymentUnits(localFlowFolder, fromJson, skipSchema);
 			logger.info(String.format("files deployed:%s", deployFiles));
-			ofm.deployFlowFromXml(hdfsProjectFolder, flowName, deployFiles, getOozieServerConf(), getEngineConfig());
+			ofm.deployFlowFromXml(hdfsProjectFolder, flowName, deployFiles, this);
+			//deploy jar files
+			List<InMemFile> jarDU = getJarDU(localFlowFolder, jars);
+			FlowMgr.uploadFiles(hdfsProjectFolder, flowName, jarDU, this);
 		}else{
 			String jsonFile = String.format("%s/%s/%s.json", localProjectFolder, flowName, flowName);
 			Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
 			if (flow!=null){
 				if (EngineType.oozie==et){
-					ofm.deployFlowFromJson(projectName, flow, this);
+					ofm.deployFlow(projectName, flow, jars, this);
 				}else if (EngineType.spark==et){
-					sfm.deployFlowFromJson(projectName, flow, this);
+					sfm.deployFlow(projectName, flow, jars, this);
 				}else{
 					logger.error(String.format("engine type:%s not supported for deploy.",et));
 				}
@@ -412,5 +449,13 @@ public class FlowDeployer {
 	}
 	public void setPlatformRemoteDist(String platformRemoteDist) {
 		this.platformRemoteDist = platformRemoteDist;
+	}
+
+	public DeployMethod getDeployMethod() {
+		return deployMethod;
+	}
+
+	public void setDeployMethod(DeployMethod deployMethod) {
+		this.deployMethod = deployMethod;
 	}
 }

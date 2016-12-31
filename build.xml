@@ -10,10 +10,13 @@
 	
 	<target name="dist" depends="clean">
 		<mkdir dir="${dist}"/>
-		<copy todir="${dist}/engine/buildlib/"> <!-- copy thirdparty lib-->
+		<copy todir="${dist}/engine/buildlib/"> <!-- copy thirdparty lib for spark to build driver program-->
 			<fileset dir="${engine.target}/lib/">
 			</fileset>
 			<fileset dir="${engine.target}">
+				<include name="bdap.*.jar"/>
+			</fileset>
+			<fileset dir="${mgr.target}">
 				<include name="bdap.*.jar"/>
 			</fileset>
 		</copy>
