@@ -12,8 +12,8 @@ import javax.persistence.Table;
 public class FlowInstanceEntity {
 	
 	@Id
-	@Column(name="instanceid",length=50)  
 	private String instanceID;
+	
 	private String flowName;
 	private Date updateTime;
 	public String getInstanceID() {
