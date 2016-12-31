@@ -1,12 +1,23 @@
 package etl.flow.mgr;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.Resource;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.fasterxml.jackson.module.jsonSchema.types.ArraySchema;
+import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
+import com.fasterxml.jackson.module.jsonSchema.types.StringSchema;
+import com.fasterxml.jackson.module.jsonSchema.types.ArraySchema.Items;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
@@ -16,13 +27,17 @@ import bdap.util.Util;
 import etl.flow.ActionNode;
 import etl.flow.CoordConf;
 import etl.flow.Data;
+import etl.flow.EndNode;
+import etl.flow.ExeType;
 import etl.flow.Flow;
 import etl.flow.Node;
+import etl.flow.StartNode;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.oozie.OozieConf;
 
 public abstract class FlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
+	private static final JsonSchema[] EMPTY_SCHEMAS = new JsonSchema[0];
 	
 	public static String getPropFileName(String nodeName){
 		return String.format("action_%s.properties", nodeName);
@@ -272,5 +287,91 @@ public abstract class FlowMgr {
 		String jsonFileName=String.format("%s/%s/%s/%s.json", rootFolder, projectName, flow.getName(), flow.getName());
 		String jsonString = JsonUtil.toJsonString(flow);
 		Util.writeFile(jsonFileName, jsonString);
+	}
+	
+	public static JsonSchema getFlowSchema(Map<String, List<String>> actionCmds) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+		JsonSchema schema = schemaGen.generateSchema(Flow.class);
+		JsonSchema nodeSchema = schemaGen.generateSchema(Node.class);
+		JsonSchema actionNodeSchema = schemaGen.generateSchema(ActionNode.class);
+		JsonSchema startNodeSchema = schemaGen.generateSchema(StartNode.class);
+		JsonSchema endNodeSchema = schemaGen.generateSchema(EndNode.class);
+		
+		JsonSchema actionNodeSchemaBase = new ObjectSchema();
+		actionNodeSchemaBase.setId(actionNodeSchema.getId());
+		
+		List<JsonSchema> nodeSchemas;
+		
+		if (schema instanceof ObjectSchema) {
+			JsonSchema s;
+			if (schema.asObjectSchema() != null && schema.asObjectSchema().getProperties() != null) {
+				s = schema.asObjectSchema().getProperties().get("nodes");
+				if (s instanceof ArraySchema) {
+					if (s.asArraySchema() != null && s.asArraySchema().getItems() != null) {
+						Items items = s.asArraySchema().getItems();
+						if (items instanceof ArraySchema.SingleItems && items.asSingleItems() != null && items.asSingleItems().getSchema() != null) {
+							StringSchema cmdClassSchema;
+							StringSchema exeTypeSchema;
+							JsonSchema valueSchema;
+							nodeSchemas = new ArrayList<JsonSchema>();
+							
+							if (nodeSchema instanceof ObjectSchema && nodeSchema.asObjectSchema() != null)
+								nodeSchema.asObjectSchema().setProperties(Collections.emptyMap());
+							
+							nodeSchemas.add(items.asSingleItems().getSchema());
+							
+							if (actionNodeSchema instanceof ObjectSchema && actionNodeSchema.asObjectSchema() != null) {
+								cmdClassSchema = new StringSchema();
+								if (actionCmds != null)
+									cmdClassSchema.setEnums(actionCmds.keySet());
+								actionNodeSchema.asObjectSchema().putProperty("cmd.class", cmdClassSchema);
+								exeTypeSchema = new StringSchema();
+								exeTypeSchema.setEnums(new HashSet<String>());
+								ExeType[] exeTypeValues = ExeType.values();
+								for (ExeType v: exeTypeValues)
+									exeTypeSchema.getEnums().add(v.name());
+								actionNodeSchema.asObjectSchema().putProperty("exe.type", exeTypeSchema);
+								actionNodeSchema.asObjectSchema().setExtends(new JsonSchema[] {nodeSchema});
+							}
+							
+							nodeSchemas.add(actionNodeSchema);
+							
+							if (startNodeSchema instanceof ObjectSchema && startNodeSchema.asObjectSchema() != null)
+								startNodeSchema.asObjectSchema().setExtends(new JsonSchema[] {nodeSchema});
+							
+							nodeSchemas.add(startNodeSchema);
+							
+							if (endNodeSchema instanceof ObjectSchema && endNodeSchema.asObjectSchema() != null)
+								endNodeSchema.asObjectSchema().setExtends(new JsonSchema[] {nodeSchema});
+							
+							nodeSchemas.add(endNodeSchema);
+							
+							/* List of action nodes with different Cmd Class */
+							if (actionCmds != null) {
+								ObjectSchema cmdSchema;
+								for (Map.Entry<String, List<String>> entry: actionCmds.entrySet()) {
+									cmdSchema = new ObjectSchema();
+									cmdClassSchema = new StringSchema();
+									cmdClassSchema.setDefault(entry.getKey());
+									cmdClassSchema.setReadonly(true);
+									cmdSchema.putProperty("cmd.class", cmdClassSchema);
+									for (String v: entry.getValue()) {
+										valueSchema = new StringSchema();
+										cmdSchema.putOptionalProperty(v, valueSchema);
+									}
+									cmdSchema.setExtends(new JsonSchema[] {actionNodeSchemaBase});
+									nodeSchemas.add(cmdSchema);
+								}
+							}
+							
+							ArraySchema.ArrayItems newItems = new ArraySchema.ArrayItems(nodeSchemas.toArray(EMPTY_SCHEMAS));
+							s.asArraySchema().setItems(newItems);
+						}
+					}
+				}
+			}
+		}
+	    return schema;
 	}
 }
