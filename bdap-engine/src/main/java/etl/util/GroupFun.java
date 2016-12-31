@@ -146,8 +146,14 @@ public class GroupFun {
 	
 	//////////////
 	public static String getParentFolderName(String path){
-	    String rootToParent = path.substring(0, path.lastIndexOf('/', path.length() - 1));
-	    return rootToParent.substring(rootToParent.lastIndexOf('/', rootToParent.length() - 1) + 1);
+		int slashLastIndex = path.lastIndexOf('/', path.length() - 1);
+		if (slashLastIndex>=0){
+			String rootToParent = path.substring(0, slashLastIndex);
+			return rootToParent.substring(rootToParent.lastIndexOf('/', rootToParent.length() - 1) + 1);
+		}else{
+			logger.error(String.format("no slash in %s", path));
+			return null;
+		}
 	}
 	
 	///////////////

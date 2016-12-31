@@ -1,6 +1,7 @@
 package etl.flow.mgr;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,25 +29,25 @@ public abstract class FlowMgr {
 	}
 	
 	//generate the properties files for all the cmd to initiate
-	public List<InMemFile> genProperties(Flow flow){
+	public static List<InMemFile> genProperties(Flow flow){
 		List<InMemFile> propertyFiles = new ArrayList<InMemFile>();
 		for (Node n: flow.getNodes()){
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
 				String propFileName = getPropFileName(an.getName());
-				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getUserProperties());
+				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getAllProperties());
 				propertyFiles.add(new InMemFile(FileType.actionProperty, propFileName, bytes));
 			}
 		}
 		return propertyFiles;
 	}
 	
-	public InMemFile genEnginePropertyFile(EngineConf ec){
+	public static InMemFile genEnginePropertyFile(EngineConf ec){
 		return new InMemFile(FileType.engineProperty, EngineConf.file_name, ec.getContent());
 	}
 	
 	//projectDir is hdfsDir
-	public String getDir(FileType ft, String projectDir, String flowName, OozieConf oc){
+	public static String getDir(FileType ft, String projectDir, String flowName, OozieConf oc){
 		String nameNodePath = oc.getNameNode();
 		if (nameNodePath.endsWith("/")){
 			nameNodePath = nameNodePath.substring(0, nameNodePath.length() - 1);
@@ -60,7 +61,7 @@ public abstract class FlowMgr {
 		}
 		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
 				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || 
-				ft==FileType.log4j || ft == FileType.logicSchema){
+				ft==FileType.log4j || ft == FileType.logicSchema || ft == FileType.shell){
 			return String.format("%s/%s/%s/lib/", nameNodePath, hdfsDir, flowName);
 		}else if (ft == FileType.oozieWfXml || ft == FileType.oozieCoordXml){
 			return String.format("%s/%s/%s/", nameNodePath, hdfsDir, flowName);
@@ -70,10 +71,10 @@ public abstract class FlowMgr {
 		}
 	}
 	
-	public void uploadFiles(String projectDir, String flowName, InMemFile[] files, OozieConf oc, FlowDeployer fd) {
+	public static void uploadFiles(String projectDir, String flowName, List<InMemFile> files, FlowDeployer fd) {
 		//deploy to the server
 		for (InMemFile im:files){
-			String dir = getDir(im.getFileType(), projectDir, flowName, oc);
+			String dir = getDir(im.getFileType(), projectDir, flowName, fd.getOozieServerConf());
 			String path = String.format("%s%s", dir, im.getFileName());
 			logger.info(String.format("copy to %s", path));
 			fd.deploy(path, im.getContent());
@@ -81,7 +82,7 @@ public abstract class FlowMgr {
 	}
 	
 	//return common properties: nameNode, jobTracker, queue, username, useSystem
-	public bdap.xml.config.Configuration getCommonConf(OozieConf oc, String prjName, String wfName){
+	public static bdap.xml.config.Configuration getCommonConf(OozieConf oc, String prjName, String wfName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
 		{
 			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
@@ -132,7 +133,7 @@ public abstract class FlowMgr {
 		return bodyConf;
 	}
 	
-	public abstract boolean deployFlowFromJson(String prjName, Flow flow, FlowDeployer fd) throws Exception;
+	public abstract boolean deployFlow(String prjName, Flow flow, String[] jars, FlowDeployer fd) throws Exception;
 	public abstract String executeFlow(String prjName, String flowName, FlowDeployer fd) throws Exception;
 	public abstract String executeCoordinator(String prjName, String flowName, FlowDeployer fd, CoordConf cc)  throws Exception;
 	/**

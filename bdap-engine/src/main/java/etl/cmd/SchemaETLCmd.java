@@ -503,7 +503,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	
 	@Override
 	public String mapKey(String key){
-		return getTableNameSetFileName(key);
+		return getTableNameSetPathFileName(key);
 	}
 	
 	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){

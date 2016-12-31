@@ -52,7 +52,8 @@
     "cmd.class" : "etl.cmd.CsvTransformCmd",
     "skip.header" : "true",
     "input.endwithcomma" : "true",
-    "col.op" : "i|6:var groupFunClass = Java.type(\\\"etl.util.GroupFun\\\"); groupFunClass.getParentFolderName(pathname)"
+    "col.op" : "i|6:var groupFunClass = Java.type(\\\"etl.util.GroupFun\\\"); groupFunClass.getParentFolderName(pathname)",
+    "file.table.map":"filename.substring(0\\,5)"
   }, {
     "@class" : "action",
     "name" : "d2xml2csv",

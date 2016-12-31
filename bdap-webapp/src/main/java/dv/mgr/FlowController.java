@@ -158,7 +158,7 @@ public class FlowController {
 			FlowEntity flowEntity = flowRepository.findOne(flowId);
 			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
 				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
-				flowMgr.deployFlowFromJson("project1", flow, flowDeployer);
+				flowMgr.deployFlow("project1", flow, null, flowDeployer); //TODO
 				String flowInstanceId = flowMgr.executeFlow("project1", flowId, flowDeployer);
 				return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
 			} else {

@@ -83,6 +83,21 @@ public class ActionNode extends Node{
 	}
 	
 	@JsonIgnore
+	public LinkedHashMap<String, Object> getAllProperties(){
+		LinkedHashMap<String, Object> allProperties = new LinkedHashMap<String, Object>();
+		for (String key: properties.keySet()){
+			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)){
+				allProperties.put(key, properties.get(key));
+			}else{
+				if (key.startsWith(sys_prop_prefix)){
+					allProperties.put(key.substring(sys_prop_prefix.length()), properties.get(key));
+				}
+			}
+		}
+		return allProperties;
+	}
+	
+	@JsonIgnore
 	public LinkedHashMap<String, Object> getSysProperties(){
 		LinkedHashMap<String, Object> out = new LinkedHashMap<String, Object>();
 		for (String key: properties.keySet()){

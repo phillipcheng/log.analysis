@@ -22,6 +22,7 @@ import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.Node;
 import etl.flow.NodeLet;
+import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowMgr;
 import etl.spark.SparkUtil;
 
@@ -139,14 +140,7 @@ public class SparkGenerator {
 					logger.error(String.format("input:%s, output:%s pair on action:%s not supported.", inputDataType, outputDataType, anode.getName()));
 				}
 				if (inputDataType.equals(DataType.Path) || inputDataType.equals(DataType.KeyPath)){
-					inputFormat = "org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
-					if (inData.getDataFormat().equals(InputFormatType.XML)){
-						inputFormat = "etl.util.XmlInputFormat";
-					}else if (inData.getDataFormat().equals(InputFormatType.SequenceFile)){
-						inputFormat = "org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
-					}else if (inData.getDataFormat().equals(InputFormatType.FileName)){
-						inputFormat = "etl.util.FilenameInputFormat";
-					}
+					inputFormat = FlowDeployer.getInputFormat(inData.getDataFormat());
 				}
 				if (inputFormat==null){
 					if (outputVarName!=null){

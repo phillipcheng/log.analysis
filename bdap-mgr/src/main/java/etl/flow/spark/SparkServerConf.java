@@ -16,7 +16,6 @@ public class SparkServerConf implements FlowServerConf {
 	private String classesFolder="classes";
 	private String targetFolder="target";
 	private String jdkBin;
-	private OozieConf oozieServerConf;
 	
 	public SparkServerConf(String confFile){
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(confFile);
@@ -61,14 +60,6 @@ public class SparkServerConf implements FlowServerConf {
 
 	public void setJdkBin(String jdkBin) {
 		this.jdkBin = jdkBin;
-	}
-
-	public OozieConf getOozieServerConf() {
-		return oozieServerConf;
-	}
-
-	public void setOozieServerConf(OozieConf oozieServerConf) {
-		this.oozieServerConf = oozieServerConf;
 	}
 
 }

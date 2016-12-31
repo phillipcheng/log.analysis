@@ -203,7 +203,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 		}
 		if (logicSchema!=null && (csLoadSql==null||loadSql.contains(VAR_TABLE_NAME))){
 			/* File to table mapping */
-			String tableName = this.getTableNameSetFileName(row);
+			String tableName = this.getTableNameSetPathFileName(row);
 			vl.add(new Tuple2<String, String>(tableName, row));
 		}else{
 			vl.add(new Tuple2<String, String>(NO_TABLE_CONFIGURED, row));
