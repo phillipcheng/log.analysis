@@ -47,7 +47,7 @@ public class Flow1Test {
 		String flowName="flow1";
 		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
 		initData(apacheDeployer, prjName, flowName, ftpInfo);
-		apacheDeployer.runDeploy(prjName, flowName, jars, useJson, et);
+		apacheDeployer.runDeploy(prjName, flowName, jars, null, useJson, et);
 		String wfId = apacheDeployer.runExecute(prjName, flowName, et);
 		OozieFlowMgr ofm = new OozieFlowMgr();
 		FlowInfo fi=null;

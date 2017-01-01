@@ -28,32 +28,22 @@ public class SparkUtil {
 
 	public static final Logger logger = LogManager.getLogger(SparkUtil.class);
 	
-	/**
-	 * @param input, tuple:tableName to one line
-	 * @param defaultFs
-	 * @param dir
-	 * @param wfid
-	 * @return tableName to fileName
-	 */
-	//TODO remove this
-	public static void saveByKey(JavaPairRDD<String, String> input, String defaultFs, String dir, String wfid){
-		List<Tuple2<String, Iterable<String>>> datalist = input.groupByKey().collect();
-		for (Tuple2<String, Iterable<String>> data: datalist){
-			String key = data._1;
-			Iterable<String> vs = data._2;
-			String fileName = String.format("%s%s%s/%s", defaultFs, dir, wfid, key);
-			logger.info(String.format("going to save as hadoop file:%s with count %d", fileName, input.count()));
-			FileSystem fs = HdfsUtil.getHadoopFs(defaultFs);
-			HdfsUtil.writeDfsFile(fs, fileName, vs);
-		}
-	}
-	
 	public static JavaRDD<String> fromString(String str, JavaSparkContext jsc){
 		return jsc.parallelize(Arrays.asList(new String[]{str}));
 	}
 	
 	public static JavaRDD<String> fromFile(String str, JavaSparkContext jsc){
 		return jsc.textFile(str);
+	}
+	
+	public static JavaPairRDD<String, String> fromFileKeyValue(String str, JavaSparkContext jsc){
+		return jsc.textFile(str).mapToPair(new PairFunction<String, String, String>(){
+			@Override
+			public Tuple2<String, String> call(String t) throws Exception {
+				return new Tuple2<String, String>(str, t);
+			}
+			
+		});
 	}
 	
 	public static JavaRDD<String> filterPairRDD(JavaPairRDD<String,String> input, String key){
@@ -79,7 +69,7 @@ public class SparkUtil {
 		if (inputDataType==DataType.Path && 
 				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
 			methodName = "sparkProcessFilesToKV";
-		}else if ((inputDataType==DataType.KeyPath || inputDataType==DataType.KeyValue) &&
+		}else if ((inputDataType==DataType.KeyValue || inputDataType==DataType.KeyPath) &&
 				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
 			methodName = "sparkProcessKeyValue";
 		}else if ((inputDataType==DataType.Value) &&

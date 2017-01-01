@@ -38,7 +38,7 @@ public class SparkFlowMgr extends FlowMgr{
 	public static final String replace_thirdpartyjars="[[thirdpartyjars]]";
 	
 	@Override
-	public boolean deployFlow(String prjName, Flow flow, String[] jars, FlowDeployer fd) throws Exception{
+	public boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception{
 		String flowName = flow.getName();
 		SparkServerConf ssc = fd.getSparkServerConf();
 		String targetDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getTargetFolder());
@@ -139,7 +139,7 @@ public class SparkFlowMgr extends FlowMgr{
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oozieServerConf.getOozieServerIp(), oozieServerConf.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration commonConf = getCommonConf(oozieServerConf, prjName, flowName);
+		bdap.xml.config.Configuration commonConf = getCommonConf(fd, prjName, flowName);
 		bdap.xml.config.Configuration wfConf = getWfConf(oozieServerConf, prjName, flowName, fd);
 		commonConf.getProperty().addAll(wfConf.getProperty());
 		String body = XmlUtil.marshalToString(commonConf, "configuration");

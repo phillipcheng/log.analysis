@@ -1,7 +1,6 @@
 package etl.flow.mgr;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -82,7 +81,9 @@ public abstract class FlowMgr {
 	}
 	
 	//return common properties: nameNode, jobTracker, queue, username, useSystem
-	public static bdap.xml.config.Configuration getCommonConf(OozieConf oc, String prjName, String wfName){
+	public static bdap.xml.config.Configuration getCommonConf(FlowDeployer fd, String prjName, String wfName){
+		OozieConf oc = fd.getOozieServerConf();
+		String prjFolder = fd.getProjectHdfsDir(prjName);
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
 		{
 			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
@@ -119,6 +120,11 @@ public abstract class FlowMgr {
 			prjNameProp.setName(OozieConf.key_prjName);
 			prjNameProp.setValue(prjName);
 			bodyConf.getProperty().add(prjNameProp);
+		}{
+			bdap.xml.config.Configuration.Property prop = new bdap.xml.config.Configuration.Property();
+			prop.setName(OozieConf.key_prjFolder);
+			prop.setValue(prjFolder);
+			bodyConf.getProperty().add(prop);
 		} if (oc.getOozieWfNtfUrl() != null && oc.getOozieWfNtfUrl().length() > 0) {
 			bdap.xml.config.Configuration.Property oozieWfNtfUrlProp = new bdap.xml.config.Configuration.Property();
 			oozieWfNtfUrlProp.setName(OozieConf.key_oozieWfNtfUrl);
@@ -133,7 +139,7 @@ public abstract class FlowMgr {
 		return bodyConf;
 	}
 	
-	public abstract boolean deployFlow(String prjName, Flow flow, String[] jars, FlowDeployer fd) throws Exception;
+	public abstract boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception;
 	public abstract String executeFlow(String prjName, String flowName, FlowDeployer fd) throws Exception;
 	public abstract String executeCoordinator(String prjName, String flowName, FlowDeployer fd, CoordConf cc)  throws Exception;
 	/**

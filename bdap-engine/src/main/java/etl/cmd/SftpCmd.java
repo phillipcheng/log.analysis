@@ -15,11 +15,15 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -64,7 +68,7 @@ public class SftpCmd extends ETLCmd {
 	public static final String paramkey_src_file="src.file";
 
 	public static final String separator = "/";
-	
+	private static final String output_default_key="default";
 
 	private String incomingFolder;
 	private String host;
@@ -124,7 +128,7 @@ public class SftpCmd extends ETLCmd {
 		if (this.sftpNamesOnly){
 			this.sftpClean=false;//when only return name, then the file can't be cleaned since someone is going to get this later and remove it by himself,
 		}
-		this.outputKey = super.getCfgString(cfgkey_output_key, "default");
+		this.outputKey = super.getCfgString(cfgkey_output_key, output_default_key);
 		deleteOnly = super.getCfgBoolean(cfgkey_delete_only, false);
 	}
 
@@ -358,7 +362,11 @@ public class SftpCmd extends ETLCmd {
 		List<String> files = process(offset, row);
 		try {
 			for (String file: files){
-				context.write(new Text(outputKey), new Text(file));
+				if (output_default_key.equals(outputKey)){
+					context.write(new Text(file), null);
+				}else{
+					context.write(new Text(outputKey), new Text(file));
+				}
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -379,7 +387,7 @@ public class SftpCmd extends ETLCmd {
 	 * called from sparkProcessFileToKV, key: file Name, v: line value
 	 */
 	@Override
-	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc){
+	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
 		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
@@ -390,6 +398,17 @@ public class SftpCmd extends ETLCmd {
 				}
 				return ret.iterator();
 			}
+		});
+	}
+	
+	@Override
+	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
+		return input.flatMap(new FlatMapFunction<String, String>(){
+			@Override
+			public Iterator<String> call(String t) throws Exception {
+				List<String> fileList = process(0, t);
+				return fileList.iterator();
+			};
 		});
 	}
 

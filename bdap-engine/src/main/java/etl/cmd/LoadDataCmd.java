@@ -1,6 +1,5 @@
 package etl.cmd;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,8 +14,7 @@ import javax.script.CompiledScript;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.TextOutputFormat;
-import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -26,9 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
-
-import bdap.util.HdfsUtil;
 import etl.engine.ProcessMode;
 import etl.spark.RDDMultipleTextOutputFormat;
 import etl.engine.ETLCmd;
@@ -89,25 +84,23 @@ public class LoadDataCmd extends SchemaETLCmd{
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		
 		this.csvFile = super.getCfgString(cfgkey_csvfile, null);
+		logger.info(String.format("csvFile:%s", csvFile));
 		this.webhdfsRoot = super.getCfgString(cfgkey_webhdfs, "");
 		this.userName = super.getCfgString(DBUtil.key_db_user, null);
 		this.loadSql = super.getCfgString(cfgkey_load_sql, null);
-		logger.info(String.format("load sql:%s", loadSql));
+		logger.info(String.format("loadSql:%s", loadSql));
 		this.tableNames = super.getCfgStringArray(cfgkey_table_names);
 		//
 		this.getSystemVariables().put(VAR_ROOT_WEB_HDFS, this.webhdfsRoot);
 		this.getSystemVariables().put(VAR_USERNAME, this.userName);
 		if (this.csvFile!=null){
 			csCsvFile = ScriptEngineUtil.compileScript(csvFile);
-		}else{
-			logger.warn(String.format("csvFile is not specified."));
 		}
 		if (this.loadSql!=null){
 			csLoadSql = ScriptEngineUtil.compileScript(loadSql);
-		}else{
-			logger.warn(String.format("loadSql is not specified."));
 		}
 		String dbInputPathExp = super.getCfgString(cfgkey_dbfile_path, null);
+		logger.info(String.format("dbInputPathExp:%s", dbInputPathExp));
 		if (dbInputPathExp!=null){
 			csDbInputPath = ScriptEngineUtil.compileScript(dbInputPathExp);
 			dbInputPath = ScriptEngineUtil.eval(this.csDbInputPath, this.getSystemVariables());
@@ -256,7 +249,8 @@ public class LoadDataCmd extends SchemaETLCmd{
 	 * @return
 	 */
 	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
+			Class<? extends InputFormat> inputFormatClass){
 		super.init();
 		try{
 			getFs().delete(new Path(dbInputPath), true);

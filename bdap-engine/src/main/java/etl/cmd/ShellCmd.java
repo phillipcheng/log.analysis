@@ -1,7 +1,5 @@
 package etl.cmd;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,26 +9,20 @@ import java.util.Map;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function;
-
 import bdap.util.ParamUtil;
 import bdap.util.SystemUtil;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
 import etl.util.StringUtil;
-import scala.Tuple2;
 
 public class ShellCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
@@ -111,7 +103,7 @@ public class ShellCmd extends ETLCmd {
 	}
 	
 	@Override
-	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext sc){
+	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext sc, Class<? extends InputFormat> inputFormatClass){
 		JavaRDD<String> ret = input.flatMap(new FlatMapFunction<String, String>(){
 			@Override
 			public Iterator<String> call(String t) throws Exception {

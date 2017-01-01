@@ -20,6 +20,7 @@ import bdap.util.EngineConf;
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
+import etl.engine.DataType;
 import etl.engine.InputFormatType;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
@@ -37,6 +38,7 @@ public class FlowDeployer {
 	
 	public static final String prop_inputformat_line="org.apache.hadoop.mapreduce.lib.input.NLineInputFormat";
 	public static final String prop_inputformat_textfile="org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
+	public static final String prop_inputformat_textfile_keyvalue="org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat";
 	public static final String prop_inputformat_sequencefile="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
 	public static final String prop_inputformat_xmlfile="etl.input.XmlInputFormat";
 	public static final String prop_inputformat_combine_xmlfile="etl.input.CombineXmlInputFormat";
@@ -103,7 +105,7 @@ public class FlowDeployer {
 			return new DefaultDeployMethod(remoteUser, defaultFs);
 	}
     
-    public static String getInputFormat(InputFormatType ift){
+    public static String getInputFormat(InputFormatType ift, DataType dt){
 		if (InputFormatType.Line == ift){
 			return prop_inputformat_line;
 		}else if (InputFormatType.Text == ift){
@@ -278,7 +280,7 @@ public class FlowDeployer {
 		return deployMethod.readFile(path);
 	}
 	
-	private void deploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
+	private void deploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
 		String localProjectFolder = this.projectLocalDirMap.get(projectName);
 		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
 		String localFlowFolder = String.format("%s/%s", localProjectFolder, flowName);
@@ -296,9 +298,9 @@ public class FlowDeployer {
 			Flow flow = (Flow) JsonUtil.fromLocalJsonFile(jsonFile, Flow.class);
 			if (flow!=null){
 				if (EngineType.oozie==et){
-					ofm.deployFlow(projectName, flow, jars, this);
+					ofm.deployFlow(projectName, flow, jars, propFiles, this);
 				}else if (EngineType.spark==et){
-					sfm.deployFlow(projectName, flow, jars, this);
+					sfm.deployFlow(projectName, flow, jars, propFiles, this);
 				}else{
 					logger.error(String.format("engine type:%s not supported for deploy.",et));
 				}
@@ -306,16 +308,16 @@ public class FlowDeployer {
 		}
 	}
 	
-	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson, boolean skipSchema, EngineType et) {
+	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, boolean skipSchema, EngineType et) {
 		try {
-			deploy(projectName, flowName, jars, fromJson, skipSchema, et);
+			deploy(projectName, flowName, jars, propFiles, fromJson, skipSchema, et);
 		}catch(Exception e){
 			logger.error("", e);
 		}
 	}
 	
-	public void runDeploy(String projectName, String flowName, String[] jars, boolean fromJson, EngineType et) {
-		runDeploy(projectName, flowName, jars, fromJson, false, et);
+	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, EngineType et) {
+		runDeploy(projectName, flowName, jars, propFiles, fromJson, false, et);
 	}
 	
 	private String execute(String prjName, String flowName, EngineType et){
@@ -417,7 +419,7 @@ public class FlowDeployer {
 			if (args.length>4){
 				jars = args[4].split(",");
 			}
-			fd.runDeploy(prjName, flowName, jars, false, EngineType.valueOf(engineType));
+			fd.runDeploy(prjName, flowName, jars, null, false, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runFlow.toString().equals(cmd)){
 			fd.runExecute(prjName, flowName, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runCoordinator.toString().equals(cmd)){

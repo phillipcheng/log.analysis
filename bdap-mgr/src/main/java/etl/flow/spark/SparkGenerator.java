@@ -16,7 +16,6 @@ import java.nio.file.StandardOpenOption;
 import bdap.util.JavaCodeGenUtil;
 import etl.engine.DataType;
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.Data;
 import etl.flow.Flow;
@@ -86,8 +85,12 @@ public class SparkGenerator {
 			}
 			String initValue="null";
 			if (!data.isInstance()){
-				//JavaRDD<String> sftpMap= SparkUtil.fromFile(this.getDefaultFs() + "/flow1/sftpcfg/test1.sftp.map.properties", jsc);
-				initValue = String.format("etl.spark.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc);", data.getLocation());
+				if (data.getRecordType().equals(DataType.Path) ||data.getRecordType().equals(DataType.Value)){
+					//JavaRDD<String> sftpMap= SparkUtil.fromFile(this.getDefaultFs() + "/flow1/sftpcfg/test1.sftp.map.properties", jsc);
+					initValue = String.format("etl.spark.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc);", data.getLocation());
+				}else if (data.getRecordType().equals(DataType.KeyPath) ||data.getRecordType().equals(DataType.KeyValue)){
+					initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc);", data.getLocation());
+				}
 			}
 			//variable declaration line
 			sb.append(String.format("%s %s=%s;\n", varType, varName, initValue));
@@ -139,21 +142,11 @@ public class SparkGenerator {
 				if (methodName==null){
 					logger.error(String.format("input:%s, output:%s pair on action:%s not supported.", inputDataType, outputDataType, anode.getName()));
 				}
-				if (inputDataType.equals(DataType.Path) || inputDataType.equals(DataType.KeyPath)){
-					inputFormat = FlowDeployer.getInputFormat(inData.getDataFormat());
-				}
-				if (inputFormat==null){
-					if (outputVarName!=null){
-						sb.append(String.format("%s=%s.%s(%s,jsc);\n", outputVarName, cmdVarName, methodName, inputVarName));
-					}else{
-						sb.append(String.format("%s.%s(%s,jsc);\n", cmdVarName, methodName, inputVarName));
-					}
+				inputFormat = FlowDeployer.getInputFormat(inData.getDataFormat(), inData.getRecordType());
+				if (outputVarName!=null){
+					sb.append(String.format("%s=%s.%s(%s,jsc,%s.class);\n", outputVarName, cmdVarName, methodName, inputVarName, inputFormat));
 				}else{
-					if (outputVarName!=null){
-						sb.append(String.format("%s=%s.%s(%s,jsc,%s.class);\n", outputVarName, cmdVarName, methodName, inputVarName, inputFormat));
-					}else{
-						sb.append(String.format("%s.%s(%s,jsc,%s.class);\n", cmdVarName, methodName, inputVarName, inputFormat));
-					}
+					sb.append(String.format("%s.%s(%s,jsc,%s.class);\n", cmdVarName, methodName, inputVarName, inputFormat));
 				}
 				if (needFilter){//filter output
 					for (NodeLet outlet: node.getOutlets()){

@@ -53,6 +53,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public static final String cfgkey_add_fields="add.fields";
 	
 	private boolean inputEndWithComma=false;
+	private String rowValidationStr;
 	private transient CompiledScript rowValidation;
 	private transient CompiledScript inputEndWithCommaCS;
 	private String oldTable;
@@ -85,7 +86,6 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.line);
-		String rowValidationStr;
 		String inputEndWithCommaStr;
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
 		rowValidationStr = super.getCfgString(cfgkey_row_validation, null);
@@ -205,8 +205,12 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		//process operation
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
 		super.getSystemVariables().put(VAR_NAME_TABLE_NAME, tfName);
-		for (ColOp co: colOpList){
-			items = co.process(super.getSystemVariables(), items);
+		try {
+			for (ColOp co: colOpList){
+				items = co.process(super.getSystemVariables(), items);
+			}
+		}catch(Exception e){
+			logger.error(String.format("error processing input:%s", row));
 		}
 		output = Util.getCsv(items, false);
 		logger.debug(String.format("tableName:%s, output:%s", tfName, output));

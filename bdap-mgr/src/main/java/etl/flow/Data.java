@@ -12,7 +12,7 @@ public class Data {
 	private String baseOutput;//baseOutput, for multiple outputs
 	private String schemaName = null;//reference to schema
 	private InputFormatType dataFormat = InputFormatType.Text;//for processing
-	private DataType recordType = DataType.Value;//for spark io conversion
+	private DataType recordType = DataType.Value;//for spark io conversion, also decide the inputformat
 	
 	private boolean instance = true; //if instance is true, the input path is location/$wfid
 	
@@ -38,6 +38,10 @@ public class Data {
 	public Data(String name, String location, InputFormatType dataType, DataType recordType, boolean instance){
 		this(name, location, dataType, instance);
 		this.recordType = recordType;
+	}
+	
+	public String toString(){
+		return String.format("%s, %s, %s, %s, %s, %b", name, location, dataFormat, recordType, schemaName, instance);
 	}
 	
 	@Override

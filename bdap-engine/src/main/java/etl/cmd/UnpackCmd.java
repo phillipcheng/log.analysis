@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.FilenameFilter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +32,7 @@ import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
+import scala.Tuple2;
 
 public class UnpackCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
@@ -102,10 +102,12 @@ public class UnpackCmd extends ETLCmd {
 		return false;
 	}
 
-	public Map<String, Object> mapProcess(long offset, String row,
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		List<String> fileEntries = new ArrayList<String>();
-		Path path = new Path(row);
+	//tfName not used
+	public List<Tuple2<String, String>> flatMapToPair(String tfName, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		super.init();
+		//value is the src zip file path
+		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 		SequenceFile.Writer writer = null;
 		FSDataInputStream fsIn = null;
 		BufferedInputStream bufIn = null;
@@ -122,10 +124,13 @@ public class UnpackCmd extends ETLCmd {
 		Text value;
         byte[] buffer;
 		
-		String outputFolder = context.getConfiguration().get(FileOutputFormat.OUTDIR);
-		if (!outputFolder.endsWith(Path.SEPARATOR))
-			outputFolder = outputFolder + Path.SEPARATOR;
-		
+		String outputFolder = "";
+		if (context!=null){
+			outputFolder = context.getConfiguration().get(FileOutputFormat.OUTDIR);
+			if (!outputFolder.endsWith(Path.SEPARATOR))
+				outputFolder = outputFolder + Path.SEPARATOR;
+		}
+		Path path = new Path(row);
 		if (inputFileFilter.accept(null, path.getName())) {
 			try {
 				fsIn = fs.open(path);
@@ -147,11 +152,13 @@ public class UnpackCmd extends ETLCmd {
 						fileName = path.getName().substring(0, i);
 					else
 						fileName = path.getName();
-					destFile = outputFolder + fileName + SEQ_FILENAME_EXT;;
-					writer = SequenceFile.createWriter(getHadoopConf(), SequenceFile.Writer.file(new Path(destFile)),
+					destFile = outputFolder + fileName + SEQ_FILENAME_EXT;
+					if (context!=null){
+						writer = SequenceFile.createWriter(getHadoopConf(), SequenceFile.Writer.file(new Path(destFile)),
 							SequenceFile.Writer.keyClass(LongWritable.class),
 							SequenceFile.Writer.valueClass(Text.class),
 							SequenceFile.Writer.bufferSize(fs.getConf().getInt("io.file.buffer.size", 4096)));
+					}
 					buffer = new byte[4096];
 					
 					longKey = 0;
@@ -164,15 +171,16 @@ public class UnpackCmd extends ETLCmd {
 				            value.append(NEW_LINE, 0, NEW_LINE.length);
 							while ((i = IOUtils.read(in, buffer)) > 0) {
 								value.append(buffer, 0, i);
-								
 								if (i < 4096) /* EOF reached */
 									break;
 							}
-							writer.append(key, value);
-							fileEntries.add(destFile);
+							if (context!=null){
+								writer.append(key, value);
+							}else{
+								ret.add(new Tuple2<String, String>(destFile, value.toString()));
+							}
 						}
 					}
-					
 				} else {
 					while ((entry = in.getNextEntry()) != null) {
 						if (!entry.isDirectory() && outputFileFilter.accept(null, entry.getName())) {
@@ -181,7 +189,6 @@ public class UnpackCmd extends ETLCmd {
 							try {
 								fsOut = fs.create(new Path(destFile));
 								IOUtils.copy(in, fsOut);
-								fileEntries.add(destFile);
 							} finally {
 								if (fsOut != null)
 									fsOut.close();
@@ -189,11 +196,9 @@ public class UnpackCmd extends ETLCmd {
 						}
 					}
 				}
-				
 			} finally {
 				if (writer != null)
 			         org.apache.hadoop.io.IOUtils.closeStream(writer);
-				
 				if (in != null)
 					in.close();
 				if (bufCompIn != null)
@@ -206,10 +211,13 @@ public class UnpackCmd extends ETLCmd {
 					fsIn.close();
 			}
 		}
-
-		Map<String, Object> retMap = new HashMap<String, Object>();
-		retMap.put(ETLCmd.RESULT_KEY_LOG, fileEntries);
-		return retMap;
+		return ret;
+	}
+	
+	public Map<String, Object> mapProcess(long offset, String row,
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+		flatMapToPair(null, row, context);
+		return null;
 	}
 	
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
