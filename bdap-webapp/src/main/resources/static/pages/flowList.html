@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+<title></title>
+<style type="text/css">
+body {
+	font-size: 12px;
+	width: 98%;
+}
+
+.btabs {
+	border: 1px solid #8DB2E3;
+	font-size: 12px;
+	height: 26px;
+	list-style-type: none;
+	margin: 0;
+	padding: 4px 0 0 4px;
+	width: 100%;
+	background-color: #E0ECFF;
+}
+
+</style>
+<link href="../libs/_pagelib/css/default.css" rel="stylesheet"
+	type="text/css" />
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/bootstrap/easyui.css" />
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/icon.css" />
+
+<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript">
+	// title msgString msgType: [error,info,question,warning]
+	function msgShow(title, msgString, msgType) {
+		$.messager.alert(title, msgString, msgType);
+	}
+	var type = '';
+	$(function() {
+		$('#tt').treegrid({
+			width : document.getElementById('div1').width,
+			height : document.getElementById('div1').heigh,
+			nowrap : false,
+			//striped : true,
+			collapsible : true,
+			//remoteSort : false,
+			//sortName : 'name',
+			//sortOrder : 'desc',
+			idField : 'name',
+			checkbox : false,
+			singleSelect: true,
+			rownumbers:true,
+			treeField: 'name',
+			method : 'get',
+			url : '/dashview/george/flow/allFlow/allInstance',
+			columns : [ [{
+				field : 'name',
+				title : 'Name',
+				width : $(this).width() * 0.75
+			}, {
+				field : 'size',
+				title : 'Owner',
+				width : $(this).width() * 0.2
+			} ] ],
+			pagination : false
+		});
+		
+		
+		
+	});
+	function closedd() {
+		$('#dd').dialog('close');
+	}
+	function ss(userId) {
+		$('#HdUserId').val(userId);
+		$('#divUser div').css({
+			"background-color" : ''
+		});
+		$('#divUser').find('input').each(function() {
+			if ($(this).val() == userId) {
+				$(this).parent('div').css({
+					"background-color" : '#3399ff'
+				});
+			}
+		})
+	}
+	function openIcon() {
+		$('#dd2').dialog('open');
+	}
+	function add() {
+		var url = "/dashview/dataFlow/app.html";
+		window.location.href = url;
+	}
+	function edit() {
+		var url = "/dashview/dataFlow/app.html";
+		window.location.href = url;
+	}
+	function del() {
+		//$('#tt').treegrid('getChecked');
+		var nodes = $('#tt').treegrid('getSelections');
+		if (nodes != null && nodes.length >0) {
+			var delURL;
+			var name = nodes[0].name;
+			if(nodes[0]._parentId){
+				delURL = "/dashview/george/flow/instance/"+name+"/del";
+			}else {
+				if(nodes[0].children.length > 0){
+					msgShow('Info', 'please first delete instance.', 'info');
+					return ;
+				}
+				delURL = "/dashview/george/flow/"+name+"/del";
+			}
+			
+			$.messager.confirm('Info', 'will you delete them ?', function(i) {
+				if (i) {
+					$.get(delURL,
+							function(msg) {
+								//if (msg) {
+									msgShow('Info', 'delete successfully.', 'info');
+									$('#tt').treegrid('reload');
+								//} else {
+								//	msgShow('Info', 'delete fail.', 'info');
+								//}
+							});
+				}
+			})
+
+		} else {
+			msgShow('Info', 'please selected one row.', 'Info');
+		}
+	}
+
+</script>
+</head>
+<body style="background: white">
+	<form id="form1" runat="server">
+		<input id="HdId" type="hidden" /> <input id="HdUserId" type="hidden" />
+		<div class="btabs">
+			<span class="icon icon-Distribution">&nbsp;</span><a
+				href="javascript:void(0)" onclick="add()">View</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a> 
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="del()"><span class="icon icon-delete">&nbsp;</span>Delete</a>
+		</div>
+		<div style="height: 2px"></div>
+		<div id="div1" style="width: 100.5%">
+			<table id="tt" class="easyui-treegrid"></table>
+		</div>
+		
+	</form>
+</body>
+</html>
