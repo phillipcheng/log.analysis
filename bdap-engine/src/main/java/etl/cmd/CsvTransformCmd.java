@@ -21,10 +21,6 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.Util;
 import etl.cmd.transform.ColOp;
@@ -33,6 +29,7 @@ import etl.engine.MRMode;
 import etl.engine.OutputType;
 import etl.engine.ProcessMode;
 import etl.input.CombineWithFileNameTextInputFormat;
+import etl.util.ConfigKey;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
 
@@ -45,12 +42,12 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public static final Logger logger = LogManager.getLogger(CsvTransformCmd.class);
 	
 	//cfgkey
-	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
-	public static final String cfgkey_input_endwithcomma_exp="input.endwithcomma.exp";
-	public static final String cfgkey_row_validation="row.validation";
-	public static final String cfgkey_col_op="col.op";
-	public static final String cfgkey_old_talbe="old.table";
-	public static final String cfgkey_add_fields="add.fields";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_input_endwithcomma="input.endwithcomma";
+	public static final @ConfigKey String cfgkey_input_endwithcomma_exp="input.endwithcomma.exp";
+	public static final @ConfigKey String cfgkey_row_validation="row.validation";
+	public static final @ConfigKey(type=String[].class) String cfgkey_col_op="col.op";
+	public static final @ConfigKey String cfgkey_old_talbe="old.table";
+	public static final @ConfigKey(type=String[].class) String cfgkey_add_fields="add.fields";
 	
 	private boolean inputEndWithComma=false;
 	private transient CompiledScript rowValidation;

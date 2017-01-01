@@ -11,8 +11,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.script.CompiledScript;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -38,6 +36,7 @@ import etl.engine.LockType;
 import etl.engine.LogicSchema;
 import etl.engine.OutputType;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
@@ -53,13 +52,13 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(SchemaETLCmd.class);
 
 	//cfgkey
-	public static final String cfgkey_schema_file="schema.file";
-	public static final String cfgkey_create_sql="create.sql";
-	public static final String cfgkey_db_prefix="db.prefix"; //db schema
-	public static final String cfgkey_db_type="db.type";
-	public static final String cfgkey_output_type="output.type";
-	public static final String cfgkey_lock_type="lock.type";
-	public static final String cfgkey_zookeeper_url="zookeeper.url";
+	public static final @ConfigKey String cfgkey_schema_file="schema.file";
+	public static final @ConfigKey String cfgkey_create_sql="create.sql";
+	public static final @ConfigKey String cfgkey_db_prefix="db.prefix"; //db schema
+	public static final @ConfigKey(type=DBType.class,defaultValue="none") String cfgkey_db_type="db.type";
+	public static final @ConfigKey(type=OutputType.class,defaultValue="multiple") String cfgkey_output_type="output.type";
+	public static final @ConfigKey(type=LockType.class,defaultValue="jvm") String cfgkey_lock_type="lock.type";
+	public static final @ConfigKey String cfgkey_zookeeper_url="zookeeper.url";
 	
 	//system variable map
 	public static final String VAR_LOGIC_SCHEMA="logicSchema"; //

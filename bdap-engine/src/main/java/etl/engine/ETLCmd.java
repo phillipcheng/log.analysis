@@ -34,6 +34,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import etl.spark.SparkProcessor;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
@@ -50,10 +51,10 @@ public abstract class ETLCmd implements Serializable, SparkProcessor{
 	public static final String RESULT_KEY_OUTPUT_TUPLE2="mapoutput";
 	
 	//cfgkey
-	public static final String cfgkey_vars="vars";
-	public static final String cfgkey_skip_header="skip.header";
-	public static final String cfgkey_skip_header_exp="skip.header.exp";
-	public static final String cfgkey_file_table_map="file.table.map";
+	public static final @ConfigKey(type=String[].class) String cfgkey_vars = "vars";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_skip_header="skip.header";
+	public static final @ConfigKey String cfgkey_skip_header_exp="skip.header.exp";
+	public static final @ConfigKey String cfgkey_file_table_map="file.table.map";
 	
 	//system variables
 	public static final String VAR_NAME_TABLE_NAME="tablename";

@@ -34,6 +34,7 @@ import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
@@ -44,23 +45,23 @@ public class SftpCmd extends ETLCmd {
 	public static final Logger logger = LogManager.getLogger(SftpCmd.class);
 
 	//cfgkey
-	public static final String cfgkey_incoming_folder = "incoming.folder";
-	public static final String cfgkey_sftp_host = "sftp.host";
-	public static final String cfgkey_sftp_port = "sftp.port";
-	public static final String cfgkey_sftp_user = "sftp.user";
-	public static final String cfgkey_sftp_pass = "sftp.pass";
-	public static final String cfgkey_sftp_folder = "sftp.folder";
-	public static final String cfgkey_sftp_folder_recursive = "sftp.folder.recursive";
-	public static final String cfgkey_file_filter="file.filter";
-	public static final String cfgkey_sftp_get_retry = "sftp.getRetryTimes";
-	public static final String cfgkey_sftp_get_retry_wait = "sftp.getRetryWait";
-	public static final String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
-	public static final String cfgkey_sftp_connect_retry_wait = "sftp.connectRetryWait";
-	public static final String cfgkey_sftp_clean = "sftp.clean";
-	public static final String cfgkey_delete_only="delete.only";//just for test
-	public static final String cfgkey_file_limit ="file.limit";
-	public static final String cfgkey_names_only="sftp.names.only";
-	public static final String cfgkey_output_key="output.key";
+	public static final @ConfigKey String cfgkey_incoming_folder = "incoming.folder";
+	public static final @ConfigKey String cfgkey_sftp_host = "sftp.host";
+	public static final @ConfigKey(type=Integer.class,defaultValue="22") String cfgkey_sftp_port = "sftp.port";
+	public static final @ConfigKey String cfgkey_sftp_user = "sftp.user";
+	public static final @ConfigKey String cfgkey_sftp_pass = "sftp.pass";
+	public static final @ConfigKey(type=String[].class) String cfgkey_sftp_folder = "sftp.folder";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_sftp_folder_recursive = "sftp.folder.recursive";
+	public static final @ConfigKey String cfgkey_file_filter="file.filter";
+	public static final @ConfigKey(type=Integer.class,defaultValue="3") String cfgkey_sftp_get_retry = "sftp.getRetryTimes";
+	public static final @ConfigKey(type=Integer.class,defaultValue="10000") String cfgkey_sftp_get_retry_wait = "sftp.getRetryWait";
+	public static final @ConfigKey(type=Integer.class,defaultValue="3") String cfgkey_sftp_connect_retry = "sftp.connectRetryTimes";
+	public static final @ConfigKey(type=Integer.class,defaultValue="15000") String cfgkey_sftp_connect_retry_wait = "sftp.connectRetryWait";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_sftp_clean = "sftp.clean";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_delete_only="delete.only";//just for test
+	public static final @ConfigKey(type=Integer.class) String cfgkey_file_limit ="file.limit";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_names_only="sftp.names.only";
+	public static final @ConfigKey(defaultValue="default") String cfgkey_output_key="output.key";
 	public static final String paramkey_src_file="src.file";
 
 	public static final String separator = "/";

@@ -14,13 +14,14 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 import etl.engine.EngineUtil;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.FieldType;
 
 public class KafkaMsgDecodeCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(KafkaMsgDecodeCmd.class);
 	//cfgkey
-	public static final String cfgkey_entity_name="entity.name";
+	public static final @ConfigKey String cfgkey_entity_name="entity.name";
 	
 	private String entityName;
 	private transient KafkaAdaptorCmd kac;

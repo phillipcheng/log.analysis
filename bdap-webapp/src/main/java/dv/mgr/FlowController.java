@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.InMemFile;
 import etl.flow.mgr.NodeInfo;
 import etl.flow.oozie.OozieConf;
+import etl.util.ConfigKey;
 
 @RestController
 @RequestMapping("/{userName}/flow")
@@ -99,14 +101,18 @@ public class FlowController {
 		for (String pkgPath: searchPackages) {
 			beanDefs = actionsProvider.findCandidateComponents(pkgPath);
 			for (BeanDefinition def: beanDefs) {
-				logger.info(def.getBeanClassName());
+				logger.debug(def.getBeanClassName());
 				cmdParameters = new ArrayList<String>();
 				try {
 					cls = Class.forName(def.getBeanClassName());
 					fields = cls.getFields();
 					if (fields != null) {
 						for (Field f: fields) {
-						    if (Modifier.isStatic(f.getModifiers()) && f.getName().startsWith(CMD_PARAMETER_PREFIX)) {
+						    if (Modifier.isStatic(f.getModifiers()) && (f.getName().startsWith(CMD_PARAMETER_PREFIX) ||
+						    		f.isAnnotationPresent(ConfigKey.class))) {
+								ConfigKey ck = f.getAnnotation(ConfigKey.class);
+								logger.debug(ck);
+								logger.debug(f.getName());
 						        try {
 									obj = FieldUtils.readStaticField(f, true);
 							        if (obj != null)

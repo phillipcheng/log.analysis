@@ -18,12 +18,13 @@ import etl.cmd.SftpCmd;
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
 import etl.spark.SparkUtil;
+import etl.util.ConfigKey;
 
 public class Flow1SparkCmd extends ETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 	public static final Logger logger = Logger.getLogger(Flow1SparkCmd.class);
 
-	private static String keycfg_resfolder="res.folder";//specify res.folder under classpath
+	private static @ConfigKey String keycfg_resfolder="res.folder";//specify res.folder under classpath
 
 	private String masterUrl=null;
 	private String resFolder;

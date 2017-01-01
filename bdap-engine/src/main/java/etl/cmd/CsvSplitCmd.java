@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
@@ -34,10 +35,10 @@ public class CsvSplitCmd extends ETLCmd {
 
 	public static final Logger logger = LogManager.getLogger(CsvSplitCmd.class);
 
-	private static final String cfgkey_SPLIT_KEYS = "split.keys";
-	private static final String cfgkey_SPLIT_KEYS_OMIT = "split.keys.omit";
-	private static final String cfgkey_SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
-	private static final String cfgkey_input_endwithcomma = "input.endwithcomma";
+	private static final @ConfigKey String cfgkey_SPLIT_KEYS = "split.keys";
+	private static final @ConfigKey(type=Boolean.class) String cfgkey_SPLIT_KEYS_OMIT = "split.keys.omit";
+	private static final @ConfigKey String cfgkey_SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
+	private static final @ConfigKey(type=Boolean.class) String cfgkey_input_endwithcomma = "input.endwithcomma";
 
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	
