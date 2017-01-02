@@ -18,6 +18,7 @@ import bdap.util.SystemUtil;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
@@ -104,7 +105,7 @@ public class ShellCmd extends ETLCmd {
 	}
 	
 	@Override
-	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext sc){
+	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext sc, Class<? extends InputFormat> inputFormatClass){
 		JavaRDD<String> ret = input.flatMap(new FlatMapFunction<String, String>(){
 			@Override
 			public Iterator<String> call(String t) throws Exception {

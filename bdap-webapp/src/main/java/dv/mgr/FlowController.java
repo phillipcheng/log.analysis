@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,9 +40,11 @@ import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import dv.UserNotFoundException;
 import dv.db.dao.AccountRepository;
+import dv.db.dao.FlowInstanceRepository;
 import dv.db.dao.FlowRepository;
 import dv.db.entity.AccountEntity;
 import dv.db.entity.FlowEntity;
+import dv.db.entity.FlowInstanceEntity;
 import dv.ws.WebSocketManager;
 import etl.engine.ETLCmd;
 import etl.flow.Data;
@@ -65,11 +68,12 @@ public class FlowController {
 	private String[] searchPackages;
 	
 	@Autowired
-	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr, FlowDeployer flowDeployer) {
+	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr, FlowDeployer flowDeployer, FlowInstanceRepository flowInstance) {
 		this.flowRepository = flowRepository;
 		this.accountRepository = accountRepository;
 		this.flowMgr = flowMgr;
 		this.flowDeployer = flowDeployer;
+		this.flowInstanceRepository = flowInstance;
 		
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
 		this.searchPackages = pc.getStringArray(ACTION_NODE_CMDS_SEARCH_PACKAGES);
@@ -81,6 +85,7 @@ public class FlowController {
 	private final AccountRepository accountRepository;
 	private final FlowMgr flowMgr;
 	private final FlowDeployer flowDeployer;
+	private final FlowInstanceRepository flowInstanceRepository;
 	
 	private List<Class<?>> getETLCmdClasses() {
 		ClassPathScanningCandidateComponentProvider actionsProvider = new ClassPathScanningCandidateComponentProvider(false);
@@ -161,6 +166,47 @@ public class FlowController {
 		return this.flowRepository.findOne(flowId);
 	}
 	
+	@RequestMapping(value = "/allFlow", method = RequestMethod.GET)
+	List<FlowEntity> getAllFlow(@PathVariable String userName) {
+		this.validateUser(userName);
+		return this.flowRepository.findAll();
+	}
+	
+	@RequestMapping(value = "/allFlow/allInstance", method = RequestMethod.GET)
+	List<Map> getAllFlowWithInstance(@PathVariable String userName) {
+		this.validateUser(userName);
+		List<FlowEntity> list = this.flowRepository.findAll();
+		List<Map> allList = new ArrayList<Map>();
+		for(FlowEntity obj : list) {
+			Map map = new HashMap();
+			List<FlowInstanceEntity> instanceList = this.flowInstanceRepository.findByFlowName(obj.getName());
+			map.put("name", obj.getName());
+			map.put("owner", obj.getOwner());
+			List<Map> instanceMapList = new ArrayList<Map>();
+			for(FlowInstanceEntity instanceObj : instanceList){
+				Map instanceMap = new HashMap();
+				instanceMap.put("name", instanceObj.getInstanceID());
+				instanceMap.put("owner", obj.getOwner());
+				instanceMapList.add(instanceMap);
+			}
+			map.put("children", instanceMapList);
+			allList.add(map);
+		}
+		return allList;
+	}
+	
+	@RequestMapping(value = "/{flowId}/del", method = RequestMethod.GET)
+	 void delFlow(@PathVariable String userName, @PathVariable String flowId) {
+		this.validateUser(userName);
+		this.flowRepository.delete(flowId);
+	}
+	
+	@RequestMapping(value = "/instance/{instanceId}/del", method = RequestMethod.GET)
+	 void delFlowInstance(@PathVariable String userName, @PathVariable String instanceId) {
+		this.validateUser(userName);
+		this.flowInstanceRepository.delete(instanceId);
+	}
+	
 	@RequestMapping(value = "/{flowId}", method = RequestMethod.POST)
 	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
 		HttpHeaders httpHeaders = new HttpHeaders();
@@ -169,7 +215,7 @@ public class FlowController {
 			FlowEntity flowEntity = flowRepository.findOne(flowId);
 			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
 				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
-				flowMgr.deployFlow("project1", flow, null, flowDeployer); //TODO
+				flowMgr.deployFlow("project1", flow, null, null, flowDeployer); //TODO
 				String flowInstanceId = flowMgr.executeFlow("project1", flowId, flowDeployer);
 				return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
 			} else {

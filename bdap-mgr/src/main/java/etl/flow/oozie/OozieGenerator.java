@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
+import etl.engine.DataType;
 import etl.engine.ETLCmd;
 import etl.engine.InputFormatType;
 import etl.flow.ActionNode;
@@ -135,7 +136,9 @@ public class OozieGenerator {
 		//input and output configuration
 		List<NodeLet> inlets = an.getInLets();
 		List<String> inputDataDirs = new ArrayList<String>();
-		InputFormatType ift = null;//all the input dataset to this action should have the same inputformattype
+		//all the input dataset to this action should have the same inputformattype, datatype/recordtype
+		InputFormatType ift = null;
+		DataType dt = null;
 		for (NodeLet ln: inlets){
 			if (ln.getDataName()!=null){
 				Data d = flow.getDataDef(ln.getDataName());
@@ -150,10 +153,16 @@ public class OozieGenerator {
 					}
 					if (ift==null){
 						ift = d.getDataFormat();
+						dt = d.getRecordType();
 					}else{
 						if (!ift.equals(d.getDataFormat())){
 							logger.error(String.format("all input data should have the same inputformattype, %s differ with %s in action %s", 
 									d, ift, an.getName()));
+							return null;
+						}
+						if (!dt.equals(d.getRecordType())){
+							logger.error(String.format("all input data should have the same datatype, %s differ with %s in action %s", 
+									d, dt, an.getName()));
 							return null;
 						}
 					}
@@ -167,7 +176,7 @@ public class OozieGenerator {
 		pl.add(inputDirsCp);
 		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
 		inputFormatTypeCp.setName(prop_inputformat);
-		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift));
+		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift, dt));
 		pl.add(inputFormatTypeCp);
 		
 		//output properties

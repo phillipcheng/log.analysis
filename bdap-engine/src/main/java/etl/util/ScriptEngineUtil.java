@@ -67,13 +67,17 @@ public class ScriptEngineUtil {
 				}
 			}
 			return null;
-		} catch (ScriptException e) {
+		} catch (Exception e) {
 			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
 			return null;
 		}
 	}
 	
 	public static Object evalObject(CompiledScript cs, Map<String, Object> variables){
+		return evalObject(cs, null, variables);
+	}
+	
+	public static Object evalObject(CompiledScript cs, String orgExp, Map<String, Object> variables){
 		Bindings bindings = new SimpleBindings();
         if (variables!=null){
 			for (String key: variables.keySet()){
@@ -89,8 +93,8 @@ public class ScriptEngineUtil {
 			Object ret = cs.eval(bindings);
 			logger.debug(String.format("eval get result: '%s'", ret));
 			return ret;
-		} catch (ScriptException e) {
-			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
+		} catch (Exception e) {
+			logger.error(String.format("error msg: %s while eval %s, orgExp: %s, var map is %s", e.getMessage(), cs, orgExp, variables));
 			return null;
 		}
 	}
@@ -147,7 +151,7 @@ public class ScriptEngineUtil {
 				}
 			}
 			return ret;
-		} catch (ScriptException e) {
+		} catch (Exception e) {
 			if (logError){
 				logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), exp, variables));
 			}

@@ -29,6 +29,7 @@ import etl.util.ConfigKey;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class CsvSplitCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
@@ -46,7 +47,7 @@ public class CsvSplitCmd extends ETLCmd {
 	private boolean splitKeysOmit;
 	private boolean inputEndWithComma;
 	
-	private CompiledScript splitKeysReduce;
+	private transient CompiledScript splitKeysReduce;
 	
 	public CsvSplitCmd(){
 		super();
@@ -75,24 +76,7 @@ public class CsvSplitCmd extends ETLCmd {
 		if (cfg != null && cfg.length() > 0)
 			splitKeysReduce = ScriptEngineUtil.compileScript(cfg);
 	}
-
-	public Map<String, Object> mapProcess(long offset, String row,
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		Map<String, Object> ret = new HashMap<String, Object>();
-		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
-		CSVParser parser = null;
-		try {
-			parser = CSVParser.parse(row, CSVFormat.DEFAULT.withTrim().withTrailingDelimiter(inputEndWithComma));
-			for (CSVRecord csv : parser.getRecords())
-				vl.add(getTuple2(csv, splitKeys, splitKeysOmit));
-		} finally {
-			if (parser != null)
-				parser.close();
-		}
-		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
-		return ret;
-	}
-
+	
 	private Tuple2<String, String> getTuple2(CSVRecord csv, List<IdxRange> splitKeys, boolean splitKeysOmit) throws Exception {
 		List<String> keys = new ArrayList<String>();
 		StringBuilder buffer = new StringBuilder();
@@ -146,19 +130,30 @@ public class CsvSplitCmd extends ETLCmd {
 	}
 
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String[]> ret = new ArrayList<String[]>();
-
-		Iterator<Text> it = values.iterator();
-		while (it.hasNext()) {
-			String v = it.next().toString();
-			ret.add(new String[]{v, null, reduceKey(key.toString(), v)});
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		super.init();
+		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
+		CSVParser parser = null;
+		try {
+			parser = CSVParser.parse(value, CSVFormat.DEFAULT.withTrim().withTrailingDelimiter(inputEndWithComma));
+			for (CSVRecord csv : parser.getRecords())
+				vl.add(getTuple2(csv, splitKeys, splitKeysOmit));
+		} finally {
+			if (parser != null)
+				parser.close();
 		}
-		
+		return vl;
+	}
+	
+	@Override
+	public Map<String, Object> mapProcess(long offset, String row,
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		List<Tuple2<String, String>> vl = flatMapToPair(null, row, context);
+		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
 		return ret;
 	}
-
+	
 	private String reduceKey(String key, String value) throws Exception {
 		if (splitKeysReduce != null) {
 			String[] keys;
@@ -181,9 +176,34 @@ public class CsvSplitCmd extends ETLCmd {
 			getSystemVariables().remove("keys");
 			getSystemVariables().remove(ETLCmd.VAR_FIELDS);
 			return result;
-			
 		} else {
 			return key;
 		}
+	}
+	
+	@Override
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
+		Iterator<String> it = values.iterator();
+		while (it.hasNext()) {
+			String v = it.next().toString();
+			ret.add(new Tuple3<String, String, String>(v, null, reduceKey(key.toString(), v)));
+		}
+		return ret;
+	}
+	
+	@Override
+	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		List<String[]> ret = new ArrayList<String[]>();
+
+		Iterator<Text> it = values.iterator();
+		while (it.hasNext()) {
+			String v = it.next().toString();
+			ret.add(new String[]{v, null, reduceKey(key.toString(), v)});
+		}
+		
+		return ret;
 	}
 }

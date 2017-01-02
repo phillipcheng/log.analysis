@@ -54,7 +54,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_groupkey_exp_name="aggr.groupkey.exp.name";
 	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_old_table="old.table";
 	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_new_table="new.table";
-	
 	public static final @ConfigKey String cfgkey_join_type="join.type";
 	public static final @ConfigKey(type=Boolean[].class) String cfgkey_groupkey_output_flag="groupkey.output.flag";
 	
@@ -69,6 +68,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	
 	private boolean mergeTable = false;	
 	private String joinType="outer";
+	private static final String INTERNAL_KEY_SEP=",";
 	
 	//new table/single table: flag of each group key
 	private transient Map<String,List<Boolean>> groupKeyOutputFlagMap;
@@ -434,7 +434,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 					 * if expKey is array, it will output multiple key-values pairs
 					 */
 					List<String> newTableNames = oldnewTableMap.get(tableName);
-					v = oldTableName + KEY_SEP + row;
+					v = oldTableName + INTERNAL_KEY_SEP + row;
 					for (String newTableName:newTableNames){
 						List<List<String>> keys = getCsvFields(r, groupKeys);
 						for (List<String> okey:keys){
@@ -663,7 +663,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		* value array=[oldtablename1, {raw data}] , [oldtablename2, {raw data}]....
 		*/
 		
-		String[] kl = key.toString().split(KEY_SEP, -1);
+		String[] kl = key.toString().split(INTERNAL_KEY_SEP, -1);
 		String tableName = kl[0];
 		List<String> ks = new ArrayList<String>();
 		for (int i=1; i<kl.length; i++){
@@ -692,7 +692,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			
 			//Select group keys
 			ks=selectGroupKeys(newTableName,ks);
-			String newKey = String.join(KEY_SEP, ks);
+			String newKey = String.join(INTERNAL_KEY_SEP, ks);
 			
 			List<Tuple3<String, String, String>> retList=new ArrayList<Tuple3<String, String, String>>();
 			
@@ -717,7 +717,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				try {
 					String s = its.next().toString();
 					logger.debug(String.format("reduce in: key:%s, one value:%s", key, s));
-					int firstComma =s.indexOf(KEY_SEP);
+					int firstComma =s.indexOf(INTERNAL_KEY_SEP);
 					String oldTableName = s.substring(0, firstComma);
 					String vs = s.substring(firstComma+1);
 					CSVParser parser = CSVParser.parse(vs, CSVFormat.DEFAULT);
@@ -778,7 +778,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			
 			//Select group keys
 			ks=selectGroupKeys(tableName,ks);
-			String newKey = String.join(KEY_SEP, ks);
+			String newKey = String.join(INTERNAL_KEY_SEP, ks);
 			
 			//output join result						
 			for(int rowNum=0;rowNum<rows;rowNum++){

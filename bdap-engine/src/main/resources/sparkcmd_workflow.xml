@@ -7,7 +7,7 @@
 		</property>
 		<property>
 			<name>APP_LIB</name>
-			<value>${nameNode}/${prjName}/${wfName}/lib</value>
+			<value>${nameNode}${prjFolder}${wfName}/lib</value>
 		</property>
 	</parameters>
 	<global>

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.LogManager;
@@ -82,7 +83,7 @@ public class StreamLogProcessor {
 						
 						SaveDataCmd saveDataCmd = new SaveDataCmd(wfName, batchid, null, defaultFs, null);
 						saveDataCmd.setSendLog(false);
-						saveDataCmd.sparkProcessKeyValue(v1, jsc.sparkContext());
+						saveDataCmd.sparkProcessKeyValue(v1, jsc.sparkContext(), TextInputFormat.class);
 						
 						LoadDataCmd loadDataCmd = new LoadDataCmd(wfName, batchid, null, "log", defaultFs, null);
 						//if logs are imported to db, import and then delete the files

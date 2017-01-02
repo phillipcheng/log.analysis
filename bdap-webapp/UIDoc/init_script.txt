@@ -4,6 +4,7 @@
 2、启动redis
 3、h2数据库插入用户
 	insert into  T_ACCOUNT  (name, email, tableauuserid, userid) values('george1', '', 0,10)
+	insert into  T_FLOWINSTANCE (instanceid, flowname) values('instanceid-wrwerwer-345345', 'flow1')
 4、访问地址：
 	 http://localhost:8080/dashview/dataFlow/app.html
 	 
