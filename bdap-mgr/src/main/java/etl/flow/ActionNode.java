@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import bdap.util.PropertiesUtil;
 import etl.engine.InputFormatType;
+import etl.flow.deploy.EngineType;
 
 public class ActionNode extends Node{
 	
@@ -83,15 +84,17 @@ public class ActionNode extends Node{
 	}
 	
 	@JsonIgnore
-	public LinkedHashMap<String, Object> getAllProperties(){
+	public LinkedHashMap<String, Object> getAllProperties(EngineType et){
+		String etStr = et.toString()+".";
 		LinkedHashMap<String, Object> allProperties = new LinkedHashMap<String, Object>();
 		for (String key: properties.keySet()){
-			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)){
+			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)
+					&& !key.startsWith(etStr)){
 				allProperties.put(key, properties.get(key));
-			}else{
-				if (key.startsWith(sys_prop_prefix)){
-					allProperties.put(key.substring(sys_prop_prefix.length()), properties.get(key));
-				}
+			}else if (key.startsWith(sys_prop_prefix)){
+				allProperties.put(key.substring(sys_prop_prefix.length()), properties.get(key));
+			}else if (key.startsWith(etStr)){
+				allProperties.put(key.substring(etStr.length()), properties.get(key));
 			}
 		}
 		return allProperties;

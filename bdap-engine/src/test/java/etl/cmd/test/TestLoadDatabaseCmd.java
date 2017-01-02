@@ -2,14 +2,9 @@ package etl.cmd.test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -17,18 +12,12 @@ import org.apache.hadoop.security.UserGroupInformation;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFunction;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
 import etl.input.CombineFileNameInputFormat;
 import etl.input.FilenameInputFormat;
-import etl.spark.SparkUtil;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import scala.Tuple2;

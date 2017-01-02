@@ -22,6 +22,7 @@ import dv.util.RequestUtil;
 import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.Flow;
+import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
@@ -60,10 +61,16 @@ public class SparkFlowMgr extends FlowMgr{
 		List<InMemFile> localImFiles = new ArrayList<InMemFile>();
 		localImFiles.add(super.genEnginePropertyFile(fd.getEngineConfig()));
 		//generate etlengine.properties
-		localImFiles.addAll(super.genProperties(flow));
+		localImFiles.addAll(super.genProperties(flow, EngineType.spark));
 		for (InMemFile im: localImFiles){
 			Path path = Paths.get(String.format("%s/%s", classesRootDir, im.getFileName()));
 			Files.write(path, im.getContent());
+		}
+		for (String propFile: propFiles){
+			Path propSrcPath = Paths.get(propFile);
+			String propFileName = propSrcPath.getFileName().toString();
+			Path propDestPath = Paths.get(String.format("%s/%s", classesRootDir, propFileName));
+			Files.write(propDestPath, Files.readAllBytes(propSrcPath));
 		}
 		//jar the file
 		String jarFilePath = String.format("%s/%s.jar", targetDir, flowName);

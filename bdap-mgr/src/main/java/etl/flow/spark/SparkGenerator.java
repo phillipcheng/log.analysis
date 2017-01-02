@@ -89,7 +89,7 @@ public class SparkGenerator {
 					//JavaRDD<String> sftpMap= SparkUtil.fromFile(this.getDefaultFs() + "/flow1/sftpcfg/test1.sftp.map.properties", jsc);
 					initValue = String.format("etl.spark.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc);", data.getLocation());
 				}else if (data.getRecordType().equals(DataType.KeyPath) ||data.getRecordType().equals(DataType.KeyValue)){
-					initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc);", data.getLocation());
+					initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf());", data.getLocation());
 				}
 			}
 			//variable declaration line

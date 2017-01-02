@@ -6,7 +6,7 @@ import java.util.List;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -21,6 +21,7 @@ import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.HdfsUtil;
 import etl.engine.DataType;
+import etl.input.FilenameTextInputFormat;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
 
@@ -32,17 +33,18 @@ public class SparkUtil {
 		return jsc.parallelize(Arrays.asList(new String[]{str}));
 	}
 	
-	public static JavaRDD<String> fromFile(String str, JavaSparkContext jsc){
-		return jsc.textFile(str);
+	public static JavaRDD<String> fromFile(String paths, JavaSparkContext jsc){
+		return jsc.textFile(paths);
 	}
 	
-	public static JavaPairRDD<String, String> fromFileKeyValue(String str, JavaSparkContext jsc){
-		return jsc.textFile(str).mapToPair(new PairFunction<String, String, String>(){
+	//return the file path the key, line as value
+	public static JavaPairRDD<String, String> fromFileKeyValue(String paths, JavaSparkContext jsc, Configuration conf){
+		return jsc.newAPIHadoopFile(paths, FilenameTextInputFormat.class, Text.class, Text.class, conf).mapToPair(
+				new PairFunction<Tuple2<Text, Text>, String, String>(){
 			@Override
-			public Tuple2<String, String> call(String t) throws Exception {
-				return new Tuple2<String, String>(str, t);
+			public Tuple2<String, String> call(Tuple2<Text, Text> t) throws Exception {
+				return new Tuple2<String, String>(t._1.toString(), t._2.toString());
 			}
-			
 		});
 	}
 	

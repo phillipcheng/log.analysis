@@ -25,6 +25,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -221,6 +222,16 @@ public abstract class ETLCmd implements Serializable{
 		}
 	}
 	
+	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
+		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
+		String tableName = inputFileName;
+		if (expFileTableMap!=null){
+			tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+		}
+		return tableName;
+	}
+	
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
 		logger.error(String.format("Empty flatMapToPair impl!!! %s", this));
 		return null;
@@ -281,7 +292,11 @@ public abstract class ETLCmd implements Serializable{
 				logger.debug(String.format("input to sparkprocesskeyvalue %s:%s", staticCfg, linesInput));
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
 				for (Tuple2<String, String> lineInput:linesInput){
-					List<Tuple2<String, String>> ret1 = flatMapToPair(lineInput._1, lineInput._2, null);
+					String key = mapKey(lineInput._1);
+					if (strFileTableMap!=null && lineInput._1!=null && lineInput._1.equals(key)){//debug
+						logger.warn(String.format("get null while mapkey. fileToTableExp:%s, system var:%s", strFileTableMap, getSystemVariables()));
+					}
+					List<Tuple2<String, String>> ret1 = flatMapToPair(key, lineInput._2, null);
 					if (ret1!=null){
 						ret.addAll(ret1);
 					}

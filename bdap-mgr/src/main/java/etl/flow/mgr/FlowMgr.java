@@ -17,6 +17,7 @@ import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.Node;
+import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.oozie.OozieConf;
 
@@ -28,13 +29,13 @@ public abstract class FlowMgr {
 	}
 	
 	//generate the properties files for all the cmd to initiate
-	public static List<InMemFile> genProperties(Flow flow){
+	public static List<InMemFile> genProperties(Flow flow, EngineType et){
 		List<InMemFile> propertyFiles = new ArrayList<InMemFile>();
 		for (Node n: flow.getNodes()){
 			if (n instanceof ActionNode){
 				ActionNode an = (ActionNode) n;
 				String propFileName = getPropFileName(an.getName());
-				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getAllProperties());
+				byte[] bytes = PropertiesUtil.getPropertyFileContent(an.getAllProperties(et));
 				propertyFiles.add(new InMemFile(FileType.actionProperty, propFileName, bytes));
 			}
 		}
@@ -139,6 +140,15 @@ public abstract class FlowMgr {
 		return bodyConf;
 	}
 	
+	/**
+	 * @param prjName
+	 * @param flow:
+	 * @param jars: array of paths to thirdparty jars on the local fs
+	 * @param propFiles: array of paths to properties files on the local fs
+	 * @param fd
+	 * @return
+	 * @throws Exception
+	 */
 	public abstract boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception;
 	public abstract String executeFlow(String prjName, String flowName, FlowDeployer fd) throws Exception;
 	public abstract String executeCoordinator(String prjName, String flowName, FlowDeployer fd, CoordConf cc)  throws Exception;
