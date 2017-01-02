@@ -26,6 +26,7 @@ import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.OutputType;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
@@ -56,31 +57,31 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	public static final String VAR_NAME_FIELD_NAME="fieldName";
 	
 	//cfgkey
-	public static final String cfgkey_with_trailing_delimiter = "with.trailing.delimiter";	
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_with_trailing_delimiter = "with.trailing.delimiter";	
 	
 	//Group of columns output
-	public static final String cfgkey_group_fields = "group.fields";
+	public static final @ConfigKey String cfgkey_group_fields = "group.fields";
 	
 	//column.name.fields  & column.name.fields appear in pair to indicate which column's value need to transfer to column name and which column's value need to be filled into the new column
-	public static final String cfgkey_column_name_fields = "column.name.fields";
-	public static final String cfgkey_column_value_fields = "column.value.fields";
+	public static final @ConfigKey(type=String[].class) String cfgkey_column_name_fields = "column.name.fields";
+	public static final @ConfigKey(type=String[].class) String cfgkey_column_value_fields = "column.value.fields";
 	
 	//Used only when split.table.fields is not used, to specify the output result table schema
-	public static final String cfgkey_table_name = "table.name";
+	public static final @ConfigKey String cfgkey_table_name = "table.name";
 	
 	//Use specified fields as table name, it must be subset of group.fields
-	public static final String cfgkey_split_table_fields = "split.table.fields";
+	public static final @ConfigKey String cfgkey_split_table_fields = "split.table.fields";
 	
-	public static final String cfgkey_table_name_mapping_exp = "table.name.mapping.exp";
+	public static final @ConfigKey String cfgkey_table_name_mapping_exp = "table.name.mapping.exp";
 
 	//according to it, mapping schema field name, to column.name
-	public static final String cfgkey_field_name_mapping_exp = "field.name.mapping.exp";
+	public static final @ConfigKey String cfgkey_field_name_mapping_exp = "field.name.mapping.exp";
 	
 	//To indicate since where position of the table to start the transpose work. E.g. 
-	public static final String cfgkey_table_field_transpose_start_index = "table.field.transpose.start.index";
+	public static final @ConfigKey(type=Integer.class) String cfgkey_table_field_transpose_start_index = "table.field.transpose.start.index";
 	
 	//used to output the result into different files, if not configuration, all expose into single file
-	public static final String cfgkey_output_filename_exp = "output.filename.exp";
+	public static final @ConfigKey String cfgkey_output_filename_exp = "output.filename.exp";
 
 	private boolean withTrailingDelimiter = false;
 	private List<IdxRange> groupFieldList=new ArrayList<IdxRange>();	
@@ -199,7 +200,7 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 			
 			for(int idx=tableFieldTransposeStartIndex;idx<attrNameList.size();idx++){
 				if(fieldNameMappingCS!=null){
-					getSystemVariables().put(this.VAR_NAME_FIELD_NAME, attrNameList.get(idx));
+					getSystemVariables().put(VAR_NAME_FIELD_NAME, attrNameList.get(idx));
 					String mappedFieldName=ScriptEngineUtil.eval(fieldNameMappingCS, getSystemVariables());
 					fieldPosition.put(mappedFieldName, idx-tableFieldTransposeStartIndex);
 				}else{

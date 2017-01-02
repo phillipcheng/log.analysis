@@ -22,16 +22,18 @@ import org.apache.hadoop.mapreduce.Mapper;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 
 public class EvtBasedMsgParseCmd extends ETLCmd{
+	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(EvtBasedMsgParseCmd.class);
 	//record type specification
-	public static final String cfgkey_evt_idx="event.idx";
-	public static final String cfgkey_evt_types="event.types";
+	public static final @ConfigKey(type=Integer.class,defaultValue="-1") String cfgkey_evt_idx="event.idx";
+	public static final @ConfigKey(type=String[].class) String cfgkey_evt_types="event.types";
 	
 	//main message specification
-	public static final String cfgkey_msg_idx="message.idx";
-	public static final String cfgkey_msg_fields="message.fields";
+	public static final @ConfigKey(type=Integer.class,defaultValue="-1") String cfgkey_msg_idx="message.idx";
+	public static final @ConfigKey(type=String[].class) String cfgkey_msg_fields="message.fields";
 	public static final String REGEXP_KEY="regexp";
 	public static final String ATTR_KEY="attr";
 	public static final String DEFAULT_EVENT_TYPE="default";

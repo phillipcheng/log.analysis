@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 import scala.Tuple2;
@@ -38,9 +39,9 @@ public class UnpackCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 	private static final String SEQ_FILENAME_EXT = ".seq";
 	public static final Logger logger = LogManager.getLogger(UnpackCmd.class);
-	public static final String cfgkey_input_file_filter="input.file.filter";
-	public static final String cfgkey_output_file_filter="output.file.filter";
-	public static final String cfgkey_unpack_file_format="output.file.format";
+	public static final @ConfigKey String cfgkey_input_file_filter="input.file.filter";
+	public static final @ConfigKey String cfgkey_output_file_filter="output.file.filter";
+	public static final @ConfigKey(type=String.class,defaultValue="default",format="enum:default|sequence") String cfgkey_unpack_file_format="output.file.format";
 	private static final byte[] NEW_LINE = "\n".getBytes(StandardCharsets.UTF_8);
 	
 	private FilenameFilter inputFileFilter;

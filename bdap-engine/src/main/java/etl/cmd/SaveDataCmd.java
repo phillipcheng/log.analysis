@@ -1,7 +1,5 @@
 package etl.cmd;
 
-import java.util.List;
-
 import javax.script.CompiledScript;
 
 import org.apache.hadoop.io.Text;
@@ -12,14 +10,13 @@ import org.apache.spark.api.java.JavaSparkContext;
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
 import etl.spark.RDDMultipleTextOutputFormat;
-import etl.spark.SparkUtil;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
-import scala.Tuple2;
 
 public class SaveDataCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 	//cfgkey
-	public static final String cfgkey_log_tmp_dir="log.tmp.dir";
+	public static final @ConfigKey String cfgkey_log_tmp_dir="log.tmp.dir";
 	
 	private String logTmpDir;
 

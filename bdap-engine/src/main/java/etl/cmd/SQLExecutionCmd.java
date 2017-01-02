@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.DBType;
 import etl.util.DBUtil;
 
@@ -20,7 +21,7 @@ public class SQLExecutionCmd extends SchemaETLCmd {
 	
 	
 	//cfgkey
-	public static final String cfgkey_sql="sql";
+	public static final @ConfigKey(type=String[].class) String cfgkey_sql="sql";
 	
 	private List<String> sqlList;
 	
