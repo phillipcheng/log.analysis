@@ -35,7 +35,6 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
-import etl.spark.SparkProcessor;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
