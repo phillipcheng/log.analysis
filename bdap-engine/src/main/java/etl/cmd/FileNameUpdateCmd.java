@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -32,10 +33,10 @@ public class FileNameUpdateCmd extends ETLCmd {
 	private static final int blockSize=1024;
 	
 	//cfgkey
-	public static final String cfgkey_incoming_folder="incomingFolder";
-	public static final String cfgkey_file_name="file.name";
-	public static final String cfgkey_headlines="headlines";
-	public static final String cfgkey_taillines="taillines";
+	public static final @ConfigKey String cfgkey_incoming_folder="incomingFolder";
+	public static final @ConfigKey String cfgkey_file_name="file.name";
+	public static final @ConfigKey(type=Integer.class,defaultValue="10") String cfgkey_headlines="headlines";
+	public static final @ConfigKey(type=Integer.class,defaultValue="10") String cfgkey_taillines="taillines";
 	
 	//var name
 	public static final String VAR_NAME_HEADLINES="headlines";

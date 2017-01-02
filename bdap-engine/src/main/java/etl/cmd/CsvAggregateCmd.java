@@ -30,6 +30,7 @@ import etl.cmd.transform.GroupOp;
 import etl.engine.AggrOperator;
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.FieldType;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
@@ -45,16 +46,16 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	public static final String AGGR_OPERATOR_SEP="\\|";
 	
 	//cfgkey
-	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
-	public static final String cfgkey_aggr_op="aggr.op";
-	public static final String cfgkey_aggr_groupkey="aggr.groupkey";
-	public static final String cfgkey_aggr_groupkey_exp="aggr.groupkey.exp";
-	public static final String cfgkey_aggr_groupkey_exp_type="aggr.groupkey.exp.type";
-	public static final String cfgkey_aggr_groupkey_exp_name="aggr.groupkey.exp.name";
-	public static final String cfgkey_aggr_old_table="old.table";
-	public static final String cfgkey_aggr_new_table="new.table";
-	public static final String cfgkey_join_type="join.type";
-	public static final String cfgkey_groupkey_output_flag="groupkey.output.flag";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_input_endwithcomma="input.endwithcomma";
+	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_op="aggr.op";
+	public static final @ConfigKey String cfgkey_aggr_groupkey="aggr.groupkey";
+	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_groupkey_exp="aggr.groupkey.exp";
+	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_groupkey_exp_type="aggr.groupkey.exp.type";
+	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_groupkey_exp_name="aggr.groupkey.exp.name";
+	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_old_table="old.table";
+	public static final @ConfigKey(type=String[].class) String cfgkey_aggr_new_table="new.table";
+	public static final @ConfigKey String cfgkey_join_type="join.type";
+	public static final @ConfigKey(type=Boolean[].class) String cfgkey_groupkey_output_flag="groupkey.output.flag";
 	
 	private boolean inputEndWithComma=false;
 	private int oldTableCnt=0;

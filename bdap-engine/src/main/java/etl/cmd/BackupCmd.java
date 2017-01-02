@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.PathFilter;
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
 import etl.log.ETLLog;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -32,9 +33,9 @@ public class BackupCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(BackupCmd.class);
 
 	//cfgkey
-	public static final String cfgkey_data_history_folder="data-history-folder";
-	public static final String cfgkey_Folder_filter="file.folder";
-	public static final String cfgkey_file_filter="file.filter";
+	public static final @ConfigKey String cfgkey_data_history_folder="data-history-folder";
+	public static final @ConfigKey(type=String[].class) String cfgkey_Folder_filter="file.folder";
+	public static final @ConfigKey(type=String[].class) String cfgkey_file_filter="file.filter";
 
 	private String dataHistoryFolder;
 	private String[] fileFolders;

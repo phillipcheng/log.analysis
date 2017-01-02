@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.fs.Path;
 
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.FieldType;
 import etl.util.VarType;
 
@@ -26,9 +27,9 @@ public class CsvFileGenCmd extends SchemaETLCmd{
 	public static final SimpleDateFormat tsSdf = new SimpleDateFormat(TS_FORMAT);
 	
 	//cfgkey
-	public static final String cfgkey_table_names="table.names";
-	public static final String cfgkey_output_folder="output.folder";
-	public static final String cfgkey_file_size="file.size";
+	public static final @ConfigKey(type=String[].class) String cfgkey_table_names="table.names";
+	public static final @ConfigKey String cfgkey_output_folder="output.folder";
+	public static final @ConfigKey(type=Integer.class,defaultValue="100") String cfgkey_file_size="file.size";
 	
 	private String[] tableNames;
 	private String outputFolder;

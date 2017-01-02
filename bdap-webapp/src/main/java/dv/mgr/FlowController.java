@@ -32,9 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
 import bdap.util.EngineConf;
 import bdap.util.FileType;
@@ -57,6 +55,7 @@ import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.InMemFile;
 import etl.flow.mgr.NodeInfo;
 import etl.flow.oozie.OozieConf;
+import etl.util.ConfigKey;
 
 @RestController
 @RequestMapping("/{userName}/flow")
@@ -88,35 +87,49 @@ public class FlowController {
 	private final FlowDeployer flowDeployer;
 	private final FlowInstanceRepository flowInstanceRepository;
 	
+	private List<Class<?>> getETLCmdClasses() {
+		ClassPathScanningCandidateComponentProvider actionsProvider = new ClassPathScanningCandidateComponentProvider(false);
+		actionsProvider.addIncludeFilter(new AssignableTypeFilter(ETLCmd.class));
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+		Set<BeanDefinition> beanDefs;
+		Class<?> cls;
+		for (String pkgPath: searchPackages) {
+			beanDefs = actionsProvider.findCandidateComponents(pkgPath);
+			for (BeanDefinition def: beanDefs) {
+				logger.debug(def.getBeanClassName());
+				try {
+					cls = Class.forName(def.getBeanClassName());
+					if (cls != null)
+						classes.add(cls);
+				} catch (ClassNotFoundException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
+		}
+		return classes;
+	}
+	
 	@RequestMapping(value = "/schema", method = RequestMethod.GET)
 	JsonSchema getFlowSchema() throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
-		JsonSchema schema = schemaGen.generateSchema(Flow.class);
-	    return schema;
+	    return FlowMgr.getFlowSchema(getETLCmdClasses());
 	}
 
 	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
 	Map<String, List<String>> getActionNodeCommands() {
-		ClassPathScanningCandidateComponentProvider actionsProvider = new ClassPathScanningCandidateComponentProvider(false);
-		actionsProvider.addIncludeFilter(new AssignableTypeFilter(ETLCmd.class));
 		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
 		List<String> cmdParameters;
-		Set<BeanDefinition> beanDefs;
-		Class<?> cls;
 		Field[] fields;
 		Object obj;
-		for (String pkgPath: searchPackages) {
-			beanDefs = actionsProvider.findCandidateComponents(pkgPath);
-			for (BeanDefinition def: beanDefs) {
-				logger.info(def.getBeanClassName());
-				cmdParameters = new ArrayList<String>();
-				try {
-					cls = Class.forName(def.getBeanClassName());
+		List<Class<?>> classes = getETLCmdClasses();
+		if (classes != null) {
+			for (Class<?> cls: classes) {
+				if (cls.getCanonicalName() != null) {
+					cmdParameters = new ArrayList<String>();
 					fields = cls.getFields();
 					if (fields != null) {
 						for (Field f: fields) {
-						    if (Modifier.isStatic(f.getModifiers()) && f.getName().startsWith(CMD_PARAMETER_PREFIX)) {
+						    if (Modifier.isStatic(f.getModifiers()) && (f.getName().startsWith(CMD_PARAMETER_PREFIX) ||
+						    		f.isAnnotationPresent(ConfigKey.class))) {
 						        try {
 									obj = FieldUtils.readStaticField(f, true);
 							        if (obj != null)
@@ -127,10 +140,8 @@ public class FlowController {
 						    }
 						}
 					}
-				} catch (ClassNotFoundException e) {
-					logger.error(e.getMessage(), e);
+					classNames.put(cls.getCanonicalName(), cmdParameters);
 				}
-				classNames.put(def.getBeanClassName(), cmdParameters);
 			}
 		}
 		return classNames;

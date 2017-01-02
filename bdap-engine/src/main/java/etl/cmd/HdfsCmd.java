@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -20,10 +21,10 @@ public class HdfsCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(HdfsCmd.class);
 	
 	//cfgkey
-	public static final String cfgkey_rm_folders = "rm.folders";
-	public static final String cfgkey_mkdir_folders = "mkdir.folders";
-	public static final String cfgkey_mv_from = "mv.from";
-	public static final String cfgkey_mv_to = "mv.to";
+	public static final @ConfigKey(type=String[].class) String cfgkey_rm_folders = "rm.folders";
+	public static final @ConfigKey(type=String[].class) String cfgkey_mkdir_folders = "mkdir.folders";
+	public static final @ConfigKey(type=String[].class) String cfgkey_mv_from = "mv.from";
+	public static final @ConfigKey(type=String[].class) String cfgkey_mv_to = "mv.to";
 	
 	private String[] rmFolders;
 	private String[] mkdirFolders;

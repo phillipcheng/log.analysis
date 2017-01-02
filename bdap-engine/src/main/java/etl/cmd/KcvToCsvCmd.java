@@ -21,6 +21,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import etl.engine.ETLCmd;
 import etl.engine.MRMode;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 
 //key colon value format to csv
 public class KcvToCsvCmd extends ETLCmd{
@@ -29,10 +30,10 @@ public class KcvToCsvCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(KcvToCsvCmd.class);
 	
 	//record format overall specification
-	public static final String cfgkey_record_start="record.start";
+	public static final @ConfigKey String cfgkey_record_start="record.start";
 		public static final String RECORD_SINGLELINE="^"; //single line
-	public static final String cfgkey_record_vkexp="record.vkexp";
-	public static final String cfgkey_record_fieldnum="record.fieldnum";
+	public static final @ConfigKey String cfgkey_record_vkexp="record.vkexp";
+	public static final @ConfigKey(type=Integer.class) String cfgkey_record_fieldnum="record.fieldnum";
 		public static final int RECORD_FIELDNUM_DEFAULT=-1; //extract all fields recognized
 
 	//record format definition

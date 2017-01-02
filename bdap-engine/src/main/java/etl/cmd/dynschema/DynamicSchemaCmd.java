@@ -15,10 +15,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import scala.Tuple2;
 import scala.Tuple3;
 //
@@ -26,13 +22,14 @@ import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
 import etl.engine.LogicSchema;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 
 public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final String cfgkey_process_type="process.type";
+	public static final @ConfigKey(type=DynSchemaProcessType.class,defaultValue="genCsv") String cfgkey_process_type="process.type";
 	
 	public static final Logger logger = LogManager.getLogger(DynamicSchemaCmd.class);
 	

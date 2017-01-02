@@ -7,14 +7,15 @@ import org.apache.logging.log4j.Logger;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
 import etl.engine.EngineUtil;
+import etl.util.ConfigKey;
 
 public class KafkaAdaptorCmd{
 
 	public static final Logger logger = LogManager.getLogger(KafkaAdaptorCmd.class);
 	
 	//
-	public static final String cfgkey_topic = "kafka.log.topic";
-	public static final String cfgkey_bootstrap_servers = "kafka.bootstrap.servers";
+	public static final @ConfigKey String cfgkey_topic = "kafka.log.topic";
+	public static final @ConfigKey String cfgkey_bootstrap_servers = "kafka.bootstrap.servers";
 	
 	private String bootstrapServers;
 	private String logTopicName;

@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+
 import bdap.util.ParamUtil;
 import bdap.util.SystemUtil;
 
@@ -22,6 +23,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.StringUtil;
 
 public class ShellCmd extends ETLCmd {
@@ -30,8 +32,8 @@ public class ShellCmd extends ETLCmd {
 	public static final Logger logger = LogManager.getLogger(ShellCmd.class);
 	
 	//cfgkey
-	public static final String cfgkey_param_key="key"; //the special key name for mapreduce mode, each key is a line of input
-	public static final String cfgkey_command="command";
+	public static final @ConfigKey String cfgkey_param_key="key"; //the special key name for mapreduce mode, each key is a line of input
+	public static final @ConfigKey String cfgkey_command="command";
 	
 	public static final String capture_prefix="capture:";//from the stdout of the shell script, we filter all the lines started with this
 	public static final String key_value_sep=":";//

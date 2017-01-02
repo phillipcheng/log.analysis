@@ -24,9 +24,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
+
 import etl.engine.ProcessMode;
 import etl.spark.RDDMultipleTextOutputFormat;
 import etl.engine.ETLCmd;
+import etl.util.ConfigKey;
 import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;
@@ -38,12 +40,12 @@ public class LoadDataCmd extends SchemaETLCmd{
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	public static final Logger logger = LogManager.getLogger(LoadDataCmd.class);
 	//cfgkey
-	public static final String cfgkey_webhdfs="hdfs.webhdfs.root";
-	public static final String cfgkey_csvfile = "csv.file";//
-	public static final String cfgkey_load_sql = "load.sql";
-	public static final String cfgkey_table_names="table.names";
-	public static final String cfgkey_csv_suffix ="csv.suffix";
-	public static final String cfgkey_dbfile_path="dbfile.path";//for spark to generate dbinput files
+	public static final @ConfigKey String cfgkey_webhdfs="hdfs.webhdfs.root";
+	public static final @ConfigKey String cfgkey_csvfile = "csv.file";//
+	public static final @ConfigKey String cfgkey_load_sql = "load.sql";
+	public static final @ConfigKey(type=String[].class) String cfgkey_table_names="table.names";
+	public static final @ConfigKey String cfgkey_csv_suffix ="csv.suffix";
+	public static final @ConfigKey String cfgkey_dbfile_path="dbfile.path";//for spark to generate dbinput files
 	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
 	public static final String VAR_USERNAME="userName";
