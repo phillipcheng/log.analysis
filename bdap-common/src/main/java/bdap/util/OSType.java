@@ -16,6 +16,10 @@ public enum OSType {
         return value;
     }
 
+	public String toString() {
+		return value;
+	}
+
     public static OSType fromValue(String v) {
         for (OSType c: OSType.values()) {
             if (c.value.equals(v)) {

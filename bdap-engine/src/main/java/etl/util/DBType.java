@@ -16,7 +16,11 @@ public enum DBType {
         return value;
     }
 
-    public static DBType fromValue(String v) {
+	public String toString() {
+		return value;
+	}
+
+	public static DBType fromValue(String v) {
         for (DBType c: DBType.values()) {
             if (c.value.equals(v)) {
                 return c;

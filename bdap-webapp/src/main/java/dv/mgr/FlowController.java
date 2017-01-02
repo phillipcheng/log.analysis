@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,36 +82,49 @@ public class FlowController {
 	private final FlowMgr flowMgr;
 	private final FlowDeployer flowDeployer;
 	
-	@RequestMapping(value = "/schema", method = RequestMethod.GET)
-	JsonSchema getFlowSchema() throws Exception {
-	    return FlowMgr.getFlowSchema(getActionNodeCommands());
-	}
-
-	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
-	Map<String, List<String>> getActionNodeCommands() {
+	private List<Class<?>> getETLCmdClasses() {
 		ClassPathScanningCandidateComponentProvider actionsProvider = new ClassPathScanningCandidateComponentProvider(false);
 		actionsProvider.addIncludeFilter(new AssignableTypeFilter(ETLCmd.class));
-		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
-		List<String> cmdParameters;
+		List<Class<?>> classes = new ArrayList<Class<?>>();
 		Set<BeanDefinition> beanDefs;
 		Class<?> cls;
-		Field[] fields;
-		Object obj;
 		for (String pkgPath: searchPackages) {
 			beanDefs = actionsProvider.findCandidateComponents(pkgPath);
 			for (BeanDefinition def: beanDefs) {
 				logger.debug(def.getBeanClassName());
-				cmdParameters = new ArrayList<String>();
 				try {
 					cls = Class.forName(def.getBeanClassName());
+					if (cls != null)
+						classes.add(cls);
+				} catch (ClassNotFoundException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
+		}
+		return classes;
+	}
+	
+	@RequestMapping(value = "/schema", method = RequestMethod.GET)
+	JsonSchema getFlowSchema() throws Exception {
+	    return FlowMgr.getFlowSchema(getETLCmdClasses());
+	}
+
+	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
+	Map<String, List<String>> getActionNodeCommands() {
+		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
+		List<String> cmdParameters;
+		Field[] fields;
+		Object obj;
+		List<Class<?>> classes = getETLCmdClasses();
+		if (classes != null) {
+			for (Class<?> cls: classes) {
+				if (cls.getCanonicalName() != null) {
+					cmdParameters = new ArrayList<String>();
 					fields = cls.getFields();
 					if (fields != null) {
 						for (Field f: fields) {
 						    if (Modifier.isStatic(f.getModifiers()) && (f.getName().startsWith(CMD_PARAMETER_PREFIX) ||
 						    		f.isAnnotationPresent(ConfigKey.class))) {
-								ConfigKey ck = f.getAnnotation(ConfigKey.class);
-								logger.debug(ck);
-								logger.debug(f.getName());
 						        try {
 									obj = FieldUtils.readStaticField(f, true);
 							        if (obj != null)
@@ -123,10 +135,8 @@ public class FlowController {
 						    }
 						}
 					}
-				} catch (ClassNotFoundException e) {
-					logger.error(e.getMessage(), e);
+					classNames.put(cls.getCanonicalName(), cmdParameters);
 				}
-				classNames.put(def.getBeanClassName(), cmdParameters);
 			}
 		}
 		return classNames;
