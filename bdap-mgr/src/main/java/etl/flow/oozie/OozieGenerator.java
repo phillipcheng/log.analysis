@@ -17,6 +17,7 @@ import etl.engine.DataType;
 import etl.engine.ETLCmd;
 import etl.engine.InputFormatType;
 import etl.flow.ActionNode;
+import etl.flow.CallSubFlowNode;
 import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.EndNode;
@@ -34,6 +35,7 @@ import etl.flow.oozie.wf.ACTIONTRANSITION;
 import etl.flow.oozie.wf.CONFIGURATION;
 import etl.flow.oozie.wf.DELETE;
 import etl.flow.oozie.wf.END;
+import etl.flow.oozie.wf.FLAG;
 import etl.flow.oozie.wf.FORK;
 import etl.flow.oozie.wf.FORKTRANSITION;
 import etl.flow.oozie.wf.JAVA;
@@ -43,6 +45,7 @@ import etl.flow.oozie.wf.MAPREDUCE;
 import etl.flow.oozie.wf.PARAMETERS;
 import etl.flow.oozie.wf.PREPARE;
 import etl.flow.oozie.wf.START;
+import etl.flow.oozie.wf.SUBWORKFLOW;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 import etl.util.GlobExpPathFilter;
 
@@ -147,7 +150,12 @@ public class OozieGenerator {
 					return null;
 				}else{
 					if (d.isInstance()){
-						inputDataDirs.add(d.getLocation()+wfid+"/*");
+						if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
+							inputDataDirs.add(d.getLocation()+wfid+"/*");
+						}else{
+							///flow1/csvmerge/${wf:actionExternalId('call_flow1')}
+							inputDataDirs.add(d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow())+"/*");
+						}
 					}else{
 						inputDataDirs.add(d.getLocation());
 					}
@@ -194,7 +202,11 @@ public class OozieGenerator {
 					logger.error(String.format("data not found:%s", dataName));
 					return null;
 				}
-				outputDataDir = d.getLocation()+wfid;
+				if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
+					outputDataDir = d.getLocation()+wfid;
+				}else{
+					outputDataDir = d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow());
+				}
 				outputFormatCp.setValue(prop_outputformat_textfile);
 				outputDirCp.setValue(outputDataDir);
 				pl.add(outputDirCp);
@@ -450,6 +462,16 @@ public class OozieGenerator {
 					}else if (exeType==ExeType.java){
 						act.setJava(genJavaAction(flow, an, hasInstanceId));
 					}
+					wfa.getDecisionOrForkOrJoin().add(act);
+				}else if (node instanceof CallSubFlowNode){
+					CallSubFlowNode csfNode = (CallSubFlowNode)node;
+					//${nameNode}/project1/flow1/flow1_workflow.xml
+					String appPath = String.format("${nameNode}/%s/%s/%s_workflow.xml", csfNode.getPrjName(), 
+							csfNode.getSubFlowName(), csfNode.getSubFlowName());
+					SUBWORKFLOW subwf = new SUBWORKFLOW();
+					act.setSubWorkflow(subwf);
+					act.getSubWorkflow().setAppPath(appPath);
+					act.getSubWorkflow().setPropagateConfiguration(new FLAG());
 					wfa.getDecisionOrForkOrJoin().add(act);
 				}else if (node instanceof EndNode){
 					END wfend = new END();

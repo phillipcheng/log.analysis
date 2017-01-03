@@ -25,6 +25,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -223,6 +224,16 @@ public abstract class ETLCmd implements Serializable{
 		}
 	}
 	
+	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
+		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
+		String tableName = inputFileName;
+		if (expFileTableMap!=null){
+			tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+		}
+		return tableName;
+	}
+	
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
 		logger.error(String.format("Empty flatMapToPair impl!!! %s", this));
 		return null;
@@ -267,6 +278,7 @@ public abstract class ETLCmd implements Serializable{
 		return sparkProcessKeyValue(pairs, jsc, inputFormatClass);
 	}
 	
+	//inputFormatClass is null called from sparkProcessFilesToKV, do not need to call mapkey again
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
 		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
@@ -275,7 +287,7 @@ public abstract class ETLCmd implements Serializable{
 			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
 				init();
 				List<Tuple2<String, String>> linesInput = new ArrayList<Tuple2<String,String>>();
-				if (inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
+				if (inputFormatClass!=null && inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
 					linesInput.addAll(processSequenceFile(t._1, t._2));
 				}else{
 					linesInput.add(t);
@@ -283,7 +295,14 @@ public abstract class ETLCmd implements Serializable{
 				logger.debug(String.format("input to sparkprocesskeyvalue %s:%s", staticCfg, linesInput));
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
 				for (Tuple2<String, String> lineInput:linesInput){
-					List<Tuple2<String, String>> ret1 = flatMapToPair(lineInput._1, lineInput._2, null);
+					String key = lineInput._1;
+					if (inputFormatClass!=null){//called directly from data, need map
+						key = mapKey(key);
+					}
+					if (strFileTableMap!=null && lineInput._1!=null && lineInput._1.equals(key)){//debug
+						logger.warn(String.format("get null while mapkey. fileToTableExp:%s, system var:%s", strFileTableMap, getSystemVariables()));
+					}
+					List<Tuple2<String, String>> ret1 = flatMapToPair(key, lineInput._2, null);
 					if (ret1!=null){
 						ret.addAll(ret1);
 					}
@@ -357,7 +376,7 @@ public abstract class ETLCmd implements Serializable{
 				prdd = prdd.union(tprdd);
 			}
 		}
-		return sparkProcessKeyValue(prdd, jsc, TextInputFormat.class);
+		return sparkProcessKeyValue(prdd, jsc, null);
 	}
 	
 	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){

@@ -502,17 +502,12 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	
 	@Override
 	public String mapKey(String key){
-		return getTableNameSetPathFileName(key);
-	}
-	
-	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
-		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
-		String tableName = inputFileName;
-		if (expFileTableMap!=null){
-			tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+		String ret = getTableNameSetPathFileName(key);
+		if (ret==null){
+			return key;
+		}else{
+			return ret;
 		}
-		return tableName;
 	}
 	
 	public String getPathName(Mapper<LongWritable, Text, Text, Text>.Context context){

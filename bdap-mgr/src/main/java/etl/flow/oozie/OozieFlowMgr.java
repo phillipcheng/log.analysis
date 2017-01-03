@@ -37,6 +37,7 @@ import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.deploy.DefaultDeployMethod;
 import etl.flow.deploy.DeployMethod;
+import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
@@ -191,11 +192,14 @@ public class OozieFlowMgr extends FlowMgr{
 		//get jar
 		List<InMemFile> jarDU = FlowDeployer.getJarDU(localFlowFolder, jars);
 		imFiles.addAll(jarDU);
+		//get prop files
+		List<InMemFile> propDU = FlowDeployer.getPropDU(localFlowFolder, propFiles);
+		imFiles.addAll(propDU);
 		//gen wf xml
 		InMemFile wfXml = genWfXml(flow, null, false);
 		imFiles.add(wfXml);
 		//gen action.properties
-		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
+		List<InMemFile> actionPropertyFiles = super.genProperties(flow, EngineType.oozie);
 		imFiles.addAll(actionPropertyFiles);
 		//gen etlengine.properties
 		InMemFile enginePropertyFile = super.genEnginePropertyFile(fd.getEngineConfig());

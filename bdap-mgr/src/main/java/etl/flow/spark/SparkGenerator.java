@@ -87,9 +87,15 @@ public class SparkGenerator {
 			if (!data.isInstance()){
 				if (data.getRecordType().equals(DataType.Path) ||data.getRecordType().equals(DataType.Value)){
 					//JavaRDD<String> sftpMap= SparkUtil.fromFile(this.getDefaultFs() + "/flow1/sftpcfg/test1.sftp.map.properties", jsc);
-					initValue = String.format("etl.spark.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc);", data.getLocation());
+					initValue = String.format("etl.spark.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc)", data.getLocation());
 				}else if (data.getRecordType().equals(DataType.KeyPath) ||data.getRecordType().equals(DataType.KeyValue)){
-					initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc);", data.getLocation());
+					if (data.getBaseOutput()!=null){
+						initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), \"%s\")", 
+							data.getLocation(), data.getBaseOutput());
+					}else{
+						initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), null)", 
+								data.getLocation());
+					}
 				}
 			}
 			//variable declaration line

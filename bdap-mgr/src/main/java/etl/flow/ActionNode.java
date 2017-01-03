@@ -12,12 +12,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import bdap.util.PropertiesUtil;
 import etl.engine.InputFormatType;
+import etl.flow.deploy.EngineType;
 
 public class ActionNode extends Node{
 	
 	public static final String key_exe_type="exe.type";//etl.flow.ExeType
 	public static final String key_cmd_class="cmd.class";//the fully qualified class name of the cmd
-	public static final String sys_prop_prefix="sys.";
+	
 	
 	public static List<String> sysProperties = null;
 	
@@ -83,15 +84,17 @@ public class ActionNode extends Node{
 	}
 	
 	@JsonIgnore
-	public LinkedHashMap<String, Object> getAllProperties(){
+	public LinkedHashMap<String, Object> getAllProperties(EngineType et){
+		String etStr = et.toString()+".";
 		LinkedHashMap<String, Object> allProperties = new LinkedHashMap<String, Object>();
 		for (String key: properties.keySet()){
-			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)){
+			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)
+					&& !key.startsWith(etStr)){
 				allProperties.put(key, properties.get(key));
-			}else{
-				if (key.startsWith(sys_prop_prefix)){
-					allProperties.put(key.substring(sys_prop_prefix.length()), properties.get(key));
-				}
+			}else if (key.startsWith(sys_prop_prefix)){
+				allProperties.put(key.substring(sys_prop_prefix.length()), properties.get(key));
+			}else if (key.startsWith(etStr)){
+				allProperties.put(key.substring(etStr.length()), properties.get(key));
 			}
 		}
 		return allProperties;

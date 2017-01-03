@@ -208,6 +208,17 @@ public class FlowDeployer {
 		return fl;
 	}
 	
+	public static List<InMemFile> getPropDU(String folder, String[] propFiles) throws Exception{
+		List<InMemFile> fl = new ArrayList<InMemFile>();
+		if (propFiles!=null){
+			for (String propPath: propFiles){
+				Path propFilePath = Paths.get(propPath);
+				fl.add(new InMemFile(FileType.ftmappingFile, propFilePath.getFileName().toString(), Files.readAllBytes(propFilePath)));
+			}
+		}
+		return fl;
+	}
+	
 	public static List<InMemFile> getDeploymentUnits(String folder, boolean fromJson, boolean skipSchema) throws Exception{
 		List<InMemFile> fl = new ArrayList<InMemFile>();
 		Path directoryPath = Paths.get(folder);

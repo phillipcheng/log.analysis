@@ -231,6 +231,8 @@ public class LoadDataCmd extends SchemaETLCmd{
 			if (super.getDbtype()!=DBType.NONE){
 				return DBUtil.executeSqls(copysqls, super.getPc());
 			}
+		}else{
+			logger.warn(String.format("skip loading table:%s, tableNames:%", key, Arrays.asList(this.tableNames)));
 		}
 		return 0;
 	}
@@ -259,27 +261,10 @@ public class LoadDataCmd extends SchemaETLCmd{
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), dbInputPath), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
-		JavaPairRDD<String, String> output = input.keys().mapToPair(new PairFunction<String, String, String>(){
-			@Override
-			public Tuple2<String, String> call(String t) throws Exception {
-				return new Tuple2<String, String>(t, String.format("%s%s%s", getDefaultFs(), dbInputPath, t));
-			}
-		});
-		
-		JavaPairRDD<String, String> csvaggr = null;
-		
-		csvaggr = output.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
-				String[] files = StringItToFiles(t._2);
-				int rows = reduceByKey(t._1, files);
-				return new Tuple2<String, String>(t._1, Integer.toString(rows));
-			}
-		});
-		
-		return csvaggr;
+		String folderName = String.format("%s%s", super.getDefaultFs(), dbInputPath);
+		logger.info(String.format("save hadoop file:%s", folderName));
+		input.saveAsHadoopFile(folderName, Text.class, Text.class, RDDMultipleTextOutputFormat.class);
+		return input;
 	}
 
 	private String[] TextItToFiles(Iterable<Text> values) {
