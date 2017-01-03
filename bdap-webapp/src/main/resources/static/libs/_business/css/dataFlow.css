@@ -5,7 +5,11 @@ body {
 	user-select: none;
 }
 
-.nodePropertyG {}
+.nodePropertyG {
+	fill: rgb(238, 238, 238);
+	stroke: red;
+	stroke-width: 1;
+}
 
 .nodePropertyG:hover {
 	cursor: pointer;
@@ -184,8 +188,14 @@ body {
 	cursor: crosshair;
 }
 
+.dataPath{
+	stroke: white;
+	stroke-width: 1px;
+}
+
 .outPath {
 	fill: orangered;
+	stroke: white;
 }
 
 .outPath:hover {
@@ -193,8 +203,19 @@ body {
 }
 
 .inPath {
-	fill: cornflowerblue
+
 }
+
+.inPath>circle{
+	fill: cornflowerblue;
+	stroke: white;
+}
+
+.inPath>path{
+	stroke: white;
+	stroke-width: 1px;
+}
+
 
 .inPath:hover {
 	cursor: pointer;
@@ -247,7 +268,6 @@ body {
 
 .child_svg {
 	position: relative;
-	top: 2px;
 	width: 150px;
 	height: 150px;
 	border: 1px solid rgb(155, 155, 155);
