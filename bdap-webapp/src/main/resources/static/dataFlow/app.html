@@ -13,6 +13,7 @@
 		<link rel="stylesheet" type="text/css" href="../libs/easyui/themes/icon.css">
 		<link rel="stylesheet" type="text/css" href="../libs/_business/css/d3-context-menu.css" />
 		<link rel="stylesheet" type="text/css" href="../libs/_business/css/dataSetFlow.css" />
+		<link rel="stylesheet" type="text/css" href="../libs/_business/css/dataFlowChild.css" />
 
 		<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
 		<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
@@ -24,19 +25,18 @@
 		<script type="text/javascript" src="../libs/d3/contextmenu/d3-context-menu.js"></script>
 
 		<script type="text/javascript" src="../libs/_business/js/const.js"></script>
-		<script type="text/javascript" src="../libs/_business/js/base.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/json.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/init.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/event.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/enter.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/update.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/build.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/app.js"></script>
-		<script type="text/javascript" src="../libs/_business/js/zoom.js"></script>
-		<script type="text/javascript" src="../libs/_business/js/controller.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/draw.js"></script>
 
-		<script type="text/javascript" src="../libs/_business/js/dataset.js"></script>
-		<script type="text/javascript" src="../libs/_business/js/dywindow.js"></script>
-		<script type="text/javascript" src="../libs/_business/js/interact.js"></script>
-		<script type="text/javascript" src="../libs/_business/js/load.js"></script>
 	</head>
 
-	<body onload="loadinit()" oncontextmenu="return false">
+	<body oncontextmenu="return false">
 
 		<!--
 			导航 #f57c00
@@ -49,31 +49,34 @@
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild();">loadFlow</a>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSet();">dataSet</a>
 						</li>
 						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSet();">dataSet</a>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSetShow();">dataSet Show</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSetHide();">dataSet Hide</a>
 						</li>
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.start();">start</a>
 						</li>
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.end();">end</a>
-						</li>	
-							<li>
-								<a style="color: #FFFFFF;" href="javascript:;" onclick="openLogWin();">openLogWin</a>
-							</li>
-							<li>
-								<a style="color: #FFFFFF;" href="javascript:;" onclick="openDatasetWin();">openDatasetWin</a>
-							</li>
-							<li>
-								<a style="color: #FFFFFF;" href="javascript:;" onclick="saveAsJson();">Save</a>
-							</li>
-							<li class="dropdown">
-								<a style="color: #FFFFFF;" href="#" class="dropdown-toggle" data-toggle="dropdown">ActionNode <b class="caret"></b></a>
-								<ul class="dropdown-menu" id="actionList">
-								</ul>
-							</li>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="openLogWin();">openLogWin</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="openDatasetWin();">openDatasetWin</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="saveAsJson();">Save</a>
+						</li>
+						<li class="dropdown">
+							<a style="color: #FFFFFF;" href="#" class="dropdown-toggle" data-toggle="dropdown">ActionNode <b class="caret"></b></a>
+							<ul class="dropdown-menu" id="actionList">
+							</ul>
+						</li>
 					</ul>
 				</div>
 			</div>
@@ -83,7 +86,7 @@
 				<div class="col-md-12" style="height: 93vh;">
 					<div style="height:100%;" role="tabpanel" class="tab-pane active" id="home">
 						<div id="display" style="height:99%;width: 99%; position: absolute;">
-							<svg id="svg" style="height:100%;width: 100%;" onmousedown="svg_document_onmousedown()" onmouseup="svg_document_onmouseup()" onkeyup="svg_document_onkeydown()">
+							<svg id="svg" style="height:100%;width: 100%;" onmousedown="_event.svg_onmousedown()" onmouseup="_event.svg_onmouseup()">
 								<defs>
 									<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
 										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: gray;" />
@@ -97,10 +100,13 @@
 								</defs>
 							</svg>
 						</div>
-						<div id="dataset_svg" class="dataset_svg">
+						<div id="dataset_div" class="dataset_div">
+							
+						</div>						
+						<!--<div id="dataset_div" class="dataset_div">
 							<svg id="svgdataset" style="width: 100%;height: 100%;">
 							</svg>
-						</div>
+						</div>-->
 						<div id="child_svg" class="child_svg" onclick="remoeToInitPosition()">
 							<svg id="svgsmall" style="height:100%;width: 100%;">
 								<g id="rectSmallContainer" transform="translate(75,75)scale(1,1)">
@@ -118,27 +124,9 @@
 							<div id="rightupcssbody" class="rightupcssbody">
 							</div>
 						</div>
-						<div id="divdatanode_Container">
-							<!--<div id="divdatanode" class="divdatanode">
-								<div class="rightupcssheader">
-									<strong>Data Information</strong>
-									<a href="javascript:;" class="imgclose">&nbsp;</a>
-								</div>
-								<div id="divdatanodebody">
-									<input type="hidden" id="hidDataSetNodeId" value="" />
-									<input type="hidden" id="hidDataSetPathId" value="" />
-									<div class="sublistgroup">
-										<strong>name:</strong>
-										<input id="dataset_node_name" readonly="readonly" type="text" value="" placeholder="..." onkeyup="changeShowDataBang()" />
-									</div>
-									<div class="sublistgroup">
-										<strong>dataSetList:</strong>
-										<select id="dataset_node_select" style="width: 100%;" onkeyup="changeShowDataBang()" />
-
-										</select>
-									</div>
-								</div>
-							</div>-->
+						<div id="divdatanode_in_Container" class="inDataContainer">
+						</div>
+						<div id="divdatanode_out_Container" class="outDataContainer">
 						</div>
 						<div id="divleftdatasetproperty">
 							<div id="datasetcssheader" class="rightupcssheader">
@@ -156,15 +144,31 @@
 								</div>
 								<div class="sublistgroup">
 									<strong>dataFormat:</strong>
-									<input id="dataset_property_dataFormat" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+									<select id="dataset_property_dataFormat" onchange="changeDataSetProeroty()">
+										<option value="Line">Line</option>
+										<option value="XML">XML</option>
+										<option value="Text">Text</option>
+										<option value="Binary">Binary</option>
+										<option value="Section">Section</option>
+										<option value="Mixed">Mixed</option>
+										<option value="FileName">FileName</option>
+									</select>
+									<!--<input id="dataset_property_dataFormat" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />-->
 								</div>
 								<div class="sublistgroup">
 									<strong>recordType:</strong>
-									<input id="dataset_property_recordType" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+									<select id="dataset_property_recordType" onchange="changeDataSetProeroty()">
+										<option value="Path">Path</option>
+										<option value="KeyPath">KeyPath</option>
+										<option value="Value">Value</option>
+										<option value="KeyValue">KeyValue</option>
+									</select>
+									<!--<input id="dataset_property_recordType" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />-->
 								</div>
 								<div class="sublistgroup">
 									<strong>instance:</strong>
-									<input id="dataset_property_instance" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+									<!--<input id="dataset_property_instance" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />-->
+									<input id="dataset_property_instance" type="checkbox" onchange="changeDataSetProeroty()" />
 								</div>
 							</div>
 
@@ -178,13 +182,13 @@
 			init();
 		</script>
 
-		<div id="logDetail" class="easyui-window" title="Log Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
+		<!--<div id="logDetail" class="easyui-window" title="Log Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
 			<div class="easyui-tabs" style="width:100%;height:100%">
 				<div id="tab-info" title="Info" style="padding:10px;margin: 0px;">
 					This is the log content1.
 				</div>
 			</div>
-		</div>
+		</div>-->
 
 		<!-- <div id="datasetDetail" class="easyui-window" title="Data Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
 			<div class="easyui-tabs" style="width:100%;height:100%">
@@ -196,9 +200,13 @@
 				</div>
 			</div>
 		</div> -->
-		<div id="windowContentStart"></div>
+		<!--	<div id="windowContentStart"></div>-->
 
 		<div id="d3contextmenu" class="d3-context-menu" style="display: none;">
+		</div>
+
+		<div class="panel-group" id="accordion" style="position: absolute;top:50px;left:5px;width: 300px;overflow-y: scroll;height: 90vh;">
+
 		</div>
 
 	</body>

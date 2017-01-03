@@ -911,3 +911,5 @@ var remoeToInitPosition = function() {
 	current_zoom_x = init_zoom_x;
 	current_zoom_y = init_zoom_y;
 }
+
+

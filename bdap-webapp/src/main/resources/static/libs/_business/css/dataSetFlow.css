@@ -1,7 +1,6 @@
-.dataset_svg {
-	position: absolute;
+.dataset_div {
+	position: relative;
 	width: 250px;
-	top: 2px;
 	height: 92vh;
 	border: 1px solid rgb(155, 155, 155);
 	background: #FFF;
@@ -43,13 +42,31 @@
 	background: white;
 }
 
-.divdatanode {
+.inDataContainer{
 	position: absolute;
-	width: 297px;
-	height: 200px;
+	left:305px;
+	top:5px;
+}
+
+.outDataContainer{
+	position: absolute;
+	left:305px;
+	bottom: 5px;
+}
+
+.divdatanode {
+	position: relative;
+	float: left;
+	width: 200px;
+	height: 150px;
 	border: 1px solid rgb(155, 155, 155);
 	z-index: 10;
 	display: block;
+}
+
+.divdatanodeheader{
+	background: silver;
+	height: 30px;
 }
 
 .divdatanodebody{
@@ -59,4 +76,5 @@
 .imgclose{
 	text-decoration: none;
 	background: url(../img/panel_tools.png) no-repeat -16px 0px;
+	margin-right: 5px;
 }
