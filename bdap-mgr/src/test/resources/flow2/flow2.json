@@ -58,14 +58,14 @@
     "dataFormat" : "FileName",
     "recordType" : "Value",
     "instance" : true,
-    "instanceFlow" : "callSubFlow"
+    "instanceFlow" : "callFlow1"
   }, {
     "name" : "csvdbout",
     "location" : "/flow1/csvdbout/",
     "dataFormat" : "Text",
     "recordType" : "KeyValue",
     "instance" : true,
-    "instanceFlow" : "callSubFlow"
+    "instanceFlow" : "callFlow1"
   } ],
   "inLets" : [ ],
   "wfName" : "flow2"
