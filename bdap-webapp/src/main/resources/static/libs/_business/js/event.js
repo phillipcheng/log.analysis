@@ -175,17 +175,19 @@ var _event = {
 			});
 			_build._build();
 		} else {
-			nodeData.pro.self = "ShowProperty";
-			nodeData.pro.circle.self = "ShowProperty";
-			nodeData.pro.path.self = "ShowProperty";
-			nodeData.pro.path.d = "M-3,0L3,0M0,-3L0,3";
-			_draw._drawClearProperty();
-			_build._build();
+			_draw._drawClearProperty(gId);
 		}
 	},
-	data_addIn_click: function() {
-		var e = window.event || arguments.callee.caller.arguments[0];
-		var o = getEventSources(e);
+	data_addIn_click: function(addInletButtonThis) {
+		var e;
+		var o;
+		if(isEmpty(addInletButtonThis)){
+			e = window.event || arguments.callee.caller.arguments[0];
+			o = getEventSources(e);
+		}else{
+			o = addInletButtonThis;
+		}
+		
 		var gId = o.getAttribute("G");
 		console.log("data_addIn_click:", o);
 		each(result.nodes, function(i, o) {
@@ -205,9 +207,16 @@ var _event = {
 			return true;
 		});
 	},
-	data_addOut_click: function() {
-		var e = window.event || arguments.callee.caller.arguments[0];
-		var o = getEventSources(e);
+	data_addOut_click: function(addInletButtonThis) {
+		var e;
+		var o;
+		if(isEmpty(addInletButtonThis)){
+			e = window.event || arguments.callee.caller.arguments[0];
+			o = getEventSources(e);
+		}else{
+			o = addInletButtonThis;
+		}
+		
 		var gId = o.getAttribute("G");
 		console.log("data_addOut_click:", o);
 		each(result.nodes, function(i, o) {
@@ -232,24 +241,23 @@ var _event = {
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		each(result.nodes, function() {
-			var tempClassName = d3.select("#" + this.id).attr("class")
-			if(this.id.localeCompare(gId) == 0) {
-				//nodeGSelected
-				if(tempClassName.indexOf("nodeGSelected") == -1) {
-					tempClassName += " nodeGSelected";
-					d3.select("#" + this.id).attr("class", tempClassName);
-				}
-			} else {
-				if(tempClassName.indexOf("nodeGSelected") > -1) {
-					tempClassName = tempClassName.replace("nodeGSelected", "");
-					d3.select("#" + this.id).attr("class", tempClassName);
-				} else {
-					tempClassName += " nodeGSelected";
-					d3.select("#" + this.id).attr("class", tempClassName);
-				}
+			if(!this.inLets){
+				d3.select("#"+this.id).attr("class","nodeG start");
+			}else if(!this.outlets){
+				d3.select("#"+this.id).attr("class","nodeG end");
+			}else{
+				d3.select("#"+this.id).attr("class","nodeG action");
 			}
 			return true;
 		});
+		
+		var temp = d3.select("#"+gId).attr("class");
+		d3.select("#"+gId).attr("class",temp+" nodeGSelected");
+		
+		if(e.code==2){
+			//
+		}
+		
 	},
 	selectedData: function(txtId, gId) {
 		console.log("--------------------selectedData----------------------");

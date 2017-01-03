@@ -18,10 +18,15 @@ var _action_node_min_width = 200;
 
 var _action_node_min_height = 60;
 
-
 var _node_max_width = 300;
 
 var _node_max_property_width = 280;
+
+/**
+ * save JSON
+ */
+var _HTTP_SAVE_JSON = "/dashview/{userName}/flow/";
+
 
 
 

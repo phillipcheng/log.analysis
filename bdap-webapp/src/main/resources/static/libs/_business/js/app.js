@@ -309,9 +309,13 @@ var app = {
 		addLeftDiv(temp_g);
 	},
 	save: function() {
+		var thisObj = this;
+		var saveResult={};
+		//deep copy
+		saveResult = $.extend(true,{}, result);;
 		function findDataNewId(findId) {
 			var txt = "";
-			each(result.data, function() {
+			each(saveResult.data, function() {
 				if(this.id.localeCompare(findId) == 0) {
 					txt = this.name;
 					return false;
@@ -322,17 +326,17 @@ var app = {
 		}
 
 		//
-		each(result.data, function() {
+		each(saveResult.data, function() {
 			this.name = this.name + "_" + this.id;
 			return true;
 		});
 		
-//		each(result.nodes, function() {
-//			this.name = this.name + "_" + this.id;
-//			return true;
-//		});		
+		each(saveResult.nodes, function() {
+			this.name = this.id;
+			return true;
+		});		
 
-		each(result.nodes, function() {
+		each(saveResult.nodes, function() {
 			var tempInLets = [];
 			var tempOutLets = [];
 			if(this.inLets) {
@@ -369,6 +373,23 @@ var app = {
 //			return true;
 //		});
 		
-		console.log("result", JSON.stringify(result) );
+		console.log("result", JSON.stringify(saveResult) );
+		thisObj.saveAsJson(saveResult);
+	},
+	saveAsJson : function(saveResult) {
+		$.ajax({
+			type: "post",
+			url: getAjaxAbsolutePath(_HTTP_SAVE_JSON),
+			contentType: 'application/json',
+			data: JSON.stringify(saveResult),
+			//dataType: "json",
+			success: function(data, textStatus) {
+				console.info(data);
+			},
+			error: function(e) {
+				console.info(e);
+			}
+		});
+
 	}
 }
