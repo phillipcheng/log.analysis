@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -26,6 +27,7 @@ import etl.cmd.HdfsCmd;
 import etl.cmd.LoadDataCmd;
 import etl.cmd.SaveDataCmd;
 import etl.engine.EngineUtil;
+import etl.spark.RDDMultipleTextOutputFormat;
 import etl.util.DBType;
 import etl.util.StringUtil;
 import scala.Tuple2;

@@ -61,7 +61,6 @@ public class LoadDataCmd extends SchemaETLCmd{
 	private transient CompiledScript csCsvFile;
 	private transient CompiledScript csLoadSql;
 	private transient CompiledScript csDbInputPath;//for spark to generate dbinput files
-	private String dbInputPath;
 
 	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
 	
@@ -101,12 +100,15 @@ public class LoadDataCmd extends SchemaETLCmd{
 		if (this.loadSql!=null){
 			csLoadSql = ScriptEngineUtil.compileScript(loadSql);
 		}
-		String dbInputPathExp = super.getCfgString(cfgkey_dbfile_path, null);
-		logger.info(String.format("dbInputPathExp:%s", dbInputPathExp));
-		if (dbInputPathExp!=null){
-			csDbInputPath = ScriptEngineUtil.compileScript(dbInputPathExp);
-			dbInputPath = ScriptEngineUtil.eval(this.csDbInputPath, this.getSystemVariables());
+	}
+	
+	private String removeProtocol(String row){
+		if (row.startsWith("hdfs://")) {
+			/* Locate from the root path */
+			row = row.substring(7);
+			row = row.substring(row.indexOf("/"));
 		}
+		return row;
 	}
 	
 	private List<String> prepareTableCopySQLs(String tableName, String[] files) {
@@ -117,6 +119,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 				this.getSystemVariables().put(VAR_TABLE_NAME, tableName);
 				
 				for (String csvFileName: files) {
+					csvFileName = removeProtocol(csvFileName);
 					this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
 					
 					if (csLoadSql!=null){
@@ -131,6 +134,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 				}
 			}else if (csLoadSql!=null){//just evaluate the loadSql
 				for (String csvFileName: files) {
+					csvFileName = removeProtocol(csvFileName);
 					this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
 					sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
 					newCopysqls.add(sql);
@@ -187,15 +191,12 @@ public class LoadDataCmd extends SchemaETLCmd{
 		
 		return  logInfo;
 	}
+	
 	//return table name to file name mapping
 	private List<Tuple2<String, String>> flatMapToPair(String row){
 		logger.info(String.format("in flatMapToPair row:%s", row));
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
-		if (row.startsWith("hdfs://")) {
-			/* Locate from the root path */
-			row = row.substring(7);
-			row = row.substring(row.indexOf("/"));
-		}
+		row = removeProtocol(row);
 		if (logicSchema!=null && (csLoadSql==null||loadSql.contains(VAR_TABLE_NAME))){
 			/* File to table mapping */
 			String tableName = this.getTableNameSetPathFileName(row);
@@ -206,11 +207,17 @@ public class LoadDataCmd extends SchemaETLCmd{
 		return vl;
 	}
 	
+	//
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row,
 			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
 		Map<String, Object> ret = new HashMap<String, Object>();
-		List<Tuple2<String, String>> vl = flatMapToPair(row);
+		String path = row;
+		String[] kv = row.split("\t", 2);
+		if (kv.length>=2){
+			path = kv[1];
+		}
+		List<Tuple2<String, String>> vl = flatMapToPair(path);
 		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
 		return ret;
 	}
@@ -256,15 +263,15 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
 		super.init();
-		try{
-			getFs().delete(new Path(dbInputPath), true);
-		}catch(Exception e){
-			logger.error("", e);
-		}
-		String folderName = String.format("%s%s", super.getDefaultFs(), dbInputPath);
-		logger.info(String.format("save hadoop file:%s", folderName));
-		input.saveAsHadoopFile(folderName, Text.class, Text.class, RDDMultipleTextOutputFormat.class);
-		return input;
+		return input.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				String[] files = StringItToFiles(t._2);
+				int rows = reduceByKey(t._1, files);
+				return new Tuple2<String, String>(t._1, Integer.toString(rows));
+			}
+		});
 	}
 
 	private String[] TextItToFiles(Iterable<Text> values) {
@@ -297,13 +304,5 @@ public class LoadDataCmd extends SchemaETLCmd{
 
 	public void setSgCopySql(List<String> sgCopySql) {
 		this.sgCopySql = sgCopySql;
-	}
-	
-	public String getDbInputPath() {
-		return dbInputPath;
-	}
-
-	public void setDbInputPath(String dbInputPath) {
-		this.dbInputPath = dbInputPath;
 	}
 }

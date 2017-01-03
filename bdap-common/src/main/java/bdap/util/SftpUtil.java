@@ -185,7 +185,7 @@ public class SftpUtil {
 		}
 	}
 	
-	public static List<String> sftpList(String host, int port, String user, String pass, String remoteDir) {
+	public static List<String> sftpList(SftpInfo sftpInfo, String remoteDir) {
 		Session session = null;
 		ChannelSftp sftpChannel = null;
 		List<String> fl = new ArrayList<String>();
@@ -193,9 +193,9 @@ public class SftpUtil {
 			// connect
 			JSch jsch = new JSch();
 			Channel channel = null;
-			session = jsch.getSession(user, host, port);
+			session = jsch.getSession(sftpInfo.user, sftpInfo.ip, sftpInfo.port);
 			session.setConfig("StrictHostKeyChecking", "no");
-			session.setPassword(pass);
+			session.setPassword(sftpInfo.passwd);
 			session.connect();
 			channel = session.openChannel("sftp");
 			channel.connect();

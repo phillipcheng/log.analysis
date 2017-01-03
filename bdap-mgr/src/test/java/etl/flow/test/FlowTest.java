@@ -27,7 +27,6 @@ public class FlowTest {
 	
 	private String[] jars = new String[]{"target/bdap.mgr-VVERSIONN-tests.jar"};
 	
-	@Test
 	public void genSql() throws Exception{
 		String outputSql = "src/test/resources/sql/flow1.sql";
 		String schemaFile = "src/test/resources/schema/flow1.schema";

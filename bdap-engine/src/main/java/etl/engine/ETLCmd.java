@@ -225,7 +225,9 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
-		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+		Path path=((FileSplit) context.getInputSplit()).getPath();
+		getSystemVariables().put(VAR_NAME_PATH_NAME, path.toString());
+		String inputFileName = path.getName();
 		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
 		String tableName = inputFileName;
 		if (expFileTableMap!=null){
