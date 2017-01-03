@@ -45,6 +45,11 @@ var _event = {
 			return false;
 		} else {
 			g.setEdge(g_mouse_down, g_mouse_up);
+			result.links.push({
+				fromNodeName: g_mouse_down,
+				toNodeName: g_mouse_up,
+				linkType: "success"
+			})
 			g_mouse_down = "";
 			g_mouse_up = "";
 			_build._build();
@@ -245,6 +250,31 @@ var _event = {
 			}
 			return true;
 		});
+	},
+	selectedData: function(txtId, gId) {
+		console.log("--------------------selectedData----------------------");
+		console.log(arguments);
+		var e = window.event || arguments.callee.caller.arguments[0];
+		var o = getEventSources(e);
+		e.stopPropagation();
+		d3.select("#divrightup").style({
+			display: "block"
+		});
+		$("#rightupcssbody").html("");
+
+		var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+		divobj.append("strong").text("name:");
+		divobj.append("input").attr("type", "text").attr("value", "").attr("placeholder", "...")
+			.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
+		divobj.append("strong").text("dataName:");
+
+		var divobjselect = divobj.append("select");
+		divobjselect.attr("onchange", "changeData('" + txtId + "','dataName','" + gId + "')");
+		each(dataSetList, function() {
+			divobjselect.append("option").attr("value", this.k).text(this.v.name);
+			return true;
+		});
+		divobjselect[0][0].selectedIndex = -1;
 	},
 	selectedProperty: function() {
 		console.log("--------------------selectedProperty----------------------");

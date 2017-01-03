@@ -111,31 +111,45 @@ var smallNodeUpdate = function(theSelf, d, nodeData) {
 var childNodeUpdate = function(theSelf, d, nodeData) {
 	console.log("childNodeUpdate", nodeData);
 	var theSelfObj = d3.select(theSelf);
-	var theSelfObjRect = theSelfObj.select("#" + nodeData.rect.id);
 	var tempId = nodeData.id;
-
+	var nodeParentData = g.node(nodeData.G);
 	if(tempId.indexOf("_InData_0") > -1) {
 		theSelfObj.transition().duration(_TRANSITION_DURATION)
-			.attr("transform", "translate(0,0)scale(1,1)");
-
+			.attr("transform", "translate(0," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 	} else if(tempId.indexOf("_InData_1") > -1) {
 		theSelfObj.transition().duration(_TRANSITION_DURATION)
-			.attr("transform", "translate(65,0)scale(1,1)");
+			.attr("transform", "translate(65," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 
 	} else if(tempId.indexOf("_InData_2") > -1) {
 		theSelfObj.transition().duration(_TRANSITION_DURATION)
-			.attr("transform", "translate(130,0)scale(1,1)");
+			.attr("transform", "translate(130," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 
 	} else if(tempId.indexOf("_InData_3") > -1) {
 		theSelfObj.transition().duration(_TRANSITION_DURATION)
-			.attr("transform", "translate(195,0)scale(1,1)");
+			.attr("transform", "translate(195," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 
-	} else {
+	} else if(tempId.indexOf("_OutData_0") > -1) {
 		theSelfObj.transition().duration(_TRANSITION_DURATION)
-			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
+			.attr("transform", "translate(0," + (nodeParentData.height - 80) + ")scale(1,1)");
+	} else if(tempId.indexOf("_OutData_1") > -1) {
+		theSelfObj.transition().duration(_TRANSITION_DURATION)
+			.attr("transform", "translate(65," + (nodeParentData.height - 80) + ")scale(1,1)");
+	} else if(tempId.indexOf("_OutData_2") > -1) {
+		theSelfObj.transition().duration(_TRANSITION_DURATION)
+			.attr("transform", "translate(130," + (nodeParentData.height - 80) + ")scale(1,1)");
+	} else if(tempId.indexOf("_OutData_3") > -1) {
+		theSelfObj.transition().duration(_TRANSITION_DURATION)
+			.attr("transform", "translate(195," + (nodeParentData.height - 80) + ")scale(1,1)");
+	} else if(tempId.indexOf("_property") > -1) {
+		theSelfObj.transition().duration(_TRANSITION_DURATION)
+			.attr("transform", "translate(0," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 	}
 
-	$.each(nodeData.rect, function(k, v) {
-		theSelfObjRect.attr(k, v);
-	});
+	if(nodeData.rect) {
+		var theSelfObjRect = theSelfObj.select("#" + nodeData.rect.id);
+		$.each(nodeData.rect, function(k, v) {
+			theSelfObjRect.attr(k, v);
+		});
+	}
+
 }
