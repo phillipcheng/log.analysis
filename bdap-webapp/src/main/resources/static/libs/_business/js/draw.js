@@ -27,7 +27,7 @@ var _draw = {
 					if(o.show) {
 						if(o.state.localeCompare("show") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + ",0)scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "inPath").attr("self", "showInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addIn_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -36,7 +36,7 @@ var _draw = {
 								.attr("d", "M-3,0L3,0M0,3L0,-3").attr("G", gId).attr("arge", o.id);
 						} else if(o.state.localeCompare("hide") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + ",0)scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "inPath").attr("self", "hideInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addIn_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -63,7 +63,7 @@ var _draw = {
 					if(o.show) {
 						if(o.state.localeCompare("show") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + "," + nodeData.height + ")scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "outPath").attr("self", "showInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addOut_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -72,7 +72,7 @@ var _draw = {
 								.attr("d", "M-3,0L3,0M0,3L0,-3").attr("G", gId).attr("arge", o.id);
 						} else if(o.state.localeCompare("hide") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + "," + nodeData.height + ")scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "outPath").attr("self", "hideInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addOut_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -128,9 +128,12 @@ var _draw = {
 			}
 		}
 
-		if(hadInput || hadInput) {
+		if(hadInput || hadOutput) {
 			nodeData.width = _node_max_width;
+			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
 		}
+
+		console.log("my result:", nodeData);
 
 		_build._build();
 
@@ -142,6 +145,27 @@ var _draw = {
 			inputObj.rect.width = _node_data_width;
 			inputObj.rect.height = _node_data_height;
 			_build._build(gId, g_child_instance);
+			//加载属性内容
+			console.log("加载属性内容", inputObj);
+
+			d3.select("#" + inputObj.id).selectAll("text").remove();
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("id", inputObj.id + "_name").attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("id", inputObj.id + "_dataName").attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
+
 			return true;
 		});
 
@@ -152,9 +176,30 @@ var _draw = {
 			inputObj.rect.width = _node_data_width;
 			inputObj.rect.height = _node_data_height;
 			_build._build(gId, g_child_instance);
+			//加载属性内容
+			console.log("加载属性内容", inputObj);
+
+			d3.select("#" + inputObj.id).selectAll("text").remove();
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("id", inputObj.id + "_name").attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+
+			d3.select("#" + inputObj.id).append("text")
+				.attr("id", inputObj.id + "_dataName").attr("G", inputObj.G)
+				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
 			return true;
 		});
-		
+
+		this._drawAboutPosition(gId);
 	},
 	_drawProperty: function(gId, obj) {
 		console.log("-------------_drawProperty-------------------");
@@ -199,7 +244,7 @@ var _draw = {
 		console.log("propertyData", propertyData);
 		propertyData.width = _node_max_property_width;
 		propertyData.rect.width = _node_max_property_width;
-		propertyData.rect.height = _index * 20;
+		propertyData.rect.height = (_index * 20);
 		if(document.getElementById(gId + "_property").getElementsByTagName("text") &&
 			document.getElementById(gId + "_property").getElementsByTagName("text").length > 0) {
 
@@ -233,14 +278,15 @@ var _draw = {
 			"display": "none"
 		});
 	},
-	_drawAboutPosition : function(gId){
+	_drawAboutPosition: function(gId) {
 		var nodeData = g.node(gId);
 		//定位下方的按钮
-		each(result.nodes,function(){
-			if(this.id.localeCompare(gId)==0){
-				each(this.outlets,function(i,o){
-					console.log(d3.select("#"+o.id));
-					d3.select("#"+o.id).attr("transform","translate(0,60)scale(1,1)");
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				each(this.outlets, function(i, o) {
+					console.log();
+					console.log(d3.select("#" + o.id));
+					d3.select("#" + o.id + "_point").attr("transform", "translate(" + (i * 40) + "," + nodeData.height + ")scale(1,1)");
 					return true;
 				});
 				return false;
@@ -417,4 +463,62 @@ var changeProperty = function(gId, propertyName) {
 		}
 		return true;
 	});
+}
+
+/**
+ * 
+ * @param {Object} txtId
+ */
+var changeData = function(txtId, propertyName, gId) {
+	console.log("--------changeData----------");
+	console.log(arguments);
+	var e = window.event || arguments.callee.caller.arguments[0];
+	var o = getEventSources(e);
+
+	if(o.tagName.localeCompare("INPUT") == 0) {
+		d3.select("#" + txtId + "_" + propertyName).text(o.value);
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				each(this.inLets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.name = o.value;
+						return false;
+					}
+					return true;
+				});
+				each(this.outlets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.name = o.value;
+						return false;
+					}
+					return true;
+				});
+				return false;
+			}
+			return true;
+		});
+	} else if(o.tagName.localeCompare("SELECT") == 0) {
+		//console.log(o.selectedOptions[0].innerText);
+		d3.select("#" + txtId + "_" + propertyName).text(o.selectedOptions[0].innerText);
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				each(this.inLets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.dataName = o.value;
+						return false;
+					}
+					return true;
+				});
+				each(this.outlets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.dataName = o.value;
+						return false;
+					}
+					return true;
+				});				
+				return false;
+			}
+			return true;
+		});
+	}
 }

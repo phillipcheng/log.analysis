@@ -135,7 +135,7 @@ var _action_node = function(txtId, labelTxt) {
 			id: 'txt_' + txtId,
 			txt: labelTxt,
 			x: 20,
-			y: 30,
+			y: 25,
 			onmousedown: '_event.line_onmousedown()',
 			onmouseup: '_event.line_onmouseup()'
 		},
@@ -208,6 +208,7 @@ var _In_data_node = function(txtId , gId) {
 		class: 'nodeChildG',
 		width: 0,
 		height: 0,
+		onclick:'_event.selectedData(\"'+txtId+'\",\"'+gId+'\")',
 		rect: {
 			id: txtId + "_rect",
 			G: gId,
@@ -226,11 +227,12 @@ var _Out_data_node = function(txtId , gId) {
 		height: 0,
 		G:gId,
 		show:false,
+		onclick:'_event.selectedData(\"'+txtId+'\",\"'+gId+'\")',
 		rect:{
 			id: txtId + "_rect",
 			G: gId,
 			width: 0,
-			height: 0			
+			height: 0
 		}
 	}
 	return obj;

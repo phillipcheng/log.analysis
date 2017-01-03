@@ -307,5 +307,68 @@ var app = {
 		nodeIndex++;
 		var temp_g = "dataset_" + (new Date().getTime() + nodeIndex);
 		addLeftDiv(temp_g);
+	},
+	save: function() {
+		function findDataNewId(findId) {
+			var txt = "";
+			each(result.data, function() {
+				if(this.id.localeCompare(findId) == 0) {
+					txt = this.name;
+					return false;
+				}
+				return true;
+			});
+			return txt;
+		}
+
+		//
+		each(result.data, function() {
+			this.name = this.name + "_" + this.id;
+			return true;
+		});
+		
+//		each(result.nodes, function() {
+//			this.name = this.name + "_" + this.id;
+//			return true;
+//		});		
+
+		each(result.nodes, function() {
+			var tempInLets = [];
+			var tempOutLets = [];
+			if(this.inLets) {
+				each(this.inLets, function(i, o) {
+					if(o.show) {
+						var obj = {};
+						obj.name = o.name;
+						obj.dataName = findDataNewId(o.dataName);
+						tempInLets.push(obj);
+					}
+					return true;
+				});
+				this.inLets = tempInLets;
+			}
+
+			if(this.outlets) {
+				each(this.outlets, function(i, o) {
+					if(o.show) {
+						var obj = {};
+						obj.name = o.name;
+						obj.dataName = findDataNewId(o.dataName);
+						tempOutLets.push(obj);
+					}
+					return true;
+				});
+				this.outlets = tempOutLets;
+			}
+
+			return true;
+		});
+		
+//		each(result.links,function(){
+//			
+//			return true;
+//		});
+		
+		console.log("result", JSON.stringify(result) );
 	}
 }
