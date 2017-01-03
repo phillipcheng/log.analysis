@@ -1,140 +1,304 @@
+var nodeIndex = 0;
+var result = {
+	'@class': "flow",
+	name: "flow1",
+	outlets: [],
+	nodes: [],
+	links: [],
+	data: [],
+	inLets: [],
+	wfName: "flow1"
+};
 var app = {
-	/**
-	 * mainkey is main key. 
-	 * if key is null, it will generate a new key.
-	 * when load action, it will put the parameter.
-	 * mainkey is only used by load flow.
-	 * 
-	 */
 	start: function(mainkey) {
 		nodeIndex++;
-		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
-		if(!isEmpty(mainkey)){
-			temp_g = mainkey;
+		var gId = "";
+		if(!isEmpty(mainkey)) {
+			gId = mainkey;
+		} else {
+			gId = "g_" + (new Date().getTime() + nodeIndex);
 		}
-		nodeArgs.push({
-			k: temp_g,
-			vmax: {
-				width: '300',
-				height: '50'
-			},
-			vmin: {
-				width: '80',
-				height: '50'
-			}
-		});
-		var obj = {
-			label: "start",
-			width: 80,
-			height: 50,
-			nodeType: 'start',
-			runstate: 'play',
-			action: 'node',
-			zoom: 'normal'
-		};
-		setNodeSelf(temp_g, obj);
-		var propertyObj = {
+		result.nodes.push({
+			'id': gId,
 			'@class': 'start',
 			'name': 'start',
-			'outlets': [],
-			'duration': ''
+			'outlets': [{
+				id: gId + '_OutData_0',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}, {
+				id: gId + '_OutData_1',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}, {
+				id: gId + '_OutData_2',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}, {
+				id: gId + '_OutData_3',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}],
+			'duration': '300'
+		});
+		var obj = _start_node(gId, 'start');
+		g.setNode(gId, obj);
+		_build._build();
+
+		var g_child_Instance = childsvg.find(gId);
+		if(g_child_Instance == null) {
+			g_child_Instance = childsvg.initNewInstance(gId);
 		}
-		setPropertySelf(temp_g, propertyObj, 4);
-		_base._build();
+
+		var In_data_instance_0 = _In_data_node(gId + "_InData_0", gId);
+		g_child_Instance.setNode(gId + "_InData_0", In_data_instance_0);
+
+		var In_data_instance_1 = _In_data_node(gId + "_InData_1", gId);
+		g_child_Instance.setNode(gId + "_InData_1", In_data_instance_1);
+
+		var In_data_instance_2 = _In_data_node(gId + "_InData_2", gId);
+		g_child_Instance.setNode(gId + "_InData_2", In_data_instance_2);
+
+		var In_data_instance_3 = _In_data_node(gId + "_InData_3", gId);
+		g_child_Instance.setNode(gId + "_InData_3", In_data_instance_3);
+
+		g_child_Instance.setEdge(gId + "_InData_0", gId + "_InData_1");
+		g_child_Instance.setEdge(gId + "_InData_1", gId + "_InData_2");
+		g_child_Instance.setEdge(gId + "_InData_2", gId + "_InData_3");
+
+		var property_node_instance = _Property_node(gId + "_property", gId);
+		g_child_Instance.setNode(gId + "_property", property_node_instance);
+
+		var Out_data_instance_0 = _Out_data_node(gId + "_OutData_0", gId);
+		g_child_Instance.setNode(gId + "_OutData_0", Out_data_instance_0);
+
+		var Out_data_instance_1 = _Out_data_node(gId + "_OutData_1", gId);
+		g_child_Instance.setNode(gId + "_OutData_1", Out_data_instance_1);
+
+		var Out_data_instance_2 = _Out_data_node(gId + "_OutData_2", gId);
+		g_child_Instance.setNode(gId + "_OutData_2", Out_data_instance_2);
+
+		var Out_data_instance_3 = _Out_data_node(gId + "_OutData_3", gId);
+		g_child_Instance.setNode(gId + "_OutData_3", Out_data_instance_3);
+
+		g_child_Instance.setEdge(gId + "_OutData_0", gId + "_OutData_1");
+		g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
+		g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
+
+		_build._build(gId, g_child_Instance);
+
 	},
-	/**
-	 * mainkey is main key. 
-	 * if key is null, it will generate a new key.
-	 * when load action, it will put the parameter.
-	 * mainkey is only used by load flow.
-	 * 
-	 */
 	end: function(mainkey) {
 		nodeIndex++;
-		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
-		if(!isEmpty(mainkey)){
-			temp_g = mainkey;
+		var gId = "";
+		if(!isEmpty(mainkey)) {
+			gId = mainkey;
+		} else {
+			gId = "g_" + (new Date().getTime() + nodeIndex);
 		}
-		nodeArgs.push({
-			k: temp_g,
-			vmax: {
-				width: '300',
-				height: '50'
-			},
-			vmin: {
-				width: '80',
-				height: '50'
-			}
-		});
-		var obj = {
-			label: "end",
-			width: 80,
-			height: 50,
-			nodeType: 'end',
-			runstate: 'play',
-			action: 'node',
-			zoom: 'normal'
-		};
-		setNodeSelf(temp_g, obj);
-		var propertyObj = {
+		result.nodes.push({
+			'id': gId,
 			'@class': 'end',
 			'name': 'end',
-			'inLets': []
+			'inLets': [{
+				id: gId + '_InData_0',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}, {
+				id: gId + '_InData_1',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}, {
+				id: gId + '_InData_2',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}, {
+				id: gId + '_InData_3',
+				name: '',
+				dataName: '',
+				show: false,
+				state: 'show'
+			}]
+		});
+		var obj = _end_node(gId, 'end');
+		g.setNode(gId, obj);
+		_build._build();
+
+		var g_child_Instance = childsvg.find(gId);
+		if(g_child_Instance == null) {
+			g_child_Instance = childsvg.initNewInstance(gId);
 		}
-		setPropertySelf(temp_g, propertyObj, 4);
-		_base._build();
+
+		var In_data_instance_0 = _In_data_node(gId + "_InData_0", gId);
+		g_child_Instance.setNode(gId + "_InData_0", In_data_instance_0);
+
+		var In_data_instance_1 = _In_data_node(gId + "_InData_1", gId);
+		g_child_Instance.setNode(gId + "_InData_1", In_data_instance_1);
+
+		var In_data_instance_2 = _In_data_node(gId + "_InData_2", gId);
+		g_child_Instance.setNode(gId + "_InData_2", In_data_instance_2);
+
+		var In_data_instance_3 = _In_data_node(gId + "_InData_3", gId);
+		g_child_Instance.setNode(gId + "_InData_3", In_data_instance_3);
+
+		g_child_Instance.setEdge(gId + "_InData_0", gId + "_InData_1");
+		g_child_Instance.setEdge(gId + "_InData_1", gId + "_InData_2");
+		g_child_Instance.setEdge(gId + "_InData_2", gId + "_InData_3");
+
+		var property_node_instance = _Property_node(gId + "_property", gId);
+		g_child_Instance.setNode(gId + "_property", property_node_instance);
+
+		var Out_data_instance_0 = _Out_data_node(gId + "_OutData_0", gId);
+		g_child_Instance.setNode(gId + "_OutData_0", Out_data_instance_0);
+
+		var Out_data_instance_1 = _Out_data_node(gId + "_OutData_1", gId);
+		g_child_Instance.setNode(gId + "_OutData_1", Out_data_instance_1);
+
+		var Out_data_instance_2 = _Out_data_node(gId + "_OutData_2", gId);
+		g_child_Instance.setNode(gId + "_OutData_2", Out_data_instance_2);
+
+		var Out_data_instance_3 = _Out_data_node(gId + "_OutData_3", gId);
+		g_child_Instance.setNode(gId + "_OutData_3", Out_data_instance_3);
+
+		g_child_Instance.setEdge(gId + "_OutData_0", gId + "_OutData_1");
+		g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
+		g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
+
+		_build._build(gId, g_child_Instance);
+
 	},
-	/**
-	 * mainkey is main key. 
-	 * if key is null, it will generate a new key.
-	 * when load action, it will put the parameter.
-	 * mainkey is only used by load flow.
-	 * 
-	 */
 	action: function(jsonObj, mainkey) {
 		nodeIndex++;
-		var temp_g = "g_" + (new Date().getTime() + nodeIndex);
-		if(!isEmpty(mainkey)){
-			temp_g = mainkey;
+		var gId = "";
+		var tempcla = jsonObj.cla;
+		if(!isEmpty(mainkey)) {
+			gId = mainkey;
+		} else {
+			gId = "g_" + (new Date().getTime() + nodeIndex);
 		}
-		nodeArgs.push({
-			k: temp_g,
-			vmax: {
-				width: '300',
-				height: '50'
-			},
-			vmin: {
-				width: '200',
-				height: '50'
-			}
-		});
-		var obj = {
-			label: jsonObj.label,
-			width: 200,
-			height: 50,
-			nodeType:'action',
-			runstate: 'play',
-			action: 'node',
-			zoom: 'normal'
-		};
-		setNodeSelf(temp_g, obj);
-		_base._build();
 		$.each(remoteActionObj, function(k, v) {
-			if(k.toString().indexOf(jsonObj.label) > -1) {
+			if(k.localeCompare(jsonObj.cla) == 0) {
 				var propertyObj = {};
-				var _index = 5;
+				propertyObj["id"] = gId.toString();
+				propertyObj['@class'] = 'action';
+				propertyObj['cmd.class'] = '' + jsonObj.cla + '';
+				propertyObj['name'] = '' + jsonObj.label + '';
+				propertyObj['inLets'] = [{
+					id: gId + '_InData_0',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}, {
+					id: gId + '_InData_1',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}, {
+					id: gId + '_InData_2',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}, {
+					id: gId + '_InData_3',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}];
+				propertyObj['outlets'] = [{
+					id: gId + '_OutData_0',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}, {
+					id: gId + '_OutData_1',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}, {
+					id: gId + '_OutData_2',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}, {
+					id: gId + '_OutData_3',
+					name: '',
+					dataName: '',
+					show: false,
+					state: 'show'
+				}];
+				propertyObj['input.format'] = '';
 				each(v, function(i, o) {
-					_index++;
 					propertyObj[o.toString()] = '';
 					return true;
 				});
-				propertyObj['@class'] = 'action';
-				propertyObj['cmd.class'] = '' + jsonObj.class + '';
-				propertyObj['name'] = '' + jsonObj.label + '';
-				propertyObj['inLets'] = [];
-				propertyObj['outlets'] = [];
-				propertyObj['input.format'] = '';
-				setPropertySelf(temp_g, propertyObj,_index);
+				result.nodes.push(propertyObj);
+				var obj = _action_node(gId, jsonObj.label);
+				g.setNode(gId, obj);
+				_build._build();
+
+				var g_child_Instance = childsvg.find(gId);
+				if(g_child_Instance == null) {
+					g_child_Instance = childsvg.initNewInstance(gId);
+				}
+
+				var In_data_instance_0 = _In_data_node(gId + "_InData_0", gId);
+				g_child_Instance.setNode(gId + "_InData_0", In_data_instance_0);
+
+				var In_data_instance_1 = _In_data_node(gId + "_InData_1", gId);
+				g_child_Instance.setNode(gId + "_InData_1", In_data_instance_1);
+
+				var In_data_instance_2 = _In_data_node(gId + "_InData_2", gId);
+				g_child_Instance.setNode(gId + "_InData_2", In_data_instance_2);
+
+				var In_data_instance_3 = _In_data_node(gId + "_InData_3", gId);
+				g_child_Instance.setNode(gId + "_InData_3", In_data_instance_3);
+
+				g_child_Instance.setEdge(gId + "_InData_0", gId + "_InData_1");
+				g_child_Instance.setEdge(gId + "_InData_1", gId + "_InData_2");
+				g_child_Instance.setEdge(gId + "_InData_2", gId + "_InData_3");
+
+				var property_node_instance = _Property_node(gId + "_property", gId);
+				g_child_Instance.setNode(gId + "_property", property_node_instance);
+
+				var Out_data_instance_0 = _Out_data_node(gId + "_OutData_0", gId);
+				g_child_Instance.setNode(gId + "_OutData_0", Out_data_instance_0);
+
+				var Out_data_instance_1 = _Out_data_node(gId + "_OutData_1", gId);
+				g_child_Instance.setNode(gId + "_OutData_1", Out_data_instance_1);
+
+				var Out_data_instance_2 = _Out_data_node(gId + "_OutData_2", gId);
+				g_child_Instance.setNode(gId + "_OutData_2", Out_data_instance_2);
+
+				var Out_data_instance_3 = _Out_data_node(gId + "_OutData_3", gId);
+				g_child_Instance.setNode(gId + "_OutData_3", Out_data_instance_3);
+
+				g_child_Instance.setEdge(gId + "_OutData_0", gId + "_OutData_1");
+				g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
+				g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
+
+				_build._build(gId, g_child_Instance);
+
 				return false;
 			}
 		});
@@ -142,19 +306,6 @@ var app = {
 	dataSet: function() {
 		nodeIndex++;
 		var temp_g = "dataset_" + (new Date().getTime() + nodeIndex);
-		var obj = {
-			label: 'data'+nodeIndex,
-			width: 200,
-			height: 30,
-			dataType: 'IN'
-		};
-		layOutDataSet(temp_g,obj);
-	},
-	dataSetShow:function(){
-		document.getElementById("dataset_svg").style.display = "block";
-	},
-	dataSetHide:function(){
-		document.getElementById("dataset_svg").style.display = "none";
-		document.getElementById("divleftdatasetproperty").style.display = "none";
+		addLeftDiv(temp_g);
 	}
 }

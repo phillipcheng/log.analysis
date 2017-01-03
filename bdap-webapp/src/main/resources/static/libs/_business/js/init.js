@@ -1,3 +1,18 @@
+var clientwidth, clientheight, current_zoom_x, current_zoom_y,
+	display_off_left, display_off_top, init_zoom_x, init_zoom_y, booleaniszoom;
+
+var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
+
+/**
+ * 用于记录临时点的线的集合
+ */
+var templine = {
+	firstId: '',
+	endId: '',
+	firstPoint: '',
+	endPoint: ''
+};
+
 /**
  * 清除 templine 的   属性
  */
@@ -12,25 +27,21 @@ var clearTempLine = function() {
 	d3.select("#pathmove").attr("d", "");
 }
 
-/**
- * * 全局初始化事件
- */
+var remoteActionObj = {};
 var init = function() {
-
-	compatibilityTools();
+	//初始化位置的偏移
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
-
+	
 	document.getElementById("child_small_svg").style.width = (clientwidth / 20) + "px";
 	document.getElementById("child_small_svg").style.height = (clientheight / 20) + "px";
 
 	document.getElementById("child_small_svg").style.left = (75 - (clientwidth / 40)) + "px";
-	document.getElementById("child_small_svg").style.top = (75 - (clientheight / 40)) + "px";
+	document.getElementById("child_small_svg").style.top = (75 - (clientheight / 40)) + "px";	
 
 	current_zoom_x = clientwidth / 2 - 200;
 	current_zoom_y = 50;
 
-	//初始化位置的偏移
 	var display = document.getElementById("home");
 	display_off_left = getOffsetLeft(display);
 	display_off_top = getOffsetTop(display);
@@ -43,13 +54,6 @@ var init = function() {
 		.scaleExtent([1, 1]) // <-C
 		.on("zoom", svgzoom) // <-D
 	).append("g").attr("id", "main");
-
-	//dataSet编辑
-	d3.select("#svgdataset").call( // <-A
-		d3.behavior.zoom() // <-B
-		.scaleExtent([1, 1]) // <-C
-		.on("zoom", svgDataSetZoom) // <-D
-	).append("g").attr("id", "dataSetMain");
 
 	/**
 	 * 1.2
@@ -64,8 +68,6 @@ var init = function() {
 	 */
 	d3.select("#main").append("g").attr("id", "rectContainer");
 
-	d3.select("#dataSetMain").append("g").attr("id", "rectDataSetContainer");
-
 	/**
 	 * 1.4
 	 */
@@ -76,24 +78,30 @@ var init = function() {
 	 */
 	d3.select("#main").attr("transform", "translate(" + current_zoom_x + "," + current_zoom_y + ")scale(1,1)");
 
-	d3.select("#dataSetMain").attr("transform", "translate(" + current_zoom_dataset_x + "," + current_zoom_dataset_y + ")scale(1,1)");
-
 	/**
 	 * 1.6
 	 */
-
 	init_zoom_x = current_zoom_x;
 	init_zoom_y = current_zoom_y;
 
 	document.getElementById("child_svg").style.left = (clientwidth - 180) + "px";
-}
-
-/**
- * 得到 样式  源
- * @param {Object} o
- */
-var getStyle = function(o) {
-	return o.currentStyle || window.getComputedStyle(o, null);
+	document.getElementById("child_svg").style.top = (clientheight - 210) + "px";
+	/**
+	 * 1.7
+	 * loadJOSN
+	 */
+	//d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {	
+	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
+		remoteActionObj = data;
+		$.each(data, function(k, v) {
+			var temp = k;
+			temp = temp.substring(temp.lastIndexOf(".") + 1);
+			d3.select("#actionList")
+				.append("li").append("a")
+				.attr("href", "javascript:;").text(temp)
+				.attr("onclick", "app.action({'label':'" + temp + "','cla':'" + k + "'})");
+		});
+	});
 }
 
 /**
@@ -105,7 +113,8 @@ var getEventSources = function(e) {
 }
 
 /**
- * 获取屏幕左坐标
+ * 
+ * @param {Object} o
  */
 var getOffsetLeft = function(o) {
 	var offset = o.offsetLeft;
@@ -116,7 +125,8 @@ var getOffsetLeft = function(o) {
 }
 
 /**
- * 获取屏幕上坐标
+ * 
+ * @param {Object} o
  */
 var getOffsetTop = function(o) {
 	var offset = o.offsetTop;
@@ -126,6 +136,19 @@ var getOffsetTop = function(o) {
 	return offset;
 }
 
+/**
+ * 得到 样式  源
+ * @param {Object} o
+ */
+var getStyle = function(o) {
+	return o.currentStyle || window.getComputedStyle(o, null);
+}
+var current_zoom_new_x = 0;
+var current_zoom_new_y = 0;
+var current_zoom_x = 0;
+var current_zoom_y = 0;
+var current_zoom_old_x = 0;
+var current_zoom_old_y = 0;
 /*
  * svg zoom 操作
  */
@@ -147,24 +170,6 @@ var svgzoom = function() {
 		current_zoom_old_x = parseInt(d3.event.translate[0]);
 		current_zoom_old_y = parseInt(d3.event.translate[1]);
 	}
-}
-
-/**
- * svg DataSet zoom 操作
- */
-var svgDataSetZoom = function() {
-	current_zoom_dataset_new_x = parseInt(d3.event.translate[0]);
-	current_zoom_dataset_new_y = parseInt(d3.event.translate[1]);
-
-	current_zoom_dataset_x += current_zoom_dataset_new_x - current_zoom_dataset_old_x;
-	current_zoom_dataset_y += current_zoom_dataset_new_y - current_zoom_dataset_old_y;
-
-	d3.select("#dataSetMain").attr("transform",
-		"translate(" + current_zoom_dataset_x + "," + current_zoom_dataset_y + ")scale(1,1)");
-
-	current_zoom_dataset_old_x = current_zoom_dataset_new_x;
-	current_zoom_dataset_old_y = current_zoom_dataset_new_y;
-
 }
 
 /**
@@ -248,6 +253,10 @@ var compatibilityTools = function() {
 	}
 }
 
+/**
+ * 
+ * @param {Object} relativePath
+ */
 var getAjaxAbsolutePath = function(relativePath) {
 	var httpPath = "http://localhost:8080";
 	var userName = "george";
@@ -260,9 +269,27 @@ var getAjaxAbsolutePath = function(relativePath) {
 	return httpPath;
 }
 
+var svg_onmousedown = function() {
+
+}
+
+var svg_onmouseup = function() {
+	clearTempLine();
+}
+
 var isEmpty = function(str) {
 	if(str == undefined || str == null || str == '') {
 		return true;
 	}
 	return false;
+}
+
+/**
+ * 移动到初始化的位置
+ */
+var remoeToInitPosition = function() {
+	d3.select("#main").attr("transform", "translate(" + init_zoom_x + "," + init_zoom_y + ")scale(1,1)");
+	d3.select("#rectSmallContainer").attr("transform", "translate(75,75)scale(1,1)");
+	current_zoom_x = init_zoom_x;
+	current_zoom_y = init_zoom_y;
 }
