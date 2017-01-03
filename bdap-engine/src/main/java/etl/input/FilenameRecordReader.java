@@ -17,13 +17,13 @@ public class FilenameRecordReader extends RecordReader<LongWritable, Text> {
 	@Override
 	public void initialize(InputSplit split, TaskAttemptContext context)
 			throws IOException, InterruptedException {
-		FileSplit fsplit = (FileSplit)split;
-		fileName = fsplit.getPath();
+		fileName = ((FileSplit)split).getPath();
+		done = false;
 	}
 
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
-		if (done){ 
+		if (done){
 			return false;
 		}else{
 			done = true;

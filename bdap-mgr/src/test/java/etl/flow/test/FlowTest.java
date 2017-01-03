@@ -17,13 +17,23 @@ import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.oozie.OozieFlowMgr;
+import etl.util.DBType;
+import etl.util.SchemaUtils;
 
-public class Flow1Test {
-	public static final Logger logger = LogManager.getLogger(Flow1Test.class);
+public class FlowTest {
+	public static final Logger logger = LogManager.getLogger(FlowTest.class);
 	
 	private FlowDeployer apacheDeployer = new FlowDeployer("testFlow.apache.properties");
 	
 	private String[] jars = new String[]{"target/bdap.mgr-VVERSIONN-tests.jar"};
+	
+	@Test
+	public void genSql() throws Exception{
+		String outputSql = "src/test/resources/sql/flow1.sql";
+		String schemaFile = "src/test/resources/schema/flow1.schema";
+		String dbSchema = "project1";
+		SchemaUtils.genCreateSqls(schemaFile, outputSql, dbSchema, DBType.VERTICA);
+	}
 	
 	public static void initData(FlowDeployer deployer, String prjName, String flowName, SftpInfo ftpInfo){
 		String hdfsFolder = deployer.getProjectHdfsDir(prjName);
@@ -34,11 +44,10 @@ public class Flow1Test {
 				"/flow1/sftpcfg/test1.sftp.map.properties");
 		deployer.copyFromLocalFile(false, true, String.format("%sschema/flow1.schema", getRelativeResourceFolder()), 
 				"/flow1/schema/flow1.schema");
-		
 	}
 	
 	public static String getRelativeResourceFolder() {
-		return "src/test/resources/flow1/";
+		return "src/test/resources/";
 	}
 	
 	public void testFlow1(boolean useJson, EngineType et) throws Exception{
@@ -73,17 +82,42 @@ public class Flow1Test {
 	}
 	
 	@Test
-	public void testOozieFromXml() throws Exception{
+	public void testFlow1OozieFromXml() throws Exception{
 		testFlow1(false, EngineType.oozie);
 	}
 	
 	@Test
-	public void testOozieFromJson() throws Exception{
+	public void testFlow1OozieFromJson() throws Exception{
 		testFlow1(true, EngineType.oozie);
 	}
 	
 	@Test
-	public void testSparkFromJson() throws Exception{
+	public void testFlow1SparkFromJson() throws Exception{
 		testFlow1(true, EngineType.spark);
+	}
+	
+	public void testFlow2(boolean useJson, EngineType et) throws Exception{
+		String prjName = "project1";
+		String flow1="flow1";
+		String flow2="flow2";
+		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
+		initData(apacheDeployer, prjName, flow1, ftpInfo);
+		apacheDeployer.runDeploy(prjName, flow1, jars, null, useJson, et);
+		apacheDeployer.runDeploy(prjName, flow2, jars, null, useJson, EngineType.oozie);
+		String wfId = apacheDeployer.runExecute(prjName, flow2, EngineType.oozie);
+		logger.info(String.format("wfid:%s", wfId));
+	}
+	
+	@Test
+	public void testFlow2OozieFromXml() throws Exception{
+		testFlow2(false, EngineType.oozie);
+	}
+	@Test
+	public void testFlow2OozieFromJson() throws Exception{
+		testFlow2(true, EngineType.oozie);
+	}
+	@Test
+	public void testFlow2SparkFromJson() throws Exception{
+		testFlow2(true, EngineType.spark);
 	}
 }

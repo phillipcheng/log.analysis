@@ -18,7 +18,7 @@ public class ActionNode extends Node{
 	
 	public static final String key_exe_type="exe.type";//etl.flow.ExeType
 	public static final String key_cmd_class="cmd.class";//the fully qualified class name of the cmd
-	public static final String sys_prop_prefix="sys.";
+	
 	
 	public static List<String> sysProperties = null;
 	

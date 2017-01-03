@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workflow-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:shell="uri:oozie:shell-action:0.3" xmlns:ssh="uri:oozie:ssh-action:0.2" xmlns="uri:oozie:workflow:0.5" name="flow2">
+    <start to="call_flow1"/>
+    <kill name="fail">
+        <message>failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <action name="call_flow1">
+        <sub-workflow>
+			<app-path>${nameNode}/project1/flow1/flow1_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+        <ok to="loadCsv"/>
+        <error to="fail"/>
+    </action>
+    <action name="loadCsv">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="/flow1/dboutput/${wf:actionExternalId('call_flow1')}"/>
+			</prepare>
+			<configuration>
+               <property>
+                    <name>mapred.mapper.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapred.reducer.new-api</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.map.class</name>
+                    <value>etl.engine.InvokeMapper</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.reduce.class</name>
+                    <value>etl.engine.InvokeReducer</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.inputformat.class</name>
+                    <value>etl.input.FilenameInputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.outputformat.class</name>
+                    <value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.key.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.job.output.value.class</name>
+                    <value>org.apache.hadoop.io.Text</value>
+                </property>
+                <property>
+                    <name>mapreduce.task.timeout</name>
+                    <value>0</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.input.dir.recursive</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>mapreduce.input.fileinputformat.inputdir</name>
+                    <value>/flow1/csvmerge/${wf:actionExternalId('call_flow1')}</value>
+                </property>
+                <property>
+                    <name>mapreduce.output.fileoutputformat.outputdir</name>
+                    <value>/flow1/dboutput/${wf:id()}</value>
+                </property>
+                <property>
+                    <name>cmdClassName</name>
+                    <value>etl.cmd.LoadDataCmd</value>
+                </property>
+                <property>
+                    <name>wfName</name>
+                    <value>${wfName}</value>
+                </property>
+                <property>
+                    <name>wfid</name>
+                    <value>${wf:id()}</value>
+                </property>
+                <property>
+                    <name>staticConfigFile</name>
+                    <value>action_loadcsv.properties</value>
+                </property>
+			</configuration>
+		</map-reduce>
+		<ok to="end"/>
+		<error to="fail"/>
+	</action>
+    <end name="end"/>
+</workflow-app>
+

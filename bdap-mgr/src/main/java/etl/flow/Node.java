@@ -10,12 +10,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "@class")
 @JsonSubTypes({
+	@JsonSubTypes.Type(value = CallSubFlowNode.class, name = "callSubFlow"),
     @JsonSubTypes.Type(value = ActionNode.class, name = "action"),
     @JsonSubTypes.Type(value = StartNode.class, name = "start"),
     @JsonSubTypes.Type(value = EndNode.class, name = "end"),
     @JsonSubTypes.Type(value = Flow.class, name = "flow")
 })
 public class Node implements Comparable<Node>{
+	public static final String sys_prop_prefix="sys.";
 	
 	private String name;
 	private List<NodeLet> inlets = new ArrayList<NodeLet>();

@@ -278,6 +278,7 @@ public abstract class ETLCmd implements Serializable{
 		return sparkProcessKeyValue(pairs, jsc, inputFormatClass);
 	}
 	
+	//inputFormatClass is null called from sparkProcessFilesToKV, do not need to call mapkey again
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
 		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
@@ -286,7 +287,7 @@ public abstract class ETLCmd implements Serializable{
 			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
 				init();
 				List<Tuple2<String, String>> linesInput = new ArrayList<Tuple2<String,String>>();
-				if (inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
+				if (inputFormatClass!=null && inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
 					linesInput.addAll(processSequenceFile(t._1, t._2));
 				}else{
 					linesInput.add(t);
@@ -294,7 +295,10 @@ public abstract class ETLCmd implements Serializable{
 				logger.debug(String.format("input to sparkprocesskeyvalue %s:%s", staticCfg, linesInput));
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
 				for (Tuple2<String, String> lineInput:linesInput){
-					String key = mapKey(lineInput._1);
+					String key = lineInput._1;
+					if (inputFormatClass!=null){//called directly from data, need map
+						key = mapKey(key);
+					}
 					if (strFileTableMap!=null && lineInput._1!=null && lineInput._1.equals(key)){//debug
 						logger.warn(String.format("get null while mapkey. fileToTableExp:%s, system var:%s", strFileTableMap, getSystemVariables()));
 					}
@@ -372,7 +376,7 @@ public abstract class ETLCmd implements Serializable{
 				prdd = prdd.union(tprdd);
 			}
 		}
-		return sparkProcessKeyValue(prdd, jsc, TextInputFormat.class);
+		return sparkProcessKeyValue(prdd, jsc, null);
 	}
 	
 	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
