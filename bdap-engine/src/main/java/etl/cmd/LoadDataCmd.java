@@ -25,6 +25,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
 
+import bdap.util.HdfsUtil;
 import etl.engine.ProcessMode;
 import etl.spark.RDDMultipleTextOutputFormat;
 import etl.engine.ETLCmd;
@@ -60,7 +61,6 @@ public class LoadDataCmd extends SchemaETLCmd{
 	
 	private transient CompiledScript csCsvFile;
 	private transient CompiledScript csLoadSql;
-	private transient CompiledScript csDbInputPath;//for spark to generate dbinput files
 
 	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
 	
@@ -102,15 +102,6 @@ public class LoadDataCmd extends SchemaETLCmd{
 		}
 	}
 	
-	private String removeProtocol(String row){
-		if (row.startsWith("hdfs://")) {
-			/* Locate from the root path */
-			row = row.substring(7);
-			row = row.substring(row.indexOf("/"));
-		}
-		return row;
-	}
-	
 	private List<String> prepareTableCopySQLs(String tableName, String[] files) {
 		List<String> newCopysqls = new ArrayList<String>();
 		try{
@@ -119,7 +110,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 				this.getSystemVariables().put(VAR_TABLE_NAME, tableName);
 				
 				for (String csvFileName: files) {
-					csvFileName = removeProtocol(csvFileName);
+					csvFileName = HdfsUtil.getRootPath(csvFileName);
 					this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
 					
 					if (csLoadSql!=null){
@@ -134,13 +125,15 @@ public class LoadDataCmd extends SchemaETLCmd{
 				}
 			}else if (csLoadSql!=null){//just evaluate the loadSql
 				for (String csvFileName: files) {
-					csvFileName = removeProtocol(csvFileName);
+					csvFileName = HdfsUtil.getRootPath(csvFileName);
 					this.getSystemVariables().put(VAR_CSV_FILE, csvFileName);
 					sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
 					newCopysqls.add(sql);
 					
 					logger.info(String.format("sql:%s", sql));
 				}
+			}else{
+				logger.error(String.format("wrong combination: logicSchema:%s, loadSql:%s", logicSchema, loadSql));
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -196,11 +189,15 @@ public class LoadDataCmd extends SchemaETLCmd{
 	private List<Tuple2<String, String>> flatMapToPair(String row){
 		logger.info(String.format("in flatMapToPair row:%s", row));
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
-		row = removeProtocol(row);
+		row = HdfsUtil.getRootPath(row);
 		if (logicSchema!=null && (csLoadSql==null||loadSql.contains(VAR_TABLE_NAME))){
 			/* File to table mapping */
 			String tableName = this.getTableNameSetPathFileName(row);
-			vl.add(new Tuple2<String, String>(tableName, row));
+			if (tableName==null || "".equals(tableName)){
+				logger.error(String.format("tfName is empty. exp:%s, value:%s", super.strFileTableMap, row));
+			}else{
+				vl.add(new Tuple2<String, String>(tableName, row));
+			}
 		}else{
 			vl.add(new Tuple2<String, String>(NO_TABLE_CONFIGURED, row));
 		}
@@ -262,14 +259,25 @@ public class LoadDataCmd extends SchemaETLCmd{
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
-		super.init();
 		return input.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
 			public Tuple2<String, String> call(Tuple2<String, Iterable<String>> t) throws Exception {
+				init();
 				String[] files = StringItToFiles(t._2);
-				int rows = reduceByKey(t._1, files);
-				return new Tuple2<String, String>(t._1, Integer.toString(rows));
+				String tfName = null;
+				if (inputFormatClass!=null){
+					tfName = getTableNameSetPathFileName(t._1.toString());
+				}else{//processed
+					tfName = t._1.toString();
+				}
+				if (tfName!=null && !"".equals(tfName)){
+					int rows = reduceByKey(tfName, files);
+					return new Tuple2<String, String>(tfName, Integer.toString(rows));
+				}else{
+					logger.warn(String.format("get tfname is null: key:%s, exp:%s", t._1.toString(), strFileTableMap));
+					return null;
+				}
 			}
 		});
 	}

@@ -244,7 +244,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		//copy schema file
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
 		Tuple2<List<String>, List<String>> output = super.sparkTestKV(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, 
-				TextInputFormat.class);
+				FilenameInputFormat.class);
 		//check hdfs
 		List<String> keys = output._1;
 		logger.info(String.format("output keys:\n %s", String.join("\n", keys)));

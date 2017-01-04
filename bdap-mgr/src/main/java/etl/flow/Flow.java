@@ -111,19 +111,20 @@ public class Flow extends Node{
 	public List<String> getLastDataSets(){
 		Set<String> inds = new HashSet<String>();
 		Set<String> outds = new HashSet<String>();
-		List<Node> nl = this.getNodes();
+		List<Node> nl = getActionTopoOrder();
+		//create inlet datasets
 		for (Node n:nl){
 			for (NodeLet nlet:n.getInLets()){
 				inds.add(nlet.getDataName());
 			}
-			for (NodeLet nlet:n.getOutlets()){
-				outds.add(nlet.getDataName());
-			}
 		}
 		List<String> lastds = new ArrayList<String>();
-		for (String ods:outds){
-			if (!inds.contains(ods)){
-				lastds.add(ods);
+		for (Node n:nl){//order by the topo
+			for (NodeLet outlet:n.getOutlets()){
+				if (!inds.contains(outlet.getDataName()) &&
+						!lastds.contains(outlet.getDataName())){
+					lastds.add(outlet.getDataName());
+				}
 			}
 		}
 		return lastds;

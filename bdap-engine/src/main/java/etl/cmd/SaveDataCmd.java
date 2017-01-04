@@ -44,8 +44,10 @@ public class SaveDataCmd extends SchemaETLCmd {
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		String tmpDirExp = this.getPc().getString(cfgkey_log_tmp_dir);
-		CompiledScript cs = ScriptEngineUtil.compileScript(tmpDirExp);
-		logTmpDir = ScriptEngineUtil.eval(cs, super.getSystemVariables());
+		if (tmpDirExp!=null){
+			CompiledScript cs = ScriptEngineUtil.compileScript(tmpDirExp);
+			logTmpDir = ScriptEngineUtil.eval(cs, super.getSystemVariables());
+		}
 	}
 	
 	@Override
@@ -68,6 +70,7 @@ public class SaveDataCmd extends SchemaETLCmd {
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
 		input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
+		//TODO use input.saveAsNewAPIHadoopFile(path, keyClass, valueClass, outputFormatClass);
 		return input.keys().mapToPair(new PairFunction<String, String, String>(){
 			@Override
 			public Tuple2<String, String> call(String t) throws Exception {

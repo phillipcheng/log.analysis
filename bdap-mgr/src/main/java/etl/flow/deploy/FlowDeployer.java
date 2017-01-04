@@ -287,6 +287,13 @@ public class FlowDeployer {
 		return deployMethod.listFiles(path);
 	}
 	
+	public List<String> readFiles(List<String> paths){
+		List<String> ret = new ArrayList<String>();
+		for (String path:paths){
+			ret.addAll(readFile(path));
+		}
+		return ret;
+	}
 	public List<String> readFile(String path) {
 		return deployMethod.readFile(path);
 	}

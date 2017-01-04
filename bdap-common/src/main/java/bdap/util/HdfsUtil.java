@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -233,27 +234,33 @@ public class HdfsUtil {
 	}
 	
 	public static List<String> stringsFromDfsFile(FileSystem fs, String file){
+		return stringsFromDfsFile(fs, Arrays.asList(new String[]{file}));
+	}
+	
+	public static List<String> stringsFromDfsFile(FileSystem fs, List<String> files){
 		BufferedReader in = null;
 		List<String> sl = new ArrayList<String>();
-		try {
-			in = new BufferedReader(new InputStreamReader(fs.open(new Path(file))));
-			String s =null;
-			while ((s=in.readLine())!=null){
-				sl.add(s);
-			}
-			return sl;
-		}catch(Exception e){
-			logger.error("", e);
-			return null;
-		}finally{
-			if (in!=null){
-				try{
-					in.close();
-				}catch(Exception e){
-					logger.error("", e);
+		for (String file:files){
+			try {
+				in = new BufferedReader(new InputStreamReader(fs.open(new Path(file))));
+				String s =null;
+				while ((s=in.readLine())!=null){
+					sl.add(s);
+				}
+			}catch(Exception e){
+				logger.error("", e);
+				return null;
+			}finally{
+				if (in!=null){
+					try{
+						in.close();
+					}catch(Exception e){
+						logger.error("", e);
+					}
 				}
 			}
 		}
+		return sl;
 	}
 	
 	/*
