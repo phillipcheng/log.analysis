@@ -106,17 +106,20 @@ var _draw = {
 				var tempSelf = tempObj.attr("self");
 				var tempId = tempObj.attr("id");
 				var tempArge = tempObj.attr("arge");
+				var tempG = tempObj.attr("G");
 				if(tempSelf.localeCompare("showInData") == 0) {
 					aryInput.push({
 						id: tempId,
 						display: false,
-						arge: tempArge
+						arge: tempArge,
+						G:tempG
 					});
 				} else if(tempSelf.localeCompare("hideInData") == 0) {
 					aryInput.push({
 						id: tempId,
 						display: true,
-						arge: tempArge
+						arge: tempArge,
+						G:tempG
 					});
 					hadInput = true;
 				}
@@ -128,17 +131,20 @@ var _draw = {
 				var tempSelf = tempObj.attr("self");
 				var tempId = tempObj.attr("id");
 				var tempArge = tempObj.attr("arge");
+				var tempG = tempObj.attr("G");
 				if(tempSelf.localeCompare("showInData") == 0) {
 					aryOutput.push({
 						id: tempId,
 						display: false,
-						arge: tempArge
+						arge: tempArge,
+						G:tempG
 					});
 				} else if(tempSelf.localeCompare("hideInData") == 0) {
 					aryOutput.push({
 						id: tempId,
 						display: true,
-						arge: tempArge
+						arge: tempArge,
+						G:tempG
 					});
 					hadOutput = true;
 				}
@@ -159,6 +165,7 @@ var _draw = {
 		_build._build();
 
 		var g_instance = childsvg.find(gId);
+		console.log("aryInput", aryInput);
 		each(aryInput, function() {
 			var tempData = g_instance.node(this.arge);
 			if(this.display) {
@@ -166,6 +173,26 @@ var _draw = {
 				tempData.height = _node_data_height;
 				tempData.rect.width = _node_data_width;
 				tempData.rect.height = _node_data_height;
+				
+				
+
+				d3.select("#" + this.arge).selectAll("text").remove();
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_name").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_dataName").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");	
+					
 			} else {
 				tempData.width = 0;
 				tempData.height = 0;
@@ -182,6 +209,24 @@ var _draw = {
 				tempData.height = _node_data_height;
 				tempData.rect.width = _node_data_width;
 				tempData.rect.height = _node_data_height;
+				
+				d3.select("#" + this.arge).selectAll("text").remove();
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_name").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_dataName").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");					
+				
 			} else {
 				tempData.width = 0;
 				tempData.height = 0;
@@ -446,7 +491,7 @@ var _draw = {
 			pro_data.rect.height = 0;
 			_build._build(gId, g_instance);
 		}
-		
+
 		this._drawAboutPosition(gId);
 	},
 	_drawAboutPosition: function(gId) {
