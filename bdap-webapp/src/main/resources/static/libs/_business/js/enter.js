@@ -110,9 +110,9 @@ var enter = function(theSelf, d, nodeData) {
 			});
 		}
 		//add child svg
-		theSelfObj.append("g").attr("transform","translate(15,30)scale(1,1)")
+		theSelfObj.append("g").attr("transform", "translate(15,30)scale(1,1)")
 			.attr("id", d + "_svg").append("svg").attr("id", d + "_g_svg")
-			.append("g").attr("id", "rectChildContainer").attr("transform","translate(1,1)scale(1,1)");
+			.append("g").attr("id", "rectChildContainer").attr("transform", "translate(1,1)scale(1,1)");
 	} else if(nodeData.state.localeCompare("group") == 0) {
 
 	} else if(nodeData.state.localeCompare("inData") == 0) {
@@ -137,10 +137,19 @@ var smallNodeEnter = function(theSelf, d, nodeData) {
 var childNodeEnter = function(theSelf, d, nodeData) {
 	console.log("childNodeEnter:", nodeData);
 	var theSelfObj = d3.select(theSelf);
-	theSelfObj.attr("id",nodeData.id).attr("G", nodeData.G)
-	.attr("class", nodeData.class).attr("transform", "translate(0,0)scale(1,1)");
-	var theSelfObjRect = theSelfObj.append("rect");
-	$.each(nodeData.rect, function(k, v) {
-		theSelfObjRect.attr(k, v);
+
+	$.each(nodeData,function(k,v){
+		if(typeof v =='string'){
+			theSelfObj.attr(k, v);
+		}
 	});
+//	theSelfObj.attr("id", nodeData.id).attr("G", nodeData.G)
+//		.attr("class", nodeData.class).attr("transform", "translate(0,0)scale(1,1)");
+
+	if(nodeData.rect) {
+		var theSelfObjRect = theSelfObj.append("rect");
+		$.each(nodeData.rect, function(k, v) {
+			theSelfObjRect.attr(k, v);
+		});
+	}
 }

@@ -307,5 +307,89 @@ var app = {
 		nodeIndex++;
 		var temp_g = "dataset_" + (new Date().getTime() + nodeIndex);
 		addLeftDiv(temp_g);
+	},
+	save: function() {
+		var thisObj = this;
+		var saveResult={};
+		//deep copy
+		saveResult = $.extend(true,{}, result);;
+		function findDataNewId(findId) {
+			var txt = "";
+			each(saveResult.data, function() {
+				if(this.id.localeCompare(findId) == 0) {
+					txt = this.name;
+					return false;
+				}
+				return true;
+			});
+			return txt;
+		}
+
+		//
+		each(saveResult.data, function() {
+			this.name = this.name + "_" + this.id;
+			return true;
+		});
+		
+		each(saveResult.nodes, function() {
+			this.name = this.id;
+			return true;
+		});		
+
+		each(saveResult.nodes, function() {
+			var tempInLets = [];
+			var tempOutLets = [];
+			if(this.inLets) {
+				each(this.inLets, function(i, o) {
+					if(o.show) {
+						var obj = {};
+						obj.name = o.name;
+						obj.dataName = findDataNewId(o.dataName);
+						tempInLets.push(obj);
+					}
+					return true;
+				});
+				this.inLets = tempInLets;
+			}
+
+			if(this.outlets) {
+				each(this.outlets, function(i, o) {
+					if(o.show) {
+						var obj = {};
+						obj.name = o.name;
+						obj.dataName = findDataNewId(o.dataName);
+						tempOutLets.push(obj);
+					}
+					return true;
+				});
+				this.outlets = tempOutLets;
+			}
+
+			return true;
+		});
+		
+//		each(result.links,function(){
+//			
+//			return true;
+//		});
+		
+		console.log("result", JSON.stringify(saveResult) );
+		thisObj.saveAsJson(saveResult);
+	},
+	saveAsJson : function(saveResult) {
+		$.ajax({
+			type: "post",
+			url: getAjaxAbsolutePath(_HTTP_SAVE_JSON),
+			contentType: 'application/json',
+			data: JSON.stringify(saveResult),
+			//dataType: "json",
+			success: function(data, textStatus) {
+				console.info(data);
+			},
+			error: function(e) {
+				console.info(e);
+			}
+		});
+
 	}
 }

@@ -27,7 +27,7 @@ var _draw = {
 					if(o.show) {
 						if(o.state.localeCompare("show") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + ",0)scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "inPath").attr("self", "showInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addIn_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -36,7 +36,7 @@ var _draw = {
 								.attr("d", "M-3,0L3,0M0,3L0,-3").attr("G", gId).attr("arge", o.id);
 						} else if(o.state.localeCompare("hide") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + ",0)scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "inPath").attr("self", "hideInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addIn_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -63,7 +63,7 @@ var _draw = {
 					if(o.show) {
 						if(o.state.localeCompare("show") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + "," + nodeData.height + ")scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "outPath").attr("self", "showInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addOut_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -72,7 +72,7 @@ var _draw = {
 								.attr("d", "M-3,0L3,0M0,3L0,-3").attr("G", gId).attr("arge", o.id);
 						} else if(o.state.localeCompare("hide") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + "," + nodeData.height + ")scale(1,1)")
-								.attr("id",o.id)
+								.attr("id", o.id + "_point")
 								.attr("class", "outPath").attr("self", "hideInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addOut_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
@@ -92,69 +92,264 @@ var _draw = {
 	_drawDataInPutAndOutPut: function(gId) {
 		var nodeData = g.node(gId);
 		var hadInput = false;
-		var aryInput = [];
 		var hadOutput = false;
+		var g_instance = childsvg.find(gId);
+		var aryInput = [];
 		var aryOutput = [];
-		each(result.nodes, function() {
-			if(this.id.localeCompare(gId) == 0) {
-				each(this.inLets, function(i, o) {
-					if(o.state.toString().localeCompare("hide") == 0) {
-						hadInput = true;
-						aryInput.push(i);
-					}
-					return true;
-				});
-				each(this.outlets, function(i, o) {
-					if(o.state.toString().localeCompare("hide") == 0) {
-						hadOutput = true;
-						aryOutput.push(i);
-					}
-					return true;
-				});
-				return false;
-			}
-			return true;
-		});
 
-		//展开内容
+		var property_height = d3.select("#" + gId + "_property_rect").attr("height");
+		nodeData.height = _action_node_min_height + parseInt(property_height);
+
+		d3.select("#" + gId).selectAll(".inPath")
+			.each(function() {
+				var tempObj = d3.select(this);
+				var tempSelf = tempObj.attr("self");
+				var tempId = tempObj.attr("id");
+				var tempArge = tempObj.attr("arge");
+				var tempG = tempObj.attr("G");
+				if(tempSelf.localeCompare("showInData") == 0) {
+					aryInput.push({
+						id: tempId,
+						display: false,
+						arge: tempArge,
+						G:tempG
+					});
+				} else if(tempSelf.localeCompare("hideInData") == 0) {
+					aryInput.push({
+						id: tempId,
+						display: true,
+						arge: tempArge,
+						G:tempG
+					});
+					hadInput = true;
+				}
+			});
+
+		d3.select("#" + gId).selectAll(".outPath")
+			.each(function() {
+				var tempObj = d3.select(this);
+				var tempSelf = tempObj.attr("self");
+				var tempId = tempObj.attr("id");
+				var tempArge = tempObj.attr("arge");
+				var tempG = tempObj.attr("G");
+				if(tempSelf.localeCompare("showInData") == 0) {
+					aryOutput.push({
+						id: tempId,
+						display: false,
+						arge: tempArge,
+						G:tempG
+					});
+				} else if(tempSelf.localeCompare("hideInData") == 0) {
+					aryOutput.push({
+						id: tempId,
+						display: true,
+						arge: tempArge,
+						G:tempG
+					});
+					hadOutput = true;
+				}
+			});
+
 		if(hadInput) {
-			if(aryInput.length == 1) {
-				nodeData.height = nodeData.height + _node_data_height;
-			}
+			nodeData.height = nodeData.height + _node_data_height;
 		}
+
 		if(hadOutput) {
-			if(aryOutput.length == 1) {
-				nodeData.height = nodeData.height + _node_data_height;
-			}
+			nodeData.height = nodeData.height + _node_data_height;
 		}
 
 		if(hadInput || hadInput) {
 			nodeData.width = _node_max_width;
+			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
 		}
-
 		_build._build();
 
-		var g_child_instance = childsvg.find(gId);
+		var g_instance = childsvg.find(gId);
+		console.log("aryInput", aryInput);
 		each(aryInput, function() {
-			var inputObj = g_child_instance.node(gId + "_InData_" + this);
-			inputObj.width = _node_data_width;
-			inputObj.height = _node_data_height;
-			inputObj.rect.width = _node_data_width;
-			inputObj.rect.height = _node_data_height;
-			_build._build(gId, g_child_instance);
+			var tempData = g_instance.node(this.arge);
+			if(this.display) {
+				tempData.width = _node_data_width;
+				tempData.height = _node_data_height;
+				tempData.rect.width = _node_data_width;
+				tempData.rect.height = _node_data_height;
+				
+				
+
+				d3.select("#" + this.arge).selectAll("text").remove();
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_name").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_dataName").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");	
+					
+			} else {
+				tempData.width = 0;
+				tempData.height = 0;
+				tempData.rect.width = 0;
+				tempData.rect.height = 0;
+			}
 			return true;
 		});
 
 		each(aryOutput, function() {
-			var inputObj = g_child_instance.node(gId + "_OutData_" + this);
-			inputObj.width = _node_data_width;
-			inputObj.height = _node_data_height;
-			inputObj.rect.width = _node_data_width;
-			inputObj.rect.height = _node_data_height;
-			_build._build(gId, g_child_instance);
+			var tempData = g_instance.node(this.arge);
+			if(this.display) {
+				tempData.width = _node_data_width;
+				tempData.height = _node_data_height;
+				tempData.rect.width = _node_data_width;
+				tempData.rect.height = _node_data_height;
+				
+				d3.select("#" + this.arge).selectAll("text").remove();
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_name").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+	
+				d3.select("#" + this.arge).append("text")
+					.attr("id", this.arge + "_dataName").attr("G", this.G)
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");					
+				
+			} else {
+				tempData.width = 0;
+				tempData.height = 0;
+				tempData.rect.width = 0;
+				tempData.rect.height = 0;
+			}
 			return true;
 		});
-		
+
+		_build._build(gId, g_instance);
+
+		this._drawAboutPosition(gId);
+
+		//		var nodeData = g.node(gId);
+		//		var hadInput = false;
+		//		var aryInput = [];
+		//		var hadOutput = false;
+		//		var aryOutput = [];
+		//		each(result.nodes, function() {
+		//			if(this.id.localeCompare(gId) == 0) {
+		//				each(this.inLets, function(i, o) {
+		//					if(o.state.toString().localeCompare("hide") == 0) {
+		//						hadInput = true;
+		//						aryInput.push(i);
+		//					}
+		//					return true;
+		//				});
+		//				each(this.outlets, function(i, o) {
+		//					if(o.state.toString().localeCompare("hide") == 0) {
+		//						hadOutput = true;
+		//						aryOutput.push(i);
+		//					}
+		//					return true;
+		//				});
+		//				return false;
+		//			}
+		//			return true;
+		//		});
+		//
+		//		//展开内容
+		//		if(hadInput) {
+		//			if(aryInput.length == 1) {
+		//				nodeData.height = nodeData.height + _node_data_height;
+		//			}
+		//		}
+		//		if(hadOutput) {
+		//			if(aryOutput.length == 1) {
+		//				nodeData.height = nodeData.height + _node_data_height;
+		//			}
+		//		}
+		//
+		//		if(hadInput || hadOutput) {
+		//			nodeData.width = _node_max_width;
+		//			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
+		//		}
+		//
+		//		console.log("my result:", nodeData);
+		//
+		//		_build._build();
+		//
+		//		var g_child_instance = childsvg.find(gId);
+		//		each(aryInput, function() {
+		//			var inputObj = g_child_instance.node(gId + "_InData_" + this);
+		//			inputObj.width = _node_data_width;
+		//			inputObj.height = _node_data_height;
+		//			inputObj.rect.width = _node_data_width;
+		//			inputObj.rect.height = _node_data_height;
+		//			_build._build(gId, g_child_instance);
+		//			//加载属性内容
+		//			console.log("加载属性内容", inputObj);
+		//
+		//			d3.select("#" + inputObj.id).selectAll("text").remove();
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("id", inputObj.id + "_name").attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("id", inputObj.id + "_dataName").attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
+		//
+		//			return true;
+		//		});
+		//
+		//		each(aryOutput, function() {
+		//			var inputObj = g_child_instance.node(gId + "_OutData_" + this);
+		//			inputObj.width = _node_data_width;
+		//			inputObj.height = _node_data_height;
+		//			inputObj.rect.width = _node_data_width;
+		//			inputObj.rect.height = _node_data_height;
+		//			_build._build(gId, g_child_instance);
+		//			//加载属性内容
+		//			console.log("加载属性内容", inputObj);
+		//
+		//			d3.select("#" + inputObj.id).selectAll("text").remove();
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("id", inputObj.id + "_name").attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
+		//
+		//			d3.select("#" + inputObj.id).append("text")
+		//				.attr("id", inputObj.id + "_dataName").attr("G", inputObj.G)
+		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
+		//			return true;
+		//		});
+		//
+		//		this._drawAboutPosition(gId);
 	},
 	_drawProperty: function(gId, obj) {
 		console.log("-------------_drawProperty-------------------");
@@ -198,8 +393,9 @@ var _draw = {
 		var propertyData = g_child_Instance.node(gId + "_property");
 		console.log("propertyData", propertyData);
 		propertyData.width = _node_max_property_width;
+		propertyData.height = (_index * 20);
 		propertyData.rect.width = _node_max_property_width;
-		propertyData.rect.height = _index * 20;
+		propertyData.rect.height = (_index * 20);
 		if(document.getElementById(gId + "_property").getElementsByTagName("text") &&
 			document.getElementById(gId + "_property").getElementsByTagName("text").length > 0) {
 
@@ -227,26 +423,94 @@ var _draw = {
 		_build._build(gId, g_child_Instance);
 		this._drawAboutPosition(gId);
 	},
-	_drawClearProperty: function() {
+	_drawClearProperty: function(gId) {
 		$("#rightupcssbody").html("");
 		d3.select("#divrightup").style({
 			"display": "none"
 		});
-	},
-	_drawAboutPosition : function(gId){
+
+		var tempheight = d3.select("#" + gId + "_property_rect").attr("height");
+		var hadInData = false;
+		var hadOutData = false;
+
+		d3.select("#" + gId).selectAll(".inPath")
+			.each(function() {
+				var temp = d3.select(this).attr("self");
+				if(temp.localeCompare("hideInData") == 0) {
+					hadInData = true;
+				}
+			});
+
+		d3.select("#" + gId).selectAll(".outPath")
+			.each(function() {
+				var temp = d3.select(this).attr("self");
+				if(temp.localeCompare("hideInData") == 0) {
+					hadOutData = true;
+				}
+			});
+
+		d3.select("#" + gId + "_property").selectAll("text").remove();
 		var nodeData = g.node(gId);
-		//定位下方的按钮
-		each(result.nodes,function(){
-			if(this.id.localeCompare(gId)==0){
-				each(this.outlets,function(i,o){
-					console.log(d3.select("#"+o.id));
-					d3.select("#"+o.id).attr("transform","translate(0,60)scale(1,1)");
-					return true;
-				});
-				return false;
+		nodeData.pro.self = "ShowProperty";
+		nodeData.pro.circle.self = "ShowProperty";
+		nodeData.pro.path.self = "ShowProperty";
+		nodeData.pro.path.d = "M-3,0L3,0M0,-3L0,3";
+		if((!hadInData) && (!hadOutData)) {
+			if(nodeData.state.localeCompare("start") == 0) {
+				//开始
+				nodeData.width = _start_node_min_width;
+				nodeData.pro.transform = "translate(" + (_start_node_min_width - 10) + ",10)scale(1,1)";
+			} else if(nodeData.state.localeCompare("end") == 0) {
+				//结束
+				nodeData.width = _end_node_min_width;
+				nodeData.pro.transform = "translate(" + (_end_node_min_width - 10) + ",10)scale(1,1)";
+			} else {
+				nodeData.width = _action_node_min_width;
+				nodeData.pro.transform = "translate(" + (_action_node_min_width - 10) + ",10)scale(1,1)";
 			}
-			return true;
-		});
+			nodeData.height = _action_node_min_height;
+
+			_build._build();
+
+			var g_instance = childsvg.find(gId);
+			var pro_data = g_instance.node(gId + "_property");
+			pro_data.width = 0;
+			pro_data.height = 0;
+			pro_data.rect.width = 0;
+			pro_data.rect.height = 0;
+			_build._build(gId, g_instance);
+		} else {
+			var g_instance = childsvg.find(gId);
+			var pro_data = g_instance.node(gId + "_property");
+			nodeData.height = nodeData.height - pro_data.height;
+			_build._build();
+
+			pro_data.width = 0;
+			pro_data.height = 0;
+			pro_data.rect.width = 0;
+			pro_data.rect.height = 0;
+			_build._build(gId, g_instance);
+		}
+
+		this._drawAboutPosition(gId);
+	},
+	_drawAboutPosition: function(gId) {
+		setTimeout(function() {
+			var nodeData = g.node(gId);
+			//定位下方的按钮
+			each(result.nodes, function() {
+				if(this.id.localeCompare(gId) == 0) {
+					each(this.outlets, function(i, o) {
+						console.log();
+						console.log(d3.select("#" + o.id));
+						d3.select("#" + o.id + "_point").attr("transform", "translate(" + (i * 40) + "," + nodeData.height + ")scale(1,1)");
+						return true;
+					});
+					return false;
+				}
+				return true;
+			});
+		}, 750);
 	}
 }
 
@@ -259,8 +523,8 @@ var addLeftDiv = function(keys) {
 		v: {
 			name: 'data',
 			location: '',
-			dataFormat: '',
-			recordType: '',
+			dataFormat: 'Line',
+			recordType: 'Path',
 			instance: 'false'
 		}
 	});
@@ -269,8 +533,8 @@ var addLeftDiv = function(keys) {
 		id: keys,
 		name: 'data',
 		location: '',
-		dataFormat: '',
-		recordType: '',
+		dataFormat: 'Line',
+		recordType: 'Path',
 		instance: 'false'
 	})
 
@@ -417,4 +681,62 @@ var changeProperty = function(gId, propertyName) {
 		}
 		return true;
 	});
+}
+
+/**
+ * 
+ * @param {Object} txtId
+ */
+var changeData = function(txtId, propertyName, gId) {
+	console.log("--------changeData----------");
+	console.log(arguments);
+	var e = window.event || arguments.callee.caller.arguments[0];
+	var o = getEventSources(e);
+
+	if(o.tagName.localeCompare("INPUT") == 0) {
+		d3.select("#" + txtId + "_" + propertyName).text(o.value);
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				each(this.inLets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.name = o.value;
+						return false;
+					}
+					return true;
+				});
+				each(this.outlets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.name = o.value;
+						return false;
+					}
+					return true;
+				});
+				return false;
+			}
+			return true;
+		});
+	} else if(o.tagName.localeCompare("SELECT") == 0) {
+		//console.log(o.selectedOptions[0].innerText);
+		d3.select("#" + txtId + "_" + propertyName).text(o.selectedOptions[0].innerText);
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				each(this.inLets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.dataName = o.value;
+						return false;
+					}
+					return true;
+				});
+				each(this.outlets, function() {
+					if(this.id.localeCompare(txtId) == 0) {
+						this.dataName = o.value;
+						return false;
+					}
+					return true;
+				});
+				return false;
+			}
+			return true;
+		});
+	}
 }

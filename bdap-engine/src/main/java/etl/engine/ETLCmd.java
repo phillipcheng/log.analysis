@@ -36,6 +36,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
+import etl.input.FilenameInputFormat;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarDef;
@@ -189,6 +190,15 @@ public abstract class ETLCmd implements Serializable{
 		return systemVariables;
 	}
 	
+	public static Iterable<String> itTois(Iterable<Text> values){
+		List<String> svalues = new ArrayList<String>();
+		Iterator<Text> vit = values.iterator();
+		while (vit.hasNext()){
+			svalues.add(vit.next().toString());
+		}
+		return svalues;
+	}
+	
 	//copy propertiesConf to jobConf
 	private void copyConf(){
 		Iterator it = pc.getKeys();
@@ -225,7 +235,9 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
-		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+		Path path=((FileSplit) context.getInputSplit()).getPath();
+		getSystemVariables().put(VAR_NAME_PATH_NAME, path.toString());
+		String inputFileName = path.getName();
 		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
 		String tableName = inputFileName;
 		if (expFileTableMap!=null){
@@ -239,6 +251,7 @@ public abstract class ETLCmd implements Serializable{
 		return null;
 	}
 	
+	//k,v,baseoutput
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		logger.error(String.format("Empty reduceByKey impl!!! %s", this));
@@ -361,7 +374,12 @@ public abstract class ETLCmd implements Serializable{
 					if (inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
 						ret.addAll(processSequenceFile(null, t._2.toString()));
 					}else{
-						String key = mapKey(file);
+						String key = null;
+						if (inputFormatClass.isAssignableFrom(FilenameInputFormat.class)){
+							key = mapKey(t._2.toString());
+						}else{
+							key = mapKey(file);
+						}
 						if (!(skipHeader && t._1.get()==0)){
 							ret.add(new Tuple2<String, String>(key, t._2.toString()));
 						};
@@ -394,7 +412,20 @@ public abstract class ETLCmd implements Serializable{
 	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		logger.error(String.format("Empty mapProcess impl!!! %s", this));
+		if (skipHeader && offset==0) {
+			logger.info("skip header:" + row);
+			return null;
+		}
+		String tfName = getTableNameSetFileNameByContext(context);
+		if (tfName==null || "".equals(tfName.trim())){
+			logger.error(String.format("tableName got is empty from exp %s and fileName %s", 
+					strFileTableMap, ((FileSplit) context.getInputSplit()).getPath().getName()));
+		}else{
+			List<Tuple2<String, String>> it = flatMapToPair(tfName, row, context);
+			for (Tuple2<String,String> t : it){
+				context.write(new Text(t._1), new Text(t._2));
+			}
+		}
 		return null;
 	}
 	
@@ -408,8 +439,13 @@ public abstract class ETLCmd implements Serializable{
 	 */
 	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		logger.error(String.format("Empty reduceProcess impl!!! %s", this));
-		return null;
+		Iterable<String> strValues = itTois(values);
+		List<Tuple3<String, String, String>> retList = this.reduceByKey(key.toString(), strValues, context, mos);
+		List<String[]> retStringlist = new ArrayList<String[]>();
+		for(Tuple3<String, String, String> ret:retList){
+			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
+		}	
+		return retStringlist;
 	}
 	
 	/**
@@ -433,7 +469,6 @@ public abstract class ETLCmd implements Serializable{
 	public VarDef[] getCfgVar(){
 		return new VarDef[]{new VarDef(cfgkey_vars, VarType.STRINGLIST)};
 	}
-	
 	
 	public VarDef[] getSysVar(){
 		return new VarDef[]{

@@ -1,7 +1,8 @@
 var clientwidth, clientheight, current_zoom_x, current_zoom_y,
 	display_off_left, display_off_top, init_zoom_x, init_zoom_y, booleaniszoom;
 
-var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
+var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
+//var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
 
 /**
  * 用于记录临时点的线的集合
@@ -90,8 +91,8 @@ var init = function() {
 	 * 1.7
 	 * loadJOSN
 	 */
-	//d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {	
-	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
+	d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {	
+//	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
 		remoteActionObj = data;
 		$.each(data, function(k, v) {
 			var temp = k;

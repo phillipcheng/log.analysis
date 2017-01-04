@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.PropertiesUtil;
+import bdap.util.SftpInfo;
 import etl.log.ETLLog;
 import etl.log.LogType;
 
@@ -117,6 +118,14 @@ public class EngineUtil {
 	
 	public static EngineUtil getInstance(){
 		return singleton;
+	}
+	
+	public SftpInfo getSftpInfo(){
+		String sftpHost = getEngineProp().getString("sftp.host");
+		String sftpUser = getEngineProp().getString("sftp.user");
+		int sftpPort = getEngineProp().getInt("sftp.port");
+		String sftpPass = getEngineProp().getString("sftp.pass");
+		return new SftpInfo(sftpUser, sftpPass, sftpHost, sftpPort);
 	}
 	
 	public void sendLog(String topicName, ETLLog etllog){

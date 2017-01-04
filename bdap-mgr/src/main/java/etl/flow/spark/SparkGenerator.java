@@ -70,7 +70,7 @@ public class SparkGenerator {
 		sb.append(String.format("SparkConf conf = new SparkConf().setAppName(getWfName());\n"));
 		sb.append("JavaSparkContext jsc = new JavaSparkContext(conf);\n");
 		//gen cmds
-		List<Node> nodes = flow.getTopoOrder();
+		List<Node> nodes = flow.getActionTopoOrder();
 		List<Data> datas = flow.getData();
 		for (Data data:datas){
 			String varName = JavaCodeGenUtil.getVarName(data.getName());
@@ -167,6 +167,12 @@ public class SparkGenerator {
 					}
 				}
 			}
+		}
+		//call some action on the last ds to make sure all transformation are exected
+		List<String> lastData = flow.getLastDataSets();
+		for (String ldn:lastData){
+			String varName = JavaCodeGenUtil.getVarName(ldn);
+			sb.append(String.format("logger.info(\"%s:\" + %s.collect());\n", varName, varName));
 		}
 		sb.append("jsc.close();\n");
 		sb.append("return retInfo;");
