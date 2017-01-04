@@ -20,7 +20,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import bdap.util.Util;
 
@@ -457,31 +456,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		return ret;
 	}
 	
-	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
-		//process skip header
-		if (skipHeader && offset==0) {
-			logger.info("skip header:" + row);
-			return null;
-		}		
-		try {
-			String tableName = getTableNameSetFileNameByContext(context);
-			logger.debug(String.format("in map tableName:%s", tableName));
-			if (tableName==null || "".equals(tableName.trim())){
-				logger.error(String.format("tableName got is empty from exp %s and fileName %s", super.getStrFileTableMap(), 
-						((FileSplit) context.getInputSplit()).getPath().getName()));
-			}else{
-				List<Tuple2<String, String>> it = flatMapToPair(tableName, row, context);
-				for (Tuple2<String,String> t : it){
-					context.write(new Text(t._1), new Text(t._2));
-				}
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}
-		return null;
-	}
-	
 	private List<List<String>> getAggrValues(String tableName, List<CSVRecord> csvRecords){
 		/*
 		 * if use aggr op like count, sum, avg, max, min, at least it will generate one row.
@@ -489,7 +463,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		 * if the aggr op is used, and "keep" aggr op also used, it will generate same number of rows as input csvRecords with each same fill with same aggred value.
 		 * 
 		 */
-		
 		List<List<String>> records = new ArrayList<List<String>>();
 		AggrOps aoMap = aoMapMap.get(tableName);
 		List<String> aggrValues = new ArrayList<String>();
@@ -567,7 +540,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			}
 		}
 		
-		
 		if(csvRecords==null || csvRecords.size()==0){
 			if(executedAggrOp==true) records.add(aggrValues);
 		}else{
@@ -624,7 +596,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 					}else{
 						fieldValues.add("");
 					}
-					
 				}
 			}			
 		}
@@ -751,7 +722,6 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				if(records!=null && records.size()>0) rows=rows*records.size();
 			}
 			
-			
 			List<Tuple3<String, String, String>> retList=new ArrayList<Tuple3<String, String, String>>();
 			if("left".equalsIgnoreCase(joinType)){				
 				String leftTable=unSortedOldTables[grpIdx][0];
@@ -802,21 +772,5 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			}
 			return retList;
 		}
-	}
-	
-	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
-		List<String> svalues = new ArrayList<String>();
-		Iterator<Text> vit = values.iterator();
-		while (vit.hasNext()){
-			svalues.add(vit.next().toString());
-		}
-		List<Tuple3<String, String, String>> retList = reduceByKey(key.toString(), svalues, context, mos);
-		List<String[]> retStringlist = new ArrayList<String[]>();
-		for(Tuple3<String, String, String> ret:retList){
-			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
-		}		
-		return retStringlist;
 	}
 }

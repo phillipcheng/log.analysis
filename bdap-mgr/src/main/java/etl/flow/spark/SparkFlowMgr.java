@@ -66,11 +66,13 @@ public class SparkFlowMgr extends FlowMgr{
 			Path path = Paths.get(String.format("%s/%s", classesRootDir, im.getFileName()));
 			Files.write(path, im.getContent());
 		}
-		for (String propFile: propFiles){
-			Path propSrcPath = Paths.get(propFile);
-			String propFileName = propSrcPath.getFileName().toString();
-			Path propDestPath = Paths.get(String.format("%s/%s", classesRootDir, propFileName));
-			Files.write(propDestPath, Files.readAllBytes(propSrcPath));
+		if (propFiles!=null){
+			for (String propFile: propFiles){
+				Path propSrcPath = Paths.get(propFile);
+				String propFileName = propSrcPath.getFileName().toString();
+				Path propDestPath = Paths.get(String.format("%s/%s", classesRootDir, propFileName));
+				Files.write(propDestPath, Files.readAllBytes(propSrcPath));
+			}
 		}
 		//jar the file
 		String jarFilePath = String.format("%s/%s.jar", targetDir, flowName);

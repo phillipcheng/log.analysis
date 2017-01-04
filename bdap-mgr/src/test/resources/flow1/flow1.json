@@ -106,7 +106,10 @@
   },{
     "@class" : "action",
     "name" : "csvsave",
-    "outlets" : [ ],
+    "outlets" : [ {
+      "name" : "0",
+      "dataName" : "csvmergefiles"
+    }],
     "addArgs" : [ ],
     "inLets" : [ {
       "name" : "0",
@@ -115,6 +118,24 @@
     "exe.type" : "mr",
     "log.tmp.dir": "'/flow1/csvmerge/'+WFID+'/'",
     "cmd.class" : "etl.cmd.SaveDataCmd"
+  },{
+    "@class" : "action",
+    "name" : "loadcsv",
+    "outlets" : [ {
+      "name" : "0",
+      "dataName" : "csvdbout"
+    }],
+    "addArgs" : [ ],
+    "inLets" : [ {
+      "name" : "0",
+      "dataName" : "csvmergefiles"
+    } ],
+    "exe.type" : "mr",
+    "cmd.class" : "etl.cmd.LoadDataCmd",
+	"sys.mapreduce.input.fileinputformat.input.dir.recursive" : "true",
+    "schema.file " : "/flow1/schema/flow1.schema",
+    "db.prefix" : "project1",
+    "file.table.map" : "filename.substring(0\\,filename.indexOf('-r-'))"
   } ],
   "links" : [ {
     "fromNodeName" : "start",
@@ -142,6 +163,10 @@
     "linkType" : "success"
   }, {
     "fromNodeName" : "csvsave",
+    "toNodeName" : "loadcsv",
+    "linkType" : "success"
+  } ,{
+    "fromNodeName" : "loadcsv",
     "toNodeName" : "end",
     "linkType" : "success"
   } ],
@@ -178,6 +203,18 @@
   }, {
     "name" : "csvmerge",
     "location" : "/flow1/csvmerge/",
+    "dataFormat" : "Text",
+    "recordType" : "KeyValue",
+    "instance" : true
+  },{
+    "name" : "csvmergefiles",
+    "location" : "/flow1/csvmergefiles/",
+    "dataFormat" : "Text",
+    "recordType" : "KeyValue",
+    "instance" : true
+  },{
+    "name" : "csvdbout",
+    "location" : "/flow1/csvdbout/",
     "dataFormat" : "Text",
     "recordType" : "KeyValue",
     "instance" : true

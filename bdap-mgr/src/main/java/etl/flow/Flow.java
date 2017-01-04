@@ -4,6 +4,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +108,29 @@ public class Flow extends Node{
 		return true;
 	}
 	
-	public List<Node> getTopoOrder(){
+	public List<String> getLastDataSets(){
+		Set<String> inds = new HashSet<String>();
+		Set<String> outds = new HashSet<String>();
+		List<Node> nl = getActionTopoOrder();
+		//create inlet datasets
+		for (Node n:nl){
+			for (NodeLet nlet:n.getInLets()){
+				inds.add(nlet.getDataName());
+			}
+		}
+		List<String> lastds = new ArrayList<String>();
+		for (Node n:nl){//order by the topo
+			for (NodeLet outlet:n.getOutlets()){
+				if (!inds.contains(outlet.getDataName()) &&
+						!lastds.contains(outlet.getDataName())){
+					lastds.add(outlet.getDataName());
+				}
+			}
+		}
+		return lastds;
+	}
+	
+	public List<Node> getActionTopoOrder(){
 		List<Node> nl = this.getNodes();
 		Map<String, Integer> nameIdxMap = new HashMap<String, Integer>();
 		Node[] idxNodeArray = new Node[nl.size()];
