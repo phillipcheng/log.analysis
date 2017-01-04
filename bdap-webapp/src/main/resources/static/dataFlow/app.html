@@ -33,6 +33,10 @@
 		<script type="text/javascript" src="../libs/_business/js/build.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/app.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/draw.js"></script>
+		
+		<script type="text/javascript" src="../libs/_business/js/dywindow.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/interact.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/load.js"></script>
 
 	</head>
 
@@ -49,14 +53,17 @@
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild();">loadFlow</a>
+						</li>
+						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSet();">dataSet</a>
 						</li>
-						<li>
+						<!--<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSetShow();">dataSet Show</a>
-						</li>
-						<li>
+						</li>-->
+						<!--<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSetHide();">dataSet Hide</a>
-						</li>
+						</li>-->
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.start();">start</a>
 						</li>
