@@ -105,7 +105,7 @@ public class FlowDeployer {
 			return new DefaultDeployMethod(remoteUser, defaultFs);
 	}
     
-    public static String getInputFormat(InputFormatType ift, DataType dt){
+    public static String getInputFormat(InputFormatType ift){
 		if (InputFormatType.Line == ift){
 			return prop_inputformat_line;
 		}else if (InputFormatType.Text == ift){

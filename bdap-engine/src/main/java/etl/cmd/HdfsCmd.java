@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.fs.FileStatus;
+import javax.script.CompiledScript;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -33,20 +34,30 @@ public class HdfsCmd extends ETLCmd{
 
 	public static final Logger logger = LogManager.getLogger(HdfsCmd.class);
 	
+	public static final String VAR_NAME_FROM_PATH="FROM_PATH";
 	//cfgkey for sg-process
 	public static final @ConfigKey(type=String[].class) String cfgkey_rm_folders = "rm.folders";
 	public static final @ConfigKey(type=String[].class) String cfgkey_mkdir_folders = "mkdir.folders";
 	public static final @ConfigKey(type=String[].class) String cfgkey_mv_from = "mv.from";
 	public static final @ConfigKey(type=String[].class) String cfgkey_mv_to = "mv.to";
-	//cfgkey for spark
+	//cfgkey for mr/spark
 	public static final @ConfigKey(type=String.class) String cfgkey_op="hdfs.op";
+	public static final @ConfigKey(type=String.class) String cfgkey_rm_parent="rm.parent";
+	public static final @ConfigKey(type=String.class) String cfgkey_mv_to_exp="mv.to.exp";//mv to file name based on mv from file name
+	public static final @ConfigKey(type=String.class) String cfgkey_clean_mv_to_folder="clean.mv.to.folder";
 	
+	//sg var
 	private String[] rmFolders;
 	private String[] mkdirFolders;
 	private String[] mvFrom;
 	private String[] mvTo;
 	
+	//mr var
 	private HdfsOp hdfsOp;
+	private boolean rmParent=true;
+	private String strMvTo;
+	private transient CompiledScript csMvTo=null;
+	private boolean cleanMvToFolder=false;
 	
 	public HdfsCmd(){
 		super();
@@ -93,6 +104,12 @@ public class HdfsCmd extends ETLCmd{
 		if (hdfsOpStr!=null){
 			hdfsOp = HdfsOp.valueOf(hdfsOpStr);
 		}
+		rmParent = super.getCfgBoolean(cfgkey_rm_parent, true);
+		strMvTo = super.getCfgString(cfgkey_mv_to_exp, null);
+		if (strMvTo!=null){
+			csMvTo = ScriptEngineUtil.compileScript(strMvTo);
+		}
+		cleanMvToFolder = super.getCfgBoolean(cfgkey_clean_mv_to_folder, false);
 	}
 
 	@Override
@@ -116,12 +133,34 @@ public class HdfsCmd extends ETLCmd{
 	
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		init();
 		List<Tuple2<String, String>> mapRet = new ArrayList<Tuple2<String, String>>();
+		String filePath = HdfsUtil.getRootPath(value);
 		if (HdfsOp.rm == hdfsOp){
-			String rootPath = HdfsUtil.getRootPath(value);
-			int lastIdx = rootPath.lastIndexOf("/");
-			String parentPath = rootPath.substring(0, lastIdx);
-			mapRet.add(new Tuple2<String, String>(parentPath, "1"));
+			if (rmParent){
+				int lastIdx = filePath.lastIndexOf("/");
+				String parentPath = filePath.substring(0, lastIdx);
+				mapRet.add(new Tuple2<String, String>(parentPath, "1"));
+			}else{
+				boolean ret = getFs().delete(new Path(filePath), true);
+				logger.info(String.format("delete path:%s, ret:%b", filePath, ret));
+				mapRet.add(new Tuple2<String, String>(filePath, "1"));
+			}
+		}else if (HdfsOp.mv == hdfsOp){
+			if (this.csMvTo!=null){
+				getSystemVariables().put(VAR_NAME_FROM_PATH, filePath);
+				String toPath = ScriptEngineUtil.eval(csMvTo, getSystemVariables());
+				int lastIdx = toPath.lastIndexOf("/");
+				String parentPath = toPath.substring(0, lastIdx);
+				HdfsUtil.checkFolder(fs, parentPath, this.cleanMvToFolder);
+				boolean ret = getFs().rename(new Path(filePath), new Path(toPath));
+				logger.info(String.format("rename path: from: %s, to:%s, ret:%b", filePath, toPath, ret));
+				mapRet.add(new Tuple2<String, String>(toPath, "1"));
+			}else{
+				logger.error(String.format("mv_to_exp not defined!!"));
+			}
+		}else{
+			logger.error(String.format("unsupported hdfs op in mr mode:%s", hdfsOp));
 		}
 		return mapRet;
 	}
@@ -136,8 +175,12 @@ public class HdfsCmd extends ETLCmd{
 			it.next();
 			cnt++;
 		}
-		boolean ret = super.getFs().delete(new Path(key), true);
-		logger.info(String.format("delete path:%s, ret:%b", key, ret));
+		if (HdfsOp.rm==hdfsOp){
+			if (rmParent){
+				boolean ret = super.getFs().delete(new Path(key), true);
+				logger.info(String.format("delete path:%s, ret:%b", key, ret));
+			}
+		}
 		redRet.add(new Tuple3<String,String,String>(key, String.valueOf(cnt), SINGLE_TABLE));
 		return redRet;
 	}

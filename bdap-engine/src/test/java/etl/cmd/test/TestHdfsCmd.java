@@ -38,6 +38,21 @@ public class TestHdfsCmd extends TestETLCmd{
 	}
 	
 	@Test
+	public void testMapreduceMv() throws Exception{	
+		throw new UnsupportedOperationException();
+	}
+	
+	@Test
+	public void testMapreduceRmFiles() throws Exception{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Test
+	public void testMapreduceRmParents() throws Exception{
+		throw new UnsupportedOperationException();
+	}
+	
+	@Test
 	public void testMvDir() throws Exception{
 		String wfName = "wfName";
 		String wfId = "wfid";

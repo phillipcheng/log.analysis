@@ -55,13 +55,16 @@ public class LoadDataCmd extends SchemaETLCmd{
 	
 	private String webhdfsRoot="";
 	private String userName;
+	//only used in sgprocess
 	private String csvFile;
-	private String loadSql;
-	private String[] tableNames;
-	
 	private transient CompiledScript csCsvFile;
+	//
+	private String loadSql;
 	private transient CompiledScript csLoadSql;
 
+	private String[] tableNames;
+	
+	
 	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
 	
 	public LoadDataCmd(){

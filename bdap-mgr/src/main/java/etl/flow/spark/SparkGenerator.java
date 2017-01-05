@@ -148,7 +148,7 @@ public class SparkGenerator {
 				if (methodName==null){
 					logger.error(String.format("input:%s, output:%s pair on action:%s not supported.", inputDataType, outputDataType, anode.getName()));
 				}
-				inputFormat = FlowDeployer.getInputFormat(inData.getDataFormat(), inData.getRecordType());
+				inputFormat = FlowDeployer.getInputFormat(inData.getDataFormat());
 				if (outputVarName!=null){
 					sb.append(String.format("%s=%s.%s(%s,jsc,%s.class);\n", outputVarName, cmdVarName, methodName, inputVarName, inputFormat));
 				}else{

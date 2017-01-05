@@ -32,6 +32,7 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
@@ -54,6 +55,7 @@ public abstract class ETLCmd implements Serializable{
 	public static final String RESULT_KEY_OUTPUT_LINE="lineoutput";
 	public static final String RESULT_KEY_OUTPUT_TUPLE2="mapoutput";
 	
+	public static final String sys_cfgkey_use_keyvalue="use.keyvalue";
 	//cfgkey
 	public static final @ConfigKey(type=String[].class) String cfgkey_vars = "vars";
 	public static final @ConfigKey(type=Boolean.class) String cfgkey_skip_header="skip.header";
@@ -66,6 +68,7 @@ public abstract class ETLCmd implements Serializable{
 	public static final String VAR_NAME_FILE_NAME="filename";
 	public static final String VAR_NAME_PATH_NAME="pathname";//including filename
 	
+	public static final String DEFAULT_KEY_SEP="\t";
 	public static final String KEY_SEP=",";
 	public static final String SINGLE_TABLE="singleTable";
 	
@@ -398,8 +401,17 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
-		logger.error(String.format("Empty sparkProcess impl!!! %s", this));
-		return null;
+		return input.flatMap(new FlatMapFunction<String,String>(){
+			@Override
+			public Iterator<String> call(String t) throws Exception {
+				List<Tuple2<String,String>> retlist = flatMapToPair(null, t, null);
+				List<String> keylist = new ArrayList<String>();
+				for (Tuple2<String,String> ret:retlist){
+					keylist.add(ret._1);
+				}
+				return keylist.iterator();
+			}
+		});
 	}
 	
 	/**
@@ -412,18 +424,33 @@ public abstract class ETLCmd implements Serializable{
 	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+		logger.debug("map process:%d,%s", offset, row);
 		if (skipHeader && offset==0) {
 			logger.info("skip header:" + row);
 			return null;
 		}
-		String tfName = getTableNameSetFileNameByContext(context);
+		String[] kv=null;
+		if (context.getConfiguration().get(sys_cfgkey_use_keyvalue, null)!=null){
+			kv = row.split(DEFAULT_KEY_SEP, 2);//try to split to key value, if failed use file name as key
+		}
+		String tfName = null;
+		if (kv!=null && kv.length==2){
+			tfName = kv[0];
+			row = kv[1];
+		}else{
+			tfName = getTableNameSetFileNameByContext(context);
+		}
 		if (tfName==null || "".equals(tfName.trim())){
 			logger.error(String.format("tableName got is empty from exp %s and fileName %s", 
 					strFileTableMap, ((FileSplit) context.getInputSplit()).getPath().getName()));
 		}else{
 			List<Tuple2<String, String>> it = flatMapToPair(tfName, row, context);
 			for (Tuple2<String,String> t : it){
-				context.write(new Text(t._1), new Text(t._2));
+				if (t._2!=null){
+					context.write(new Text(t._1), new Text(t._2));
+				}else{//for no reduce job, value can be null
+					context.write(new Text(t._1), null);
+				}
 			}
 		}
 		return null;
