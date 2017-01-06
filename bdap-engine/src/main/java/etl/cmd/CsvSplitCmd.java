@@ -147,7 +147,7 @@ public class CsvSplitCmd extends ETLCmd {
 	
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row,
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
 		Map<String, Object> ret = new HashMap<String, Object>();
 		List<Tuple2<String, String>> vl = flatMapToPair(null, row, context);
 		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);

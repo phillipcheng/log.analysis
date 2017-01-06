@@ -392,11 +392,20 @@ public class Main implements Job {
 					/* Current server IP */
 					Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
 					Enumeration<InetAddress> ias;
+					String hostAddr;
+					int i;
 					while (nis.hasMoreElements()) {
 						ias = nis.nextElement().getInetAddresses();
-						while (ias.hasMoreElements())
-							if (e.getIp().equals(ias.nextElement().getHostAddress()))
-								return e;
+						while (ias.hasMoreElements()) {
+							hostAddr = ias.nextElement().getHostAddress();
+							if (hostAddr != null) {
+								i = hostAddr.lastIndexOf("%");
+								if (i >= 0)
+									hostAddr = hostAddr.substring(0, i);
+								if (hostAddr.equals(e.getIp()))
+									return e;
+							}
+						}
 					}
 				}
 			}

@@ -10,11 +10,13 @@ import bdap.util.EngineConf;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 	public static final Logger logger = LogManager.getLogger(InvokeMapper.class);
 	
 	private ETLCmd[] cmds = null;
+	private MultipleOutputs<Text, Text> mos;
 	
 	@Override
 	public void setup(Context context) throws IOException, InterruptedException {
@@ -29,10 +31,13 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 					strStaticConfigFiles, defaultFs));
 			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.Map);
 		}
+		mos = new MultipleOutputs<Text,Text>(context);
 	}
 	
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+    	mos.close();
+    	
     	if (cmds != null)
     		for (ETLCmd c: cmds)
     			c.close();
@@ -44,7 +49,7 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 		if (cmds!=null){
 			logger.debug(String.format("in mapper, key:%s, values:%s", key, value));
 			String input = value.toString();
-			EngineUtil.getInstance().processMapperCmds(cmds, key.get(), input, context);
+			EngineUtil.getInstance().processMapperCmds(cmds, key.get(), input, context, mos);
 		}
 	}
 }

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 //log4j2
@@ -175,24 +174,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		return null;
 	}
 	
-	/**
-	 * @param row: each row is a xml file name
-	 */
-	@Override
-	public Map<String, Object> mapProcess(long offset, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
-		try {
-			List<Tuple2<String, String>> pairs = flatMapToPair(null, text, context);
-			if (pairs!=null){
-				for (Tuple2<String, String> pair: pairs){
-					context.write(new Text(pair._1), new Text(pair._2));
-				}
-			}
-		}catch(Exception e){
-			logger.error("", e);
-		}
-		return null;
-	}
-	
 	@Override
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
@@ -205,24 +186,5 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 			}
 		}
 		return out;
-	}
-	
-	/**
-	 * @return newKey, newValue, baseOutputPath
-	 */
-	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String> svalues = new ArrayList<String>();
-		Iterator<Text> vit = values.iterator();
-		while (vit.hasNext()){
-			svalues.add(vit.next().toString());
-		}
-		List<String[]> ret = new ArrayList<String[]>();	
-		List<Tuple3<String, String, String>> output = reduceByKey(key.toString(), svalues, context, mos);
-		for (Tuple3<String, String, String> t: output){
-			ret.add(new String[]{t._1(), t._2(), t._3()});
-		}
-		return ret;
 	}
 }

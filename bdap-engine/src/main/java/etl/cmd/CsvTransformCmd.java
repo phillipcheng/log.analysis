@@ -215,7 +215,8 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	}
 	
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
 		if (context.getInputFormatClass().isAssignableFrom(SequenceFileInputFormat.class)){
 			String[] lines = row.split("\n");

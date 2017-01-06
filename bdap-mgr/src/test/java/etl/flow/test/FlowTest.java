@@ -80,7 +80,7 @@ public class FlowTest {
 		assertTrue(csv[6].equals(wfId));
 	}
 	
-	@Test
+	
 	public void testFlow1OozieFromXml() throws Exception{
 		testFlow1(false, EngineType.oozie);
 	}
@@ -107,15 +107,15 @@ public class FlowTest {
 		logger.info(String.format("wfid:%s", wfId));
 	}
 	
-	@Test
+	
 	public void testFlow2OozieFromXml() throws Exception{
 		testFlow2(false, EngineType.oozie);
 	}
-	@Test
+	
 	public void testFlow2OozieFromJson() throws Exception{
 		testFlow2(true, EngineType.oozie);
 	}
-	@Test
+	
 	public void testFlow2SparkFromJson() throws Exception{
 		testFlow2(true, EngineType.spark);
 	}

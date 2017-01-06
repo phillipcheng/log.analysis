@@ -1,6 +1,7 @@
 <project name="preload" default="dist" basedir=".">
 	<property name="dist"  location="bdap-VVERSIONN"/>
 	<property name="src"  location="."/>
+	<property name="common.target"  location="bdap-common/target"/>
 	<property name="engine.target"  location="bdap-engine/target"/>
 	<property name="engine.src"  location="bdap-engine"/>
 	<property name="log.target"  location="bdap-log/target"/>
@@ -10,6 +11,14 @@
 	
 	<target name="dist" depends="clean">
 		<mkdir dir="${dist}"/>
+		<copy todir="${dist}/common/lib/"> <!-- copy thirdparty lib for oozie custom expression-->
+			<fileset dir="${common.target}/lib/">
+				<exclude name="servlet-api*"/>
+			</fileset>
+			<fileset dir="${common.target}">
+				<include name="bdap.*.jar"/>
+			</fileset>
+		</copy>
 		<copy todir="${dist}/engine/buildlib/"> <!-- copy thirdparty lib for spark to build driver program-->
 			<fileset dir="${engine.target}/lib/">
 			</fileset>

@@ -24,6 +24,8 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 
 public class HdfsUtil {
 	
@@ -38,6 +40,7 @@ public class HdfsUtil {
 		return urlPath;
 	}
 
+	//e.g. hdfs://127.0.0.1:19000
 	public static FileSystem getHadoopFs(String defaultFs){
 		String fs_key = "fs.defaultFS";
 		Configuration conf = new Configuration();
@@ -233,6 +236,18 @@ public class HdfsUtil {
 		return 0;
 	}
 	
+	//used in oozie expression
+	public static String getContentsFromDfsFiles(String defaultFs, String filePattern) throws Exception{
+		String globFilePattern = filePattern+"*";
+		FileSystem fs = getHadoopFs(defaultFs);
+		FileStatus[] fstl = fs.globStatus(new Path(globFilePattern));
+		List<String> contents = new ArrayList<String>();
+		for (FileStatus fst:fstl){
+			contents.addAll(stringsFromDfsFile(fs, fst.getPath().toString()));
+		}
+		return String.join(",", contents);
+	}
+	
 	public static List<String> stringsFromDfsFile(FileSystem fs, String file){
 		return stringsFromDfsFile(fs, Arrays.asList(new String[]{file}));
 	}
@@ -385,6 +400,17 @@ public class HdfsUtil {
 					logger.error("", e);
 				}
 			}
+		}
+	}
+	
+	public static void checkFolder(FileSystem fs, String folder, boolean clean) throws Exception{
+		Path path = new Path(folder);
+		if (fs.exists(path) && clean){
+			fs.delete(path, true);
+		}
+		if (!fs.exists(path)){
+			fs.mkdirs(path);
+			fs.setPermission(path, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));
 		}
 	}
 }
