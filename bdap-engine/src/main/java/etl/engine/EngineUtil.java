@@ -256,13 +256,13 @@ public class EngineUtil {
 	}
 	
 	public void processMapperCmds(ETLCmd[] cmds, long offset, String row, 
-			Mapper<LongWritable, Text, Text, Text>.Context context) {
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		String input = row;
 		for (int i=0; i<cmds.length; i++){
 			ETLCmd cmd = cmds[i];
 			try {
 				Date startTime = new Date();
-				Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context);
+				Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context, mos);
 				Date endTime = new Date();
 				if (alloutputs!=null){
 					if (cmd.getMrMode()==MRMode.file){

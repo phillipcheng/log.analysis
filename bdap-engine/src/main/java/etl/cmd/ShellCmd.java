@@ -20,6 +20,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
@@ -97,7 +98,8 @@ public class ShellCmd extends ETLCmd {
 	}
 	
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		List<String> vl = processRow(row);
 		Map<String, Object> ret = new HashMap<String, Object>();
 		ret.put(RESULT_KEY_OUTPUT_LINE, vl);

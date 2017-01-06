@@ -82,6 +82,7 @@ public class OozieGenerator {
 	private static String killMessage = "failed, error message[${wf:errorMessage(wf:lastErrorNode())}]";
 	private static ACTIONTRANSITION errorTransition = new ACTIONTRANSITION();
 	public static final String wfid = "${wf:id()}";
+	public static final String wfid_in_fun = "wf:id()";
 	public static final String wfid_param_name="wfid";
 	public static final String wfid_param_exp= "${wfid}";
 	
@@ -93,6 +94,39 @@ public class OozieGenerator {
 			logger.error("", e);
 			return null;
 		}
+	}
+	
+	private static String getInputDir(Data d){
+		String baseoutput = null;
+		if (d.getBaseOutput()==null){
+			baseoutput="*";
+		}else{
+			baseoutput=d.getBaseOutput()+"-*";
+		}
+		String inputDir=null;
+		if (d.isInstance()){
+			if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
+				if (d.getDataFormat()!=InputFormatType.FileName && d.getRecordType()==DataType.Path){
+					//the content of the input are path, we need to get the content of those paths
+					//${getContentsFromDfsFiles(nameNode, concat(concat('/femtocell/femto/filenameupdate_output/',wf:id()),'/'))}
+					inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'))}", 
+							d.getLocation(), wfid_in_fun, baseoutput);
+				}else{
+					inputDir = String.format("%s%s/%s",d.getLocation(),wfid,baseoutput);
+				}
+			}else{
+				if (d.getDataFormat()!=InputFormatType.FileName && d.getRecordType()==DataType.Path){
+					//TODO
+					throw new UnsupportedOperationException();
+				}else{
+					///flow1/csvmerge/${wf:actionExternalId('call_flow1')}
+					inputDir = d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow())+"/*";
+				}
+			}
+		}else{
+			inputDir = d.getLocation();
+		}
+		return inputDir;
 	}
 	
 	private static MAPREDUCE genMRAction(Flow flow, ActionNode an, boolean hasInstanceId){
@@ -149,16 +183,7 @@ public class OozieGenerator {
 					logger.error(String.format("data %s not found.", ln.getDataName()));
 					return null;
 				}else{
-					if (d.isInstance()){
-						if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
-							inputDataDirs.add(d.getLocation()+wfid+"/*");
-						}else{
-							///flow1/csvmerge/${wf:actionExternalId('call_flow1')}
-							inputDataDirs.add(d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow())+"/*");
-						}
-					}else{
-						inputDataDirs.add(d.getLocation());
-					}
+					inputDataDirs.add(getInputDir(d));
 					if (ift==null){
 						ift = d.getDataFormat();
 						dt = d.getRecordType();
@@ -178,15 +203,21 @@ public class OozieGenerator {
 			}
 		}
 		//input properties
+		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
+		inputFormatTypeCp.setName(prop_inputformat);
+		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift));
+		pl.add(inputFormatTypeCp);
+		if (dt == DataType.KeyPath || dt == DataType.KeyValue){
+			CONFIGURATION.Property useKeyValueCp = new CONFIGURATION.Property();
+			useKeyValueCp.setName(ETLCmd.sys_cfgkey_use_keyvalue);
+			useKeyValueCp.setValue("true");
+			pl.add(useKeyValueCp);
+		}
+		//
 		CONFIGURATION.Property inputDirsCp = new CONFIGURATION.Property();
 		inputDirsCp.setName(prop_inputdirs);
 		inputDirsCp.setValue(String.join(",", inputDataDirs));
 		pl.add(inputDirsCp);
-		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
-		inputFormatTypeCp.setName(prop_inputformat);
-		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift, dt));
-		pl.add(inputFormatTypeCp);
-		
 		//output properties
 		CONFIGURATION.Property outputFormatCp = new CONFIGURATION.Property();
 		outputFormatCp.setName(prop_outputformat);
@@ -194,7 +225,7 @@ public class OozieGenerator {
 		outputDirCp.setName(prop_outputdirs);
 		List<NodeLet> outlets = an.getOutlets();
 		String outputDataDir=null;
-		if (outlets!=null && outlets.size()==1){//for multiple output, the location should be the same, only differ baseoutput
+		if (outlets!=null){//for multiple output, the location should be the same, only differ baseoutput
 			String dataName = outlets.iterator().next().getDataName();
 			if (dataName!=null){
 				Data d = flow.getDataDef(dataName);

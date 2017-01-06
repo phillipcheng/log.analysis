@@ -178,15 +178,17 @@
     "instance" : false
   }, {
     "name" : "data1",
-    "location" : "/flow1/data1/",
+    "location" : "/flow1/ftp_out/",
     "dataFormat" : "Text",
     "recordType" : "Path",
+    "baseOutput" : "data1",
     "instance" : true
   }, {
     "name" : "data2",
-    "location" : "/flow1/data2/",
+    "location" : "/flow1/ftp_out/",
     "dataFormat" : "CombineXML",
     "recordType" : "Path",
+    "baseOutput" : "data2",
     "instance" : true
   }, {
     "name" : "data1trans",

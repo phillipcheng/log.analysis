@@ -19,7 +19,7 @@ public class Data {
 	private String baseOutput;//baseOutput, for multiple outputs, the key for the data
 	private String schemaName = null;//reference to schema
 	private InputFormatType dataFormat = InputFormatType.Text;//for processing
-	private DataType recordType = DataType.Value;//for spark io conversion, also decide the inputformat
+	private DataType recordType = DataType.Value;//for spark io conversion
 	private boolean instance = true; //if instance is true, the input path is location/$wfid
 	private String instanceFlow = INTANCE_FLOW_ME;//if instance is true, which flow's instance, default to me
 	
