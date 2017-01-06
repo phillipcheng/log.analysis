@@ -34,8 +34,16 @@
 	font-size: 12pt;
 }
 
-.sublistgroup>input {
+.sublistgroup>input[type="text"] {
 	width: 100%;
+}
+
+.sublistgroup>input[type="number"] {
+	width: 100%;
+}
+
+.sublistgroup>input[type="checkbox"] {
+	
 }
 
 .sublistgroup>select {

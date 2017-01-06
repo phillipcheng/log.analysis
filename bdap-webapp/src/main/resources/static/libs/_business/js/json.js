@@ -47,7 +47,6 @@ var _start_node = function(txtId, labelTxt) {
 				d: 'M-3,0L3,0M0,-3L0,3'
 			}
 		}
-
 	};
 	return obj;
 }
@@ -101,7 +100,6 @@ var _end_node = function(txtId, labelTxt) {
 				d: 'M-3,0L3,0M0,-3L0,3'
 			}
 		}
-
 	};
 	return obj;
 }
