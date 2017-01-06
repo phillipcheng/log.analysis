@@ -97,15 +97,22 @@ public class OozieGenerator {
 	}
 	
 	private static String getInputDir(Data d){
+		String baseoutput = null;
+		if (d.getBaseOutput()==null){
+			baseoutput="*";
+		}else{
+			baseoutput=d.getBaseOutput()+"-*";
+		}
 		String inputDir=null;
 		if (d.isInstance()){
 			if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
 				if (d.getDataFormat()!=InputFormatType.FileName && d.getRecordType()==DataType.Path){
 					//the content of the input are path, we need to get the content of those paths
 					//${getContentsFromDfsFiles(nameNode, concat(concat('/femtocell/femto/filenameupdate_output/',wf:id()),'/'))}
-					inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/'))}", d.getLocation(), wfid_in_fun);
+					inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'))}", 
+							d.getLocation(), wfid_in_fun, baseoutput);
 				}else{
-					inputDir = d.getLocation()+wfid+"/*";
+					inputDir = String.format("%s%s/%s",d.getLocation(),wfid,baseoutput);
 				}
 			}else{
 				if (d.getDataFormat()!=InputFormatType.FileName && d.getRecordType()==DataType.Path){
@@ -166,7 +173,6 @@ public class OozieGenerator {
 		//input and output configuration
 		List<NodeLet> inlets = an.getInLets();
 		List<String> inputDataDirs = new ArrayList<String>();
-		List<String> dataLocations = new ArrayList<String>();
 		//all the input dataset to this action should have the same inputformattype, datatype/recordtype
 		InputFormatType ift = null;
 		DataType dt = null;
@@ -219,7 +225,7 @@ public class OozieGenerator {
 		outputDirCp.setName(prop_outputdirs);
 		List<NodeLet> outlets = an.getOutlets();
 		String outputDataDir=null;
-		if (outlets!=null && outlets.size()==1){//for multiple output, the location should be the same, only differ baseoutput
+		if (outlets!=null){//for multiple output, the location should be the same, only differ baseoutput
 			String dataName = outlets.iterator().next().getDataName();
 			if (dataName!=null){
 				Data d = flow.getDataDef(dataName);

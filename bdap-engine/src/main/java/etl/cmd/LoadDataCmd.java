@@ -189,13 +189,14 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	
 	//return table name to file name mapping
-	private List<Tuple2<String, String>> flatMapToPair(String row){
+	@Override
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
 		logger.info(String.format("in flatMapToPair row:%s", row));
 		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
 		row = HdfsUtil.getRootPath(row);
 		if (logicSchema!=null && (csLoadSql==null||loadSql.contains(VAR_TABLE_NAME))){
 			/* File to table mapping */
-			String tableName = this.getTableNameSetPathFileName(row);
+			tableName = this.getTableNameSetPathFileName(row);
 			if (tableName==null || "".equals(tableName)){
 				logger.error(String.format("tfName is empty. exp:%s, value:%s", super.strFileTableMap, row));
 			}else{
@@ -205,21 +206,6 @@ public class LoadDataCmd extends SchemaETLCmd{
 			vl.add(new Tuple2<String, String>(NO_TABLE_CONFIGURED, row));
 		}
 		return vl;
-	}
-	
-	//
-	@Override
-	public Map<String, Object> mapProcess(long offset, String row,
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		Map<String, Object> ret = new HashMap<String, Object>();
-		String path = row;
-		String[] kv = row.split("\t", 2);
-		if (kv.length>=2){
-			path = kv[1];
-		}
-		List<Tuple2<String, String>> vl = flatMapToPair(path);
-		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
-		return ret;
 	}
 	
 	private int reduceByKey(String key, String[] files) throws Exception{

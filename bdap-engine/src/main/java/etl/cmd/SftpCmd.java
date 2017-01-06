@@ -25,6 +25,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -357,7 +359,8 @@ public class SftpCmd extends ETLCmd {
 	}
 	
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
 		//override param
 		Map<String, Object> retMap = new HashMap<String, Object>();
 		List<String> files = process(offset, row);
@@ -366,7 +369,7 @@ public class SftpCmd extends ETLCmd {
 				if (output_default_key.equals(outputKey)){
 					context.write(new Text(file), null);
 				}else{
-					context.write(new Text(outputKey), new Text(file));
+					mos.write(new Text(file), null, outputKey);
 				}
 			}
 		}catch(Exception e){
@@ -402,16 +405,6 @@ public class SftpCmd extends ETLCmd {
 		});
 	}
 	
-	@Override
-	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
-		return input.flatMap(new FlatMapFunction<String, String>(){
-			@Override
-			public Iterator<String> call(String t) throws Exception {
-				List<String> fileList = process(0, t);
-				return fileList.iterator();
-			};
-		});
-	}
 
 	public String[] getFromDirs() {
 		return fromDirs;

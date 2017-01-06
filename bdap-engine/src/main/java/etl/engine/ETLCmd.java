@@ -238,15 +238,19 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
-		Path path=((FileSplit) context.getInputSplit()).getPath();
-		getSystemVariables().put(VAR_NAME_PATH_NAME, path.toString());
-		String inputFileName = path.getName();
-		this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
-		String tableName = inputFileName;
-		if (expFileTableMap!=null){
-			tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+		if (context.getInputSplit() instanceof FileSplit){
+			Path path=((FileSplit) context.getInputSplit()).getPath();
+			getSystemVariables().put(VAR_NAME_PATH_NAME, path.toString());
+			String inputFileName = path.getName();
+			this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
+			String tableName = inputFileName;
+			if (expFileTableMap!=null){
+				tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+			}
+			return tableName;
+		}else{
+			return null;
 		}
-		return tableName;
 	}
 	
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
@@ -312,10 +316,10 @@ public abstract class ETLCmd implements Serializable{
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
 				for (Tuple2<String, String> lineInput:linesInput){
 					String key = lineInput._1;
-					if (inputFormatClass!=null){//called directly from data, need map
+					if (key!=null && inputFormatClass!=null){//called directly from data, need map
 						key = mapKey(key);
 					}
-					if (strFileTableMap!=null && lineInput._1!=null && lineInput._1.equals(key)){//debug
+					if (key!=null && strFileTableMap!=null && lineInput._1!=null && lineInput._1.equals(key)){//debug
 						logger.warn(String.format("get null while mapkey. fileToTableExp:%s, system var:%s", strFileTableMap, getSystemVariables()));
 					}
 					List<Tuple2<String, String>> ret1 = flatMapToPair(key, lineInput._2, null);
@@ -423,7 +427,8 @@ public abstract class ETLCmd implements Serializable{
 	 * null, if in the mapper it write to context directly for performance
 	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
 	 */
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
 		logger.debug("map process:%d,%s", offset, row);
 		if (skipHeader && offset==0) {
 			logger.info("skip header:" + row);
@@ -440,19 +445,16 @@ public abstract class ETLCmd implements Serializable{
 		}else{
 			tfName = getTableNameSetFileNameByContext(context);
 		}
-		if (tfName==null || "".equals(tfName.trim())){
-			logger.error(String.format("tableName got is empty from exp %s and fileName %s", 
-					strFileTableMap, ((FileSplit) context.getInputSplit()).getPath().getName()));
-		}else{
-			List<Tuple2<String, String>> it = flatMapToPair(tfName, row, context);
-			for (Tuple2<String,String> t : it){
-				if (t._2!=null){
-					context.write(new Text(t._1), new Text(t._2));
-				}else{//for no reduce job, value can be null
-					context.write(new Text(t._1), null);
-				}
+		
+		List<Tuple2<String, String>> it = flatMapToPair(tfName, row, context);
+		for (Tuple2<String,String> t : it){
+			if (t._2!=null){
+				context.write(new Text(t._1), new Text(t._2));
+			}else{//for no reduce job, value can be null
+				context.write(new Text(t._1), null);
 			}
 		}
+	
 		return null;
 	}
 	

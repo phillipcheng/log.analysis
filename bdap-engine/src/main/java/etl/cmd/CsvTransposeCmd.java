@@ -325,19 +325,6 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	}
 	
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		//Read filename
-		String inputFileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-		//Skip header
-		if (skipHeader && offset == 0) {
-			logger.info("skip header:" + row);
-			return null;
-		}
-		this.flatMapToPair(inputFileName, row, context);
-		return null;
-	}
-	
-	@Override
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String,String,String>>();

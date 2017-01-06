@@ -13,6 +13,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
@@ -61,7 +62,8 @@ public class SaveDataCmd extends SchemaETLCmd {
 	
 	//do not really save file, generate the list of (key->file names)
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
 		if (offset==0){
 			String key = getTableNameSetFileNameByContext(context);
 			String value = (String) getSystemVariables().get(VAR_NAME_PATH_NAME);
