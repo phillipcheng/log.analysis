@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -385,17 +384,18 @@ public class Main implements Job {
 		}
 	}
 
-	private static Element currentElement(Element[] elements) throws SocketException {
+	private static Element currentElement(Element[] elements) throws Exception {
 		if (elements != null) {
 			for (Element e: elements) {
 				if (e.getIp() != null) {
 					/* Current server IP */
 					Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
 					Enumeration<InetAddress> ias;
+					InetAddress addr = InetAddress.getByName(e.getIp());
 					while (nis.hasMoreElements()) {
 						ias = nis.nextElement().getInetAddresses();
 						while (ias.hasMoreElements())
-							if (e.getIp().equals(ias.nextElement().getHostAddress()))
+							if (addr.equals(ias.nextElement()))
 								return e;
 					}
 				}
