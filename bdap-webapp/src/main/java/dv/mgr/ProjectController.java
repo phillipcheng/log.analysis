@@ -73,8 +73,13 @@ public class ProjectController {
 		
 		logger.debug(input);
 		
-		ProjectEntity pe = new ProjectEntity();
-		pe.setProjectName(input.get("projectName"));
+		ProjectEntity pe = projectRepository.findByName(input.get("projectName"));
+		
+		if (pe == null) {
+			pe = new ProjectEntity();
+			pe.setProjectName(input.get("projectName"));
+		}
+		
 		pe.setType(input.get("type"));
 		pe.setUpdateTime(new Date(System.currentTimeMillis()));
 		pe.setContent(JsonUtil.toJsonString(input));
