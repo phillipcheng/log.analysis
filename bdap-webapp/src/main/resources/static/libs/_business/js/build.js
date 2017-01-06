@@ -12,8 +12,9 @@ var _build = {
 			nodes = this._sortNodes(g);
 			this._groupNode(g);
 			this._groupEdges();
+			_draw._drawNodeDataRelation();
 		}
-
+		clearTempLine();
 	},
 	/**
 	 * 针对node进行排序，父节点排到前面，子节点排到后面，
@@ -135,7 +136,6 @@ var _build = {
 		d3.select("#lineContainer").selectAll(".edgeSelected").remove();
 
 		var edges = g.edges();
-		console.log("edges", edges);
 
 		$.each(edges, function(i, d) {
 			if(!g.hasNode(d.v) || !g.hasNode(d.w)) {
@@ -151,38 +151,26 @@ var _build = {
 		groupEdgesWithData.enter()
 			.append("g")
 			.each(function(d) {
-				var nodeData_v = g.node(d.v);
-				var nodeData_w = g.node(d.w);
-				if(nodeData_v.state.localeCompare("inData") == 0 || nodeData_w.state.localeCompare("outData") == 0) {
-
-				} else {
-					var pro = g.edge(d);
-					var points = pro.points;
-					var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge");
-					linegroup.append("path")
-						.transition()
-						.duration(500)
-						.attr("id", "pathA" + d.v + "A" + d.w)
-						.attr("G", "linegroup" + d.v + "A" + d.w)
-						.attr("d", interpolate(points))
-						.attr("marker-end", "url(#arrow)");
-				}
+				var pro = g.edge(d);
+				var points = pro.points;
+				var linegroup = d3.select(this).attr("id", "linegroup" + d.v + "A" + d.w).attr("class", "edge");
+				linegroup.append("path")
+					.transition()
+					.duration(500)
+					.attr("id", "pathA" + d.v + "A" + d.w)
+					.attr("G", "linegroup" + d.v + "A" + d.w)
+					.attr("d", interpolate(points))
+					.attr("marker-end", "url(#arrow)");
 			});
 
 		groupEdgesWithData.each(function(d) {
-			var nodeData_v = g.node(d.v);
-			var nodeData_w = g.node(d.w);
-			if(nodeData_v.state.localeCompare("inData") == 0 || nodeData_w.state.localeCompare("outData") == 0) {
-
-			} else {
-				var pro = g.edge(d);
-				var points = pro.points;
-				var linegroup = d3.select(this);
-				linegroup.select("path")
-					.transition()
-					.duration(500)
-					.attr('d', interpolate(points));
-			}
+			var pro = g.edge(d);
+			var points = pro.points;
+			var linegroup = d3.select(this);
+			linegroup.select("path")
+				.transition()
+				.duration(500)
+				.attr('d', interpolate(points));
 		});
 
 		groupEdgesWithData.exit()
@@ -235,6 +223,7 @@ g.setDefaultEdgeLabel(function() {
 });
 //Create a new directed graph---------end------------------------------------------------------
 
+
 //Create a new directed dataSet---------start------------------------------------------------------
 var init_child_svg = function() {
 		var g_child = new dagre.graphlib.Graph({
@@ -260,6 +249,11 @@ var init_child_svg = function() {
 	}
 	//Create a new directed dataSet---------end--------------------------------------------------------
 
+//Create a new directed dataSet---------start------------------------------------------------------
+var init_data_svg = function() {
+
+	}
+	//Create a new directed dataSet---------end--------------------------------------------------------
 var interpolate = d3.svg.line()
 	.interpolate('basis')
 	.x(function(d) {
@@ -306,20 +300,20 @@ var childsvg = {
 		$.each(edges, function(i, d) {
 			g.removeEdge(d.v, d.w);
 		});
-		
-		each(result.nodes,function(){
-			if(this.id.localeCompare(gId)==0){
-				if(this.inLets.length>0){
-					if(this.inLets.length==1){
-						
-					}else{
-						for(var i=0;i<this.inLets.length-1;i++){
-							
+
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				if(this.inLets.length > 0) {
+					if(this.inLets.length == 1) {
+
+					} else {
+						for(var i = 0; i < this.inLets.length - 1; i++) {
+
 						}
 					}
 				}
-				if(this.outlets.length>0){
-					
+				if(this.outlets.length > 0) {
+
 				}
 				return false;
 			}

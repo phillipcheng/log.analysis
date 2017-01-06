@@ -29,6 +29,18 @@ var clearTempLine = function() {
 }
 
 var remoteActionObj = {};
+var remotePropertyObj = {};
+
+var initPublicFunction = function(){
+	String.prototype.replaceAll = function(oldCharts,newCharts){
+		var txt = this;
+		while(txt.indexOf(oldCharts)>-1){
+			txt = txt.replace(oldCharts,newCharts);
+		}
+		return txt;
+	}
+};
+
 var init = function() {
 	// view  add  edit
 	var actionParam = getRequestUrlParamString("action");
@@ -39,6 +51,8 @@ var init = function() {
 	} else {
 		
 	}
+	
+	initPublicFunction();
 	
 	//初始化位置的偏移
 	clientwidth = document.body.clientWidth;
@@ -113,6 +127,13 @@ var init = function() {
 				.attr("onclick", "app.action({'label':'" + temp + "','cla':'" + k + "'})");
 		});
 	});
+	remotePropertyObj = interact.getFlowSchema();
+	each(remotePropertyObj.properties.nodes.items.jsonSchemas,function(){
+			if(this.properties["cmd.class"]){
+				propertyInfor.push(this.properties);
+			}
+			return true;
+		});
 }
 
 /**
