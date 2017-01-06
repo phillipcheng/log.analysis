@@ -387,6 +387,21 @@ public class SftpCmd extends ETLCmd {
 		return false;
 	}
 	
+	@Override
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, 
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		List<String> fileList = process(0, value);
+		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
+		for (String file:fileList){
+			if (output_default_key.equals(outputKey)){
+				ret.add(new Tuple2<String,String>(file, null));
+			}else{
+				ret.add(new Tuple2<String,String>(outputKey, file));
+			}
+			
+		}
+		return ret;
+	}
 	/*
 	 * called from sparkProcessFileToKV, key: file Name, v: line value
 	 */
@@ -398,7 +413,11 @@ public class SftpCmd extends ETLCmd {
 				List<String> fileList = process(0, t);
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 				for (String file:fileList){
-					ret.add(new Tuple2<String,String>(outputKey, file));
+					if (output_default_key.equals(outputKey)){
+						ret.add(new Tuple2<String,String>(file, null));
+					}else{
+						ret.add(new Tuple2<String,String>(outputKey, file));
+					}
 				}
 				return ret.iterator();
 			}

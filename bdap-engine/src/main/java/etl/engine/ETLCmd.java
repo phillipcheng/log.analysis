@@ -410,8 +410,10 @@ public abstract class ETLCmd implements Serializable{
 			public Iterator<String> call(String t) throws Exception {
 				List<Tuple2<String,String>> retlist = flatMapToPair(null, t, null);
 				List<String> keylist = new ArrayList<String>();
-				for (Tuple2<String,String> ret:retlist){
-					keylist.add(ret._1);
+				if (retlist!=null){
+					for (Tuple2<String,String> ret:retlist){
+						keylist.add(ret._1);
+					}
 				}
 				return keylist.iterator();
 			}
