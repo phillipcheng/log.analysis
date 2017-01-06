@@ -33,3 +33,10 @@ var _HTTP_SAVE_JSON = "/dashview/{userName}/flow/";
 var _node_data_width = 60;
 
 var _node_data_height = 40;
+
+
+/**
+ * 用于记录每个节点的属性特征值的内容
+ */
+var propertyInfor = [];
+

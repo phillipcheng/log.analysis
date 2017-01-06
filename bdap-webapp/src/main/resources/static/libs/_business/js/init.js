@@ -29,7 +29,31 @@ var clearTempLine = function() {
 }
 
 var remoteActionObj = {};
+var remotePropertyObj = {};
+
+var initPublicFunction = function(){
+	String.prototype.replaceAll = function(oldCharts,newCharts){
+		var txt = this;
+		while(txt.indexOf(oldCharts)>-1){
+			txt = txt.replace(oldCharts,newCharts);
+		}
+		return txt;
+	}
+};
+
 var init = function() {
+	// view  add  edit
+	var actionParam = getRequestUrlParamString("action");
+	if(actionParam == 'view'){
+		
+	}else if(actionParam == 'edit'){
+		
+	} else {
+		
+	}
+	
+	initPublicFunction();
+	
 	//初始化位置的偏移
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
@@ -103,6 +127,13 @@ var init = function() {
 				.attr("onclick", "app.action({'label':'" + temp + "','cla':'" + k + "'})");
 		});
 	});
+	remotePropertyObj = interact.getFlowSchema();
+	each(remotePropertyObj.properties.nodes.items.jsonSchemas,function(){
+			if(this.properties["cmd.class"]){
+				propertyInfor.push(this.properties);
+			}
+			return true;
+		});
 }
 
 /**
@@ -294,3 +325,11 @@ var remoeToInitPosition = function() {
 	current_zoom_x = init_zoom_x;
 	current_zoom_y = init_zoom_y;
 }
+
+var getRequestUrlParamString = function(name)
+{
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if(r!=null)return  unescape(r[2]); return null;
+}
+
