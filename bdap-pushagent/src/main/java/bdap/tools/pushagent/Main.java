@@ -395,7 +395,8 @@ public class Main implements Job {
 					while (nis.hasMoreElements()) {
 						ias = nis.nextElement().getInetAddresses();
 						while (ias.hasMoreElements())
-							if (e.getIp().equals(ias.nextElement().getHostAddress()))
+							if (ias.nextElement().getHostAddress() != null &&
+								ias.nextElement().getHostAddress().startsWith(e.getIp()))
 								return e;
 					}
 				}
