@@ -40,6 +40,7 @@ import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import dv.UserNotFoundException;
 import dv.db.dao.AccountRepository;
+import dv.db.dao.CommonDao;
 import dv.db.dao.FlowInstanceRepository;
 import dv.db.dao.FlowRepository;
 import dv.db.entity.AccountEntity;
@@ -68,12 +69,14 @@ public class FlowController {
 	private String[] searchPackages;
 	
 	@Autowired
-	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr, FlowDeployer flowDeployer, FlowInstanceRepository flowInstance) {
+	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr, FlowDeployer flowDeployer, 
+			FlowInstanceRepository flowInstance, CommonDao commonDao) {
 		this.flowRepository = flowRepository;
 		this.accountRepository = accountRepository;
 		this.flowMgr = flowMgr;
 		this.flowDeployer = flowDeployer;
 		this.flowInstanceRepository = flowInstance;
+		this.commonDao = commonDao;
 		
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
 		this.searchPackages = pc.getStringArray(ACTION_NODE_CMDS_SEARCH_PACKAGES);
@@ -86,6 +89,7 @@ public class FlowController {
 	private final FlowMgr flowMgr;
 	private final FlowDeployer flowDeployer;
 	private final FlowInstanceRepository flowInstanceRepository;
+	private final CommonDao commonDao;
 	
 	private List<Class<?>> getETLCmdClasses() {
 		ClassPathScanningCandidateComponentProvider actionsProvider = new ClassPathScanningCandidateComponentProvider(false);
@@ -166,10 +170,17 @@ public class FlowController {
 		return this.flowRepository.findOne(flowId);
 	}
 	
-	@RequestMapping(value = "/allFlow", method = RequestMethod.GET)
+	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	List<FlowEntity> getAllFlow(@PathVariable String userName) {
 		this.validateUser(userName);
 		return this.flowRepository.findAll();
+	}
+	
+	@RequestMapping(value = "/instance/list", method = RequestMethod.GET)
+	List<Map<String, Object>> getAllInstance(@PathVariable String userName) {
+		this.validateUser(userName);
+		String sql = "SELECT instanceid, flowname, owner, updatetime FROM T_FLOWINSTANCE inner join t_flow on flowname = name where owner = '"+userName+"'";
+		return this.commonDao.getNativeMapBySQL(sql);
 	}
 	
 	@RequestMapping(value = "/allFlow/allInstance", method = RequestMethod.GET)

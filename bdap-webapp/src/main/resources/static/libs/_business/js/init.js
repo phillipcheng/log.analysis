@@ -30,6 +30,16 @@ var clearTempLine = function() {
 
 var remoteActionObj = {};
 var init = function() {
+	// view  add  edit
+	var actionParam = getRequestUrlParamString("action");
+	if(actionParam == 'view'){
+		
+	}else if(actionParam == 'edit'){
+		
+	} else {
+		
+	}
+	
 	//初始化位置的偏移
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
@@ -294,3 +304,11 @@ var remoeToInitPosition = function() {
 	current_zoom_x = init_zoom_x;
 	current_zoom_y = init_zoom_y;
 }
+
+var getRequestUrlParamString = function(name)
+{
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if(r!=null)return  unescape(r[2]); return null;
+}
+
