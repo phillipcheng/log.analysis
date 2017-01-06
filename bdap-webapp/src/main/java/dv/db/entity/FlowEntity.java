@@ -22,7 +22,12 @@ public class FlowEntity {
 	private String owner;
 	@Column(length=100000)  
 	private String jsonContent;
-
+	
+	@Column(columnDefinition="tinyint(1) default 0")
+	private boolean deployed;
+	
+	private int projectId;
+	
 	public String getName() {
 		return name;
 	}
@@ -45,6 +50,22 @@ public class FlowEntity {
 
 	public void setOwner(String owner) {
 		this.owner = owner;
+	}
+
+	public int getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(int projectId) {
+		this.projectId = projectId;
+	}
+
+	public boolean isDeployed() {
+		return deployed;
+	}
+
+	public void setDeployed(boolean deployed) {
+		this.deployed = deployed;
 	}
 
 }

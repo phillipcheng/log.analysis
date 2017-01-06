@@ -1,0 +1,37 @@
+<form id="ff" action="/dashview/player/project" method="post">
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="projectName" style="width:100%;" data-options="label:'projectName:',required:true">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="type" style="width:100%;" data-options="label:'type:',required:false">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="hdfsDir" style="width:100%;" data-options="label:'hdfsDir:',required:true">
+            </div>
+</form>
+<div style="text-align:center;padding:5px 0">
+            <a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:80px">Submit</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()" style="width:80px">Clear</a>
+</div>
+<script>
+ function submitForm(){
+ 	$.ajax({
+         url : $('#ff').attr('action'),
+         type: $('#ff').attr('method'),
+         dataType : 'text',
+         contentType : 'application/json',
+         data : JSON.stringify($('#ff').serializeJSON()),
+         success : function (response) {
+         	console.log("The server says: " + response);
+         },
+ 		error: function (response) {
+ 			console.log("The server says error: ", response);
+         }
+     });
+        // $('#ff').form('submit');
+ }
+	
+	function clearForm(){
+        $('#ff').form('clear');
+    }
+</script>

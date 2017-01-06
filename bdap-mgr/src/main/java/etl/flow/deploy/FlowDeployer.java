@@ -8,9 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -20,7 +18,6 @@ import bdap.util.EngineConf;
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
-import etl.engine.DataType;
 import etl.engine.InputFormatType;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
@@ -51,8 +48,6 @@ public class FlowDeployer {
 	private static String key_platform_local_dist="platform.local.dist";
 	private static String key_platform_remote_dist="platform.remote.dist";
 	private static String key_projects="projects";
-	private static String key_local_dir="local.dir";
-	private static String key_hdfs_dir="hdfs.dir";
 	
 	private static String key_hdfs_user="hdfs.user";
 	private static String key_defaultFs="defaultFs";
@@ -61,10 +56,11 @@ public class FlowDeployer {
 	private String cfgProperties=null;
 	private Configuration pc;
 	
+	/* Optional project service to access project configuration */
+	private transient ProjectService projectService;
+	
 	private String platformLocalDist;
 	private String platformRemoteDist;
-	private Map<String, String> projectLocalDirMap= new HashMap<String, String>();
-	private Map<String, String> projectHdfsDirMap= new HashMap<String, String>();
 	
 	private DeployMethod deployMethod;
 	private String defaultFS;
@@ -77,15 +73,20 @@ public class FlowDeployer {
 	}
 	
     public FlowDeployer(String properties) {
+    	this(properties, null);
+    }
+	
+    public FlowDeployer(String properties, ProjectService ps) {
     	if (properties!=null){
     		cfgProperties = properties;
     	}
 		pc = PropertiesUtil.getPropertiesConfig(properties);
-		String[] projects = pc.getStringArray(key_projects);
-		for (String project:projects){
-			projectLocalDirMap.put(project, pc.getString(project + "." + key_local_dir));
-			projectHdfsDirMap.put(project, pc.getString(project + "." + key_hdfs_dir));
-		}
+		
+		if (ps != null)
+			projectService = ps;
+		else
+			projectService = new DefaultProjectService(pc.getStringArray(key_projects), pc);
+
 		conf = new org.apache.hadoop.conf.Configuration();
 		defaultFS = pc.getString(key_defaultFs);
 		conf.set("fs.defaultFS", defaultFS);
@@ -125,11 +126,11 @@ public class FlowDeployer {
 	}
     
 	public String getProjectHdfsDir(String prjName){
-    	return projectHdfsDirMap.get(prjName);
+    	return projectService.getHdfsDir(prjName);
     }
 	
 	public String getProjectLocalDir(String prjName){
-    	return projectLocalDirMap.get(prjName);
+    	return projectService.getLocalDir(prjName);
     }
     
     private void installPlatformLib(DirectoryStream<Path> stream) throws Exception{
@@ -164,11 +165,11 @@ public class FlowDeployer {
     }
     
     public Collection<String> listProjects(){
-    	return projectLocalDirMap.keySet();
+    	return projectService.listProjects();
     }
     
     public Collection<String> listFlows(String project){
-    	String locaDir = projectLocalDirMap.get(project);
+    	String locaDir = projectService.getLocalDir(project);
     	File[] directories = new File(locaDir).listFiles(File::isDirectory);
     	List<String> ret =new ArrayList<String>();
     	for (File dir:directories){
@@ -299,8 +300,8 @@ public class FlowDeployer {
 	}
 	
 	private void deploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
-		String localProjectFolder = this.projectLocalDirMap.get(projectName);
-		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
+		String localProjectFolder = projectService.getLocalDir(projectName);
+		String hdfsProjectFolder = projectService.getHdfsDir(projectName);
 		String localFlowFolder = String.format("%s/%s", localProjectFolder, flowName);
 		OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 		SparkFlowMgr sfm = new SparkFlowMgr();
@@ -380,7 +381,7 @@ public class FlowDeployer {
 	}
 	
 	private String startCoordinator(String projectName, String flowName, CoordConf cc){
-		String hdfsProjectFolder = this.projectHdfsDirMap.get(projectName);
+		String hdfsProjectFolder = projectService.getHdfsDir(projectName);
 		OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
 		return ofm.executeCoordinator(hdfsProjectFolder, flowName, this, cc);
 	}

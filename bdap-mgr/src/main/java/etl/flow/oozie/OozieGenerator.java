@@ -89,7 +89,7 @@ public class OozieGenerator {
 	private static ETLCmd getCmd(ActionNode an) {
 		try{
 			String cmdClazz = (String) an.getProperties().get(ActionNode.key_cmd_class);
-			return (ETLCmd) Class.forName(cmdClazz).newInstance();
+			return (ETLCmd) Thread.currentThread().getContextClassLoader().loadClass(cmdClazz).newInstance();
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
