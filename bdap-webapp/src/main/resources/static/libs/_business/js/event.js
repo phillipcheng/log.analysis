@@ -19,7 +19,6 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
-		console.log("line_onmousedown:", o);
 		g_mouse_down = "";
 		g_mouse_up = "";
 
@@ -35,7 +34,6 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
-		console.log("line_onmouseup:", o);
 		g_mouse_up = o.getAttribute("G");
 		if(g_mouse_down.localeCompare(g_mouse_up) == 0) {
 			this.clickedRect();
@@ -57,13 +55,11 @@ var _event = {
 		clearTempLine();
 	},
 	addIn_click: function() {
-		console.log("------addIn_click-------");
 		var e = window.event || arguments.callee.caller.arguments[0];
 		e.stopPropagation();
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		var objId = o.getAttribute("arge");
-		console.log("addIn_click:", o);
 		var args_self = o.getAttribute("self");
 		if(args_self.localeCompare("showInData") == 0) {
 			each(result.nodes, function() {
@@ -99,16 +95,14 @@ var _event = {
 			});
 		}
 
-		_draw._drawDataInPutAndOutPut(gId);
+		_draw._drawDataInPutAndPropertyAndOutPut(gId);
 	},
 	addOut_click: function() {
-		console.log("------addOut_click-------");
 		var e = window.event || arguments.callee.caller.arguments[0];
 		e.stopPropagation();
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		var objId = o.getAttribute("arge");
-		console.log("addOut_click:", o);
 		var args_self = o.getAttribute("self");
 		if(args_self.localeCompare("showInData") == 0) {
 			each(result.nodes, function() {
@@ -143,14 +137,12 @@ var _event = {
 				return true;
 			});
 		}
-
-		_draw._drawDataInPutAndOutPut(gId);
+		_draw._drawDataInPutAndPropertyAndOutPut(gId);
 	},
 	property_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
-		console.log("property_click:", o);
 		var args = o.getAttribute("self");
 		var gId = o.getAttribute("G");
 		var nodeData = g.node(gId);
@@ -167,8 +159,7 @@ var _event = {
 			nodeData.pro.path.d = "M-3,0L3,0";
 			each(result.nodes, function() {
 				if(this.id.localeCompare(gId) == 0) {
-					console.log(this);
-					_draw._drawProperty(gId, this);
+					_draw._drawPropertyLeftDiv(gId, this);
 					return false;
 				}
 				return true;
@@ -181,18 +172,16 @@ var _event = {
 	data_addIn_click: function(addInletButtonThis) {
 		var e;
 		var o;
-		if(isEmpty(addInletButtonThis)){
+		if(isEmpty(addInletButtonThis)) {
 			e = window.event || arguments.callee.caller.arguments[0];
 			o = getEventSources(e);
-		}else{
+		} else {
 			o = addInletButtonThis;
 		}
-		
+
 		var gId = o.getAttribute("G");
-		console.log("data_addIn_click:", o);
 		each(result.nodes, function(i, o) {
 			if(o.id.toString().localeCompare(gId) == 0) {
-				console.log(o.inLets.length);
 				each(o.inLets, function() {
 					if(!this.show) {
 						this.show = true;
@@ -210,18 +199,16 @@ var _event = {
 	data_addOut_click: function(addInletButtonThis) {
 		var e;
 		var o;
-		if(isEmpty(addInletButtonThis)){
+		if(isEmpty(addInletButtonThis)) {
 			e = window.event || arguments.callee.caller.arguments[0];
 			o = getEventSources(e);
-		}else{
+		} else {
 			o = addInletButtonThis;
 		}
-		
+
 		var gId = o.getAttribute("G");
-		console.log("data_addOut_click:", o);
 		each(result.nodes, function(i, o) {
 			if(o.id.toString().localeCompare(gId) == 0) {
-				console.log(o.outlets.length);
 				each(o.outlets, function() {
 					if(!this.show) {
 						this.show = true;
@@ -241,27 +228,25 @@ var _event = {
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		each(result.nodes, function() {
-			if(!this.inLets){
-				d3.select("#"+this.id).attr("class","nodeG start");
-			}else if(!this.outlets){
-				d3.select("#"+this.id).attr("class","nodeG end");
-			}else{
-				d3.select("#"+this.id).attr("class","nodeG action");
+			if(!this.inLets) {
+				d3.select("#" + this.id).attr("class", "nodeG start");
+			} else if(!this.outlets) {
+				d3.select("#" + this.id).attr("class", "nodeG end");
+			} else {
+				d3.select("#" + this.id).attr("class", "nodeG action");
 			}
 			return true;
 		});
-		
-		var temp = d3.select("#"+gId).attr("class");
-		d3.select("#"+gId).attr("class",temp+" nodeGSelected");
-		
-		if(e.code==2){
+
+		var temp = d3.select("#" + gId).attr("class");
+		d3.select("#" + gId).attr("class", temp + " nodeGSelected");
+
+		if(e.code == 2) {
 			//
 		}
-		
+
 	},
 	selectedData: function(txtId, gId) {
-		console.log("--------------------selectedData----------------------");
-		console.log(arguments);
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
@@ -285,32 +270,38 @@ var _event = {
 		divobjselect[0][0].selectedIndex = -1;
 	},
 	selectedProperty: function() {
-		console.log("--------------------selectedProperty----------------------");
-		console.log(arguments);
 		//这里 只是 右边的，对话框，进行展示内容
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
+		e.stopPropagation();
 		var gId = o.getAttribute("G");
-		$("#rightupcssbody").html("");
-		var notProperty = "@class,id";
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
-				$.each(this, function(k, v) {
-					if(typeof v == 'string') {
-						if(notProperty.indexOf(k) == -1) {
-							if(k.localeCompare("name") == 0) {
-								$("#rightupcssheaderstring").html(v);
-							}
-							var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
-							divobj.append("strong").text(k + ":");
-							divobj.append("input").attr("type", "text").attr("value", v).attr("placeholder", "...")
-								.attr("onkeyup", "changeProperty('" + gId + "','" + k + "')");
-						}
-					}
-				});
+				_draw._drawPropertyLeftDiv(gId, this);
 				return false;
 			}
 			return true;
 		});
+		//		$("#rightupcssbody").html("");
+		//		var notProperty = "@class,id";
+		//		each(result.nodes, function() {
+		//			if(this.id.localeCompare(gId) == 0) {
+		//				$.each(this, function(k, v) {
+		//					if(typeof v == 'string') {
+		//						if(notProperty.indexOf(k) == -1) {
+		//							if(k.localeCompare("name") == 0) {
+		//								$("#rightupcssheaderstring").html(v);
+		//							}
+		//							var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+		//							divobj.append("strong").text(k + ":");
+		//							divobj.append("input").attr("type", "text").attr("value", v).attr("placeholder", "...")
+		//								.attr("onkeyup", "changeProperty('" + gId + "','" + k + "')");
+		//						}
+		//					}
+		//				});
+		//				return false;
+		//			}
+		//			return true;
+		//		});
 	}
 }
