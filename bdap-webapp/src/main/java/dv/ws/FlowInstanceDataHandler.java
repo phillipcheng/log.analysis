@@ -15,8 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
+import dv.db.dao.FlowInstanceRepository;
 import dv.db.dao.FlowRepository;
+import dv.db.dao.ProjectRepository;
 import dv.db.entity.FlowEntity;
+import dv.db.entity.FlowInstanceEntity;
+import dv.db.entity.ProjectEntity;
 import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.deploy.FlowDeployer;
@@ -33,7 +37,11 @@ public class FlowInstanceDataHandler extends WebSocketServerEndpoint {
 	private FlowInfo flowInfo;
 
 	@Autowired
+	private ProjectRepository projectRepository;
+	@Autowired
 	private FlowRepository flowRepository;
+	@Autowired
+	private FlowInstanceRepository flowInstanceRepository;
 	@Autowired
 	private FlowMgr flowMgr;
 	@Autowired
@@ -57,10 +65,13 @@ public class FlowInstanceDataHandler extends WebSocketServerEndpoint {
     	}
 		
     	validateUser(userName);
-    	
-		flowInfo = this.flowMgr.getFlowInfo("project1", flowDeployer.getOozieServerConf(), instanceId);
+
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null)
+			flowInfo = this.flowMgr.getFlowInfo(pe.getProjectName(), flowDeployer.getOozieServerConf(), instanceId);
 		if (flowInfo != null) {
-			FlowEntity flowEntity = this.flowRepository.findOne(flowInfo.getName());
 			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
 				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
 				List<Data> datalist = flow.getData();

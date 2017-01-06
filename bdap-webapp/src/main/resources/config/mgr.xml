@@ -6,13 +6,19 @@
     <!-- more bean definitions go here -->
     
     <bean id="flowMgr" class="etl.flow.oozie.OozieFlowMgr">
-    	<property name="dateTimePattern" value="EEE, dd MMM yyyy HH:mm:ss z"/>    
+    	<constructor-arg><bean factory-bean="flowDeployer" factory-method="getDeployMethod"></bean></constructor-arg>
+    	<property name="dateTimePattern" value="EEE, dd MMM yyyy HH:mm:ss z"/>
+    </bean>
+    
+    <bean id="appProjectService" class="dv.service.AppProjectService">
+	  <property name="projectRepository" ref="projectRepository"/>
     </bean>
     
     <bean id="flowDeployer" class="etl.flow.deploy.FlowDeployer">
     	<constructor-arg>
     		<value>config/config.properties</value>
-    	</constructor-arg>  
+    	</constructor-arg>
+    	<constructor-arg ref="appProjectService"/>
     </bean>
 
 </beans>

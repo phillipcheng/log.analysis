@@ -11,6 +11,11 @@
 					"menuname":"Job Manager",
 					"url":"jobList.html",
 					"icon":""
+				},{
+					"menuid":"project",
+					"menuname":"Project manager",
+					"url":"projectList.html",
+					"icon":""
 				}]
 			}
 		}
