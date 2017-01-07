@@ -20,6 +20,7 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
 import etl.engine.ETLCmd;
+import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
 import etl.spark.RDDMultipleTextOutputFormat;
 import etl.util.ConfigKey;
@@ -64,10 +65,15 @@ public class SaveDataCmd extends SchemaETLCmd {
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
-		if (offset==0){
-			String key = getTableNameSetFileNameByContext(context);
-			String value = (String) getSystemVariables().get(VAR_NAME_PATH_NAME);
-			context.write(new Text(key), new Text(value));
+		if (super.inputFormatType==InputFormatType.CombineFileName || inputFormatType==InputFormatType.FileName){
+			//each row is the file name
+			context.write(new Text(row), null);
+		}else{
+			if (offset==0){
+				String key = getTableNameSetFileNameByContext(context);
+				String value = (String) getSystemVariables().get(VAR_NAME_PATH_NAME);
+				context.write(new Text(key), new Text(value));
+			}
 		}
 		return null;
 	}
