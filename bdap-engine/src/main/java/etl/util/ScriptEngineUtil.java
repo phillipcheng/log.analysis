@@ -68,7 +68,7 @@ public class ScriptEngineUtil {
 			}
 			return null;
 		} catch (Exception e) {
-			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
+			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables), e);
 			return null;
 		}
 	}

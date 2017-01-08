@@ -2,16 +2,13 @@ package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.script.CompiledScript;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -27,7 +24,6 @@ import org.apache.spark.api.java.function.PairFunction;
 
 import bdap.util.HdfsUtil;
 import etl.engine.ProcessMode;
-import etl.spark.RDDMultipleTextOutputFormat;
 import etl.engine.ETLCmd;
 import etl.util.ConfigKey;
 import etl.util.DBType;
@@ -42,10 +38,9 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public static final Logger logger = LogManager.getLogger(LoadDataCmd.class);
 	//cfgkey
 	public static final @ConfigKey String cfgkey_webhdfs="hdfs.webhdfs.root";
-	public static final @ConfigKey String cfgkey_csvfile = "csv.file";//
+	public static final @ConfigKey String cfgkey_csvfile = "csv.file";//only for sgprocess
 	public static final @ConfigKey String cfgkey_load_sql = "load.sql";
 	public static final @ConfigKey(type=String[].class) String cfgkey_table_names="table.names";
-	public static final @ConfigKey String cfgkey_csv_suffix ="csv.suffix";
 	public static final @ConfigKey String cfgkey_dbfile_path="dbfile.path";//for spark to generate dbinput files
 	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
@@ -214,13 +209,9 @@ public class LoadDataCmd extends SchemaETLCmd{
 			List<String> copysqls = new ArrayList<String>();
 			logger.info(String.format("in reduce for key:%s, we need to load file:%s", key.toString(), Arrays.toString(files)));
 			if (NO_TABLE_CONFIGURED.equals(key.toString()))
-				copysqls.addAll(
-					prepareTableCopySQLs(null, files)
-				);
+				copysqls.addAll(prepareTableCopySQLs(null, files));
 			else
-				copysqls.addAll(
-					prepareTableCopySQLs(key.toString(), files)
-				);
+				copysqls.addAll(prepareTableCopySQLs(key.toString(), files));
 			if (super.getDbtype()!=DBType.NONE){
 				return DBUtil.executeSqls(copysqls, super.getPc());
 			}

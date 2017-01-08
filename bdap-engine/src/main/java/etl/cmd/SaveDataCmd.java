@@ -17,9 +17,7 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.PairFunction;
-
-import etl.engine.ETLCmd;
+import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
 import etl.spark.RDDMultipleTextOutputFormat;
 import etl.util.ConfigKey;
@@ -49,9 +47,11 @@ public class SaveDataCmd extends SchemaETLCmd {
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		String tmpDirExp = this.getPc().getString(cfgkey_log_tmp_dir);
+		logger.info(String.format("%s_exp:%s", cfgkey_log_tmp_dir, tmpDirExp));
 		if (tmpDirExp!=null){
 			CompiledScript cs = ScriptEngineUtil.compileScript(tmpDirExp);
 			logTmpDir = ScriptEngineUtil.eval(cs, super.getSystemVariables());
+			logger.info(String.format("%s:%s", cfgkey_log_tmp_dir, logTmpDir));
 		}
 	}
 	
@@ -64,10 +64,15 @@ public class SaveDataCmd extends SchemaETLCmd {
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
-		if (offset==0){
-			String key = getTableNameSetFileNameByContext(context);
-			String value = (String) getSystemVariables().get(VAR_NAME_PATH_NAME);
-			context.write(new Text(key), new Text(value));
+		if (super.inputFormatType==InputFormatType.CombineFileName || inputFormatType==InputFormatType.FileName){
+			//each row is the file name
+			context.write(new Text(row), null);
+		}else{
+			if (offset==0){
+				String key = getTableNameSetFileNameByContext(context);
+				String value = (String) getSystemVariables().get(VAR_NAME_PATH_NAME);
+				context.write(new Text(key), new Text(value));
+			}
 		}
 		return null;
 	}
@@ -75,6 +80,7 @@ public class SaveDataCmd extends SchemaETLCmd {
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
+		logger.info(String.format("%s:%s", cfgkey_log_tmp_dir, logTmpDir));
 		input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
 		//TODO use input.saveAsNewAPIHadoopFile(path, keyClass, valueClass, outputFormatClass);
 		return input.groupByKey().keys().flatMapToPair(new PairFlatMapFunction<String, String, String>(){

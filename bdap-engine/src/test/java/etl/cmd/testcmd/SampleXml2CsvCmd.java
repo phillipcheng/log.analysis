@@ -159,8 +159,8 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 		}
 		tableAttrNamesList.addAll(0, moldParams.keySet());
 		//fixed attr
-		tableAttrNamesList.addAll(0, tableLvlSystemFieldNames);
 		tableAttrNamesList.addAll(0, fileLvlSystemFieldNames);
+		tableAttrNamesList.addAll(0, tableLvlSystemFieldNames);
 		//get sample measure values
 		String[] vs = getValuesFromRow(mv0);
 		List<FieldType> types = new ArrayList<FieldType>();

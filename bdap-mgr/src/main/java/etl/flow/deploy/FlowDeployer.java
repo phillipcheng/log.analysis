@@ -40,6 +40,7 @@ public class FlowDeployer {
 	public static final String prop_inputformat_xmlfile="etl.input.XmlInputFormat";
 	public static final String prop_inputformat_combine_xmlfile="etl.input.CombineXmlInputFormat";
 	public static final String prop_inputformat_filename="etl.input.FilenameInputFormat";
+	public static final String prop_inputformat_combine_filename="etl.input.CombineFileNameInputFormat";
 	
 	public static String coordinator_xml="coordinator.xml";
 	public static String spark_wfxml="sparkcmd_workflow.xml";
@@ -119,6 +120,8 @@ public class FlowDeployer {
 			return prop_inputformat_combine_xmlfile;
 		}else if (InputFormatType.FileName == ift){
 			return prop_inputformat_filename;
+		}else if (InputFormatType.CombineFileName == ift){
+			return prop_inputformat_combine_filename;
 		}else{
 			logger.error(String.format("inputformat:%s not supported", ift));
 			return null;

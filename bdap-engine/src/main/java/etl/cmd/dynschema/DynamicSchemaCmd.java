@@ -115,7 +115,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				UpdatedTable ut = checkSchemaUpdate(dt);
 				if (ut != null) {//needs update
 					logger.info(String.format("detect update needed, lock the schema for table %s", dt.getName()));
-					
 					updateSchema(ut.id, ut.name, ut.attrIds, ut.attrNames, ut.attrTypes);
 				}
 			}

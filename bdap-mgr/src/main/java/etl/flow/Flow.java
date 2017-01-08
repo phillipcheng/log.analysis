@@ -107,7 +107,7 @@ public class Flow extends Node{
 		}
 		return true;
 	}
-	
+	@JsonIgnore
 	public List<String> getLastDataSets(){
 		Set<String> inds = new HashSet<String>();
 		Set<String> outds = new HashSet<String>();
@@ -129,7 +129,7 @@ public class Flow extends Node{
 		}
 		return lastds;
 	}
-	
+	@JsonIgnore
 	public List<Node> getActionTopoOrder(){
 		List<Node> nl = this.getNodes();
 		Map<String, Integer> nameIdxMap = new HashMap<String, Integer>();
