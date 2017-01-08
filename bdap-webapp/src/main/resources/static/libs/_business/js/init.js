@@ -42,16 +42,6 @@ var initPublicFunction = function(){
 };
 
 var init = function() {
-	// view  add  edit
-	var actionParam = getRequestUrlParamString("action");
-	if(actionParam == 'view'){
-		
-	}else if(actionParam == 'edit'){
-		
-	} else {
-		
-	}
-	
 	initPublicFunction();
 	
 	//初始化位置的偏移
@@ -128,12 +118,15 @@ var init = function() {
 		});
 	});
 	remotePropertyObj = interact.getFlowSchema();
+	console.info("remotePropertyObj: " + remotePropertyObj);
 	each(remotePropertyObj.properties.nodes.items.jsonSchemas,function(){
 			if(this.properties["cmd.class"]){
 				propertyInfor.push(this.properties);
 			}
 			return true;
 		});
+	
+	actionLoadManager();
 }
 
 /**
@@ -272,11 +265,11 @@ var svgMouseMove = function() {
  * all browser conpatibility will be added here.
  */
 var compatibilityTools = function() {
-	if (typeof String.prototype.endsWith != 'function') {
-		String.prototype.endsWith = function(suffix) {
-          return this.indexOf(suffix, this.length - suffix.length) !== -1;
-        };
-	}
+	if (typeof  String.prototype.endsWith  !=  'function')  {    
+		String.prototype.endsWith  =   function(suffix)  {     
+			return  this.indexOf(suffix,  this.length  -  suffix.length)  !==  -1;    
+		};   
+	}  
 
 	if(typeof String.prototype.startsWith != 'function') {
 		String.prototype.startsWith = function(prefix) {
@@ -332,4 +325,34 @@ var getRequestUrlParamString = function(name)
     var r = window.location.search.substr(1).match(reg);
     if(r!=null)return  unescape(r[2]); return null;
 }
+
+var actionLoadManager = function(){
+	// view  add  edit
+	var actionParam = getRequestUrlParamString("action");
+	var typeParam = getRequestUrlParamString("type");
+	var name = getRequestUrlParamString("name");
+	if(actionParam == 'view' && typeParam =='flow'){
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "VIEW";
+			load.loadBuild(name);
+		}, 100);
+		
+	}else if(actionParam == 'edit' && typeParam =='flow'){
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "DESIGN";
+			load.loadBuild(name);
+		}, 100);
+	} else if(actionParam == 'add' && typeParam =='flow'){
+		
+	}else if(actionParam == 'view' && typeParam =='job'){
+		
+	}else if(actionParam == 'edit' && typeParam =='job'){
+		
+	}
+	
+	
+	return true;
+}
+
+
 

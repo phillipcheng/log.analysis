@@ -49,6 +49,16 @@ var interact = {
 			return returnVal;
 		},
 		
+		saveFlowInstance : function(flowId, instanceid){
+			var requestURL = "/dashview/{userName}/flow/{flowId}/instance/{instanceid}/add";
+			if(isEmpty(flowId)  || isEmpty(instanceid)) {
+				return;
+			}
+			requestURL = requestURL.replace("{flowId}",flowId);
+			requestURL = requestURL.replace("{instanceid}",instanceid);
+			return interact.ajaxGet(requestURL);
+		},
+		
 		/**
 		 * get flow instance information
 		 * return json object as below:

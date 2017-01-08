@@ -3,6 +3,7 @@ package dv.mgr;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -222,6 +223,16 @@ public class FlowController {
 	List<FlowEntity> getAllFlow(@PathVariable String userName) {
 		this.validateUser(userName);
 		return this.flowRepository.findAll();
+	}
+	
+	
+	@RequestMapping(value = "/{flowId}/instance/{instanceid}/add", method = RequestMethod.GET)
+	void add(@PathVariable String userName, @PathVariable String flowId, @PathVariable String instanceid) {
+		this.validateUser(userName);
+		FlowInstanceEntity entity = new FlowInstanceEntity();
+		entity.setFlowName(flowId);
+		entity.setInstanceID(instanceid);
+		this.flowInstanceRepository.save(entity);
 	}
 	
 	@RequestMapping(value = "/instance/list", method = RequestMethod.GET)
