@@ -11,7 +11,9 @@ var load = {
 			return;
 		}
 		CONST_DURATION = 10;
-		flowid = "flow1";
+		if(isEmpty(flowid)){
+			return;
+		}
 		var flowObj = interact.getFlow(flowid);
 		console.log("flowObj",flowObj);
 		if(!this.isEmpty(flowObj)) {

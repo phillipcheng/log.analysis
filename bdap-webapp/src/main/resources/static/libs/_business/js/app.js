@@ -373,7 +373,7 @@ var app = {
 		//			return true;
 		//		});
 
-		//thisObj.saveAsJson(saveResult);
+		thisObj.saveAsJson(saveResult);
 		console.log(JSON.stringify(result));
 		console.log(JSON.stringify(saveResult));
 	},

@@ -39,4 +39,40 @@ var _node_data_height = 40;
  * 用于记录每个节点的属性特征值的内容
  */
 var propertyInfor = [];
+/**
+ *  define flow stage, for exmple: design stage / running  / finish to run.  
+ */
+var FLOW_STAGE = ["DESIGN", "RUNNING", "FINISH", "VIEW"];
+/**
+ * flow current stage. default design stage.
+ */
+var FLOW_CURRENT_STAGE = "DESIGN";
+
+/**
+ * define runtime flow state.
+ */
+var FLOW_RUNTIME_STATE =[{"state":"PREP", "color":""},
+                         {"state":"RUNNING", "color":""},
+                         {"state":"SUCCEEDED", "color":"green"},
+                         {"state":"KILLED", "color":"red"},
+                         {"state":"FAILED", "color":"red"},
+                         {"state":"SUSPENDED", "color":""}];
+/**
+ * define runtime node state.
+ */
+var NODE_RUNTIME_STATE = [{"state":"PREP", "color":""},
+                          {"state":"RUNNING", "color":""},
+                          {"state":"OK", "color":""},
+                          {"state":"ERROR", "color":""},
+                          {"state":"USER_RETRY", "color":""},
+                          {"state":"START_RETRY", "color":""},
+                          {"state":"START_MANUAL", "color":""},
+                          {"state":"DONE", "color":""},
+                          {"state":"END_RETRY", "color":""},
+                          {"state":"END_MANUAL", "color":""},
+                          {"state":"KILLED", "color":""},
+                          {"state":"FAILED", "color":""}];
+
+var websocket = null;
+var wsURI = "ws://127.0.0.1:8080/dashview/ws/george/flow/instances/";
 
