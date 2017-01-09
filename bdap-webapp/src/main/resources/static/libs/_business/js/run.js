@@ -105,6 +105,18 @@ var run = {
 				}
 			}
 			
+		},
+		
+		getFlowLog : function(){
+			var data;
+			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
+			if(!isEmpty(WHOLE_INSTANCE_ID)) {
+//				data = interact.getFlowLog(WHOLE_INSTANCE_ID);
+				var url = "/dashview/pages/flowlog.html?type=flowlog&instanceid=" + WHOLE_INSTANCE_ID;
+				window.open(url,'Flow Log',"fullscreen=0",false);
+			}
+//			console.info(data);
+//			return data;
 		}
 
 

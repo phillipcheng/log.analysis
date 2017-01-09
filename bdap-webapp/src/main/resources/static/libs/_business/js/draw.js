@@ -171,11 +171,14 @@ var _draw = {
 		if(hadInput || hadInput) {
 			nodeData.width = _node_max_width;
 			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
+		} else if(parseInt(property_height) == 0) {
+			nodeData.width = _action_node_min_width;
+			nodeData.pro.transform = "translate(" + (_action_node_min_width - 10) + ",10)scale(1,1)";
 		}
 		_build._build();
 
 		var g_instance = childsvg.find(gId);
-		each(aryInput, function() {
+		each(aryInput, function(i, o) {
 			var tempData = g_instance.node(this.arge);
 			d3.select("#" + this.arge).selectAll("text").remove();
 			if(this.display) {
@@ -183,23 +186,35 @@ var _draw = {
 				tempData.height = _node_data_height;
 				tempData.rect.width = _node_data_width;
 				tempData.rect.height = _node_data_height;
-
-				d3.select("#" + this.arge).append("text")
-					.attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
-
-				d3.select("#" + this.arge).append("text")
-					.attr("id", this.arge + "_name").attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
-
-				d3.select("#" + this.arge).append("text")
-					.attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
-
-				d3.select("#" + this.arge).append("text")
-					.attr("id", this.arge + "_dataName").attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
-
+				each(result.nodes, function() {
+					if(this.id.localeCompare(gId) == 0) {
+						d3.select("#" + o.arge).append("text")
+							.attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+							
+						d3.select("#" + o.arge).append("text")
+							.attr("id", o.arge + "_name").attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 18).text(this.inLets[i].name);			
+							
+						d3.select("#" + o.arge).append("text")
+							.attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 29).text("nameData:");	
+						var tempTxt = "";
+						var tempVal = this.inLets[i].dataName;
+						each(dataSetList,function(){
+							if(this.k.localeCompare(tempVal)==0){
+								tempTxt = this.v.name;
+								return false;
+							}
+							return true;
+						});
+						d3.select("#" + o.arge).append("text")
+							.attr("id", o.arge + "_dataName").attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 39).text(tempTxt);							
+						return false;
+					}
+					return true;
+				});
 			} else {
 				tempData.width = 0;
 				tempData.height = 0;
@@ -209,7 +224,7 @@ var _draw = {
 			return true;
 		});
 
-		each(aryOutput, function() {
+		each(aryOutput, function(i,o) {
 			var tempData = g_instance.node(this.arge);
 			d3.select("#" + this.arge).selectAll("text").remove();
 			if(this.display) {
@@ -217,24 +232,37 @@ var _draw = {
 				tempData.height = _node_data_height;
 				tempData.rect.width = _node_data_width;
 				tempData.rect.height = _node_data_height;
-
-				d3.select("#" + this.arge).selectAll("text").remove();
-				d3.select("#" + this.arge).append("text")
-					.attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
-
-				d3.select("#" + this.arge).append("text")
-					.attr("id", this.arge + "_name").attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
-
-				d3.select("#" + this.arge).append("text")
-					.attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
-
-				d3.select("#" + this.arge).append("text")
-					.attr("id", this.arge + "_dataName").attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
-
+				
+				each(result.nodes, function() {
+					if(this.id.localeCompare(gId) == 0) {
+						d3.select("#" + o.arge).append("text")
+							.attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
+							
+						d3.select("#" + o.arge).append("text")
+							.attr("id", o.arge + "_name").attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 18).text(this.outlets[i].name);			
+							
+						d3.select("#" + o.arge).append("text")
+							.attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 29).text("nameData:");	
+							
+						var tempTxt = "";
+						var tempVal = this.outlets[i].dataName;
+						each(dataSetList,function(){
+							if(this.k.localeCompare(tempVal)==0){
+								tempTxt = this.v.name;
+								return false;
+							}
+							return true;
+						});
+						d3.select("#" + o.arge).append("text")
+							.attr("id", o.arge + "_dataName").attr("G", o.G)
+							.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 39).text(tempTxt);							
+						return false;
+					}
+					return true;
+				});
 			} else {
 				tempData.width = 0;
 				tempData.height = 0;

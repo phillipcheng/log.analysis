@@ -2,6 +2,26 @@ var g_mouse_down = "";
 var g_mouse_up = "";
 
 var _event = {
+	up_flow_name: function() {
+		var e = window.event || arguments.callee.caller.arguments[0];
+		e.stopPropagation();
+		var o = getEventSources(e);
+		d3.select("#d3contextmenu").style({
+			display: "block",
+			left: e.clientX + "px",
+			top: e.clientY + "px"
+		});
+		d3.select("#d3contextmenu")
+			.append("input").on("blur", function() {
+				d3.select("#d3contextmenu").select("input").remove();
+				result.name = this.value;
+				result.wfName = this.value;
+				d3.select("#a_title").text(result.name);
+				d3.select("#d3contextmenu").style({
+					display: "none"
+				});
+			});
+	},
 	svg_onmousedown: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		e.stopPropagation();
@@ -97,6 +117,10 @@ var _event = {
 				}
 				return true;
 			});
+			$("#rightupcssbody").html("");
+			d3.select("#divrightup").style({
+				display: "none"
+			});
 		}
 
 		_draw._drawDataInPutAndPropertyAndOutPut(gId);
@@ -139,6 +163,10 @@ var _event = {
 					return false;
 				}
 				return true;
+			});
+			$("#rightupcssbody").html("");
+			d3.select("#divrightup").style({
+				display: "none"
 			});
 		}
 		_draw._drawDataInPutAndPropertyAndOutPut(gId);
@@ -324,19 +352,55 @@ var _event = {
 		});
 		$("#rightupcssbody").html("");
 
-		var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
-		divobj.append("strong").text("name:");
-		divobj.append("input").attr("type", "text").attr("value", "").attr("placeholder", "...")
-			.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
-		divobj.append("strong").text("dataName:");
+		var tempValue = "";
+		var tempTxt = "";
+		var tempIndex = txtId.substring(txtId.length - 1);
 
-		var divobjselect = divobj.append("select");
-		divobjselect.attr("onchange", "changeData('" + txtId + "','dataName','" + gId + "')");
-		each(dataSetList, function() {
-			divobjselect.append("option").attr("value", this.k).text(this.v.name);
+		each(result.nodes, function(i, o) {
+			if(this.id.localeCompare(gId) == 0) {
+				var find = false;
+				var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+				divobj.append("strong").text("name:");
+				if(txtId.indexOf("InData") > -1) {
+					d3.select("#rightupcssheaderstring").text(o.inLets[tempIndex].name);
+					divobj.append("input").attr("type", "text").attr("value", o.inLets[tempIndex].name)
+						.attr("placeholder", "...")
+						.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
+				} else {
+					d3.select("#rightupcssheaderstring").text(o.outlets[tempIndex].name);
+					divobj.append("input").attr("type", "text").attr("value", o.outlets[tempIndex].name)
+						.attr("placeholder", "...")
+						.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
+				}
+				divobj.append("strong").text("dataName:");
+
+				var divobjselect = divobj.append("select");
+				divobjselect.attr("onchange", "changeData('" + txtId + "','dataName','" + gId + "')");
+				each(dataSetList, function() {
+					if(txtId.indexOf("InData") > -1) {
+						if(this.k.localeCompare(o.inLets[tempIndex].dataName) == 0) {
+							divobjselect.append("option").attr("selected", "selected").attr("value", this.k).text(this.v.name);
+							find = true;
+						} else {
+							divobjselect.append("option").attr("value", this.k).text(this.v.name);
+						}
+					} else {
+						if(this.k.localeCompare(o.outlets[tempIndex].dataName) == 0) {
+							divobjselect.append("option").attr("selected", "selected").attr("value", this.k).text(this.v.name);
+							find = true;
+						} else {
+							divobjselect.append("option").attr("value", this.k).text(this.v.name);
+						}
+					}
+					return true;
+				});
+				if(!find) {
+					divobjselect[0][0].selectedIndex = -1;
+				}
+				return false;
+			}
 			return true;
 		});
-		divobjselect[0][0].selectedIndex = -1;
 	},
 	selectedProperty: function() {
 		//这里 只是 右边的，对话框，进行展示内容
