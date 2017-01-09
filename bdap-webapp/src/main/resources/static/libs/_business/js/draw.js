@@ -600,27 +600,35 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 
 var dataSetList = [];
 
-var addLeftDiv = function(keys) {
-	dataSetList.unshift({
-		k: keys,
-		show: false,
-		v: {
+var addLeftDiv = function(keys, obj) {
+	if(obj) {
+		dataSetList.unshift({
+			k: keys,
+			show: false,
+			v: obj
+		});
+	} else {
+		dataSetList.unshift({
+			k: keys,
+			show: false,
+			v: {
+				name: 'data',
+				location: '',
+				dataFormat: 'Line',
+				recordType: 'Path',
+				instance: 'false'
+			}
+		});
+		
+		result.data.push({
+			id: keys,
 			name: 'data',
 			location: '',
 			dataFormat: 'Line',
 			recordType: 'Path',
 			instance: 'false'
-		}
-	});
-
-	result.data.push({
-		id: keys,
-		name: 'data',
-		location: '',
-		dataFormat: 'Line',
-		recordType: 'Path',
-		instance: 'false'
-	})
+		});
+	}
 
 	display();
 }
