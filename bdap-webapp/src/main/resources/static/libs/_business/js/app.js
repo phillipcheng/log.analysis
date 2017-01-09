@@ -51,7 +51,10 @@ var app = {
 		});
 		var obj = _start_node(gId, 'start');
 		g.setNode(gId, obj);
-		_build._build();
+
+		if(!mainkey) {
+			_build._build();
+		}
 
 		var g_child_Instance = childsvg.find(gId);
 		if(g_child_Instance == null) {
@@ -93,7 +96,9 @@ var app = {
 		g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
 		g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
 
-		_build._build(gId, g_child_Instance);
+		if(!mainkey) {
+			_build._build(gId, g_child_Instance);
+		}
 	},
 	end: function(mainkey) {
 		nodeIndex++;
@@ -135,7 +140,9 @@ var app = {
 		});
 		var obj = _end_node(gId, 'end');
 		g.setNode(gId, obj);
-		_build._build();
+		if(!mainkey) {
+			_build._build();
+		}
 
 		var g_child_Instance = childsvg.find(gId);
 		if(g_child_Instance == null) {
@@ -176,9 +183,9 @@ var app = {
 		g_child_Instance.setEdge(gId + "_OutData_0", gId + "_OutData_1");
 		g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
 		g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
-
-		_build._build(gId, g_child_Instance);
-
+		if(!mainkey){
+			_build._build(gId, g_child_Instance);	
+		}
 	},
 	action: function(jsonObj, mainkey) {
 		nodeIndex++;
@@ -254,8 +261,9 @@ var app = {
 				result.nodes.push(propertyObj);
 				var obj = _action_node(gId, jsonObj.label);
 				g.setNode(gId, obj);
-				_build._build();
-
+				if(!mainkey){
+					_build._build();
+				}
 				var g_child_Instance = childsvg.find(gId);
 				if(g_child_Instance == null) {
 					g_child_Instance = childsvg.initNewInstance(gId);
@@ -296,8 +304,9 @@ var app = {
 				g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
 				g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
 
-				_build._build(gId, g_child_Instance);
-
+				if(!mainkey){
+					_build._build(gId, g_child_Instance);	
+				}
 				return false;
 			}
 		});
@@ -332,7 +341,7 @@ var app = {
 		});
 
 		each(saveResult.nodes, function() {
-			this.name = this.id;
+			this.name = this.name + "_" + this.id;
 			return true;
 		});
 
