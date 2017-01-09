@@ -1,4 +1,5 @@
 var nodeIndex = 0;
+var tempDataMap = [];
 var result = {
 	'@class': "flow",
 	name: "flow1",
@@ -17,7 +18,9 @@ var app = {
 			gId = mainkey;
 		} else {
 			gId = "g_" + (new Date().getTime() + nodeIndex);
+			
 		}
+		gId ="start";
 		result.nodes.push({
 			'id': gId,
 			'@class': 'start',
@@ -108,6 +111,7 @@ var app = {
 		} else {
 			gId = "g_" + (new Date().getTime() + nodeIndex);
 		}
+		gId ="end";
 		result.nodes.push({
 			'id': gId,
 			'@class': 'end',
@@ -334,14 +338,32 @@ var app = {
 			return txt;
 		}
 
-		//
 		each(saveResult.data, function() {
 			this.name = this.name + "_" + this.id;
 			return true;
 		});
 
 		each(saveResult.nodes, function() {
-			this.name = this.name + "_" + this.id;
+			if(this["@class"].localeCompare("start")==0||this["@class"].localeCompare("end")==0){
+				
+			}else{
+				this.name = this.name + "_" + this.id;
+			}
+			
+			return true;
+		});
+
+		each(saveResult.links, function() {
+			var outThis = this;
+			each(saveResult.nodes, function() {
+				if(this.id.localeCompare(outThis.fromNodeName) == 0) {
+					outThis.fromNodeName = this.name;
+				}
+				if(this.id.localeCompare(outThis.toNodeName) == 0) {
+					outThis.toNodeName = this.name;
+				}
+				return true;
+			});
 			return true;
 		});
 
@@ -403,18 +425,43 @@ var app = {
 	},
 	loadJsonInfor:function(){
 		d3.json("http://localhost:8020/flow/loadJsonInfor", function(data) {
-				console.log("data",data);
-				each(data.nodes,function(){
-					createNode(this);
-					return true;
-				});
+			console.log("data", data);
+			each(data.data, function() {
+				var temobj = {};
+				temobj.k = this.name;
+				this.name = this.name.replace("_" + this.id, "");
+				temobj.v = this.name;
+				tempDataMap.push(temobj);
+				addLeftDiv(this.id, this);
+				return true;
+			});
+			each(data.nodes, function() {
+				createNode(this);
+				return true;
+			});
+			each(data.links, function() {
+				g.setEdge(this.fromNodeName, this.toNodeName);
+				return true;
+			});
+			_build._build();
 		});
 	}
 }
 
-var createNode = function(obj){
-	if(obj["@class"].toString().localeCompare("start")==0){
-		var o = _start_node();
+var createNode = function(obj) {
+	console.log("---------------------createNode-----------------------------");
+	console.log(arguments);
+	var tempId = obj.id;
+	var tempName = obj.name;
+	tempName = tempName.replace("_" + tempId, "");
+	obj.name = tempName;
+	var o = null;
+	if(obj["@class"].toString().localeCompare("start") == 0) {
+
+	} else if(obj["@class"].toString().localeCompare("end") == 0) {
+
+	} else if(obj["@class"].toString().localeCompare("action") == 0) {
+
 	}
 }
 

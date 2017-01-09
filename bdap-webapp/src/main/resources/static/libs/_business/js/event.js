@@ -4,11 +4,15 @@ var g_mouse_up = "";
 var _event = {
 	svg_onmousedown: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
+		e.stopPropagation();
 		var o = getEventSources(e);
 		if(o.tagName.localeCompare("svg") == 0) {
 			booleaniszoom = true;
 			clearTempLine();
 		}
+		d3.select("#d3contextmenu").style({
+			display: "none"
+		});
 	},
 	svg_onmouseup: function() {
 		clearTempLine();
@@ -169,15 +173,18 @@ var _event = {
 			_draw._drawClearProperty(gId);
 		}
 	},
-	data_addIn_click: function(addInletButtonThis) {
-		var e;
-		var o;
-		if(isEmpty(addInletButtonThis)) {
-			e = window.event || arguments.callee.caller.arguments[0];
-			o = getEventSources(e);
-		} else {
-			o = addInletButtonThis;
-		}
+	data_addIn_click: function() {
+//		var e;
+//		var o;
+//		if(isEmpty(addInletButtonThis)) {
+//			e = window.event || arguments.callee.caller.arguments[0];
+//			o = getEventSources(e);
+//		} else {
+//			o = addInletButtonThis;
+//		}
+		var e = window.event || arguments.callee.caller.arguments[0];
+		var o = getEventSources(e);
+		e.stopPropagation();
 
 		var gId = o.getAttribute("G");
 		each(result.nodes, function(i, o) {
@@ -196,15 +203,18 @@ var _event = {
 			return true;
 		});
 	},
-	data_addOut_click: function(addInletButtonThis) {
-		var e;
-		var o;
-		if(isEmpty(addInletButtonThis)) {
-			e = window.event || arguments.callee.caller.arguments[0];
-			o = getEventSources(e);
-		} else {
-			o = addInletButtonThis;
-		}
+	data_addOut_click: function() {
+//		var e;
+//		var o;
+//		if(isEmpty(addInletButtonThis)) {
+//			e = window.event || arguments.callee.caller.arguments[0];
+//			o = getEventSources(e);
+//		} else {
+//			o = addInletButtonThis;
+//		}
+		var e = window.event || arguments.callee.caller.arguments[0];
+		var o = getEventSources(e);
+		e.stopPropagation();
 
 		var gId = o.getAttribute("G");
 		each(result.nodes, function(i, o) {
@@ -225,6 +235,7 @@ var _event = {
 	},
 	clickedRect: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
+		e.stopPropagation();
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		each(result.nodes, function() {
@@ -241,10 +252,68 @@ var _event = {
 		var temp = d3.select("#" + gId).attr("class");
 		d3.select("#" + gId).attr("class", temp + " nodeGSelected");
 
-		if(e.code == 2) {
-			//
-		}
+		if(e.button == 2) {
+			//右键点击样式
+			d3.select("#d3contextmenu").select("ul").remove();
+			d3.select("#d3contextmenu").style({
+				display: "block",
+				left: e.clientX + "px",
+				top: e.clientY + "px"
+			});
 
+			d3.select("#d3contextmenu").append("ul").append("li").text("delete the node?")
+				.on("click", function() {
+					console.log("click");
+					d3.select("#d3contextmenu").style({
+						display: "none"
+					});
+					g.removeNode(gId);
+					each(result.nodes, function(i, o) {
+						if(this.id.localeCompare(gId) == 0) {
+							result.nodes.splice(i, 1);
+							return false;
+						}
+						return true;
+					});
+					each(result.links, function(i, o) {
+						if(this.fromNodeName.localeCompare(gId) == 0 || this.toNodeName.localeCompare(gId) == 0) {
+							result.links.splice(i, 1);
+							return false;
+						}
+						return true;
+					});
+					_build._build();
+				});
+		}
+	},
+	clickPath: function() {
+		console.log("-----------clickPath-------------");
+		var e = window.event || arguments.callee.caller.arguments[0];
+		e.stopPropagation();
+		var o = getEventSources(e);
+		d3.select("#d3contextmenu").select("ul").remove();
+		d3.select("#d3contextmenu").style({
+			display: "block",
+			left: e.clientX + "px",
+			top: e.clientY + "px"
+		});
+
+		d3.select("#d3contextmenu").append("ul").append("li").text("delete the Path?")
+			.on("click", function() {
+				var temp = o.id.split("A");
+				g.removeEdge(temp[1],temp[2]);
+				each(result.links,function(i,o){
+					if(this.fromNodeName.localeCompare(temp[1])==0&&this.toNodeName.localeCompare(temp[2])==0){
+						result.links.splice(i,1);
+						return false;
+					}
+					return true;
+				});
+				d3.select("#d3contextmenu").style({
+					display: "none"
+				});
+				_build._build();
+			});
 	},
 	selectedData: function(txtId, gId) {
 		var e = window.event || arguments.callee.caller.arguments[0];

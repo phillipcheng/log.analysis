@@ -285,6 +285,27 @@ var _draw = {
 			divobj.append("input").attr("type", "text").attr("value", "start").attr("placeholder", "start...").attr("onkeyup", "changeProperty('" + gId + "','name')");			
 		}
 
+		var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+		divobj.append("input").attr("type", "text").attr("placeholder", "format  k:v  ...").style({
+			background: 'silver'
+		}).on("dblclick", function() {
+			var tempValue = this.value;
+			if(tempValue) {
+				if(tempValue.indexOf(":") > -1) {
+					tempValue = tempValue.split(":");
+					each(result.nodes, function(i, o) {
+						if(this.id.localeCompare(gId) == 0) {
+							this[tempValue[0].trim()] = tempValue[1].trim();
+							_draw._drawPropertyLeftDiv(gId,obj);
+							return false;
+						}
+						return true;
+					});
+				}
+			}
+			this.value = "";
+		});
+
 		this._drawProperty(gId, obj);
 	},
 	_drawProperty: function(gId, obj) {
