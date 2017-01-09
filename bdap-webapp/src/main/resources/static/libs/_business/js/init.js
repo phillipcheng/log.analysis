@@ -335,17 +335,23 @@ var actionLoadManager = function(){
 		setTimeout(function(){
 			FLOW_CURRENT_STAGE = "VIEW";
 			load.loadBuild(name);
-		}, 100);
+		}, 200);
 		
 	}else if(actionParam == 'edit' && typeParam =='flow'){
 		setTimeout(function(){
 			FLOW_CURRENT_STAGE = "DESIGN";
 			load.loadBuild(name);
-		}, 100);
+		}, 200);
 	} else if(actionParam == 'add' && typeParam =='flow'){
 		
 	}else if(actionParam == 'view' && typeParam =='job'){
-		
+		var flowname = getRequestUrlParamString("flowname");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = name;
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "VIEW";
+			load.loadBuild(flowname);
+		}, 200);
 	}else if(actionParam == 'edit' && typeParam =='job'){
 		
 	}

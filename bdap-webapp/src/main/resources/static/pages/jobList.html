@@ -93,19 +93,23 @@ body {
 		$('#dd2').dialog('open');
 	}
 	function view() {
-		var name = getSelectedRowName();
+		var map = getSelectedRowName();
+		var name = map.instanceid;
+		var flowname = map.flowname;
 		if(name == undefined || name == ''){
 			return;
 		}
-		var url = "/dashview/dataFlow/app.html?action=view&type=job&name="+name;
+		var url = "/dashview/dataFlow/app.html?action=view&type=job&name="+name+"&flowname="+flowname;
 		window.location.href = url;
 	}
 	function edit() {
-		var name = getSelectedRowName();
+		var map = getSelectedRowName();
+		var name = map.instanceid;
+		var flowname = map.flowname;
 		if(name == undefined || name == ''){
 			return;
 		}
-		var url = "/dashview/dataFlow/app.html?action=edit&type=job&name="+name;
+		var url = "/dashview/dataFlow/app.html?action=edit&type=job&name="+name+"&flowname="+flowname;
 		window.location.href = url;
 	}
 	function del() {
@@ -133,12 +137,17 @@ body {
 	function getSelectedRowName(){
 		var nodes = $('#tt').datagrid('getSelections');
 		var instanceid;
+		var flowname;
+		var returnJson = {};
 		if (nodes != null && nodes.length >0) {
 			instanceid = nodes[0].instanceid;
+			flowname = nodes[0].flowname;
+			returnJson.instanceid = instanceid;
+			returnJson.flowname = flowname;
 		} else {
 			msgShow('Info', 'please selected one row.', 'Info');
 		}
-		return instanceid;
+		return returnJson;
 	}
 
 </script>
@@ -149,8 +158,8 @@ body {
 		<div class="btabs">
 			<span class="icon icon-Browse">&nbsp;</span><a
 				href="javascript:void(0)" onclick="view()">View</a>
-			<!-- &nbsp;&nbsp;<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a> -->
-			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a> 
+			<!-- &nbsp;&nbsp;<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a> 
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a> -->
 			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="del()"><span class="icon icon-delete">&nbsp;</span>Delete</a>
 		</div>
 		<div style="height: 2px"></div>
