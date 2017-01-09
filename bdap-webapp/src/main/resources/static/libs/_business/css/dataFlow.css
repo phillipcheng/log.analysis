@@ -172,7 +172,7 @@ body {
 	fill: none;
 	stroke: gray;
 	stroke-linecap: round;
-	stroke-width: 2px;
+	stroke-width: 3px;
 }
 
 .edgeSelected {}

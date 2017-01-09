@@ -15,127 +15,156 @@ var load = {
 			return;
 		}
 		var flowObj = interact.getFlow(flowid);
-		console.log("flowObj",flowObj);
+		console.log("flowObj", flowObj);
 		if(!this.isEmpty(flowObj)) {
 			if(this.isEmpty(flowObj.jsonContent)) {
 				return;
 			}
 			var flowContext = JSON.parse(flowObj.jsonContent);
+			console.log(flowObj);
+//			var flowContext = flowObj;
 			var nodes = flowContext.nodes;
 			var links = flowContext.links;
 			var datas = flowContext.data;
-			//load nodes
+			isLoaded = true;
+			console.log("datas", datas);
+			this.buildDatas(datas);
+			console.log("datas", result.data);
 			this.buildNodes(nodes);
-			//load links
-			this.buildLinks(links);
-
+			this.buildLink(links);
+			this.buildManPosition(nodes);
 		}
-		isLoaded = true;
 	},
-	buildNodes: function(nodes) {
-		var loadThis = this;
-		$.each(nodes, function(i, obj) {
-			if(obj['@class'] == 'start') {
-				var id = obj.name;
-				id = id.substring(id.indexOf("g_"));
-				app.start(id);
-			} else if(obj['@class'] == 'end') {
-				var id = obj.name;
-				id = id.substring(id.indexOf("g_"));
-				app.end(id);
-			} else if(obj['@class'] == 'action') {
-				var id = obj.id;
-				id = id.substring(id.indexOf("g_"));
-				var cmdClass = obj['cmd.class'];
-				var temp = cmdClass;
-				temp = temp.substring(temp.lastIndexOf(".") + 1);
-				var jsonData = {};
-				jsonData.label = obj.name;
-				jsonData.cla = cmdClass;
-				//build action node
-				app.action(jsonData, id);
-				//build inlets/outlets
-				loadThis.buildInAndOutLets(id, obj);
-			}
-			loadThis.loadProperties(obj);
-
-		});
-	},
-	buildLinks: function(links) {
-		$.each(links, function(i, link) {
-			debugger
-			var fromName = link.fromNodeName;
-			var toName = link.toNodeName;
-			fromName = fromName.substring(fromName.indexOf("g_"));
-			toName = toName.substring(toName.indexOf("g_"));
-			g.setEdge(fromName, toName);
-			//pathLists.push(link);
-		});
-		_build._build();
-
-	},
-	buildInAndOutLets: function(id, nodeParam) {
-		var nodeData = g.node(id);
-		var node = d3.selectAll("#" + id);
-		var inLets = nodeParam.inLets;
-		var outLets = nodeParam.outlets;
-		var addInletButtonThis = document.getElementById("addIn_circle_" + id);
-		$.each(inLets, function(i, inlet) {
-			_event.data_addIn_click(addInletButtonThis);
-		});
-		$.each(outLets, function(i, outlet) {
-			_event.data_addOut_click(addInletButtonThis);
-		});
-		_draw._drawInputData(id);
-		_draw._drawOutputData(id);
-	},
-	loadProperties: function(obj) {
-		var inlets = obj.inLets;
-		var outlets = obj.outlets;
-		var nodeList = [];
-		$.each(result.nodes, function(i, node) {
-			if(node.id == obj.id) {
-				console.log("--------------1--------------")
-				console.log(obj.inLets);
-				console.log(node.inLets);
-				console.log("--------------2--------------")
-				var newInletList = [];
-				var newOutletList = [];
-				var inNum = -1;
-				var outNum =-1;
-				$.each(obj.inLets, function(j, inlet) {
-//					delete inlet.name;
-//					delete inlet.dataName;
-					var newInLet =$.extend({},  node.inLets[j],inlet);
-					newInletList.push(newInLet);
-					inNum = j;
+	buildDatas: function(obj) {
+		each(obj, function(i, o) {
+			if(this["id"]) {
+				this.name = this.name.replace("_" + this.id, "");
+				addLeftDiv(this["id"],{
+					id: this["id"],
+					name: this["name"],
+					location: this["location"],
+					dataFormat: this["dataFormat"],
+					recordType: this["recordType"],
+					instance: this["instance"]					
 				});
-				$.each(obj.outlets, function(j, outlet) {
-					var newOutlet = $.extend({}, node.outlets[j],outlet);
-					newOutletList.push(newOutlet);
-					outNum =j;
-				});
-				while(inNum <3){
-					inNum ++;
-					newInletList.push(node.inLets[inNum]);
-				}
-				while(outNum <3){
-					outNum ++;
-					newOutletList.push(node.outlets[outNum]);
-				}
-//				var newInLets = $.extend([], obj.inLets, node.inLets);
-//				var newOutlets = $.extend([], obj.outlets, node.outlets);
-				obj.inLets = newInletList;
-				obj.outlets = newOutletList;
-				var newNode = $.extend({}, node, obj);
-				nodeList.push(newNode);
 			} else {
-				nodeList.push(node);
+				this["id"] = this["name"];
+				addLeftDiv(this.id, {
+					id: this["id"],
+					name: this["name"],
+					location: this["location"],
+					dataFormat: this["dataFormat"],
+					recordType: this["recordType"],
+					instance: this["instance"]
+				});
+			}
+			return true;
+		});
+	},
+	buildNodes: function(obj) {
+		each(obj, function() {
+			if(this["@class"].toString().localeCompare("start") == 0) {
+				if(!this["id"]) {
+					this["id"] = this["name"];
+				}
+				app.start(this["id"].toString());
+			} else if(this["@class"].toString().localeCompare("end") == 0) {
+				if(!this["id"]) {
+					this["id"] = this["name"];
+				}
+				app.end(this["id"].toString());
+			} else if(this["@class"].toString().localeCompare("action") == 0) {
+				if(!this["id"]) {
+					this["id"] = this["name"];
+				} else {
+					this["name"] = this["name"].toString().replace("_" + this["id"], "");
+				}
+				var o = {
+					cla: this["cmd.class"],
+					label: this["name"]
+				};
+				app.action(o, this["id"].toString(), this);
+				each(this.inLets, function(i, o) {
+					if(this.dataName.indexOf("dataset_") > -1) {
+						this.dataName = this.dataName.substring(this.dataName.indexOf("dataset_"));
+					}
+					result.nodes[result.nodes.length - 1].inLets[i].dataName = this.dataName;
+					result.nodes[result.nodes.length - 1].inLets[i].name = this.name;
+					result.nodes[result.nodes.length - 1].inLets[i].show = true;
+					return true;
+				});
+				each(this.outlets, function(i, o) {
+					if(this.dataName.indexOf("dataset_") > -1) {
+						this.dataName = this.dataName.substring(this.dataName.indexOf("dataset_"));
+					}
+					result.nodes[result.nodes.length - 1].outlets[i].dataName = this.dataName;
+					result.nodes[result.nodes.length - 1].outlets[i].name = this.name;
+					result.nodes[result.nodes.length - 1].outlets[i].show = true;
+					return true;
+				});
 			}
 
+			return true;
 		});
-		result.nodes = nodeList;
+	},
+	buildLink: function(obj) {
+		each(obj, function() {
+			var tempfrom = this.fromNodeName;
+			var tempto = this.toNodeName;
+			if(tempfrom.indexOf("g_")>-1){
+				tempfrom= tempfrom.substring(tempfrom.indexOf("g_"));
+			}
+			if(tempto.indexOf("g_")>-1){
+				tempto = tempto.substring(tempto.indexOf("g_"));
+			}
+			g.setEdge(tempfrom, tempto);
+			result.links.push(obj);
+			return true;
+		});
+	},
+	buildManPosition: function(remoteNodes) {
 		console.log("result",result);
-	}
+		_build._build();
+		each(result.nodes, function(resultIndex,resultObj) {
+			var g_child_instance = childsvg.find(this["id"]);
+			_build._build(this["id"], g_child_instance);
 
+			if(this["@class"].toString().localeCompare("action") == 0 && this.inLets) {
+				each(this.inLets, function(i, o) {
+					if(o.show) {
+						var gId = o["id"].substring(0, o["id"].indexOf("_InData_"));
+						_draw._drawInputData(gId);
+					}
+					return true;
+				});
+			}
+
+			if(this["@class"].toString().localeCompare("action") == 0 && this.outlets) {
+				each(this.outlets, function(i, o) {
+					if(o.show) {
+						var gId = o["id"].substring(0, o["id"].indexOf("_OutData_"));
+						_draw._drawOutputData(gId);
+					}
+					return true;
+				});
+			}
+
+			each(remoteNodes, function(i, o) {
+				if(resultObj.id.localeCompare(o.id) == 0) {
+					$.each(o, function(k, v) {
+						if(typeof v == 'string') {
+							if(v.length > 0) {
+								resultObj[k] = v;
+							}
+						}
+					});
+					return false;
+				}
+				return true;
+			});
+
+			return true;
+		});
+
+	}
 }
