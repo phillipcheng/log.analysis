@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+<title></title>
+<style type="text/css">
+body {
+	font-size: 12px;
+	width: 98%;
+}
+
+.btabs {
+	border: 1px solid #8DB2E3;
+	font-size: 12px;
+	height: 26px;
+	list-style-type: none;
+	margin: 0;
+	padding: 4px 0 0 4px;
+	width: 100%;
+	background-color: #E0ECFF;
+}
+
+</style>
+<link href="../libs/_pagelib/css/default.css" rel="stylesheet"
+	type="text/css" />
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/bootstrap/easyui.css" />
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/icon.css" />
+
+<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../libs/jquery/jquery.serializejson.min.js"></script>
+<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../libs/easyui/datagrid-detailview.js"></script>
+<script type="text/javascript">
+	function msgShow(title, msgString, msgType) {
+		$.messager.alert(title, msgString, msgType);
+	}
+	var type = '';
+	$(function() {
+		$('#tt').datagrid({
+            view: detailview,
+			width : document.getElementById('div1').width,
+			height : document.getElementById('div1').heigh,
+			nowrap : false,
+			collapsible : true,
+			idField : 'id',
+			checkbox : false,
+			singleSelect: true,
+			rownumbers:true,
+			method : 'get',
+			url : '/dashview/player/project/',
+			columns : [ [{
+				field : 'id',
+				title : 'Id',
+				width : $(this).width() * 0.1
+			}, {
+				field : 'projectName',
+				title : 'Project Name',
+				width : $(this).width() * 0.1,
+				editor: 'text'
+			}, {
+				field : 'content',
+				title : 'Content',
+				width : $(this).width() * 0.5,
+				editor: 'text'
+			}, {
+				field : 'type',
+				title : 'Type',
+				width : $(this).width() * 0.1,
+				editor: 'text'
+			}, {
+				field : 'updateTime',
+				title : 'Update Time',
+				width : $(this).width() * 0.1
+			} ] ],
+	        onEndEdit:function(index,row){
+	        },
+	        onBeforeEdit:function(index,row){
+	            row.editing = true;
+	            $(this).datagrid('refreshRow', index);
+	        },
+	        onAfterEdit:function(index,row){
+	            row.editing = false;
+	            $(this).datagrid('refreshRow', index);
+	        },
+	        onCancelEdit:function(index,row){
+	            row.editing = false;
+	            $(this).datagrid('refreshRow', index);
+	        },
+            detailFormatter:function(index,row){
+                return '<div class="ddv"></div>';
+            },
+            onExpandRow: function(index,row){
+                var ddv = $(this).datagrid('getRowDetail',index).find('div.ddv');
+                ddv.panel({
+                    border:false,
+                    cache:true,
+                    href:'projectForm.html',
+                    onLoad:function(){
+                        $('#tt').datagrid('fixDetailRowHeight',index);
+                        $('#tt').datagrid('selectRow',index);
+                        var content = JSON.parse(row.content);
+                        $('#tt').datagrid('getRowDetail',index).find('form').form('load',content);
+                    }
+                });
+                $('#tt').datagrid('fixDetailRowHeight',index);
+            }
+		});
+	});
+	function closedd() {
+		$('#dd').dialog('close');
+	}
+	function ss(userId) {
+		$('#HdUserId').val(userId);
+		$('#divUser div').css({
+			"background-color" : ''
+		});
+		$('#divUser').find('input').each(function() {
+			if ($(this).val() == userId) {
+				$(this).parent('div').css({
+					"background-color" : '#3399ff'
+				});
+			}
+		})
+	}
+	function openIcon() {
+		$('#dd2').dialog('open');
+	}
+	function view() {
+		var row = $('#tt').datagrid('getSelected');
+		console.log(row);
+		var projectName = row['projectName'];
+		var url = "/dashview/pages/projectView.html?projectName="+projectName;
+		window.location.href = url;
+	}
+	function add() {
+		var url = "/dashview/pages/projectView.html";
+		window.location.href = url;
+	}
+	function edit() {
+		var row = $('#tt').datagrid('getSelected');
+		console.log(row);
+		var index = $('#tt').datagrid('getRowIndex', row);
+		$('#tt').datagrid('beginEdit', index);
+	}
+	function del() {
+		var row = $('#tt').datagrid('getSelected');
+		if (row != null) {
+			var delURL;
+			var name = row.projectName;
+			delURL = "/dashview/player/project/"+name;
+			
+			$.messager.confirm('Info', 'will you delete them ?', function(i) {
+				if (i) {
+					$.ajax({
+					    url: delURL,
+					    type: 'DELETE',
+					    success: function(msg) {
+							msgShow('Info', 'delete successfully.', 'info');
+							$('#tt').datagrid('reload');
+						}
+					});
+				}
+			})
+
+		} else {
+			msgShow('Info', 'please selected one row.', 'Info');
+		}
+	}
+</script>
+</head>
+<body style="background: white">
+	<form id="form1" runat="server">
+		<input id="HdId" type="hidden" /> <input id="HdUserId" type="hidden" />
+		<div class="btabs">
+			<span class="icon icon-Distribution">&nbsp;</span><a
+				href="javascript:void(0)" onclick="view()">View</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a> 
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="del()"><span class="icon icon-delete">&nbsp;</span>Delete</a>
+		</div>
+		<div style="height: 2px"></div>
+		<div id="div1" style="width:100%; height:100%">
+			<table id="tt" class="easyui-datagrid"></table>
+		</div>
+		
+	</form>
+</body>
+</html>

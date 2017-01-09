@@ -89,14 +89,14 @@ public class OozieGenerator {
 	private static ETLCmd getCmd(ActionNode an) {
 		try{
 			String cmdClazz = (String) an.getProperties().get(ActionNode.key_cmd_class);
-			return (ETLCmd) Class.forName(cmdClazz).newInstance();
+			return (ETLCmd) Thread.currentThread().getContextClassLoader().loadClass(cmdClazz).newInstance();
 		}catch(Exception e){
 			logger.error("", e);
 			return null;
 		}
 	}
 	
-	private static String getInputDir(Data d){
+	private static String getInputDir(Data d, InputFormatType ift, DataType dt){
 		String baseoutput = null;
 		if (d.getBaseOutput()==null){
 			baseoutput="*";
@@ -106,7 +106,7 @@ public class OozieGenerator {
 		String inputDir=null;
 		if (d.isInstance()){
 			if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
-				if (d.getDataFormat()!=InputFormatType.FileName && d.getRecordType()==DataType.Path){
+				if (ift!=InputFormatType.FileName && dt==DataType.Path){
 					//the content of the input are path, we need to get the content of those paths
 					//${getContentsFromDfsFiles(nameNode, concat(concat('/femtocell/femto/filenameupdate_output/',wf:id()),'/'))}
 					inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'))}", 
@@ -115,7 +115,7 @@ public class OozieGenerator {
 					inputDir = String.format("%s%s/%s",d.getLocation(),wfid,baseoutput);
 				}
 			}else{
-				if (d.getDataFormat()!=InputFormatType.FileName && d.getRecordType()==DataType.Path){
+				if (ift!=InputFormatType.FileName && dt==DataType.Path){
 					//TODO
 					throw new UnsupportedOperationException();
 				}else{
@@ -176,6 +176,8 @@ public class OozieGenerator {
 		//all the input dataset to this action should have the same inputformattype, datatype/recordtype
 		InputFormatType ift = null;
 		DataType dt = null;
+		String aift = (String) an.getProperty(ETLCmd.cfgkey_input_format);
+		String adt = (String) an.getProperty(ETLCmd.cfgkey_record_type);
 		for (NodeLet ln: inlets){
 			if (ln.getDataName()!=null){
 				Data d = flow.getDataDef(ln.getDataName());
@@ -183,22 +185,28 @@ public class OozieGenerator {
 					logger.error(String.format("data %s not found.", ln.getDataName()));
 					return null;
 				}else{
-					inputDataDirs.add(getInputDir(d));
 					if (ift==null){
 						ift = d.getDataFormat();
 						dt = d.getRecordType();
+						if (aift!=null){
+							ift = InputFormatType.valueOf(aift);
+						}
+						if (adt!=null){
+							dt = DataType.valueOf(adt);
+						}
 					}else{
-						if (!ift.equals(d.getDataFormat())){
+						if (aift==null && !ift.equals(d.getDataFormat())){
 							logger.error(String.format("all input data should have the same inputformattype, %s differ with %s in action %s", 
 									d, ift, an.getName()));
 							return null;
 						}
-						if (!dt.equals(d.getRecordType())){
+						if (adt==null && !dt.equals(d.getRecordType())){
 							logger.error(String.format("all input data should have the same datatype, %s differ with %s in action %s", 
 									d, dt, an.getName()));
 							return null;
 						}
 					}
+					inputDataDirs.add(getInputDir(d, ift, dt));
 				}
 			}
 		}
@@ -225,7 +233,7 @@ public class OozieGenerator {
 		outputDirCp.setName(prop_outputdirs);
 		List<NodeLet> outlets = an.getOutlets();
 		String outputDataDir=null;
-		if (outlets!=null){//for multiple output, the location should be the same, only differ baseoutput
+		if (outlets!=null && outlets.size()>0){//for multiple output, the location should be the same, only differ baseoutput
 			String dataName = outlets.iterator().next().getDataName();
 			if (dataName!=null){
 				Data d = flow.getDataDef(dataName);

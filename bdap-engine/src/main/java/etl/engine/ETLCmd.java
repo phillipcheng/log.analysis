@@ -27,7 +27,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -62,6 +61,8 @@ public abstract class ETLCmd implements Serializable{
 	public static final @ConfigKey String cfgkey_skip_header_exp="skip.header.exp";
 	public static final @ConfigKey String cfgkey_file_table_map="file.table.map";
 	public static final @ConfigKey String cfgkey_key_value_sep="key.value.sep";//NOT USED YET
+	public static final @ConfigKey String cfgkey_record_type="record.type";//override what defined on the input data
+	public static final @ConfigKey String cfgkey_input_format="input.format";//override what defined on the input data
 	
 	//system variables
 	public static final String VAR_NAME_TABLE_NAME="tablename";
@@ -84,6 +85,8 @@ public abstract class ETLCmd implements Serializable{
 	protected String strFileTableMap;
 	protected transient CompiledScript expFileTableMap;
 	protected String keyValueSep=null;
+	protected DataType recordType = null;
+	protected InputFormatType inputFormatType = null;
 	
 	protected transient FileSystem fs;
 	private transient PropertiesConfiguration pc;
@@ -175,6 +178,14 @@ public abstract class ETLCmd implements Serializable{
 		if (strFileTableMap!=null){
 			expFileTableMap = ScriptEngineUtil.compileScript(strFileTableMap);
 			logger.info(String.format("fileTableMapExp:%s", expFileTableMap));
+		}
+		String strRecordType = getCfgString(cfgkey_record_type, null);
+		if (strRecordType!=null){
+			recordType = DataType.valueOf(strRecordType);
+		}
+		String strInputFormatType = getCfgString(cfgkey_input_format, null);
+		if (strInputFormatType!=null){
+			inputFormatType = InputFormatType.valueOf(strInputFormatType);
 		}
 		
 	}
@@ -431,7 +442,6 @@ public abstract class ETLCmd implements Serializable{
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
-		logger.debug("map process:%d,%s", offset, row);
 		if (skipHeader && offset==0) {
 			logger.info("skip header:" + row);
 			return null;
@@ -449,11 +459,13 @@ public abstract class ETLCmd implements Serializable{
 		}
 		
 		List<Tuple2<String, String>> it = flatMapToPair(tfName, row, context);
-		for (Tuple2<String,String> t : it){
-			if (t._2!=null){
-				context.write(new Text(t._1), new Text(t._2));
-			}else{//for no reduce job, value can be null
-				context.write(new Text(t._1), null);
+		if (it!=null){
+			for (Tuple2<String,String> t : it){
+				if (t._2!=null){
+					context.write(new Text(t._1), new Text(t._2));
+				}else{//for no reduce job, value can be null
+					context.write(new Text(t._1), null);
+				}
 			}
 		}
 	

@@ -1,9 +1,12 @@
 package etl.flow.spark;
 
+import java.io.File;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +45,14 @@ public class SparkFlowMgr extends FlowMgr{
 	public boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception{
 		String flowName = flow.getName();
 		SparkServerConf ssc = fd.getSparkServerConf();
+		String prjFolder = String.format("%s/%s", ssc.getTmpFolder(), prjName);
+		//clean up the prjFolder
+		Files.walk(Paths.get(prjFolder), FileVisitOption.FOLLOW_LINKS)
+			.sorted(Comparator.reverseOrder())
+			.map(Path::toFile)
+			.forEach(File::delete);
 		String targetDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getTargetFolder());
-		if (!Files.exists(Paths.get(targetDir))) Files.createDirectories(Paths.get(targetDir));
+		Files.createDirectories(Paths.get(targetDir));
 		//generate the driver java file
 		String srcRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getSrcFolder());
 		if (!Files.exists(Paths.get(srcRootDir))) Files.createDirectories(Paths.get(srcRootDir));

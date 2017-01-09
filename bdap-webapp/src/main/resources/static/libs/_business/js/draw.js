@@ -14,34 +14,36 @@ var _draw = {
 		d3.select("#" + exceptId).attr("class", exceptClassName);
 	},
 	_drawInputData: function(gId) {
-		console.log("----------_drawInputData------------");
-		console.log(arguments);
 		d3.select("#" + gId).selectAll(".inPath").remove();
 		var nodeData = g.node(gId);
 		var gmain = d3.select("#" + gId);
 		each(result.nodes, function() {
 			if(this.id.toString().localeCompare(gId) == 0) {
-				console.log("this:", this);
 				each(this.inLets, function(i, o) {
-					console.log("o", o);
 					if(o.show) {
 						if(o.state.localeCompare("show") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + ",0)scale(1,1)")
 								.attr("id", o.id + "_point")
 								.attr("class", "inPath").attr("self", "showInData").attr("G", gId).attr("arge", o.id)
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y - nodeData.height / 2))
 								.attr("onclick", "_event.addIn_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y - nodeData.height / 2))
 								.attr("self", "showInData").attr("arge", o.id);
 							var temppath = tempg.append("path").attr("self", "showInData")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y - nodeData.height / 2))
 								.attr("d", "M-3,0L3,0M0,3L0,-3").attr("G", gId).attr("arge", o.id);
 						} else if(o.state.localeCompare("hide") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + ",0)scale(1,1)")
 								.attr("id", o.id + "_point")
 								.attr("class", "inPath").attr("self", "hideInData").attr("G", gId).attr("arge", o.id)
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y - nodeData.height / 2))
 								.attr("onclick", "_event.addIn_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y - nodeData.height / 2))
 								.attr("self", "hideInData").attr("arge", o.id);
 							var temppath = tempg.append("path").attr("self", "hideInData")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y - nodeData.height / 2))
 								.attr("d", "M-3,0L3,0").attr("G", gId).attr("arge", o.id);
 						}
 					}
@@ -51,7 +53,6 @@ var _draw = {
 			}
 			return true;
 		});
-		console.log(result);
 	},
 	_drawOutputData: function(gId) {
 		d3.select("#" + gId).selectAll(".outPath").remove();
@@ -64,20 +65,26 @@ var _draw = {
 						if(o.state.localeCompare("show") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + "," + nodeData.height + ")scale(1,1)")
 								.attr("id", o.id + "_point")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y + nodeData.height / 2))
 								.attr("class", "outPath").attr("self", "showInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addOut_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y + nodeData.height / 2))
 								.attr("self", "showInData").attr("arge", o.id);
 							var temppath = tempg.append("path").attr("self", "showInData")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y + nodeData.height / 2))
 								.attr("d", "M-3,0L3,0M0,3L0,-3").attr("G", gId).attr("arge", o.id);
 						} else if(o.state.localeCompare("hide") == 0) {
 							var tempg = gmain.append("g").attr("transform", "translate(" + (40 * i) + "," + nodeData.height + ")scale(1,1)")
 								.attr("id", o.id + "_point")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y + nodeData.height / 2))
 								.attr("class", "outPath").attr("self", "hideInData").attr("G", gId).attr("arge", o.id)
 								.attr("onclick", "_event.addOut_click()");
 							var tempcircle = tempg.append("circle").attr("G", gId).attr("r", "5")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y + nodeData.height / 2))
 								.attr("self", "hideInData").attr("arge", o.id);
 							var temppath = tempg.append("path").attr("self", "hideInData")
+								.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2)).attr("y", (nodeData.y + nodeData.height / 2))
 								.attr("d", "M-3,0L3,0").attr("G", gId).attr("arge", o.id);
 						}
 					}
@@ -87,9 +94,8 @@ var _draw = {
 			}
 			return true;
 		});
-		console.log(result);
 	},
-	_drawDataInPutAndOutPut: function(gId) {
+	_drawDataInPutAndPropertyAndOutPut: function(gId) {
 		var nodeData = g.node(gId);
 		var hadInput = false;
 		var hadOutput = false;
@@ -99,6 +105,10 @@ var _draw = {
 
 		var property_height = d3.select("#" + gId + "_property_rect").attr("height");
 		nodeData.height = _action_node_min_height + parseInt(property_height);
+		if(parseInt(property_height) > 0) {
+			nodeData.width = _node_max_width;
+			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
+		}
 
 		d3.select("#" + gId).selectAll(".inPath")
 			.each(function() {
@@ -112,14 +122,14 @@ var _draw = {
 						id: tempId,
 						display: false,
 						arge: tempArge,
-						G:tempG
+						G: tempG
 					});
 				} else if(tempSelf.localeCompare("hideInData") == 0) {
 					aryInput.push({
 						id: tempId,
 						display: true,
 						arge: tempArge,
-						G:tempG
+						G: tempG
 					});
 					hadInput = true;
 				}
@@ -137,14 +147,14 @@ var _draw = {
 						id: tempId,
 						display: false,
 						arge: tempArge,
-						G:tempG
+						G: tempG
 					});
 				} else if(tempSelf.localeCompare("hideInData") == 0) {
 					aryOutput.push({
 						id: tempId,
 						display: true,
 						arge: tempArge,
-						G:tempG
+						G: tempG
 					});
 					hadOutput = true;
 				}
@@ -165,34 +175,31 @@ var _draw = {
 		_build._build();
 
 		var g_instance = childsvg.find(gId);
-		console.log("aryInput", aryInput);
 		each(aryInput, function() {
 			var tempData = g_instance.node(this.arge);
+			d3.select("#" + this.arge).selectAll("text").remove();
 			if(this.display) {
 				tempData.width = _node_data_width;
 				tempData.height = _node_data_height;
 				tempData.rect.width = _node_data_width;
 				tempData.rect.height = _node_data_height;
-				
-				
 
-				d3.select("#" + this.arge).selectAll("text").remove();
 				d3.select("#" + this.arge).append("text")
 					.attr("G", this.G)
 					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
-	
+
 				d3.select("#" + this.arge).append("text")
 					.attr("id", this.arge + "_name").attr("G", this.G)
 					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
-	
+
 				d3.select("#" + this.arge).append("text")
 					.attr("G", this.G)
 					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
-	
+
 				d3.select("#" + this.arge).append("text")
 					.attr("id", this.arge + "_dataName").attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");	
-					
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
+
 			} else {
 				tempData.width = 0;
 				tempData.height = 0;
@@ -204,29 +211,30 @@ var _draw = {
 
 		each(aryOutput, function() {
 			var tempData = g_instance.node(this.arge);
+			d3.select("#" + this.arge).selectAll("text").remove();
 			if(this.display) {
 				tempData.width = _node_data_width;
 				tempData.height = _node_data_height;
 				tempData.rect.width = _node_data_width;
 				tempData.rect.height = _node_data_height;
-				
+
 				d3.select("#" + this.arge).selectAll("text").remove();
 				d3.select("#" + this.arge).append("text")
 					.attr("G", this.G)
 					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
-	
+
 				d3.select("#" + this.arge).append("text")
 					.attr("id", this.arge + "_name").attr("G", this.G)
 					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
-	
+
 				d3.select("#" + this.arge).append("text")
 					.attr("G", this.G)
 					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
-	
+
 				d3.select("#" + this.arge).append("text")
 					.attr("id", this.arge + "_dataName").attr("G", this.G)
-					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");					
-				
+					.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
+
 			} else {
 				tempData.width = 0;
 				tempData.height = 0;
@@ -239,200 +247,103 @@ var _draw = {
 		_build._build(gId, g_instance);
 
 		this._drawAboutPosition(gId);
-
-		//		var nodeData = g.node(gId);
-		//		var hadInput = false;
-		//		var aryInput = [];
-		//		var hadOutput = false;
-		//		var aryOutput = [];
-		//		each(result.nodes, function() {
-		//			if(this.id.localeCompare(gId) == 0) {
-		//				each(this.inLets, function(i, o) {
-		//					if(o.state.toString().localeCompare("hide") == 0) {
-		//						hadInput = true;
-		//						aryInput.push(i);
-		//					}
-		//					return true;
-		//				});
-		//				each(this.outlets, function(i, o) {
-		//					if(o.state.toString().localeCompare("hide") == 0) {
-		//						hadOutput = true;
-		//						aryOutput.push(i);
-		//					}
-		//					return true;
-		//				});
-		//				return false;
-		//			}
-		//			return true;
-		//		});
-		//
-		//		//展开内容
-		//		if(hadInput) {
-		//			if(aryInput.length == 1) {
-		//				nodeData.height = nodeData.height + _node_data_height;
-		//			}
-		//		}
-		//		if(hadOutput) {
-		//			if(aryOutput.length == 1) {
-		//				nodeData.height = nodeData.height + _node_data_height;
-		//			}
-		//		}
-		//
-		//		if(hadInput || hadOutput) {
-		//			nodeData.width = _node_max_width;
-		//			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
-		//		}
-		//
-		//		console.log("my result:", nodeData);
-		//
-		//		_build._build();
-		//
-		//		var g_child_instance = childsvg.find(gId);
-		//		each(aryInput, function() {
-		//			var inputObj = g_child_instance.node(gId + "_InData_" + this);
-		//			inputObj.width = _node_data_width;
-		//			inputObj.height = _node_data_height;
-		//			inputObj.rect.width = _node_data_width;
-		//			inputObj.rect.height = _node_data_height;
-		//			_build._build(gId, g_child_instance);
-		//			//加载属性内容
-		//			console.log("加载属性内容", inputObj);
-		//
-		//			d3.select("#" + inputObj.id).selectAll("text").remove();
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("id", inputObj.id + "_name").attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("id", inputObj.id + "_dataName").attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
-		//
-		//			return true;
-		//		});
-		//
-		//		each(aryOutput, function() {
-		//			var inputObj = g_child_instance.node(gId + "_OutData_" + this);
-		//			inputObj.width = _node_data_width;
-		//			inputObj.height = _node_data_height;
-		//			inputObj.rect.width = _node_data_width;
-		//			inputObj.rect.height = _node_data_height;
-		//			_build._build(gId, g_child_instance);
-		//			//加载属性内容
-		//			console.log("加载属性内容", inputObj);
-		//
-		//			d3.select("#" + inputObj.id).selectAll("text").remove();
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 8).text("name:");
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("id", inputObj.id + "_name").attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 16).text("");
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 24).text("nameData:");
-		//
-		//			d3.select("#" + inputObj.id).append("text")
-		//				.attr("id", inputObj.id + "_dataName").attr("G", inputObj.G)
-		//				.attr("class", "nodeChildG_Text").attr("x", 0).attr("y", 32).text("");
-		//			return true;
-		//		});
-		//
-		//		this._drawAboutPosition(gId);
 	},
-	_drawProperty: function(gId, obj) {
-		console.log("-------------_drawProperty-------------------");
-		console.log(arguments);
+	_drawPropertyLeftDiv: function(gId, obj) {
 		var nodeData = g.node(gId);
 		$("#rightupcssbody").html("");
-
 		d3.select("#divrightup").style({
 			"display": "block"
 		});
+		var notProperty = "@class,id,cmd.class";
+		if(obj["cmd.class"]) {
+			$.each(obj, function(k, v) {
+				if(typeof v == 'string') {
+					if(notProperty.indexOf(k) == -1) {
+						if(k.localeCompare("name") == 0) {
+							$("#rightupcssheaderstring").html(v);
+						}
+						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+						drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+					}
+				}
+			});
+		} else if(obj["name"].toString().localeCompare("start") == 0) {
+			var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+			divobj.append("strong").text("name:");
+			divobj.append("input").attr("type", "text").attr("value", "start").attr("placeholder", "start...").attr("onkeyup", "changeProperty('" + gId + "','name')");
 
-		var notProperty = "@class,id";
+			divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+
+			divobj.append("strong").text("duration:");
+			divobj.append("input").attr("type", "number")
+				.attr("value", "500")
+				.attr("placeholder", "you need input integer...")
+				.attr("onchange", "changeProperty('" + gId + "','duration')");
+		}else if(obj["name"].toString().localeCompare("end")==0){
+			var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+			divobj.append("strong").text("name:");
+			divobj.append("input").attr("type", "text").attr("value", "start").attr("placeholder", "start...").attr("onkeyup", "changeProperty('" + gId + "','name')");			
+		}
+
+		this._drawProperty(gId, obj);
+	},
+	_drawProperty: function(gId, obj) {
+		//画 property 哈哈哈哈
 		var _index = 0;
+		var notProperty = "@class,id,cmd.class";
 		$.each(obj, function(k, v) {
 			if(typeof v == 'string') {
 				if(notProperty.indexOf(k) == -1) {
-					_index++;
-					if(k.localeCompare("name") == 0) {
-						$("#rightupcssheaderstring").html(v);
+					if(v.length > 0) {
+						_index++;
 					}
-					var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
-					divobj.append("strong").text(k + ":");
-					divobj.append("input").attr("type", "text").attr("value", v).attr("placeholder", "...")
-						.attr("onkeyup", "changeProperty('" + gId + "','" + k + "')");
 				}
 			}
 		});
-
-		//画 property 哈哈
 		var g_child_Instance = childsvg.find(gId);
 		if(g_child_Instance == null) {
 			g_child_Instance = childsvg.initNewInstance(gId);
-			console.log("checked", g_child_Instance);
 		}
 
-		nodeData.width = _node_max_width;
-		nodeData.height = nodeData.height + (_index * 20);
-		nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
-		_build._build();
-
 		var propertyData = g_child_Instance.node(gId + "_property");
-		console.log("propertyData", propertyData);
 		propertyData.width = _node_max_property_width;
 		propertyData.height = (_index * 20);
 		propertyData.rect.width = _node_max_property_width;
 		propertyData.rect.height = (_index * 20);
-		if(document.getElementById(gId + "_property").getElementsByTagName("text") &&
-			document.getElementById(gId + "_property").getElementsByTagName("text").length > 0) {
 
-		} else {
-			var property_no_txt = "@class,id";
-			var txt_index = 0;
-			each(result.nodes, function() {
-				if(this.id.localeCompare(gId) == 0) {
-					$.each(this, function(k, v) {
-						var temp_k = k.toString().replace(".", "");
-						if(typeof v == 'string') {
-							if(property_no_txt.indexOf(k) == -1) {
-								txt_index++;
-								d3.select("#" + gId + "_property")
-									.append("text").attr("id", gId + "_property_" + temp_k)
-									.attr("x", 0).attr("y", (txt_index * 20) - 5).text(k + ":" + v);
-							}
+		d3.select("#" + gId + "_property").selectAll("text").remove();
+		var property_no_txt = "@class,id,cmd.class";
+		var txt_index = 0;
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				$.each(this, function(k, v) {
+					var temp_k = k.toString().replaceAll(".", "");
+					if(typeof v == 'string' && v.length > 0) {
+						if(property_no_txt.indexOf(k) == -1) {
+							txt_index++;
+							d3.select("#" + gId + "_property")
+								.append("text").attr("id", gId + "_property_" + temp_k)
+								.attr("x", 0).attr("y", (txt_index * 20) - 5).text(k + ":" + v);
 						}
-					});
-					return false;
-				}
-				return true;
-			});
-		}
+					}
+				});
+				return false;
+			}
+			return true;
+		});
+
 		_build._build(gId, g_child_Instance);
 		this._drawAboutPosition(gId);
+		_draw._drawDataInPutAndPropertyAndOutPut(gId);
 	},
 	_drawClearProperty: function(gId) {
 		$("#rightupcssbody").html("");
 		d3.select("#divrightup").style({
 			"display": "none"
 		});
-
 		var tempheight = d3.select("#" + gId + "_property_rect").attr("height");
 		var hadInData = false;
 		var hadOutData = false;
-
 		d3.select("#" + gId).selectAll(".inPath")
 			.each(function() {
 				var temp = d3.select(this).attr("self");
@@ -440,7 +351,6 @@ var _draw = {
 					hadInData = true;
 				}
 			});
-
 		d3.select("#" + gId).selectAll(".outPath")
 			.each(function() {
 				var temp = d3.select(this).attr("self");
@@ -448,7 +358,6 @@ var _draw = {
 					hadOutData = true;
 				}
 			});
-
 		d3.select("#" + gId + "_property").selectAll("text").remove();
 		var nodeData = g.node(gId);
 		nodeData.pro.self = "ShowProperty";
@@ -501,8 +410,6 @@ var _draw = {
 			each(result.nodes, function() {
 				if(this.id.localeCompare(gId) == 0) {
 					each(this.outlets, function(i, o) {
-						console.log();
-						console.log(d3.select("#" + o.id));
 						d3.select("#" + o.id + "_point").attr("transform", "translate(" + (i * 40) + "," + nodeData.height + ")scale(1,1)");
 						return true;
 					});
@@ -511,32 +418,217 @@ var _draw = {
 				return true;
 			});
 		}, 750);
+	},
+	_drawNodeDataRelation: function() {
+		d3.select("#lineContainer").selectAll(".edgeData").remove();
+		var fromPoint = [];
+		var toPoint = [];
+		each(result.links, function() {
+			var fromtxt, totxt;
+			fromtxt = this.fromNodeName;
+			totxt = this.toNodeName;
+			//----------------------------------开始的出发画线--------------------------------
+			each(result.nodes, function() {
+				if(this.id.localeCompare(fromtxt) == 0) {
+					each(this.outlets, function() {
+						if(this.show) {
+							if(this.dataName.length > 0) {
+								var tempX = d3.select("#" + this.id + "_point").attr("x");
+								var tempY = d3.select("#" + this.id + "_point").attr("y");
+								fromPoint.push({
+									x: tempX,
+									y: tempY,
+									dataName: this.dataName
+								});
+							}
+						}
+						return true;
+					});
+					return false;
+				}
+				return true;
+			});
+			//-----------------------------------------结束----------------------------------------------------
+
+			//----------------------------------结束的画线--------------------------------
+			if(fromPoint.length > 0) {
+				each(result.nodes, function() {
+					if(this.id.localeCompare(totxt) == 0) {
+						each(this.inLets, function() {
+							if(this.show) {
+								if(this.dataName.length > 0) {
+									var tempX = d3.select("#" + this.id + "_point").attr("x");
+									var tempY = d3.select("#" + this.id + "_point").attr("y");
+									toPoint.push({
+										x: tempX,
+										y: tempY,
+										dataName: this.dataName
+									})
+								}
+							}
+							return true;
+						});
+						return false;
+					}
+					return true;
+				});
+			}
+			//-----------------------------------------结束----------------------------------------------------
+
+			//确定点的位置
+			if(fromPoint.length > 0 && toPoint.length > 0) {
+				each(fromPoint, function() {
+					var from_x = this.x;
+					var from_y = this.y;
+					var from_DataName = this.dataName;
+					each(toPoint, function() {
+						if(this.dataName.localeCompare(from_DataName) == 0) {
+							var points = [];
+							points.push({
+								x: parseInt(from_x),
+								y: parseInt(from_y)
+							});
+
+							points.push({
+								x: (parseInt(from_x) + parseInt(this.x)) / 2,
+								y: (parseInt(from_y) + parseInt(this.y)) / 2,
+							});
+
+							points.push({
+								x: parseInt(this.x),
+								y: parseInt(this.y)
+							});
+							console.log(points);
+							d3.select("#lineContainer").append("path")
+								.attr("class", "edgeData").attr("d", interpolate(points));
+						}
+						return true;
+					});
+					return true;
+				});
+			}
+			return true;
+		});
 	}
+}
+
+/**
+ * 
+ * @param {Object} divObj
+ * @param {Object} gId
+ * @param {Object} actionName
+ * @param {Object} propertyName
+ * @param {Object} propertyValue
+ */
+var drawInputContent = function(divObj, gId, actionName, propertyName, propertyValue) {
+	var notProperty = "@class,id,cmd.class";
+	each(propertyInfor, function() {
+		if(notProperty.indexOf(propertyName) == -1) {
+			if(this["cmd.class"]) {
+				if(this["cmd.class"].default) {
+					if(this["cmd.class"].default.toString().indexOf(actionName) > -1) {
+						if(this[propertyName]) {
+							console.log(this);
+							var obj = this[propertyName];
+							if(obj["enum"]) {
+								divObj.append("strong").text(propertyName + ":");
+								var selectedObj = divObj.append("select").attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
+								each(obj["enum"], function(i, o) {
+									if(this.toString().localeCompare(obj["default"].toString()) == 0) {
+										selectedObj.append("option").attr("selected", "selected")
+											.attr("value", this).text(this);
+									} else {
+										selectedObj.append("option").attr("value", this).text(this);
+									}
+									return true;
+								});
+							} else if(obj["type"].toString().localeCompare("string") == 0) {
+								if(propertyValue.length == 0) {
+									if(obj.default) {
+										propertyValue = obj.default;
+									}
+								}
+								divObj.append("strong").text(propertyName + ":");
+								divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
+									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+							} else if(obj["type"].toString().localeCompare("array") == 0) {
+								divObj.append("strong").text(propertyName + ":");
+								divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "you need input array...")
+									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+							} else if(obj["type"].toString().localeCompare("boolean") == 0) {
+								if(propertyValue.length > 0) {
+									if(propertyValue.localeCompare("true") == 0) {
+										divObj.append("input").attr("type", "checkbox").attr("checked", propertyValue).attr("placeholder", "you need input array...")
+											.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
+									} else {
+										divObj.append("input").attr("type", "checkbox").attr("placeholder", "you need input array...")
+											.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
+									}
+								} else {
+									divObj.append("input").attr("type", "checkbox").attr("placeholder", "you need input array...")
+										.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
+								}
+
+								divObj.append("strong").text(propertyName + ":");
+							} else if(obj["type"].toString().localeCompare("integer") == 0) {
+								if(propertyValue.length == 0) {
+									if(obj["default"]) {
+										propertyValue = obj["default"];
+									} else {
+										propertyValue = "0";
+									}
+								}
+								divObj.append("strong").text(propertyName + ":");
+								divObj.append("input").attr("type", "number")
+									.attr("value", propertyValue)
+									.attr("placeholder", "you need input integer...")
+									.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
+							}
+						} else {
+							divObj.append("strong").text(propertyName + ":");
+							divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
+								.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+						}
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	});
 }
 
 var dataSetList = [];
 
-var addLeftDiv = function(keys) {
-	dataSetList.unshift({
-		k: keys,
-		show: false,
-		v: {
+var addLeftDiv = function(keys, obj) {
+	if(obj) {
+		dataSetList.unshift({
+			k: keys,
+			show: false,
+			v: obj
+		});
+	} else {
+		dataSetList.unshift({
+			k: keys,
+			show: false,
+			v: {
+				name: 'data',
+				location: '',
+				dataFormat: 'Line',
+				recordType: 'Path',
+				instance: 'false'
+			}
+		});
+		
+		result.data.push({
+			id: keys,
 			name: 'data',
 			location: '',
 			dataFormat: 'Line',
 			recordType: 'Path',
 			instance: 'false'
-		}
-	});
-
-	result.data.push({
-		id: keys,
-		name: 'data',
-		location: '',
-		dataFormat: 'Line',
-		recordType: 'Path',
-		instance: 'false'
-	})
+		});
+	}
 
 	display();
 }
@@ -562,8 +654,6 @@ var deleteLeftDiv = function(keys) {
 		}
 		return true;
 	});
-
-	console.log(result.data);
 
 	display();
 }
@@ -660,27 +750,51 @@ var changeDataSetProeroty = function(gId) {
 		}
 		return true;
 	});
-	console.log(result);
 }
 var changeProperty = function(gId, propertyName) {
-	console.log("----------changeProperty------------");
-	console.log("arguments", arguments);
 	var e = window.event || arguments.callee.caller.arguments[0];
 	var o = getEventSources(e);
 	if(propertyName.localeCompare("name") == 0) {
 		$("#rightupcssheaderstring").html(o.value);
 		d3.select("#" + gId).select("text").text(o.value);
 	}
-	each(result.nodes, function() {
-		if(this.id.localeCompare(gId) == 0) {
-			this[propertyName] = o.value;
-			var tempPropertyName = propertyName.replace(".", "");
-			console.log(d3.select("#" + gId + "_property_" + tempPropertyName));
-			d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.value);
-			return false;
-		}
-		return true;
-	});
+	if(o.tagName.localeCompare("INPUT") == 0 && o.type.localeCompare("checkbox") == 0) {
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				this[propertyName] = o.checked.toString();
+				var tempPropertyName = propertyName.replaceAll(".", "");
+				d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.checked);
+
+				_draw._drawProperty(gId, this);
+				return false;
+			}
+			return true;
+		});
+	} else if(o.tagName.localeCompare("INPUT") == 0) {
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				this[propertyName] = o.value;
+				var tempPropertyName = propertyName.replaceAll(".", "");
+				d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.value);
+
+				_draw._drawProperty(gId, this);
+				return false;
+			}
+			return true;
+		});
+	} else if(o.tagName.localeCompare("SELECT") == 0) {
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				this[propertyName] = o.value;
+				var tempPropertyName = propertyName.replaceAll(".", "");
+				d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.value);
+
+				_draw._drawProperty(gId, this);
+				return false;
+			}
+			return true;
+		});
+	}
 }
 
 /**
@@ -688,8 +802,6 @@ var changeProperty = function(gId, propertyName) {
  * @param {Object} txtId
  */
 var changeData = function(txtId, propertyName, gId) {
-	console.log("--------changeData----------");
-	console.log(arguments);
 	var e = window.event || arguments.callee.caller.arguments[0];
 	var o = getEventSources(e);
 
@@ -716,7 +828,6 @@ var changeData = function(txtId, propertyName, gId) {
 			return true;
 		});
 	} else if(o.tagName.localeCompare("SELECT") == 0) {
-		//console.log(o.selectedOptions[0].innerText);
 		d3.select("#" + txtId + "_" + propertyName).text(o.selectedOptions[0].innerText);
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
@@ -738,5 +849,7 @@ var changeData = function(txtId, propertyName, gId) {
 			}
 			return true;
 		});
+
+		_draw._drawNodeDataRelation();
 	}
 }

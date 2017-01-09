@@ -14,8 +14,14 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class XmlRecordReader extends RecordReader<LongWritable, Text> {
+	
+	public static final Logger logger = LogManager.getLogger(XmlRecordReader.class);
+	
 	public static final String START_TAG_KEY = "xmlinput.start";
 	public static final String END_TAG_KEY = "xmlinput.end";
 	public static final String START_ROW_TAG_KEY = "xmlinput.row.start";
@@ -69,6 +75,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		start = fileSplit.getStart();
 		end = start + fileSplit.getLength();
 		Path file = fileSplit.getPath();
+		logger.debug(String.format("file split, start:%d, end:%d, file:%s", start, end, file.toString()));
 		FileSystem fs = file.getFileSystem(conf);
 		fsin = new XmlInputStream(fs.open(fileSplit.getPath()), start, end);
 		fsin.seek(start);
@@ -109,7 +116,11 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 					if (readUntilMatch(dataIn, endTag, true)) {
 						value.append(buffer.getData(), 0, buffer.getLength());
 						i = i + 1;
+					}else{
+						logger.debug(String.format("not match the endTag:%s at %d, end at %d", new String(endTag), dataIn.getPos(), dataIn.getEnd()));
 					}
+				}else{
+					logger.debug(String.format("not match the startTag:%s at %d, end at %d", new String(startTag), dataIn.getPos(), dataIn.getEnd()));
 				}
 			} finally {
 				buffer.reset();
@@ -160,6 +171,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 	}
 
 	public boolean nextKeyValue() throws IOException, InterruptedException {
+		boolean hasNext=true;
 		if (this.rowStartTag != null && this.rowEndTag != null) {
 			boolean available;
 			value.set(header);
@@ -170,7 +182,6 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 			if (available) {
 				byte[] footerBuf = footer.getBytes(StandardCharsets.UTF_8);
 				value.append(footerBuf, 0, footerBuf.length);
-				return true;
 			} else if (currentSectionIn != null) {
 				/* Close the previous section input stream */
 				currentSectionIn.close();
@@ -183,20 +194,21 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 					if (available) {
 						byte[] footerBuf = footer.getBytes(StandardCharsets.UTF_8);
 						value.append(footerBuf, 0, footerBuf.length);
-						return true;
 					} else {
-						return false;
+						hasNext=false;
 					}
 				} else {
-					return false;
+					hasNext=false;
 				}
 			} else {
-				return false;
+				hasNext=false;
 			}
 		} else {
 			value.clear();
-			return nextKeyValue(fsin, startTag, endTag, header, footer, 1);
+			hasNext = nextKeyValue(fsin, startTag, endTag, header, footer, 1);
 		}
+		logger.debug(String.format("nextKeyValue, key:%s, value:%s, hasNext:%b", key, value, hasNext));
+		return hasNext;
 	}
 
 	public LongWritable getCurrentKey() throws IOException, InterruptedException {

@@ -10,15 +10,12 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import bdap.util.PropertiesUtil;
-import etl.engine.InputFormatType;
 import etl.flow.deploy.EngineType;
 
 public class ActionNode extends Node{
 	
 	public static final String key_exe_type="exe.type";//etl.flow.ExeType
 	public static final String key_cmd_class="cmd.class";//the fully qualified class name of the cmd
-	
 	
 	public static List<String> sysProperties = null;
 	
@@ -35,19 +32,6 @@ public class ActionNode extends Node{
 	public ActionNode(String name, ExeType exeType){
 		super(name);
 		properties.put(key_exe_type, exeType.toString());
-	}
-	
-	public ActionNode(String name, ExeType exeType, InputFormatType ift){
-		this(name, exeType);
-	}
-	
-	//for writing test cases to construct action node from existing properties file
-	public ActionNode(String name, ExeType exeType, String propertiesFile){
-		this(name, exeType);
-		LinkedHashMap<String, String> map = PropertiesUtil.getPropertiesExactMap(propertiesFile);
-		for (String key: map.keySet()){
-			properties.put(key, map.get(key));
-		}
 	}
 	
 	@Override
