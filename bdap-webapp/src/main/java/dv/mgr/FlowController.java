@@ -3,7 +3,6 @@ package dv.mgr;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +70,7 @@ public class FlowController {
 	private static final String[] SEARCH_PACKAGES = new String[] {"etl.cmd"};
 	private static final String ACTION_NODE_CMDS_SEARCH_PACKAGES = "action.node.cmds.search.packages";
 	private static final String CMD_PARAMETER_PREFIX = "cfgkey_";
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	private String[] searchPackages;
 	
 	@Autowired
@@ -124,6 +124,50 @@ public class FlowController {
 	JsonSchema getFlowSchema() throws Exception {
 	    return FlowMgr.getFlowSchema(getETLCmdClasses());
 	}
+	
+	@RequestMapping(value = "/schema", method = RequestMethod.GET, params="projectId")
+	JsonSchema getFlowSchema(@RequestParam(value = "projectId") int projectId) throws Exception {
+		ProjectEntity pe = projectRepository.getOne(projectId);
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
+	    return FlowMgr.getFlowSchema(classes);
+	}
+	
+	@RequestMapping(value = "/schema", method = RequestMethod.GET, params="projectName")
+	JsonSchema getFlowSchema(@RequestParam(value = "projectName") String projectName) throws Exception {
+		ProjectEntity pe = projectRepository.findByName(projectName);
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
+	    return FlowMgr.getFlowSchema(classes);
+	}
 
 	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
 	Map<String, List<String>> getActionNodeCommands() {
@@ -132,6 +176,104 @@ public class FlowController {
 		Field[] fields;
 		Object obj;
 		List<Class<?>> classes = getETLCmdClasses();
+		if (classes != null) {
+			for (Class<?> cls: classes) {
+				if (cls.getCanonicalName() != null) {
+					cmdParameters = new ArrayList<String>();
+					fields = cls.getFields();
+					if (fields != null) {
+						for (Field f: fields) {
+						    if (Modifier.isStatic(f.getModifiers()) && (f.getName().startsWith(CMD_PARAMETER_PREFIX) ||
+						    		f.isAnnotationPresent(ConfigKey.class))) {
+						        try {
+									obj = FieldUtils.readStaticField(f, true);
+							        if (obj != null)
+							        	cmdParameters.add(obj.toString());
+								} catch (IllegalAccessException e) {
+									logger.error(e.getMessage(), e);
+								}
+						    }
+						}
+					}
+					classNames.put(cls.getCanonicalName(), cmdParameters);
+				}
+			}
+		}
+		return classNames;
+	}
+	
+	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET, params="projectId")
+	Map<String, List<String>> getActionNodeCommands(@RequestParam(value = "projectId") int projectId) {
+		ProjectEntity pe = projectRepository.getOne(projectId);
+		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
+		List<String> cmdParameters;
+		Field[] fields;
+		Object obj;
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
+		if (classes != null) {
+			for (Class<?> cls: classes) {
+				if (cls.getCanonicalName() != null) {
+					cmdParameters = new ArrayList<String>();
+					fields = cls.getFields();
+					if (fields != null) {
+						for (Field f: fields) {
+						    if (Modifier.isStatic(f.getModifiers()) && (f.getName().startsWith(CMD_PARAMETER_PREFIX) ||
+						    		f.isAnnotationPresent(ConfigKey.class))) {
+						        try {
+									obj = FieldUtils.readStaticField(f, true);
+							        if (obj != null)
+							        	cmdParameters.add(obj.toString());
+								} catch (IllegalAccessException e) {
+									logger.error(e.getMessage(), e);
+								}
+						    }
+						}
+					}
+					classNames.put(cls.getCanonicalName(), cmdParameters);
+				}
+			}
+		}
+		return classNames;
+	}
+	
+	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET, params="projectName")
+	Map<String, List<String>> getActionNodeCommands(@RequestParam(value = "projectName") String projectName) {
+		ProjectEntity pe = projectRepository.findByName(projectName);
+		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
+		List<String> cmdParameters;
+		Field[] fields;
+		Object obj;
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
 		if (classes != null) {
 			for (Class<?> cls: classes) {
 				if (cls.getCanonicalName() != null) {
@@ -224,7 +366,6 @@ public class FlowController {
 		this.validateUser(userName);
 		return this.flowRepository.findAll();
 	}
-	
 	
 	@RequestMapping(value = "/{flowId}/instance/{instanceid}/add", method = RequestMethod.GET)
 	void add(@PathVariable String userName, @PathVariable String flowId, @PathVariable String instanceid) {
