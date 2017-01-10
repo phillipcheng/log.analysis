@@ -1,14 +1,32 @@
 var run = {
 		changeNodeStyle : function(nodeName, state){
-			$.each(FLOW_RUNTIME_STATE, function(i, obj){
+			var thisObj = this;
+			$.each(NODE_RUNTIME_STATE, function(i, obj){
 				if(obj.state == state) {
 					var fillColor = "fill:" + obj.color;
-					var test = $("#"+nodeName).attr("class");
-					console.info(test);
-					d3.select("#"+nodeName).attr("class","");
-					d3.select("#"+nodeName).attr("style", fillColor);
+					var currentClass = $("#"+nodeName).attr("class");
+					currentClass = currentClass.replaceAll("success", "").replaceAll("fail", "");
+					if(thisObj.isSuccessful(state)){
+						currentClass = currentClass + " success";
+					}else if(thisObj.isFailed(state)){
+						currentClass = currentClass + "  fail";
+					}
+					d3.select("#"+nodeName).attr("class",currentClass);
+//					d3.select("#"+nodeName).attr("style", fillColor);
 				}
 			});
+		},
+		isSuccessful : function(state){
+			if(state == 'OK' || state == 'DONE' || state == 'SUCCEEDED'){
+				return true;
+			}
+			return false;
+		},
+		isFailed : function(state){
+			if(state == 'ERROR' || state == 'KILLED' || state == 'FAILED'){
+				return true;
+			}
+			return false;
 		},
 		
 		runFlow : function(flowname){

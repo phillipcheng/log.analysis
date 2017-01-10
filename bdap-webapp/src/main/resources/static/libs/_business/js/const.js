@@ -69,7 +69,7 @@ var FLOW_RUNTIME_STATE =[{"state":"PREP", "color":""},
  * define runtime node state.
  */
 var NODE_RUNTIME_STATE = [{"state":"PREP", "color":""},
-                          {"state":"RUNNING", "color":"green"},
+                          {"state":"RUNNING", "color":""},
                           {"state":"OK", "color":""},
                           {"state":"ERROR", "color":""},
                           {"state":"USER_RETRY", "color":""},
