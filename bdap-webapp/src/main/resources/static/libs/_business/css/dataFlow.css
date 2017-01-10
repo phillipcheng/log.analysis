@@ -288,3 +288,27 @@ body {
 }
 
 .nodeSmallG {}
+
+.success {}
+
+.success>rect {
+	fill: #00FF00;
+}
+
+.success:hover>rect {
+	fill: #00FF00;
+	stroke: #000000;
+	stroke-width: 2;
+}
+
+.fail {}
+
+.fail>rect {
+	fill: #FF0000;
+}
+
+.fail:hover>rect {
+	fill: #FF0000;
+	stroke: #000000;
+	stroke-width: 2;
+}
