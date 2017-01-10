@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -78,8 +79,68 @@ public class HdfsClassLoader extends ClassLoader {
         }
         throw new ClassNotFoundException("Unable to find " + className + " in path " + this.libPath);
     }
+    
+	public List<Class<?>> findClasses(String[] searchPackages, Class<?> baseClass) {
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("Searching for classes in path %s", this.libPath));
+        }
+        JarInputStream jarIn = null;
+        List<String> files = HdfsUtil.listDfsFilePath(fs, libPath, true);
+        Path jar;
+        String clsName;
+        Class<?> cls;
+        for (String f: files) {
+        	if (f != null && f.endsWith(".jar")) {
+		        try {
+		        	jar = new Path(f);
+		            jarIn = new JarInputStream(fs.open(jar));
+		            JarEntry currentEntry = null;
+		            while ((currentEntry = jarIn.getNextJarEntry()) != null) {
+		                if (LOG.isTraceEnabled()) {
+		                    LOG.trace(String.format("Comparing entry %s", currentEntry.getName()));
+		                }
+		                if (!currentEntry.isDirectory() && compareWith(currentEntry.getName(), searchPackages)) {
+		                	clsName = className(currentEntry.getName());
+		                	cls = findLoadedClass(clsName);
+		                	if (cls == null) {
+			                    byte[] classBytes = readEntry(jarIn);
+			                    cls = defineClass(clsName, classBytes, 0, classBytes.length);
+			                    if (baseClass != null && cls != null && baseClass.isAssignableFrom(cls))
+			                    	classes.add(cls);
+		                	}
+		                }
+		            }
+		        }
+		        catch (IOException ioe) {
+		        	LOG.error(ioe.getMessage(), ioe);
+		        }
+		        finally {
+		            closeQuietly(jarIn);
+		            // While you would think it would be prudent to close the filesystem that you opened,
+		            // it turns out that this filesystem is shared with HBase, so when you close this one,
+		            // it becomes closed for HBase, too.  Therefore, there is no call to closeQuietly(fs);
+		        }
+		    }
+        }
+        return classes;
+	}
 
-    /**
+    private boolean compareWith(String classPath, String[] searchPackages) {
+    	if (classPath != null && classPath.endsWith(".class") && searchPackages != null) {
+    		String clsName = className(classPath);
+    		for (String pkg: searchPackages)
+    			if (clsName.startsWith(pkg))
+    				return true;
+    	}
+		return false;
+	}
+
+	private String className(String classPath) {
+		return classPath.substring(0, classPath.length() - 6).replace('/', '.');
+	}
+
+	/**
      * Converts a binary class name to the path that it would show up as in a jar file.
      * For example, java.lang.String would show up as a jar entry at java/lang/String.class
      */
