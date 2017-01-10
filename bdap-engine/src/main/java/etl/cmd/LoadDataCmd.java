@@ -216,7 +216,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 				return DBUtil.executeSqls(copysqls, super.getPc());
 			}
 		}else{
-			logger.warn(String.format("skip loading table:%s, tableNames:%", key, Arrays.asList(this.tableNames)));
+			logger.warn(String.format("skip loading table:%s, tableNames:%s", key, Arrays.asList(this.tableNames)));
 		}
 		return 0;
 	}

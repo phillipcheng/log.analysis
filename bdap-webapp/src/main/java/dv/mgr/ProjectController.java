@@ -68,17 +68,30 @@ public class ProjectController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST)
-	ResponseEntity<?> add(@PathVariable String userName, @RequestBody Map<String, String> input) {
+	ResponseEntity<Integer> add(@PathVariable String userName, @RequestBody Map<String, String> input) {
 		this.validateUser(userName);
 		
 		logger.debug(input);
 		
-		ProjectEntity pe = projectRepository.findByName(input.get("projectName"));
+		ProjectEntity pe;
+		String idStr = input.get("id");
+		if (idStr != null && idStr.length() > 0) {
+			int id = Integer.parseInt(idStr);
+			pe = projectRepository.getOne(id);
+			String pname = input.get("projectName");
+			if (pname != null && pname.length() > 0)
+				pe.setProjectName(pname);
+			
+		} else {
+			pe = projectRepository.findByName(input.get("projectName"));
+		}
 		
 		if (pe == null) {
 			pe = new ProjectEntity();
 			pe.setProjectName(input.get("projectName"));
 		}
+		
+		input.remove("id");
 		
 		pe.setType(input.get("type"));
 		pe.setUpdateTime(new Date(System.currentTimeMillis()));
@@ -89,7 +102,7 @@ public class ProjectController {
 		httpHeaders.setLocation(ServletUriComponentsBuilder
 				.fromCurrentRequest().path("/{projectName}")
 				.buildAndExpand(pe.getProjectName()).toUri());
-		return new ResponseEntity<>(null, httpHeaders, HttpStatus.CREATED);
+		return new ResponseEntity<>(pe.getId(), httpHeaders, HttpStatus.CREATED);
 	}
 	
 	@RequestMapping(value = "/{projectName}", method = RequestMethod.GET)

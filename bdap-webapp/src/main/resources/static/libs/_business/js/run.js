@@ -3,6 +3,9 @@ var run = {
 			$.each(FLOW_RUNTIME_STATE, function(i, obj){
 				if(obj.state == state) {
 					var fillColor = "fill:" + obj.color;
+					var test = $("#"+nodeName).attr("class");
+					console.info(test);
+					d3.select("#"+nodeName).attr("class","");
 					d3.select("#"+nodeName).attr("style", fillColor);
 				}
 			});
@@ -13,15 +16,35 @@ var run = {
 			if(isEmpty(flowname)){
 				flowname = "flow1";
 			}
-			var instanceid = interact.runFlow(flowname);
-			if(isEmpty(instanceid)){
-				console.info("run fail.");
+			
+			var flowid = flowname;
+			var requestURL = "/dashview/{userName}/flow/";
+			if(flowid == undefined || flowid == "") {
 				return;
 			}
-			// save instance
-			interact.saveFlowInstance(flowname, instanceid);
-			//open websocket
-			thisObj.connectWebSoket(instanceid);
+			requestURL += flowid;
+			$.ajax({
+                type: "post",
+                url: getAjaxAbsolutePath(requestURL),
+                success: function(data, textStatus){
+				  console.info(data);
+				  var instanceid = data;
+				  if(isEmpty(instanceid)){
+						console.info("run fail.");
+						return;
+					}
+					// save instance
+					interact.saveFlowInstance(flowname, instanceid);
+					//open websocket
+					thisObj.connectWebSoket(instanceid);
+                },
+                error: function(e){
+                	console.info(e);
+                }
+			});
+			
+//			var instanceid = interact.runFlow(flowname);
+			
 		},
 		
 		connectWebSoket : function(instanceid){
@@ -29,9 +52,10 @@ var run = {
 				return;
 			}
 			//test id
-			instanceid = "0000266-161215094447342-oozie-dbad-W";
+			//instanceid = "0000277-170104195305044-oozie-dbad-W";
 			wsURI += instanceid;
 			var websocket;
+			var thisObj = this;
 	        //判断当前浏览器是否支持WebSocket
 	        if('WebSocket' in window){
 	            websocket = new WebSocket(wsURI);
@@ -43,22 +67,22 @@ var run = {
 
 	        //连接发生错误的回调方法
 	        websocket.onerror = function(){
-	        	messageHandler(websocket, "error");
+	        	thisObj.messageHandler(websocket, "error");
 	        };
 
 	        //连接成功建立的回调方法
 	        websocket.onopen = function(event){
-	        	messageHandler(websocket, "open");
+	        	thisObj.messageHandler(websocket, "open");
 	        }
 
 	        //接收到消息的回调方法
 	        websocket.onmessage = function(event){
-	        	messageHandler(websocket, event.data);
+	        	thisObj.messageHandler(websocket, event.data);
 	        }
 
 	        //连接关闭的回调方法
 	        websocket.onclose = function(){
-	        	messageHandler(websocket, "close");
+	        	thisObj.messageHandler(websocket, "close");
 	        }
 
 	        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
@@ -81,6 +105,18 @@ var run = {
 				}
 			}
 			
+		},
+		
+		getFlowLog : function(){
+			var data;
+			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
+			if(!isEmpty(WHOLE_INSTANCE_ID)) {
+//				data = interact.getFlowLog(WHOLE_INSTANCE_ID);
+				var url = "/dashview/pages/flowlog.html?type=flowlog&instanceid=" + WHOLE_INSTANCE_ID;
+				window.open(url,'Flow Log',"fullscreen=0",false);
+			}
+//			console.info(data);
+//			return data;
 		}
 
 

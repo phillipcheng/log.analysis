@@ -40,6 +40,14 @@ var _node_data_height = 40;
  */
 var propertyInfor = [];
 /**
+ * the whole flowname, to edit/view
+ */
+var WHOLE_FLOW_NAME;
+/**
+ * the whole instanceid to edit/view
+ */
+var WHOLE_INSTANCE_ID;
+/**
  *  define flow stage, for exmple: design stage / running  / finish to run.  
  */
 var FLOW_STAGE = ["DESIGN", "RUNNING", "FINISH", "VIEW"];
@@ -61,7 +69,7 @@ var FLOW_RUNTIME_STATE =[{"state":"PREP", "color":""},
  * define runtime node state.
  */
 var NODE_RUNTIME_STATE = [{"state":"PREP", "color":""},
-                          {"state":"RUNNING", "color":""},
+                          {"state":"RUNNING", "color":"green"},
                           {"state":"OK", "color":""},
                           {"state":"ERROR", "color":""},
                           {"state":"USER_RETRY", "color":""},
@@ -71,8 +79,9 @@ var NODE_RUNTIME_STATE = [{"state":"PREP", "color":""},
                           {"state":"END_RETRY", "color":""},
                           {"state":"END_MANUAL", "color":""},
                           {"state":"KILLED", "color":""},
-                          {"state":"FAILED", "color":""}];
+                          {"state":"FAILED", "color":"red"}];
 
 var websocket = null;
 var wsURI = "ws://127.0.0.1:8080/dashview/ws/george/flow/instances/";
+
 
