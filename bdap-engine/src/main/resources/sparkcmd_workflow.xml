@@ -34,7 +34,7 @@
             <argument>--deploy-mode</argument>
             <argument>cluster</argument>
             <argument>--executor-memory</argument>
-            <argument>4G</argument>
+            <argument>10G</argument>
             <argument>--total-executor-cores</argument>
             <argument>10</argument>
             <argument>--conf</argument>

@@ -26,6 +26,7 @@ import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.StringUtil;
+import scala.Tuple2;
 
 public class ShellCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
@@ -107,14 +108,22 @@ public class ShellCmd extends ETLCmd {
 	}
 	
 	@Override
-	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext sc, Class<? extends InputFormat> inputFormatClass){
-		JavaRDD<String> ret = input.flatMap(new FlatMapFunction<String, String>(){
-			@Override
-			public Iterator<String> call(String t) throws Exception {
-				return processRow(t).iterator();
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		List<String> rets = processRow(value);
+		List<Tuple2<String,String>> kvrets = new ArrayList<Tuple2<String,String>>();
+		for (String ret:rets){
+			logger.info(String.format("shell, ret:%s", ret));
+			String k = tableName;
+			String v = ret;
+			String[] kv = ret.split(DEFAULT_KEY_SEP, 2);//try to split to key value, if failed use file name as key
+			if (kv.length==2){
+				k = kv[0];
+				v = kv[1];
 			}
-		});
-		return ret;
+			logger.info(String.format("shell, ret: key:%s,value:%s", k, v));
+			kvrets.add(new Tuple2<String,String>(k,v));
+		}
+		return kvrets;
 	}
 
 	@Override
