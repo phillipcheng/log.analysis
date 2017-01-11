@@ -31,8 +31,13 @@ var run = {
 		
 		runFlow : function(flowname){
 			var thisObj = this;
-			if(isEmpty(flowname)){
-				flowname = "flow1";
+			if(isEmpty(flowname) && isEmpty(WHOLE_FLOW_NAME)){
+				return;
+			}
+			if(!isEmpty(flowname)){
+				WHOLE_FLOW_NAME = flowname;
+			}else {
+				flowname = WHOLE_FLOW_NAME;
 			}
 			
 			var flowid = flowname;
@@ -53,6 +58,7 @@ var run = {
 					}
 					// save instance
 					interact.saveFlowInstance(flowname, instanceid);
+					WHOLE_INSTANCE_ID = instanceid;
 					//open websocket
 					thisObj.connectWebSoket(instanceid);
                 },
@@ -126,15 +132,27 @@ var run = {
 		},
 		
 		getFlowLog : function(){
-			var data;
 			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
 			if(!isEmpty(WHOLE_INSTANCE_ID)) {
-//				data = interact.getFlowLog(WHOLE_INSTANCE_ID);
 				var url = "/dashview/pages/flowlog.html?type=flowlog&instanceid=" + WHOLE_INSTANCE_ID;
 				window.open(url,'Flow Log',"fullscreen=0",false);
 			}
-//			console.info(data);
-//			return data;
+		},
+		getFlowNodeLog : function(nodename){
+			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
+			if(!isEmpty(WHOLE_INSTANCE_ID) && !isEmpty(nodename)) {
+				var url = "/dashview/pages/flowlog.html?type=flownodelog&nodename="+nodename+"&instanceid=" + WHOLE_INSTANCE_ID;
+				window.open(url,nodename ,"fullscreen=0,titlebar=yes",true);
+			}
+		},
+		
+		getFlowInstanceData : function(dataName){
+			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
+			if(!isEmpty(WHOLE_INSTANCE_ID) && !isEmpty(dataName)){
+				var url = "/dashview/pages/flowlog.html?type=flownodedata&dataname="+dataName+"&instanceid=" + WHOLE_INSTANCE_ID;
+				window.open(url,dataName ,"fullscreen=0,titlebar=yes",true);
+			}
+			
 		}
 
 

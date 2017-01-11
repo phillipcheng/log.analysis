@@ -15,13 +15,34 @@ var update = function(theSelf, d, nodeData) {
 		txtObj.transition().duration(_TRANSITION_DURATION).attr("x", txtData.x).attr("y", txtData.y).text(txtData.txt);
 
 		if(nodeData.run) {
-			var runData = nodeData.run;
-			var temp = nodeData.width - 15;
-			temp += ",";
-			temp += nodeData.height - 15;
-			var runObj = theSelfObj.select("#" + d + "_g_run");
-			runObj.transition().duration(_TRANSITION_DURATION)
-				.attr("transform", "translate(" + temp + ")scale(1,1)");
+			if(WHOLE_INSTANCE_ID) { //实例
+				
+				var runData = nodeData.run;
+				var temp = nodeData.width - 15;
+				temp += ",";
+				temp += nodeData.height - 15;
+				var runObj = theSelfObj.select("#" + d + "_g_run");
+				runObj.transition().duration(_TRANSITION_DURATION)
+					.attr("transform", "translate(" + temp + ")scale(1,1)");
+				
+				d3.select("#run_" + d).attr("d", "M0,0L0,0");
+				
+				d3.select("#log_" + d).attr("r", 5);				
+
+			} else { //设计状态
+				var runData = nodeData.run;
+				var temp = nodeData.width - 15;
+				temp += ",";
+				temp += nodeData.height - 15;
+				var runObj = theSelfObj.select("#" + d + "_g_run");
+				runObj.transition().duration(_TRANSITION_DURATION)
+					.attr("transform", "translate(" + temp + ")scale(1,1)");
+				
+				d3.select("#run_" + d).attr("d", runData.d);
+				
+				d3.select("#log_" + d).attr("r", 0);
+			}
+
 		}
 
 		var txtData = nodeData.txt;

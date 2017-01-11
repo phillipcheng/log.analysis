@@ -855,6 +855,7 @@ var changeData = function(txtId, propertyName, gId) {
 	var o = getEventSources(e);
 
 	if(o.tagName.localeCompare("INPUT") == 0) {
+		d3.select("#rightupcssheaderstring").text(o.value);
 		d3.select("#" + txtId + "_" + propertyName).text(o.value);
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {

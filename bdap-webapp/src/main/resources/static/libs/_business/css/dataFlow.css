@@ -34,6 +34,10 @@ body {
 	stroke-width: 2;
 }
 
+.nodeG>circle{
+	
+}
+
 
 /*.nodeG:hover>rect {
 	fill: rgb(238, 238, 238);

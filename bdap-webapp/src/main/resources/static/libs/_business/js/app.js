@@ -399,10 +399,7 @@ var app = {
 			return true;
 		});
 
-		//		each(result.links,function(){
-		//			
-		//			return true;
-		//		});
+		WHOLE_FLOW_NAME = saveResult.name;
 
 		thisObj.saveAsJson(saveResult);
 		console.log(JSON.stringify(result));
