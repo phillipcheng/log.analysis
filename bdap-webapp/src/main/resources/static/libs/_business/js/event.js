@@ -93,6 +93,7 @@ var _event = {
 							this.state = "hide";
 							_draw._drawInputData(gId);
 							//判断，确定宽度
+							_event.selectedData(this.id,gId);
 							return false;
 						}
 						return true;
@@ -140,6 +141,7 @@ var _event = {
 							this.state = "hide";
 							_draw._drawOutputData(gId);
 							//判断，确定宽度
+							_event.selectedData(this.id,gId);
 							return false;
 						}
 						return true;
@@ -202,14 +204,6 @@ var _event = {
 		}
 	},
 	data_addIn_click: function() {
-//		var e;
-//		var o;
-//		if(isEmpty(addInletButtonThis)) {
-//			e = window.event || arguments.callee.caller.arguments[0];
-//			o = getEventSources(e);
-//		} else {
-//			o = addInletButtonThis;
-//		}
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
@@ -232,14 +226,7 @@ var _event = {
 		});
 	},
 	data_addOut_click: function() {
-//		var e;
-//		var o;
-//		if(isEmpty(addInletButtonThis)) {
-//			e = window.event || arguments.callee.caller.arguments[0];
-//			o = getEventSources(e);
-//		} else {
-//			o = addInletButtonThis;
-//		}
+
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
@@ -347,60 +334,88 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
-		d3.select("#divrightup").style({
-			display: "block"
-		});
-		$("#rightupcssbody").html("");
-
-		var tempValue = "";
-		var tempTxt = "";
-		var tempIndex = txtId.substring(txtId.length - 1);
-
-		each(result.nodes, function(i, o) {
-			if(this.id.localeCompare(gId) == 0) {
-				var find = false;
-				var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
-				divobj.append("strong").text("name:");
-				if(txtId.indexOf("InData") > -1) {
-					d3.select("#rightupcssheaderstring").text(o.inLets[tempIndex].name);
-					divobj.append("input").attr("type", "text").attr("value", o.inLets[tempIndex].name)
-						.attr("placeholder", "...")
-						.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
-				} else {
-					d3.select("#rightupcssheaderstring").text(o.outlets[tempIndex].name);
-					divobj.append("input").attr("type", "text").attr("value", o.outlets[tempIndex].name)
-						.attr("placeholder", "...")
-						.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
+		if(WHOLE_INSTANCE_ID) {
+			each(result.nodes, function() {
+				if(this.id.localeCompare(gId) == 0) {
+					each(this.inLets, function(i, o) {
+						if(o.id.localeCompare(txtId) == 0) {
+							console.log("dataName:", o);
+							run.getFlowInstanceData(o.dataName);
+							return false;
+						}
+						return true;
+					});
+					each(this.outlets, function(i, o) {
+						if(o.id.localeCompare(txtId) == 0) {
+							console.log("dataName:", o);
+							run.getFlowInstanceData(o.dataName);
+							return false;
+						}
+						return true;
+					});
+					return false;
 				}
-				divobj.append("strong").text("dataName:");
+				return true;
+			});
+			
+		} else {
+			d3.select("#divrightup").style({
+				display: "block"
+			});
+			$("#rightupcssbody").html("");
 
-				var divobjselect = divobj.append("select");
-				divobjselect.attr("onchange", "changeData('" + txtId + "','dataName','" + gId + "')");
-				each(dataSetList, function() {
+			var tempValue = "";
+			var tempTxt = "";
+			var tempIndex = txtId.substring(txtId.length - 1);
+
+			each(result.nodes, function(i, o) {
+				if(this.id.localeCompare(gId) == 0) {
+					var find = false;
+					var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+					divobj.append("strong").text("name:");
 					if(txtId.indexOf("InData") > -1) {
-						if(this.k.localeCompare(o.inLets[tempIndex].dataName) == 0) {
-							divobjselect.append("option").attr("selected", "selected").attr("value", this.k).text(this.v.name);
-							find = true;
-						} else {
-							divobjselect.append("option").attr("value", this.k).text(this.v.name);
-						}
+						d3.select("#rightupcssheaderstring").text(o.inLets[tempIndex].name);
+						divobj.append("input").attr("type", "text").attr("value", o.inLets[tempIndex].name)
+							.attr("placeholder", "...")
+							.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
 					} else {
-						if(this.k.localeCompare(o.outlets[tempIndex].dataName) == 0) {
-							divobjselect.append("option").attr("selected", "selected").attr("value", this.k).text(this.v.name);
-							find = true;
-						} else {
-							divobjselect.append("option").attr("value", this.k).text(this.v.name);
-						}
+						d3.select("#rightupcssheaderstring").text(o.outlets[tempIndex].name);
+						divobj.append("input").attr("type", "text").attr("value", o.outlets[tempIndex].name)
+							.attr("placeholder", "...")
+							.attr("onkeyup", "changeData('" + txtId + "','name','" + gId + "')")
 					}
-					return true;
-				});
-				if(!find) {
-					divobjselect[0][0].selectedIndex = -1;
+					divobj.append("strong").text("dataName:");
+
+					var divobjselect = divobj.append("select");
+					divobjselect.attr("onchange", "changeData('" + txtId + "','dataName','" + gId + "')");
+					each(dataSetList, function() {
+						if(txtId.indexOf("InData") > -1) {
+							if(this.k.localeCompare(o.inLets[tempIndex].dataName) == 0) {
+								divobjselect.append("option").attr("selected", "selected").attr("value", this.k).text(this.v.name);
+								find = true;
+							} else {
+								divobjselect.append("option").attr("value", this.k).text(this.v.name);
+							}
+						} else {
+							if(this.k.localeCompare(o.outlets[tempIndex].dataName) == 0) {
+								divobjselect.append("option").attr("selected", "selected").attr("value", this.k).text(this.v.name);
+								find = true;
+							} else {
+								divobjselect.append("option").attr("value", this.k).text(this.v.name);
+							}
+						}
+						return true;
+					});
+					if(!find) {
+						divobjselect[0][0].selectedIndex = -1;
+					}
+					return false;
 				}
-				return false;
-			}
-			return true;
-		});
+				return true;
+			});
+
+		}
+
 	},
 	selectedProperty: function() {
 		//这里 只是 右边的，对话框，进行展示内容
@@ -415,26 +430,9 @@ var _event = {
 			}
 			return true;
 		});
-		//		$("#rightupcssbody").html("");
-		//		var notProperty = "@class,id";
-		//		each(result.nodes, function() {
-		//			if(this.id.localeCompare(gId) == 0) {
-		//				$.each(this, function(k, v) {
-		//					if(typeof v == 'string') {
-		//						if(notProperty.indexOf(k) == -1) {
-		//							if(k.localeCompare("name") == 0) {
-		//								$("#rightupcssheaderstring").html(v);
-		//							}
-		//							var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
-		//							divobj.append("strong").text(k + ":");
-		//							divobj.append("input").attr("type", "text").attr("value", v).attr("placeholder", "...")
-		//								.attr("onkeyup", "changeProperty('" + gId + "','" + k + "')");
-		//						}
-		//					}
-		//				});
-		//				return false;
-		//			}
-		//			return true;
-		//		});
+	},
+	logClick: function(args) {
+		console.log("----------logClick-----------");
+		run.getFlowNodeLog(args);
 	}
 }

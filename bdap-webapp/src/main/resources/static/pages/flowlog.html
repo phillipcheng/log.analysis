@@ -24,6 +24,8 @@ body {
 <link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/bootstrap/easyui.css" />
 <link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/icon.css" />
 <link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/color.css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/bootstrap/datalist.css" />
+<link rel="stylesheet" href="../libs/bootstrap/css/bootstrap.min.css" />
 
 <script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
@@ -43,12 +45,59 @@ body {
  		debugger
  		var type = getRequestUrlParamString("type");
  		var instanceid = getRequestUrlParamString("instanceid");
- 		var data = interact.getFlowLog(instanceid);
- 		$("#contextInformation").html(data);
+ 		var data;
+ 		if(type == 'flowlog'){
+ 			data = interact.getFlowLog(instanceid);
+ 	 		$("#contextInformation").html(data);
+ 		}else if(type == 'flownodelog'){
+ 			var nodename = getRequestUrlParamString("nodename");
+ 			data = interact.getFlowNodeLog(instanceid, nodename);
+ 			var htmlStr = '<div class="list-group">';
+ 			if(data instanceof Array){
+ 				$.each(data, function(i, obj){
+ 					htmlStr += "<a class='list-group-item' href='"+obj.fileName+"' target='_blank'>"+obj.fileType+"</a>";
+ 				});
+ 				htmlStr += "</div>";
+ 				$("#contextInformation").html(htmlStr);
+ 			}else{
+ 				$("#contextInformation").html(data);
+ 			}
+ 		}else if(type == 'flownodedata'){
+ 			var dataname = getRequestUrlParamString("dataname");
+ 			data = interact.getFlowInstanceData(instanceid, dataname);
+ 			if(!isEmpty(data)){
+ 				var type = data.fileType;
+ 				if(type=="directoryList"){
+ 					var htmlStr = '<div class="list-group">';
+ 					var listStr = data.textContent;
+ 					var list = listStr.split("\n");
+ 					$.each(list, function(i, obj){
+ 	 					htmlStr += "<a class='list-group-item' href='"+obj+"' target='_blank'>"+obj+"</a>";
+ 	 				});
+ 					htmlStr += "</div>";
+ 					var r = window.location;
+ 					console.info(r);
+ 					$("#contextInformation").html(htmlStr);
+ 				}else{
+ 					$("#contextInformation").html(data);
+ 				}
+ 			}
+ 	 		
+ 		}
+ 		if(isEmpty(data)){
+ 			$("#contextInformation").html("No data to show.");
+ 		}
+ 		
+ 	}
+ 	
+ 	function loadInit(){
+ 		setTimeout(function(){
+ 			load();
+ 		},200);
  	}
 </script>
 </head>
-<body onload="load()">
-<div id="contextInformation" width="100%" height:auto></div>
+<body onload="loadInit()">
+<div id="contextInformation" width="100%" style="height:auto"></div>
 </body>
 </html>

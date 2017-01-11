@@ -11,15 +11,36 @@ var enter = function(theSelf, d, nodeData) {
 		});
 
 		if(nodeData.run) {
-			var runData = nodeData.run;
-			var temp = nodeData.width - 15;
-			temp += ",";
-			temp += nodeData.height - 15;
-			var runObj = theSelfObj.append("g").attr("id", d + "_g_run").attr("transform", "translate(" + temp + ")scale(1,1)").append("path");
-			runObj.attr("G", d);
-			$.each(runData, function(k, v) {
-				runObj.attr(k, v);
-			});
+			if(WHOLE_INSTANCE_ID) { //实例
+				var runData = nodeData.run;
+				var temp = nodeData.width - 15;
+				temp += ",";
+				temp += nodeData.height - 15;
+				var runG = theSelfObj.append("g").attr("id", d + "_g_run").attr("transform", "translate(" + temp + ")scale(1,1)");
+
+				var runPath = runG.append("path");
+				runPath.attr("G", d).attr("id", runData.id).attr("self", "RUN").attr("class", "nodeRun").attr("d", "");
+
+				if(nodeData.txt.txt.localeCompare(nodeData.id) == 0) {
+					runG.append("circle").attr("G", d).attr("id", "log_" + d).attr("class", "nodeLog").attr("r", 5)
+					.attr("onclick","_event.logClick('"+nodeData.txt.txt+"')");
+				} else {
+					runG.append("circle").attr("G", d).attr("id", "log_" + d).attr("class", "nodeLog").attr("r", 5)
+						.attr("onclick", "_event.logClick('" + nodeData.txt.txt + "_" + nodeData.id + "')");
+				}
+			} else { //运行
+				var runData = nodeData.run;
+				var temp = nodeData.width - 15;
+				temp += ",";
+				temp += nodeData.height - 15;
+				var runG = theSelfObj.append("g").attr("id", d + "_g_run").attr("transform", "translate(" + temp + ")scale(1,1)");
+				var runPath = runG.append("path");
+				runPath.attr("G", d);
+				$.each(runData, function(k, v) {
+					runPath.attr(k, v);
+				});
+				runG.append("circle").attr("G", d).attr("id", "log_" + d).attr("class", "nodeLog").attr("r", 0);
+			}
 		}
 
 		if(nodeData.txt) {

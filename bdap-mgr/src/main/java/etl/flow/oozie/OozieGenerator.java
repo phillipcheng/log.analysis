@@ -27,6 +27,7 @@ import etl.flow.Link;
 import etl.flow.Node;
 import etl.flow.NodeLet;
 import etl.flow.StartNode;
+import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.oozie.coord.COORDINATORAPP;
 
@@ -176,8 +177,8 @@ public class OozieGenerator {
 		//all the input dataset to this action should have the same inputformattype, datatype/recordtype
 		InputFormatType ift = null;
 		DataType dt = null;
-		String aift = (String) an.getProperty(ETLCmd.cfgkey_input_format);
-		String adt = (String) an.getProperty(ETLCmd.cfgkey_record_type);
+		String aift = (String) an.getProperty(ETLCmd.cfgkey_input_format, EngineType.oozie);
+		String adt = (String) an.getProperty(ETLCmd.cfgkey_record_type, EngineType.oozie);
 		for (NodeLet ln: inlets){
 			if (ln.getDataName()!=null){
 				Data d = flow.getDataDef(ln.getDataName());
