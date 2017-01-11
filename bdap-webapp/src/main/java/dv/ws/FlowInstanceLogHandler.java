@@ -16,6 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 
 import bdap.util.JsonUtil;
+import dv.db.dao.FlowInstanceRepository;
+import dv.db.dao.FlowRepository;
+import dv.db.dao.ProjectRepository;
+import dv.db.entity.FlowEntity;
+import dv.db.entity.FlowInstanceEntity;
+import dv.db.entity.ProjectEntity;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.InMemFile;
@@ -31,6 +37,12 @@ public class FlowInstanceLogHandler extends WebSocketServerEndpoint {
 	private FlowMgr flowMgr;
 	@Autowired
 	private FlowDeployer flowDeployer;
+	@Autowired
+	private ProjectRepository projectRepository;
+	@Autowired
+	private FlowRepository flowRepository;
+	@Autowired
+	private FlowInstanceRepository flowInstanceRepository;
 	
     @OnOpen
     public void onOpen(Session session) throws IOException {
@@ -50,26 +62,31 @@ public class FlowInstanceLogHandler extends WebSocketServerEndpoint {
     	}
 		
     	validateUser(userName);
-    	
-    	Resource resource = flowMgr.getFlowLogResource("project1", flowDeployer.getOozieServerConf(), instanceId);
-    	String projectDir;
-    	String logFilePath;
-    	
-    	if (resource != null) {
-    		InputStream in = null;
-	    	try {
-		    	in = resource.getInputStream();
-		    	projectDir = flowDeployer.getProjectHdfsDir("project1");
-		    	if (!projectDir.endsWith(Path.SEPARATOR))
-		    		projectDir += Path.SEPARATOR;
-		    	logFilePath = projectDir + "logs" + Path.SEPARATOR + instanceId + Path.SEPARATOR + "log.txt";
-		    	session.getUserProperties().put(LOG_FILE_PATH, logFilePath);
-		    	flowDeployer.deploy(logFilePath, in);
-	    	} finally {
-	    		if (in != null)
-	    			in.close();
+
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null) {
+	    	Resource resource = flowMgr.getFlowLogResource(pe.getProjectName(), flowDeployer.getOozieServerConf(), instanceId);
+	    	String projectDir;
+	    	String logFilePath;
+	    	
+	    	if (resource != null) {
+	    		InputStream in = null;
+		    	try {
+			    	in = resource.getInputStream();
+			    	projectDir = flowDeployer.getProjectHdfsDir(pe.getProjectName());
+			    	if (!projectDir.endsWith(Path.SEPARATOR))
+			    		projectDir += Path.SEPARATOR;
+			    	logFilePath = projectDir + "logs" + Path.SEPARATOR + instanceId + Path.SEPARATOR + "log.txt";
+			    	session.getUserProperties().put(LOG_FILE_PATH, logFilePath);
+			    	flowDeployer.deploy(logFilePath, in);
+		    	} finally {
+		    		if (in != null)
+		    			in.close();
+		    	}
 	    	}
-    	}
+		}
     }
 
     @OnMessage

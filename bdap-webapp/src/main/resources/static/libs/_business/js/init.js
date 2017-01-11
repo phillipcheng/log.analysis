@@ -29,7 +29,21 @@ var clearTempLine = function() {
 }
 
 var remoteActionObj = {};
+var remotePropertyObj = {};
+
+var initPublicFunction = function(){
+	String.prototype.replaceAll = function(oldCharts,newCharts){
+		var txt = this;
+		while(txt.indexOf(oldCharts)>-1){
+			txt = txt.replace(oldCharts,newCharts);
+		}
+		return txt;
+	}
+};
+
 var init = function() {
+	initPublicFunction();
+	
 	//初始化位置的偏移
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
@@ -103,6 +117,18 @@ var init = function() {
 				.attr("onclick", "app.action({'label':'" + temp + "','cla':'" + k + "'})");
 		});
 	});
+	remotePropertyObj = interact.getFlowSchema();
+	console.info("remotePropertyObj: " + remotePropertyObj);
+	each(remotePropertyObj.properties.nodes.items.jsonSchemas,function(){
+			if(this.properties["cmd.class"]){
+				propertyInfor.push(this.properties);
+			}
+			return true;
+		});
+	
+	actionLoadManager();
+	
+	d3.select("#a_title").text(WHOLE_FLOW_NAME );
 }
 
 /**
@@ -294,3 +320,49 @@ var remoeToInitPosition = function() {
 	current_zoom_x = init_zoom_x;
 	current_zoom_y = init_zoom_y;
 }
+
+var getRequestUrlParamString = function(name)
+{
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if(r!=null)return  unescape(r[2]); return null;
+}
+
+var actionLoadManager = function(){
+	// view  add  edit
+	var actionParam = getRequestUrlParamString("action");
+	var typeParam = getRequestUrlParamString("type");
+	var name = getRequestUrlParamString("name");
+	if(actionParam == 'view' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "VIEW";
+			load.loadBuild(name);
+		}, 200);
+		
+	}else if(actionParam == 'edit' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "DESIGN";
+			load.loadBuild(name);
+		}, 200);
+	} else if(actionParam == 'add' && typeParam =='flow'){
+		
+	}else if(actionParam == 'view' && typeParam =='job'){
+		var flowname = getRequestUrlParamString("flowname");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = name;
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "VIEW";
+			load.loadBuild(flowname);
+		}, 200);
+	}else if(actionParam == 'edit' && typeParam =='job'){
+		
+	}
+	
+	
+	return true;
+}
+
+
+

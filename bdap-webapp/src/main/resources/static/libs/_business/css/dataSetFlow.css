@@ -78,3 +78,11 @@
 	background: url(../img/panel_tools.png) no-repeat -16px 0px;
 	margin-right: 5px;
 }
+
+
+.edgeData{
+	fill: none;
+	stroke: #bbb;
+	stroke-linecap: round;
+	stroke-width: 0.75;
+}

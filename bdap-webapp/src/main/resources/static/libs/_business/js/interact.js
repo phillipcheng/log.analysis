@@ -49,6 +49,16 @@ var interact = {
 			return returnVal;
 		},
 		
+		saveFlowInstance : function(flowId, instanceid){
+			var requestURL = "/dashview/{userName}/flow/{flowId}/instance/{instanceid}/add";
+			if(isEmpty(flowId)  || isEmpty(instanceid)) {
+				return;
+			}
+			requestURL = requestURL.replace("{flowId}",flowId);
+			requestURL = requestURL.replace("{instanceid}",instanceid);
+			return interact.ajaxGet(requestURL);
+		},
+		
 		/**
 		 * get flow instance information
 		 * return json object as below:
@@ -125,6 +135,15 @@ var interact = {
 				return;
 			}
 			requestURL = requestURL.replace("{flowId}",flowId);
+			return interact.ajaxGet(requestURL);
+		},
+		
+		getFlowInstanceData : function(instanceid, dataName){
+			var requestURL = "/dashview/{userName}/flow/instances/{instanceId}/data/{dataName:.+}";
+			if(isEmpty(instanceid) && isEmpty(dataName)) {
+				return;
+			}
+			requestURL = requestURL.replace("{instanceId}",instanceid).replace("{dataName:.+}", dataName);
 			return interact.ajaxGet(requestURL);
 		}
 		

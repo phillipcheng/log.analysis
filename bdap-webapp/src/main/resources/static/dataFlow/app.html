@@ -37,23 +37,24 @@
 		<script type="text/javascript" src="../libs/_business/js/dywindow.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/interact.js"></script>
 		<script type="text/javascript" src="../libs/_business/js/load.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/run.js"></script>
 
 	</head>
 
 	<body oncontextmenu="return false">
-
 		<!--
 			导航 #f57c00
 		-->
 		<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 			<div class="container-fluid" style="background: #f57c00;">
 				<div class="navbar-header">
-					<a style="color: #FFFFFF;" class="navbar-brand" href="#">Design Panel</a>
+					<a id="a_title" style="color: #FFFFFF;" class="navbar-brand" href="javascript:;" onclick="_event.up_flow_name()"></a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li>
-							<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild();">loadFlow</a>
+							<!--<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild();">loadFlow</a>-->
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild('flow1');">loadFlow</a>
 						</li>
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSet();">dataSet</a>
@@ -70,14 +71,20 @@
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.end();">end</a>
 						</li>
-						<li>
+						<!-- <li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="openLogWin();">openLogWin</a>
 						</li>
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="openDatasetWin();">openDatasetWin</a>
-						</li>
+						</li> -->
 						<li>
 							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.save();">Save</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="run.runFlow();">Run</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="run.getFlowLog();">FlowLog</a>
 						</li>
 						<li class="dropdown">
 							<a style="color: #FFFFFF;" href="#" class="dropdown-toggle" data-toggle="dropdown">ActionNode <b class="caret"></b></a>
