@@ -12,7 +12,7 @@ var _build = {
 			nodes = this._sortNodes(g);
 			this._groupNode(g);
 			this._groupEdges();
-			_draw._drawNodeDataRelation();
+			//_draw._drawNodeDataRelation();
 		}
 		clearTempLine();
 	},

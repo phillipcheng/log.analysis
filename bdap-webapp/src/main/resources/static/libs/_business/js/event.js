@@ -6,6 +6,7 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		e.stopPropagation();
 		var o = getEventSources(e);
+		d3.select("#d3contextmenu").selectAll("input").remove();
 		d3.select("#d3contextmenu").style({
 			display: "block",
 			left: e.clientX + "px",
@@ -13,13 +14,13 @@ var _event = {
 		});
 		d3.select("#d3contextmenu")
 			.append("input").on("blur", function() {
-				d3.select("#d3contextmenu").select("input").remove();
 				result.name = this.value;
 				result.wfName = this.value;
 				d3.select("#a_title").text(result.name);
 				d3.select("#d3contextmenu").style({
 					display: "none"
 				});
+				d3.select("#d3contextmenu").selectAll("input").remove();
 			});
 	},
 	svg_onmousedown: function() {
@@ -75,6 +76,8 @@ var _event = {
 			g_mouse_down = "";
 			g_mouse_up = "";
 			_build._build();
+			
+			_draw._drawNodeDataRelation();
 		}
 		clearTempLine();
 	},
@@ -93,7 +96,7 @@ var _event = {
 							this.state = "hide";
 							_draw._drawInputData(gId);
 							//判断，确定宽度
-							_event.selectedData(this.id,gId);
+//							_event.selectedData(this.id,gId);
 							return false;
 						}
 						return true;
@@ -141,7 +144,7 @@ var _event = {
 							this.state = "hide";
 							_draw._drawOutputData(gId);
 							//判断，确定宽度
-							_event.selectedData(this.id,gId);
+//							_event.selectedData(this.id,gId);
 							return false;
 						}
 						return true;
@@ -316,10 +319,10 @@ var _event = {
 		d3.select("#d3contextmenu").append("ul").append("li").text("delete the Path?")
 			.on("click", function() {
 				var temp = o.id.split("A");
-				g.removeEdge(temp[1],temp[2]);
-				each(result.links,function(i,o){
-					if(this.fromNodeName.localeCompare(temp[1])==0&&this.toNodeName.localeCompare(temp[2])==0){
-						result.links.splice(i,1);
+				g.removeEdge(temp[1], temp[2]);
+				each(result.links, function(i, o) {
+					if(this.fromNodeName.localeCompare(temp[1]) == 0 && this.toNodeName.localeCompare(temp[2]) == 0) {
+						result.links.splice(i, 1);
 						return false;
 					}
 					return true;
