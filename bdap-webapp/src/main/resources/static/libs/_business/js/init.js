@@ -127,6 +127,8 @@ var init = function() {
 		});
 	
 	actionLoadManager();
+	
+	d3.select("#a_title").text(WHOLE_FLOW_NAME );
 }
 
 /**
@@ -332,12 +334,14 @@ var actionLoadManager = function(){
 	var typeParam = getRequestUrlParamString("type");
 	var name = getRequestUrlParamString("name");
 	if(actionParam == 'view' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
 		setTimeout(function(){
 			FLOW_CURRENT_STAGE = "VIEW";
 			load.loadBuild(name);
 		}, 200);
 		
 	}else if(actionParam == 'edit' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
 		setTimeout(function(){
 			FLOW_CURRENT_STAGE = "DESIGN";
 			load.loadBuild(name);

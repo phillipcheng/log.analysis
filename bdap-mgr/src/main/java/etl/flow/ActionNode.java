@@ -95,6 +95,14 @@ public class ActionNode extends Node{
 		return out;
 	}
 
+	public Object getProperty(String key, EngineType et){
+		Object ret=properties.get(et.toString() + "." + key);
+		if (ret==null){
+			ret=properties.get(key);
+		}
+		return ret;
+	}
+	
 	public Object getProperty(String key){
 		return properties.get(key);
 	}

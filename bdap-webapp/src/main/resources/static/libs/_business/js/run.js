@@ -1,20 +1,43 @@
 var run = {
 		changeNodeStyle : function(nodeName, state){
-			$.each(FLOW_RUNTIME_STATE, function(i, obj){
+			var thisObj = this;
+			$.each(NODE_RUNTIME_STATE, function(i, obj){
 				if(obj.state == state) {
 					var fillColor = "fill:" + obj.color;
-					var test = $("#"+nodeName).attr("class");
-					console.info(test);
-					d3.select("#"+nodeName).attr("class","");
-					d3.select("#"+nodeName).attr("style", fillColor);
+					var currentClass = $("#"+nodeName).attr("class");
+					currentClass = currentClass.replaceAll("success", "").replaceAll("fail", "");
+					if(thisObj.isSuccessful(state)){
+						currentClass = currentClass + " success";
+					}else if(thisObj.isFailed(state)){
+						currentClass = currentClass + "  fail";
+					}
+					d3.select("#"+nodeName).attr("class",currentClass);
+//					d3.select("#"+nodeName).attr("style", fillColor);
 				}
 			});
+		},
+		isSuccessful : function(state){
+			if(state == 'OK' || state == 'DONE' || state == 'SUCCEEDED'){
+				return true;
+			}
+			return false;
+		},
+		isFailed : function(state){
+			if(state == 'ERROR' || state == 'KILLED' || state == 'FAILED'){
+				return true;
+			}
+			return false;
 		},
 		
 		runFlow : function(flowname){
 			var thisObj = this;
-			if(isEmpty(flowname)){
-				flowname = "flow1";
+			if(isEmpty(flowname) && isEmpty(WHOLE_FLOW_NAME)){
+				return;
+			}
+			if(!isEmpty(flowname)){
+				WHOLE_FLOW_NAME = flowname;
+			}else {
+				flowname = WHOLE_FLOW_NAME;
 			}
 			
 			var flowid = flowname;
@@ -35,6 +58,7 @@ var run = {
 					}
 					// save instance
 					interact.saveFlowInstance(flowname, instanceid);
+					WHOLE_INSTANCE_ID = instanceid;
 					//open websocket
 					thisObj.connectWebSoket(instanceid);
                 },
@@ -108,15 +132,27 @@ var run = {
 		},
 		
 		getFlowLog : function(){
-			var data;
 			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
 			if(!isEmpty(WHOLE_INSTANCE_ID)) {
-//				data = interact.getFlowLog(WHOLE_INSTANCE_ID);
 				var url = "/dashview/pages/flowlog.html?type=flowlog&instanceid=" + WHOLE_INSTANCE_ID;
 				window.open(url,'Flow Log',"fullscreen=0",false);
 			}
-//			console.info(data);
-//			return data;
+		},
+		getFlowNodeLog : function(nodename){
+			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
+			if(!isEmpty(WHOLE_INSTANCE_ID) && !isEmpty(nodename)) {
+				var url = "/dashview/pages/flowlog.html?type=flownodelog&nodename="+nodename+"&instanceid=" + WHOLE_INSTANCE_ID;
+				window.open(url,nodename ,"fullscreen=0,titlebar=yes",true);
+			}
+		},
+		
+		getFlowInstanceData : function(dataName){
+			console.info("WHOLE_INSTANCE_ID:   "+ WHOLE_INSTANCE_ID);
+			if(!isEmpty(WHOLE_INSTANCE_ID) && !isEmpty(dataName)){
+				var url = "/dashview/pages/flowlog.html?type=flownodedata&dataname="+dataName+"&instanceid=" + WHOLE_INSTANCE_ID;
+				window.open(url,dataName ,"fullscreen=0,titlebar=yes",true);
+			}
+			
 		}
 
 

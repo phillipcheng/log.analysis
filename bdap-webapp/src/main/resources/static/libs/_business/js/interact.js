@@ -136,6 +136,15 @@ var interact = {
 			}
 			requestURL = requestURL.replace("{flowId}",flowId);
 			return interact.ajaxGet(requestURL);
+		},
+		
+		getFlowInstanceData : function(instanceid, dataName){
+			var requestURL = "/dashview/{userName}/flow/instances/{instanceId}/data/{dataName:.+}";
+			if(isEmpty(instanceid) && isEmpty(dataName)) {
+				return;
+			}
+			requestURL = requestURL.replace("{instanceId}",instanceid).replace("{dataName:.+}", dataName);
+			return interact.ajaxGet(requestURL);
 		}
 		
 		

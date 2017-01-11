@@ -238,6 +238,7 @@ public class SftpCmd extends ETLCmd {
 				session.disconnect();
 			}
 		}
+		
 		if (this.sftpNamesOnly){//write out the output file containing sftpserver, sftp user name and file name
 			List<String> outputList = new ArrayList<String>();
 			String[] argNames = new String[]{cfgkey_sftp_host, cfgkey_sftp_user, paramkey_src_file};
@@ -245,7 +246,7 @@ public class SftpCmd extends ETLCmd {
 				String[] argValues = new String[]{this.host, this.user, srcFile};
 				outputList.add(ParamUtil.makeMapParams(argNames, argValues));
 			}
-			HdfsUtil.writeDfsFile(getFs(), String.format("%s%s", this.getIncomingFolder(), String.valueOf(mapKey)), outputList);
+			return outputList;
 		}
 		return files;
 	}
