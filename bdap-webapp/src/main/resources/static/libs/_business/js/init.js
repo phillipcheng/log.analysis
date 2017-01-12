@@ -42,8 +42,9 @@ var initPublicFunction = function(){
 };
 
 var init = function() {
+	actionLoadInit();
 	initPublicFunction();
-	
+	console.info("WHOLE_PROJECT_ID: " + WHOLE_PROJECT_ID);
 	//初始化位置的偏移
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
@@ -105,7 +106,8 @@ var init = function() {
 	 * 1.7
 	 * loadJOSN
 	 */
-	d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {	
+	var commandsURL = getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR) + "?projectId=" + WHOLE_PROJECT_ID;
+	d3.json(commandsURL, function(data) {	
 //	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
 		remoteActionObj = data;
 		$.each(data, function(k, v) {
@@ -350,8 +352,11 @@ var actionLoadManager = function(){
 			load.loadBuild(name);
 		}, 200);
 	} else if(actionParam == 'add' && typeParam =='flow'){
-		WHOLE_FLOW_NAME = "";
+		var flowname = getRequestUrlParamString("flowname");
+		var projectid = getRequestUrlParamString("projectid");
+		WHOLE_FLOW_NAME = flowname;
 		WHOLE_INSTANCE_ID = "";
+		WHOLE_PROJECT_ID = projectid;
 		
 	}else if(actionParam == 'view' && typeParam =='job'){
 		var flowname = getRequestUrlParamString("flowname");
@@ -368,8 +373,45 @@ var actionLoadManager = function(){
 	}else if(actionParam == 'edit' && typeParam =='job'){
 		
 	}
+//	var flowObj = interact.getFlow(WHOLE_FLOW_NAME);
+//	WHOLE_PROJECT_ID = flowObj.projectId;
 	
-	
+	return true;
+}
+/**
+ * when page jump to flow page, init the relational parameters and const.
+ */
+var actionLoadInit = function(){
+	// view  add  edit
+	var actionParam = getRequestUrlParamString("action");
+	var typeParam = getRequestUrlParamString("type");
+	var name = getRequestUrlParamString("name");
+	if(actionParam == 'view' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		FLOW_CURRENT_STAGE = "VIEW";
+	}else if(actionParam == 'edit' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		FLOW_CURRENT_STAGE = "DESIGN";
+	} else if(actionParam == 'add' && typeParam =='flow'){
+		var flowname = getRequestUrlParamString("flowname");
+		var projectid = getRequestUrlParamString("projectid");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = "";
+		WHOLE_PROJECT_ID = projectid;
+		
+	}else if(actionParam == 'view' && typeParam =='job'){
+		var flowname = getRequestUrlParamString("flowname");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = name;
+		FLOW_CURRENT_STAGE = "RUNNING";
+		FLOW_CURRENT_STAGE = "VIEW";
+	}else if(actionParam == 'edit' && typeParam =='job'){
+		
+	}
+	if(isEmpty(WHOLE_PROJECT_ID)){
+		var flowObj = interact.getFlow(WHOLE_FLOW_NAME);
+		WHOLE_PROJECT_ID = flowObj.projectId;
+	}
 	return true;
 }
 
