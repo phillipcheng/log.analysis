@@ -324,8 +324,9 @@ var app = {
 		var thisObj = this;
 		var saveResult = {};
 		//deep copy
-		saveResult = $.extend(true, {}, result);;
-
+		saveResult = $.extend(true, {}, result);
+		
+                console.info(saveResult);
 		function findDataNewId(findId) {
 			var txt = "";
 			each(saveResult.data, function() {
@@ -339,7 +340,9 @@ var app = {
 		}
 
 		each(saveResult.data, function() {
-			this.name = this.name + "_" + this.id;
+			if(this.id.indexOf("dataset_")>-1){
+				this.name = this.name + "_" + this.id;
+			}
 			return true;
 		});
 
@@ -347,7 +350,19 @@ var app = {
 			if(this["@class"].localeCompare("start")==0||this["@class"].localeCompare("end")==0){
 				
 			}else{
-				this.name = this.name + "_" + this.id;
+				if(this.id.indexOf("g_")>-1){
+					this.name = this.name + "_" + this.id;
+				}
+				//删除多余的属性值
+				for(var tempk in this){
+					if(tempk != 'inLets' && tempk != 'outlets'){
+						var tempv = this[tempk];
+						if(tempv.length==0){
+							delete this[tempk];
+						}
+					}
+					
+				}
 			}
 			
 			return true;
@@ -400,6 +415,10 @@ var app = {
 		});
 
 		WHOLE_FLOW_NAME = saveResult.name;
+		if(isEmpty(WHOLE_FLOW_NAME)){
+			msgShow('Info', 'please input flow name.', 'info');
+			return;
+		}
 
 		thisObj.saveAsJson(saveResult);
 		console.log(JSON.stringify(result));
@@ -414,9 +433,11 @@ var app = {
 			//dataType: "json",
 			success: function(data, textStatus) {
 				console.info(data);
+				msgShow('Info', 'save successfully.', 'info');
 			},
 			error: function(e) {
 				console.info(e);
+				msgShow('Info', 'save fail.', 'info');
 			}
 		});
 	},

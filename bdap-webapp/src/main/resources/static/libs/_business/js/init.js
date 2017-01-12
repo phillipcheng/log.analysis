@@ -129,6 +129,8 @@ var init = function() {
 	actionLoadManager();
 	
 	d3.select("#a_title").text(WHOLE_FLOW_NAME );
+	result.name = WHOLE_FLOW_NAME;
+	result.wfName = WHOLE_FLOW_NAME;
 }
 
 /**
@@ -347,14 +349,20 @@ var actionLoadManager = function(){
 			load.loadBuild(name);
 		}, 200);
 	} else if(actionParam == 'add' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = "";
+		WHOLE_INSTANCE_ID = "";
 		
 	}else if(actionParam == 'view' && typeParam =='job'){
 		var flowname = getRequestUrlParamString("flowname");
 		WHOLE_FLOW_NAME = flowname;
 		WHOLE_INSTANCE_ID = name;
+		FLOW_CURRENT_STAGE = "RUNNING";
 		setTimeout(function(){
 			FLOW_CURRENT_STAGE = "VIEW";
 			load.loadBuild(flowname);
+			setTimeout(function(){
+				run.changeAllNodeColor();
+			}, 1000);
 		}, 200);
 	}else if(actionParam == 'edit' && typeParam =='job'){
 		
@@ -365,4 +373,8 @@ var actionLoadManager = function(){
 }
 
 
+//title msgString msgType: [error,info,question,warning]
+var msgShow = function (title, msgString, msgType) {
+	$.messager.alert(title, msgString, msgType);
+}
 
