@@ -62,6 +62,8 @@ var run = {
 							}
 							// save instance
 							interact.saveFlowInstance(flowname, instanceid);
+							var detailInfor = "Instance '" + instanceid + "' is created.";
+							msgShow('Info', detailInfor, 'info');
 							WHOLE_INSTANCE_ID = instanceid;
 							//open websocket
 							thisObj.connectWebSoket(instanceid);

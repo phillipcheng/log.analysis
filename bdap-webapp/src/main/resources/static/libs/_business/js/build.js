@@ -160,7 +160,7 @@ var _build = {
 					.attr("id", "pathA" + d.v + "A" + d.w)
 					.attr("G", "linegroup" + d.v + "A" + d.w)
 					.attr("d", interpolate(points))
-					.attr("onclick","_event.clickPath()")
+					.attr("onmouseup","_event.clickPath()")
 					.attr("marker-end", "url(#arrow)");
 			});
 

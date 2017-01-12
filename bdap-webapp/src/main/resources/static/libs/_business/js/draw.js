@@ -275,6 +275,7 @@ var _draw = {
 		_build._build(gId, g_instance);
 
 		this._drawAboutPosition(gId);
+		_draw._drawNodeDataRelation();
 	},
 	_drawPropertyLeftDiv: function(gId, obj) {
 		var nodeData = g.node(gId);
@@ -285,18 +286,73 @@ var _draw = {
 		var notProperty = "@class,id,cmd.class";
 		if(obj["cmd.class"]) {
 			$.each(obj, function(k, v) {
-				if(typeof v == 'string') {
-					if(notProperty.indexOf(k) == -1) {
-						if(k.localeCompare("name") == 0) {
-							$("#rightupcssheaderstring").html(v);
+				var mySelfObj = selfPropertyInfor[gId + "_" + k];
+				if(mySelfObj) {
+					if(mySelfObj.type.localeCompare("string") == 0) {
+						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+						drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+					} else if(mySelfObj.type.localeCompare("array") == 0) {
+						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+						divobj.append("strong").text(k + ":");
+						divobj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + k + "')");
+						divobj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + k + "')");
+						if(typeof v == 'string') {
+							divobj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", v).on("keyup", function() {
+								var ary = [];
+								each(this.parentNode.childNodes, function() {
+									if(this.tagName.localeCompare("INPUT") == 0) {
+										ary.push(this.value);
+									}
+									return true;
+								});
+								each(result.nodes, function() {
+									if(this.id.localeCompare(gId) == 0) {
+										this[k] = ary;
+										_draw._drawPropertyLeftDiv(gId, this);
+										//_draw._drawProperty(gId, this);
+										return false;
+									}
+									return true;
+								});
+							});
+						} else {
+							each(v, function() {
+								divobj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", this).on("keyup", function() {
+									var ary = [];
+									each(this.parentNode.childNodes, function() {
+										if(this.tagName.localeCompare("INPUT") == 0) {
+											ary.push(this.value);
+										}
+										return true;
+									});
+									each(result.nodes, function() {
+										if(this.id.localeCompare(gId) == 0) {
+											this[k] = ary;
+											//_draw._drawProperty(gId, this);
+											_draw._drawPropertyLeftDiv(gId, this);
+											return false;
+										}
+										return true;
+									});
+								});
+								return true;
+							});
 						}
-						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
-						drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
 					}
-				}else if(typeof v == 'object'){
-					if(k.localeCompare("inLets")!=0&&k.localeCompare("outlets")!=0){
-						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
-						drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+				} else {
+					if(typeof v == 'string') {
+						if(notProperty.indexOf(k) == -1) {
+							if(k.localeCompare("name") == 0) {
+								$("#rightupcssheaderstring").html(v);
+							}
+							var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+							drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+						}
+					} else if(typeof v == 'object') {
+						if(k.localeCompare("inLets") != 0 && k.localeCompare("outlets") != 0) {
+							var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+							drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+						}
 					}
 				}
 			});
@@ -330,6 +386,9 @@ var _draw = {
 					each(result.nodes, function(i, o) {
 						if(this.id.localeCompare(gId) == 0) {
 							this[tempValue[0].trim()] = tempValue[1].trim();
+							selfPropertyInfor[gId + "_" + tempValue[0].trim()] = {
+								type: 'string'
+							};
 							_draw._drawPropertyLeftDiv(gId, obj);
 							return false;
 						}
@@ -626,26 +685,47 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 								divObj.append("strong").text(propertyName + ":");
 								divObj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + propertyName + "')");
 								divObj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + propertyName + "')");
-								each(propertyValue,function(){
-									divObj.append("input").attr("type","text").attr("placeholder","...").attr("value",this).on("keyup",function(){
-										var ary = [];
-										each(this.parentNode.childNodes, function() {
-											if(this.tagName.localeCompare("INPUT") == 0) {
-												ary.push(this.value);
-											}
-											return true;
+								if(typeof propertyValue == 'string') {
+										divObj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", propertyValue).on("keyup", function() {
+											var ary = [];
+											each(this.parentNode.childNodes, function() {
+												if(this.tagName.localeCompare("INPUT") == 0) {
+													ary.push(this.value);
+												}
+												return true;
+											});
+											each(result.nodes, function() {
+												if(this.id.localeCompare(gId) == 0) {
+													this[propertyName] = ary;
+													_draw._drawProperty(gId, this);
+													return false;
+												}
+												return true;
+											});
 										});
-										each(result.nodes, function() {
-											if(this.id.localeCompare(gId) == 0) {
-												this[propertyName] = ary;
-												_draw._drawProperty(gId, this);
-												return false;
-											}
-											return true;
-										});			
+								} else {
+									each(propertyValue, function() {
+										divObj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", this).on("keyup", function() {
+											var ary = [];
+											each(this.parentNode.childNodes, function() {
+												if(this.tagName.localeCompare("INPUT") == 0) {
+													ary.push(this.value);
+												}
+												return true;
+											});
+											each(result.nodes, function() {
+												if(this.id.localeCompare(gId) == 0) {
+													this[propertyName] = ary;
+													_draw._drawProperty(gId, this);
+													return false;
+												}
+												return true;
+											});
+										});
+										return true;
 									});
-									return true;
-								});
+								}
+
 							} else if(obj["type"].toString().localeCompare("boolean") == 0) {
 								if(propertyValue.length > 0) {
 									if(propertyValue.localeCompare("true") == 0) {
@@ -863,7 +943,11 @@ var saveSelfArrayProperty = function(gId) {
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
 				this[propertyName] = ary;
-				_draw._drawProperty(gId,this);
+				selfPropertyInfor[gId + "_" + propertyName] = {
+					type: 'array'
+				};
+				//_draw._drawProperty(gId, this);
+				_draw._drawPropertyLeftDiv(gId, this);
 				return false;
 			}
 			return true;
@@ -918,11 +1002,17 @@ var addAndSubInput = function(direction, gId, propertyName) {
 		var objInput = o.parentNode.childNodes[o.parentNode.childNodes.length - 1];
 		if(objInput.tagName.localeCompare("INPUT") == 0) {
 			o.parentNode.removeChild(objInput);
-			each(result.nodes,function(){
-				if(propertyName){
-					this[propertyName].splice(this[propertyName].length-1,1);
-				}
-				if(this.id.localeCompare(gId)==0){
+			each(result.nodes, function() {
+				if(this.id.localeCompare(gId) == 0) {
+					if(propertyName) {
+						if(typeof this[propertyName] == 'string'){
+							console.log("this[propertyName]", this[propertyName]);
+							this[propertyName] = '';
+						}else {
+							console.log("this[propertyName]", this[propertyName]);
+							this[propertyName].splice(this[propertyName].length - 1, 1);
+						}
+					}
 					_draw._drawProperty(gId, this);
 					return false;
 				}

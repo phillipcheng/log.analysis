@@ -353,7 +353,7 @@ var app = {
 				if(this.id.indexOf("g_")>-1){
 					this.name = this.name + "_" + this.id;
 				}
-				//É¾³ı¶àÓàµÄÊôĞÔÖµ
+				//åˆ é™¤å¤šä½™çš„å±æ€§å€¼
 				for(var tempk in this){
 					if(tempk != 'inLets' && tempk != 'outlets'){
 						var tempv = this[tempk];

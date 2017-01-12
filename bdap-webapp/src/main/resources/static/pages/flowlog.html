@@ -41,6 +41,19 @@ body {
 	    if(r!=null)return  unescape(r[2]); return null;
 	}
  	
+ 	function openData(pathname){
+ 		if(isEmpty(pathname)){
+ 			$("#dataInformation").html("No data to show.");
+ 			return;
+ 		}
+ 		var data = interact.getDFSFile(pathname);
+ 		var content = data.content;
+ 		if(isEmpty(content)){
+ 			content = "No data to show.";
+ 		}
+ 		$("#dataInformation").html(content);
+ 	}
+ 	
  	function load(){
  		debugger
  		var type = getRequestUrlParamString("type");
@@ -85,7 +98,7 @@ body {
  					var list = listStr.split("\n");
  					$.each(list, function(i, obj){
  						if(!isEmpty(obj)){
- 							htmlStr += "<a class='list-group-item' href='"+obj+"' target='_blank'>"+obj+"</a>";
+ 							htmlStr += "<a class='list-group-item' href='javascript:void(0)' onclick='openData(\""+obj+"\")' target='_blank'>"+obj+"</a>";
  						}
  	 				});
  					htmlStr += "</div>";
@@ -104,6 +117,7 @@ body {
  		
  	}
  	
+ 	
  	function loadInit(){
  		setTimeout(function(){
  			
@@ -113,5 +127,7 @@ body {
 </head>
 <body onload="load()">
 <div id="contextInformation" width="100%" style="height:auto"></div>
+<div id="dataConsole" width="103%" style="height:30px;background-color:#D2DDE1;padding-left:5px"><b>Data Console</b></div>
+<div id="dataInformation" width="103%" style="height:670px;background-color:#D2DDE1;padding:10px;word-wrap: break-word;overflow-y:auto;"></div>
 </body>
 </html>
