@@ -287,7 +287,8 @@ var compatibilityTools = function() {
  * @param {Object} relativePath
  */
 var getAjaxAbsolutePath = function(relativePath) {
-	var httpPath = "http://localhost:8080";
+//	var httpPath = "http://" + WEB_IP + ":" + WEB_PORT;
+	var httpPath = "";
 	var userName = "george";
 	if(relativePath != null && relativePath != '') {
 		relativePath = relativePath.replace("{userName}", userName);
@@ -377,4 +378,6 @@ var actionLoadManager = function(){
 var msgShow = function (title, msgString, msgType) {
 	$.messager.alert(title, msgString, msgType);
 }
+
+
 

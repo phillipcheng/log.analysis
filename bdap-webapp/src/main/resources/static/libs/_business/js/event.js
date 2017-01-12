@@ -7,20 +7,23 @@ var _event = {
 		e.stopPropagation();
 		var o = getEventSources(e);
 		d3.select("#d3contextmenu").selectAll("input").remove();
+		d3.select("#d3contextmenu").selectAll("ul").remove();
 		d3.select("#d3contextmenu").style({
 			display: "block",
 			left: e.clientX + "px",
 			top: e.clientY + "px"
 		});
 		d3.select("#d3contextmenu")
-			.append("input").on("blur", function() {
+			.append("input").attr("value",WHOLE_FLOW_NAME).on("blur", function() {
 				result.name = this.value;
 				result.wfName = this.value;
+				WHOLE_FLOW_NAME = this.value;
 				d3.select("#a_title").text(result.name);
+				d3.select("#d3contextmenu").selectAll("input").remove();
+				d3.select("#d3contextmenu").selectAll("ul").remove();
 				d3.select("#d3contextmenu").style({
 					display: "none"
 				});
-				d3.select("#d3contextmenu").selectAll("input").remove();
 			});
 	},
 	svg_onmousedown: function() {
@@ -128,6 +131,7 @@ var _event = {
 		}
 
 		_draw._drawDataInPutAndPropertyAndOutPut(gId);
+		_draw._drawNodeDataRelation();
 	},
 	addOut_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
@@ -144,7 +148,7 @@ var _event = {
 							this.state = "hide";
 							_draw._drawOutputData(gId);
 							//判断，确定宽度
-//							_event.selectedData(this.id,gId);
+							//_event.selectedData(this.id, gId);
 							return false;
 						}
 						return true;
@@ -175,6 +179,7 @@ var _event = {
 			});
 		}
 		_draw._drawDataInPutAndPropertyAndOutPut(gId);
+		_draw._drawNodeDataRelation();
 	},
 	property_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
@@ -205,6 +210,7 @@ var _event = {
 		} else {
 			_draw._drawClearProperty(gId);
 		}
+		_draw._drawNodeDataRelation();
 	},
 	data_addIn_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
@@ -272,14 +278,15 @@ var _event = {
 
 		if(e.button == 2) {
 			//右键点击样式
-			d3.select("#d3contextmenu").select("ul").remove();
+			d3.select("#d3contextmenu").selectAll("ul").remove();
+			d3.select("#d3contextmenu").selectAll("input").remove();
 			d3.select("#d3contextmenu").style({
 				display: "block",
 				left: e.clientX + "px",
 				top: e.clientY + "px"
 			});
 
-			d3.select("#d3contextmenu").append("ul").append("li").text("delete the node?")
+			d3.select("#d3contextmenu").append("ul").append("li").text("delete node")
 				.on("click", function() {
 					console.log("click");
 					d3.select("#d3contextmenu").style({
@@ -308,15 +315,19 @@ var _event = {
 		console.log("-----------clickPath-------------");
 		var e = window.event || arguments.callee.caller.arguments[0];
 		e.stopPropagation();
+		if(e.button == 0){
+			return ;
+		}
 		var o = getEventSources(e);
-		d3.select("#d3contextmenu").select("ul").remove();
+		d3.select("#d3contextmenu").selectAll("ul").remove();
+		d3.select("#d3contextmenu").selectAll("input").remove();
 		d3.select("#d3contextmenu").style({
 			display: "block",
 			left: e.clientX + "px",
 			top: e.clientY + "px"
 		});
 
-		d3.select("#d3contextmenu").append("ul").append("li").text("delete the Path?")
+		d3.select("#d3contextmenu").append("ul").append("li").text("delete Path")
 			.on("click", function() {
 				var temp = o.id.split("A");
 				g.removeEdge(temp[1], temp[2]);
@@ -337,6 +348,72 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
+		if(e.button == 2) {
+			d3.select("#d3contextmenu").selectAll("ul").remove();
+			d3.select("#d3contextmenu").selectAll("input").remove();
+			d3.select("#d3contextmenu").append("ul").append("li").text("delete data")
+				.on("click", function() {
+					each(result.nodes, function() {
+						console.log(result.nodes);
+						if(this.id.localeCompare(gId) == 0) {
+							if(txtId.indexOf("InData") > -1) {
+								each(this.inLets,function(){
+									if(this.id.localeCompare(txtId)==0){
+										this.name = "";
+										this.dataName = "";
+										this.show = false;
+										this.state = "show";
+										_draw._drawInputData(gId);
+										d3.select("#"+txtId).selectAll("text").remove();
+										var g_instance = childsvg.find(gId);
+										var tempNodeData = g_instance.node(txtId);
+										tempNodeData.width = 0;
+										tempNodeData.height = 0;
+										tempNodeData.rect.width = 0;
+										tempNodeData.rect.height = 0;
+										_draw._drawDataInPutAndPropertyAndOutPut(gId);
+										return false;
+									}
+									return true;
+								});
+							} else if(txtId.indexOf("OutData") > -1) {
+								each(this.outlets,function(){
+									if(this.id.localeCompare(txtId)==0){
+										this.name = "";
+										this.dataName = "";										
+										this.show = false;
+										this.state = "show";
+										_draw._drawOutputData(gId);
+										d3.select("#"+txtId).selectAll("text").remove();
+										var g_instance = childsvg.find(gId);
+										var tempNodeData = g_instance.node(txtId);
+										tempNodeData.width = 0;
+										tempNodeData.height = 0;
+										tempNodeData.rect.width = 0;
+										tempNodeData.rect.height = 0;
+										_draw._drawDataInPutAndPropertyAndOutPut(gId);
+										return false;
+									}
+									return true;
+								});								
+							}
+							return false;
+						}
+						return true;
+					});
+					d3.select("#d3contextmenu").selectAll("ul").remove();
+					d3.select("#d3contextmenu").selectAll("input").remove();
+					d3.select("#d3contextmenu").style({
+						display: "none"
+					});
+				});
+			d3.select("#d3contextmenu").style({
+				display: "block",
+				left: e.clientX + "px",
+				top: e.clientY + "px"
+			});
+			return;
+		}
 		if(WHOLE_INSTANCE_ID) {
 			each(result.nodes, function() {
 				if(this.id.localeCompare(gId) == 0) {
