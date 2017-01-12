@@ -21,7 +21,15 @@ var load = {
 			if(this.isEmpty(flowObj.jsonContent)) {
 				return;
 			}
-			var flowContext = JSON.parse(flowObj.jsonContent);
+			var flowContext;
+			try
+			{
+				flowContext = JSON.parse(flowObj.jsonContent); 
+			}
+			catch(err)
+			{
+				msgShow('Info', 'please check flow context, it cannot be parsed.', 'Info');
+			}
 			console.log(flowObj);
 //			var flowContext = flowObj;
 			var nodes = flowContext.nodes;
