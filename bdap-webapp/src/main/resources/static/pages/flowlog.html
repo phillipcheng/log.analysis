@@ -48,6 +48,7 @@ body {
  		var data;
  		if(type == 'flowlog'){
  			data = interact.getFlowLog(instanceid);
+ 			data = data.replace("/\n/g","</br></br>");
  	 		$("#contextInformation").html(data);
  		}else if(type == 'flownodelog'){
  			var nodename = getRequestUrlParamString("nodename");
@@ -55,7 +56,18 @@ body {
  			var htmlStr = '<div class="list-group">';
  			if(data instanceof Array){
  				$.each(data, function(i, obj){
- 					htmlStr += "<a class='list-group-item' href='"+obj.fileName+"' target='_blank'>"+obj.fileType+"</a>";
+ 					var containerIndex = obj.fileName.indexOf("container");
+ 					var container = "";
+ 					var job = "";
+ 					if(containerIndex > -1){
+ 						var strTemp = obj.fileName.substring(containerIndex);
+ 						var arrayTemp = strTemp.split("/");
+ 						if(arrayTemp.length >=2){
+ 							container = arrayTemp[0] + "   ";
+ 							job = arrayTemp[1];
+ 						}
+ 					}
+ 					htmlStr += "<a class='list-group-item' href='"+obj.fileName+"' target='_blank'><span style='color:red'>"+obj.fileType+"</span>  ("+container+job+")</a>";
  				});
  				htmlStr += "</div>";
  				$("#contextInformation").html(htmlStr);
@@ -72,7 +84,9 @@ body {
  					var listStr = data.textContent;
  					var list = listStr.split("\n");
  					$.each(list, function(i, obj){
- 	 					htmlStr += "<a class='list-group-item' href='"+obj+"' target='_blank'>"+obj+"</a>";
+ 						if(!isEmpty(obj)){
+ 							htmlStr += "<a class='list-group-item' href='"+obj+"' target='_blank'>"+obj+"</a>";
+ 						}
  	 				});
  					htmlStr += "</div>";
  					var r = window.location;
@@ -92,12 +106,12 @@ body {
  	
  	function loadInit(){
  		setTimeout(function(){
- 			load();
+ 			
  		},200);
  	}
 </script>
 </head>
-<body onload="loadInit()">
+<body onload="load()">
 <div id="contextInformation" width="100%" style="height:auto"></div>
 </body>
 </html>

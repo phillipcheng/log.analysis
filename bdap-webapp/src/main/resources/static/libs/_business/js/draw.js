@@ -293,6 +293,11 @@ var _draw = {
 						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
 						drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
 					}
+				}else if(typeof v == 'object'){
+					if(k.localeCompare("inLets")!=0&&k.localeCompare("outlets")!=0){
+						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+						drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+					}
 				}
 			});
 		} else if(obj["name"].toString().localeCompare("start") == 0) {
@@ -313,6 +318,7 @@ var _draw = {
 			divobj.append("input").attr("type", "text").attr("value", "start").attr("placeholder", "start...").attr("onkeyup", "changeProperty('" + gId + "','name')");			
 		}
 
+		//单个属性
 		var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
 		divobj.append("input").attr("type", "text").attr("placeholder", "format  k:v  ...").style({
 			background: 'silver'
@@ -324,7 +330,7 @@ var _draw = {
 					each(result.nodes, function(i, o) {
 						if(this.id.localeCompare(gId) == 0) {
 							this[tempValue[0].trim()] = tempValue[1].trim();
-							_draw._drawPropertyLeftDiv(gId,obj);
+							_draw._drawPropertyLeftDiv(gId, obj);
 							return false;
 						}
 						return true;
@@ -334,6 +340,15 @@ var _draw = {
 			this.value = "";
 		});
 
+		divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+		divobj.append("input").attr("id", "self_propertyName").attr("type", "text").attr("placeholder", "k...").style({
+			background: 'silver',
+			width: "35%"
+		})
+		divobj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "')");
+		divobj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "')");
+		divobj.append("button").text("save").attr("onclick", "saveSelfArrayProperty('" + gId + "')");
+
 		this._drawProperty(gId, obj);
 	},
 	_drawProperty: function(gId, obj) {
@@ -341,7 +356,7 @@ var _draw = {
 		var _index = 0;
 		var notProperty = "@class,id,cmd.class";
 		$.each(obj, function(k, v) {
-			if(typeof v == 'string') {
+			if((k.localeCompare("inLets") != 0) && (k.localeCompare("outlets") != 0)) {
 				if(notProperty.indexOf(k) == -1) {
 					if(v.length > 0) {
 						_index++;
@@ -367,13 +382,20 @@ var _draw = {
 			if(this.id.localeCompare(gId) == 0) {
 				$.each(this, function(k, v) {
 					var temp_k = k.toString().replaceAll(".", "");
-					if(typeof v == 'string' && v.length > 0) {
-						if(property_no_txt.indexOf(k) == -1) {
-							txt_index++;
-							d3.select("#" + gId + "_property")
-								.append("text").attr("id", gId + "_property_" + temp_k)
-								.attr("x", 0).attr("y", (txt_index * 20) - 5).text(k + ":" + v);
-						}
+					if(k.localeCompare("inLets")!=0&&k.localeCompare("outlets")!=0){
+						if(v.length > 0) {
+							if(property_no_txt.indexOf(k) == -1) {
+								txt_index++;
+								var finaleTxt = k + ":" + v;
+								var tempMaxLength = 35;
+								if(finaleTxt.length > 35) {
+									finaleTxt = finaleTxt.substring(0, 30) + "...";
+								}
+								d3.select("#" + gId + "_property")
+									.append("text").attr("id", gId + "_property_" + temp_k)
+									.attr("x", 0).attr("y", (txt_index * 20) - 5).text(finaleTxt);
+							}
+						}						
 					}
 				});
 				return false;
@@ -602,8 +624,28 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
 							} else if(obj["type"].toString().localeCompare("array") == 0) {
 								divObj.append("strong").text(propertyName + ":");
-								divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "you need input array...")
-									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+								divObj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + propertyName + "')");
+								divObj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + propertyName + "')");
+								each(propertyValue,function(){
+									divObj.append("input").attr("type","text").attr("placeholder","...").attr("value",this).on("keyup",function(){
+										var ary = [];
+										each(this.parentNode.childNodes, function() {
+											if(this.tagName.localeCompare("INPUT") == 0) {
+												ary.push(this.value);
+											}
+											return true;
+										});
+										each(result.nodes, function() {
+											if(this.id.localeCompare(gId) == 0) {
+												this[propertyName] = ary;
+												_draw._drawProperty(gId, this);
+												return false;
+											}
+											return true;
+										});			
+									});
+									return true;
+								});
 							} else if(obj["type"].toString().localeCompare("boolean") == 0) {
 								if(propertyValue.length > 0) {
 									if(propertyValue.localeCompare("true") == 0) {
@@ -656,6 +698,7 @@ var addLeftDiv = function(keys, obj) {
 			show: false,
 			v: obj
 		});
+		result.data.push(obj);
 	} else {
 		dataSetList.unshift({
 			k: keys,
@@ -800,6 +843,96 @@ var changeDataSetProeroty = function(gId) {
 		return true;
 	});
 }
+
+var saveSelfArrayProperty = function(gId) {
+	var propertyName = document.getElementById("self_propertyName").value;
+	if(propertyName) {
+		var e = window.event || arguments.callee.caller.arguments[0];
+		var o = getEventSources(e);
+		var ary = [];
+		each(o.parentNode.childNodes, function() {
+			if(this.tagName.localeCompare("INPUT") == 0) {
+				if(this.id) {
+
+				} else {
+					ary.push(this.value);
+				}
+			}
+			return true;
+		});
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				this[propertyName] = ary;
+				_draw._drawProperty(gId,this);
+				return false;
+			}
+			return true;
+		});
+		while(true) {
+			var objInput = o.parentNode.childNodes[o.parentNode.childNodes.length - 1];
+			if(objInput.tagName.localeCompare("INPUT") == 0) {
+				o.parentNode.removeChild(objInput);
+			} else {
+				break;
+			}
+		}
+		console.log(result);
+	}
+}
+
+var addAndSubInput = function(direction, gId, propertyName) {
+	var e = window.event || arguments.callee.caller.arguments[0];
+	var o = getEventSources(e);
+	e.stopPropagation();
+	if(direction > 0) {
+		console.log(o.parentNode);
+		var objInput = document.createElement("input");
+		objInput.setAttribute("type", "text");
+		objInput.setAttribute("placeholder", "...");
+		if(propertyName) {
+			objInput.addEventListener("keyup", function() {
+				var ary = [];
+				each(o.parentNode.childNodes, function() {
+					if(this.tagName.localeCompare("INPUT") == 0) {
+						ary.push(this.value);
+					}
+					return true;
+				});
+				each(result.nodes, function() {
+					if(this.id.localeCompare(gId) == 0) {
+						this[propertyName] = ary;
+						_draw._drawProperty(gId, this);
+						return false;
+					}
+					return true;
+				});
+				console.log(result);
+			});
+			o.parentNode.appendChild(objInput);
+		}else {
+			o.parentNode.appendChild(objInput);
+			o.parentNode.parentNode.scrollTop = o.parentNode.parentNode.scrollHeight;
+		}
+	} else if(direction < 0) {
+		console.log(o.parentNode);
+		var objInput = o.parentNode.childNodes[o.parentNode.childNodes.length - 1];
+		if(objInput.tagName.localeCompare("INPUT") == 0) {
+			o.parentNode.removeChild(objInput);
+			each(result.nodes,function(){
+				if(propertyName){
+					this[propertyName].splice(this[propertyName].length-1,1);
+				}
+				if(this.id.localeCompare(gId)==0){
+					_draw._drawProperty(gId, this);
+					return false;
+				}
+				return true;
+			});
+			
+		}
+	}
+}
+
 var changeProperty = function(gId, propertyName) {
 	var e = window.event || arguments.callee.caller.arguments[0];
 	var o = getEventSources(e);

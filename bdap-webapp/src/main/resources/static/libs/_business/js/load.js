@@ -118,7 +118,12 @@ var load = {
 				tempto = tempto.substring(tempto.indexOf("g_"));
 			}
 			g.setEdge(tempfrom, tempto);
-			result.links.push(obj);
+//			result.links.push(obj);
+			result.links.push({
+				fromNodeName:tempfrom,
+				toNodeName:tempto,
+				linkType:"success"
+			});
 			return true;
 		});
 	},
@@ -165,6 +170,6 @@ var load = {
 
 			return true;
 		});
-
+		_draw._drawNodeDataRelation();
 	}
 }
