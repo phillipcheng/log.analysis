@@ -403,7 +403,6 @@ var actionLoadInit = function(){
 		var flowname = getRequestUrlParamString("flowname");
 		WHOLE_FLOW_NAME = flowname;
 		WHOLE_INSTANCE_ID = name;
-		FLOW_CURRENT_STAGE = "RUNNING";
 		FLOW_CURRENT_STAGE = "VIEW";
 	}else if(actionParam == 'edit' && typeParam =='job'){
 		
