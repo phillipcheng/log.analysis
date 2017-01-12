@@ -51,6 +51,8 @@ var propertyInfor = [];
  * the whole flowname, to edit/view
  */
 var WHOLE_FLOW_NAME;
+
+var WHOLE_PROJECT_ID;
 /**
  * the whole instanceid to edit/view
  */

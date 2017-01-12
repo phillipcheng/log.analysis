@@ -15,6 +15,7 @@ var load = {
 			return;
 		}
 		var flowObj = interact.getFlow(flowid);
+		WHOLE_PROJECT_ID = flowObj.projectId;
 		console.log("flowObj", flowObj);
 		if(!this.isEmpty(flowObj)) {
 			if(this.isEmpty(flowObj.jsonContent)) {
