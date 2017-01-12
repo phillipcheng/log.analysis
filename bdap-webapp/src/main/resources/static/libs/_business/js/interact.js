@@ -145,8 +145,21 @@ var interact = {
 			}
 			requestURL = requestURL.replace("{instanceId}",instanceid).replace("{dataName:.+}", dataName);
 			return interact.ajaxGet(requestURL);
-		}
+		},
 		
+		getDFSFile : function(pathName){
+			var requestURL = "/dashview/{userName}/flow/dfs/";
+			if(!isEmpty(pathName)){
+				requestURL += pathName;
+				return interact.ajaxGet(requestURL);
+			}
+			return "";
+		},
+		
+		listProjects : function(){
+			var requestURL = "/dashview/{userName}/project/";
+			return interact.ajaxGet(requestURL);
+		}
 		
 		
 
