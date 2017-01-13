@@ -62,6 +62,7 @@ var run = {
 							}
 							// save instance
 							interact.saveFlowInstance(flowname, instanceid);
+							FLOW_CURRENT_STAGE = "RUNNING";
 							var detailInfor = "Instance '" + instanceid + "' is created.";
 							msgShow('Info', detailInfor, 'info');
 							WHOLE_INSTANCE_ID = instanceid;
@@ -194,7 +195,7 @@ var run = {
 				var nodename = node.name; 
 				thisObj.getFlowInstanceNodeStatus(nodename);
 			});
-			if(FLOW_CURRENT_STAGE == 'RUNNING'){
+			if(!isEmpty(WHOLE_INSTANCE_ID) &&(FLOW_CURRENT_STAGE == 'RUNNING' || FLOW_CURRENT_STAGE == 'VIEW')){
 				thisObj.connectWebSoket(WHOLE_INSTANCE_ID);
 			}
 			

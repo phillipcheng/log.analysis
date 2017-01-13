@@ -22,6 +22,7 @@ var _node_max_width = 300;
 
 var _node_max_property_width = 280;
 
+var USER_NAME = "george";
 var WEB_IP = "127.0.0.1";
 var WEB_PORT = "8080";
 if(window.location.hostname != null && window.location.port != null){
@@ -92,7 +93,7 @@ var NODE_RUNTIME_STATE = [{"state":"PREP", "color":""},
                           {"state":"FAILED", "color":"red"}];
 
 var websocket = null;
-var wsURI = "ws://" + WEB_IP +":" + WEB_PORT + "/dashview/ws/george/flow/instances/";
+var wsURI = "ws://" + WEB_IP +":" + WEB_PORT + "/dashview/ws/"+USER_NAME+"/flow/instances/";
 
 
 var selfPropertyInfor = {};
