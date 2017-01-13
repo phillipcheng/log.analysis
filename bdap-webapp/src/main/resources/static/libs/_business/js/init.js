@@ -102,6 +102,7 @@ var init = function() {
 
 	document.getElementById("child_svg").style.left = (clientwidth - 180) + "px";
 	document.getElementById("child_svg").style.top = (clientheight - 210) + "px";
+
 	/**
 	 * 1.7
 	 * loadJOSN
@@ -127,6 +128,17 @@ var init = function() {
 			}
 			return true;
 		});
+	
+	$.each(remotePropertyObj.properties.data.items.properties,function(k,v){
+		if(v.type.localeCompare("string")==0&&v.enum){
+			selfDataInfor[k] = {type:'string',v:v.enum};
+		}else if(v.type.localeCompare('boolean')==0){
+			selfDataInfor[k] = {type:'boolean'};
+		}else if(v.type.localeCompare('string')==0){
+			selfDataInfor[k] = {type:'string'};
+		}
+		return true;
+	});	
 	
 	actionLoadManager();
 	

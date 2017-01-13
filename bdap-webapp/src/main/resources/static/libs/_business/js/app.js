@@ -206,6 +206,7 @@ var app = {
 				propertyObj["id"] = gId.toString();
 				propertyObj['@class'] = 'action';
 				propertyObj['cmd.class'] = jsonObj.cla;
+				propertyObj['exe.type'] = 'mr';
 				propertyObj['name'] = jsonObj.label;
 				propertyObj['inLets'] = [{
 					id: gId + '_InData_0',

@@ -5,7 +5,10 @@ var run = {
 				if(obj.state == state) {
 					var fillColor = "fill:" + obj.color;
 					var currentClass = $("#"+nodeName).attr("class");
-					currentClass = currentClass.replaceAll("success", "").replaceAll("fail", "");
+					if(currentClass.indexOf("success") != -1 || currentClass.indexOf("fail") != -1){
+						return;
+					}
+					//currentClass = currentClass.replace("success", "").replace("fail", "");
 					if(thisObj.isSuccessful(state)){
 						currentClass = currentClass + " success";
 					}else if(thisObj.isFailed(state)){

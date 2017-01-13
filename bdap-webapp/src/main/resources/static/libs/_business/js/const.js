@@ -97,3 +97,5 @@ var wsURI = "ws://" + WEB_IP +":" + WEB_PORT + "/dashview/ws/"+USER_NAME+"/flow/
 
 
 var selfPropertyInfor = {};
+
+var selfDataInfor = {};
