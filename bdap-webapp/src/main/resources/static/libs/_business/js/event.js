@@ -300,13 +300,17 @@ var _event = {
 						}
 						return true;
 					});
-					each(result.links, function(i, o) {
-						if(this.fromNodeName.localeCompare(gId) == 0 || this.toNodeName.localeCompare(gId) == 0) {
-							result.links.splice(i, 1);
-							return false;
-						}
-						return true;
-					});
+					for(var j =0; j < 10; j++){
+						each(result.links, function(i, o) {
+							if(this.fromNodeName.localeCompare(gId) == 0 || this.toNodeName.localeCompare(gId) == 0) {
+								result.links.splice(i, 1);
+								return false;
+							}
+							return true;
+						});
+					}
+					
+					
 					_build._build();
 				});
 		}
