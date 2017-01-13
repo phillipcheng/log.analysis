@@ -463,7 +463,7 @@ var _draw = {
 		});
 
 		_build._build(gId, g_child_Instance);
-		this._drawAboutPosition(gId);
+		//this._drawAboutPosition(gId);
 		_draw._drawDataInPutAndPropertyAndOutPut(gId);
 	},
 	_drawClearProperty: function(gId) {
@@ -551,9 +551,9 @@ var _draw = {
 	},
 	_drawNodeDataRelation: function() {
 		d3.select("#lineContainer").selectAll(".edgeData").remove();
-		var fromPoint = [];
-		var toPoint = [];
 		each(result.links, function() {
+			var fromPoint = [];
+			var toPoint = [];
 			var fromtxt, totxt;
 			fromtxt = this.fromNodeName;
 			totxt = this.toNodeName;
@@ -844,10 +844,28 @@ var display = function() {
 		txt += "<strong>name:</strong><input args='name' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.name + "'>";
 		txt += "<strong>location:</strong><input args='location' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.location + "'>";
 		txt += "<strong>dataFormat:</strong><select args='dataFormat' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
-		txt += "<option value='Line'>Line</option><option value='XML'>XML</option><option value='Text'>Text</option><option value='Binary'>Binary</option>";
-		txt += "<option value='Section'>Section</option><option value='Mixed'>Mixed</option><option value='FileName'>FileName</option></select>";
+		
+		each(selfDataInfor["dataFormat"].v , function(){
+			txt += "<option value='"+this+"'>"+this+"</option>"; 
+			return true;
+		});
+		txt+="</select>";
+			
+//		txt += "<option value='Line'>Line</option><option value='XML'>XML</option><option value='Text'>Text</option><option value='Binary'>Binary</option>";
+//		txt += "<option value='Section'>Section</option><option value='Mixed'>Mixed</option><option value='FileName'>FileName</option></select>";
+//		
+		//txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+		
 		txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
-		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
+		each(selfDataInfor["recordType"].v , function(){
+			txt += "<option value='"+this+"'>"+this+"</option>"; 
+			return true;
+		});		
+		txt+="</select>";			
+		
+		
+//		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
+//		
 		txt += "<strong>instance:</strong><input args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
 		txt += "</div></div></div>";
 		var content = $("#accordion").html();
@@ -1101,7 +1119,7 @@ var changeData = function(txtId, propertyName, gId) {
 			return true;
 		});
 	} else if(o.tagName.localeCompare("SELECT") == 0) {
-		d3.select("#" + txtId + "_" + propertyName).text(o.selectedOptions[0].innerText);
+		d3.select("#" + txtId + "_" + propertyName).text(o.selectedOptions[0].text);
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
 				each(this.inLets, function() {
