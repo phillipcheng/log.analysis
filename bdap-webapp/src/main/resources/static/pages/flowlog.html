@@ -55,15 +55,18 @@ body {
  	}
  	
  	function load(){
- 		debugger
  		var type = getRequestUrlParamString("type");
  		var instanceid = getRequestUrlParamString("instanceid");
  		var data;
  		if(type == 'flowlog'){
+ 			$("#dataInformation").hide();
+ 			$("#dataConsole").hide();
  			data = interact.getFlowLog(instanceid);
  			data = data.replace("/\n/g","</br></br>");
  	 		$("#contextInformation").html(data);
  		}else if(type == 'flownodelog'){
+ 			$("#dataInformation").hide();
+ 			$("#dataConsole").hide();
  			var nodename = getRequestUrlParamString("nodename");
  			data = interact.getFlowNodeLog(instanceid, nodename);
  			var htmlStr = '<div class="list-group">';
@@ -88,6 +91,9 @@ body {
  				$("#contextInformation").html(data);
  			}
  		}else if(type == 'flownodedata'){
+ 			$("#dataInformation").show();
+ 			$("#dataConsole").show();
+ 			
  			var dataname = getRequestUrlParamString("dataname");
  			data = interact.getFlowInstanceData(instanceid, dataname);
  			if(!isEmpty(data)){
