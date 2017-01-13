@@ -291,7 +291,7 @@ var compatibilityTools = function() {
 var getAjaxAbsolutePath = function(relativePath) {
 //	var httpPath = "http://" + WEB_IP + ":" + WEB_PORT;
 	var httpPath = "";
-	var userName = "george";
+	var userName = USER_NAME;
 	if(relativePath != null && relativePath != '') {
 		relativePath = relativePath.replace("{userName}", userName);
 		httpPath += relativePath;
