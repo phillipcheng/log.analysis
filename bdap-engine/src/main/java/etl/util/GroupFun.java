@@ -70,6 +70,29 @@ public class GroupFun {
 		}
 	}
 	
+	public static String ConvertTimeStampToString(String input){
+		if (input != null)
+			input = input.trim();
+		
+		if (input == null || input.length() == 0)
+			return input;
+		else {
+			try {
+			Date date = new Date(Long.parseLong(input));
+			Calendar calendar = Calendar.getInstance();  
+			calendar.setTimeZone(TimeZone.getTimeZone("GMT"));  
+			calendar.setTime(date);  
+				return new StringBuffer().append(calendar.get(Calendar.YEAR)).append("/").append(calendar.get(Calendar.MONTH))
+						.append("/").append(calendar.get(Calendar.DATE)).append(" ")
+						.append(calendar.get(Calendar.HOUR)).append(":").append(calendar.get(Calendar.MINUTE))
+						.append(":").append(calendar.get(Calendar.SECOND)).toString();
+			} catch(Exception e){
+				logger.error("", e);
+				return null;
+			}
+		}
+	}
+	
 	public static String hour(String input, String dtFormat){
 		SafeSimpleDateFormat sdf = null;
 		if (dtMap.containsKey(dtFormat)){
