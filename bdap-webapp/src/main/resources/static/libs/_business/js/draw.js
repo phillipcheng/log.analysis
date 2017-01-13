@@ -655,8 +655,8 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 	each(propertyInfor, function() {
 		if(notProperty.indexOf(propertyName) == -1) {
 			if(this["cmd.class"]) {
-				if(this["cmd.class"].default) {
-					if(this["cmd.class"].default.toString().indexOf(actionName) > -1) {
+//				if(this["cmd.class"].default) {
+//					if(this["cmd.class"].default.toString().indexOf(actionName) > -1) {
 						if(this[propertyName]) {
 							console.log(this);
 							var obj = this[propertyName];
@@ -664,11 +664,20 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 								divObj.append("strong").text(propertyName + ":");
 								var selectedObj = divObj.append("select").attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
 								each(obj["enum"], function(i, o) {
-									if(this.toString().localeCompare(obj["default"].toString()) == 0) {
-										selectedObj.append("option").attr("selected", "selected")
-											.attr("value", this).text(this);
-									} else {
-										selectedObj.append("option").attr("value", this).text(this);
+									if(propertyValue){
+										if(this.toString().localeCompare(propertyValue) == 0) {
+											selectedObj.append("option").attr("selected", "selected")
+												.attr("value", this).text(this);
+										} else {
+											selectedObj.append("option").attr("value", this).text(this);
+										}										
+									}else{
+										if(obj["default"]&&this.toString().localeCompare(obj["default"].toString()) == 0) {
+											selectedObj.append("option").attr("selected", "selected")
+												.attr("value", this).text(this);
+										} else {
+											selectedObj.append("option").attr("value", this).text(this);
+										}										
 									}
 									return true;
 								});
@@ -762,8 +771,8 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 						}
 						return false;
 					}
-				}
-			}
+//				}
+//			}
 		}
 		return true;
 	});
