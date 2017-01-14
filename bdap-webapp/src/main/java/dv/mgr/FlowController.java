@@ -664,7 +664,7 @@ public class FlowController {
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
 		InMemFile f = this.flowMgr.getDFSFile(ec, filePath);
-		if (f.getContent() != null) {
+		if (f != null && f.getContent() != null) {
 			/* Always return text data now */
 			f.setTextContent(new String(f.getContent(), StandardCharsets.UTF_8));
 			f.setContent(null);
