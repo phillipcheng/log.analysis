@@ -3,6 +3,7 @@ package dv.mgr;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -662,7 +663,14 @@ public class FlowController {
 		EngineConf ec = flowDeployer.getEngineConfig();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
-		return this.flowMgr.getDFSFile(ec, filePath);
+		InMemFile f = this.flowMgr.getDFSFile(ec, filePath);
+		if (f.getContent() != null) {
+			/* Always return text data now */
+			f.setTextContent(new String(f.getContent(), StandardCharsets.UTF_8));
+			f.setContent(null);
+			f.setFileType(FileType.textData);
+		}
+		return f;
 	}
 
 	@RequestMapping(value = "/dfs/**", method = { RequestMethod.PUT, RequestMethod.POST })
