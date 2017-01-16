@@ -57,13 +57,24 @@ body {
 			columns : [ [{
 				field : 'name',
 				title : 'Flow Name',
-				width : $(this).width() * 0.75
+				width : $(this).width() * 0.3
+			},
+			{
+				field : 'projectName',
+				title : 'Project Name',
+				width : $(this).width() * 0.3
+			},
+			{
+				field : 'deployed',
+				title : 'Deployed',
+				sortable: true,
+				width : $(this).width() * 0.1
 			},
 			{
 				field : 'owner',
 				title : 'Owner',
 				sortable: true,
-				width : $(this).width() * 0.2
+				width : $(this).width() * 0.1
 			} ] ],
 			pagination : true
 		});
@@ -143,7 +154,7 @@ body {
 		if (nodes != null && nodes.length >0) {
 			var delURL;
 			var name = nodes[0].name;
-			delURL = "/dashview/george/flow/"+name+"/del";
+			delURL = "/dashview/player/flow/"+name+"/del";
 			$.messager.confirm('Info', 'will you delete the flow?', function(i) {
 				if (i) {
 					$.get(delURL,
