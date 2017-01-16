@@ -154,7 +154,7 @@ body {
 		if (nodes != null && nodes.length >0) {
 			var delURL;
 			var name = nodes[0].name;
-			delURL = "/dashview/player/flow/"+name+"/del";
+			delURL = "/dashview/george/flow/"+name+"/del";
 			$.messager.confirm('Info', 'will you delete the flow?', function(i) {
 				if (i) {
 					$.get(delURL,
