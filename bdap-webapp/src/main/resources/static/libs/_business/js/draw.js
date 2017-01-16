@@ -308,8 +308,8 @@ var _draw = {
 								each(result.nodes, function() {
 									if(this.id.localeCompare(gId) == 0) {
 										this[k] = ary;
-										_draw._drawPropertyLeftDiv(gId, this);
-										//_draw._drawProperty(gId, this);
+										//_draw._drawPropertyLeftDiv(gId, this);
+										_draw._drawProperty(gId, this);
 										return false;
 									}
 									return true;
@@ -328,8 +328,8 @@ var _draw = {
 									each(result.nodes, function() {
 										if(this.id.localeCompare(gId) == 0) {
 											this[k] = ary;
-											//_draw._drawProperty(gId, this);
-											_draw._drawPropertyLeftDiv(gId, this);
+											_draw._drawProperty(gId, this);
+											//_draw._drawPropertyLeftDiv(gId, this);
 											return false;
 										}
 										return true;
@@ -749,30 +749,30 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 										.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
 								}
 
-								divObj.append("strong").text(propertyName + ":");
-							} else if(obj["type"].toString().localeCompare("integer") == 0) {
-								if(propertyValue.length == 0) {
-									if(obj["default"]) {
-										propertyValue = obj["default"];
-									} else {
-										propertyValue = "0";
-									}
-								}
-								divObj.append("strong").text(propertyName + ":");
-								divObj.append("input").attr("type", "number")
-									.attr("value", propertyValue)
-									.attr("placeholder", "you need input integer...")
-									.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
+						divObj.append("strong").text(propertyName + ":");
+					} else if(obj["type"].toString().localeCompare("integer") == 0) {
+						if(propertyValue.length == 0) {
+							if(obj["default"]) {
+								propertyValue = obj["default"];
+							} else {
+								propertyValue = "0";
 							}
-						} else {
-							divObj.append("strong").text(propertyName + ":");
-							divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
-								.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
 						}
-						return false;
+						divObj.append("strong").text(propertyName + ":");
+						divObj.append("input").attr("type", "number")
+							.attr("value", propertyValue)
+							.attr("placeholder", "you need input integer...")
+							.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
 					}
-//				}
-//			}
+				} else {
+					divObj.append("strong").text(propertyName + ":");
+					divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
+						.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+				}
+				return false;
+				//					}
+				//				}
+			}
 		}
 		return true;
 	});
@@ -853,30 +853,27 @@ var display = function() {
 		txt += "<strong>name:</strong><input args='name' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.name + "'>";
 		txt += "<strong>location:</strong><input args='location' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.location + "'>";
 		txt += "<strong>dataFormat:</strong><select args='dataFormat' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
-		
-		each(selfDataInfor["dataFormat"].v , function(){
-			txt += "<option value='"+this+"'>"+this+"</option>"; 
+		each(selfDataInfor["dataFormat"].v, function() {
+			txt += "<option value='" + this + "'>" + this + "</option>";
 			return true;
 		});
-		txt+="</select>";
-			
-//		txt += "<option value='Line'>Line</option><option value='XML'>XML</option><option value='Text'>Text</option><option value='Binary'>Binary</option>";
-//		txt += "<option value='Section'>Section</option><option value='Mixed'>Mixed</option><option value='FileName'>FileName</option></select>";
-//		
-		//txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
-		
+		txt += "</select>";
+
+		//		txt += "<option value='Line'>Line</option><option value='XML'>XML</option><option value='Text'>Text</option><option value='Binary'>Binary</option>";
+		//		txt += "<option value='Section'>Section</option><option value='Mixed'>Mixed</option><option value='FileName'>FileName</option></select>";
+
 		txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
-		each(selfDataInfor["recordType"].v , function(){
-			txt += "<option value='"+this+"'>"+this+"</option>"; 
+		each(selfDataInfor["recordType"].v, function() {
+			txt += "<option value='" + this + "'>" + this + "</option>";
 			return true;
-		});		
-		txt+="</select>";			
-		
-		
-//		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
-//		
+		});
+		txt += "</select>";
+
+		//		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
+		//		
 		txt += "<strong>instance:</strong><input args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
 		txt += "</div></div></div>";
+
 		var content = $("#accordion").html();
 		content += txt;
 		$("#accordion").html(content);
@@ -1035,12 +1032,19 @@ var addAndSubInput = function(direction, gId, propertyName) {
 						if(typeof this[propertyName] == 'string'){
 							console.log("this[propertyName]", this[propertyName]);
 							this[propertyName] = '';
-						}else {
+							_draw._drawProperty(gId, this);
+						} else {
 							console.log("this[propertyName]", this[propertyName]);
 							this[propertyName].splice(this[propertyName].length - 1, 1);
+							if(this[propertyName].length==0&&selfPropertyInfor[gId+"_"+propertyName]){
+								delete this[propertyName];
+								_draw._drawPropertyLeftDiv(gId,this);
+							}else {
+								_draw._drawProperty(gId, this);
+							}
 						}
 					}
-					_draw._drawProperty(gId, this);
+					//_draw._drawProperty(gId, this);
 					return false;
 				}
 				return true;
@@ -1057,12 +1061,23 @@ var changeProperty = function(gId, propertyName) {
 		$("#rightupcssheaderstring").html(o.value);
 		d3.select("#" + gId).select("text").text(o.value);
 	}
-	if(o.tagName.localeCompare("INPUT") == 0 && o.type.localeCompare("checkbox") == 0) {
+
+	if(selfPropertyInfor[gId+"_"+propertyName] && o.value.length==0) {
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
-				this[propertyName] = o.checked.toString();
-				var tempPropertyName = propertyName.replaceAll(".", "");
-				d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.checked);
+				delete this[propertyName];
+				_draw._drawPropertyLeftDiv(gId,this);
+				return false;
+			}
+			return true;
+		});
+	} else {
+		if(o.tagName.localeCompare("INPUT") == 0 && o.type.localeCompare("checkbox") == 0) {
+			each(result.nodes, function() {
+				if(this.id.localeCompare(gId) == 0) {
+					this[propertyName] = o.checked.toString();
+					var tempPropertyName = propertyName.replaceAll(".", "");
+					d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.checked);
 
 				_draw._drawProperty(gId, this);
 				return false;
@@ -1088,11 +1103,12 @@ var changeProperty = function(gId, propertyName) {
 				var tempPropertyName = propertyName.replaceAll(".", "");
 				d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.value);
 
-				_draw._drawProperty(gId, this);
-				return false;
-			}
-			return true;
-		});
+					_draw._drawProperty(gId, this);
+					return false;
+				}
+				return true;
+			});
+		}
 	}
 }
 
