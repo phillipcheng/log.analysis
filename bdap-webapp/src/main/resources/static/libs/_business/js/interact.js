@@ -122,7 +122,7 @@ var interact = {
 		 * get all properties type/valuelist/rule and so on.
 		 */
 		getFlowSchema : function(){
-			var requestURL = "/dashview/{userName}/flow/schema";
+			var requestURL = "/dashview/{userName}/flow/schema" + "?projectId=" + WHOLE_PROJECT_ID;
 			return interact.ajaxGet(requestURL);
 		},
 		
@@ -145,8 +145,21 @@ var interact = {
 			}
 			requestURL = requestURL.replace("{instanceId}",instanceid).replace("{dataName:.+}", dataName);
 			return interact.ajaxGet(requestURL);
-		}
+		},
 		
+		getDFSFile : function(pathName){
+			var requestURL = "/dashview/{userName}/flow/dfs/";
+			if(!isEmpty(pathName)){
+				requestURL += pathName;
+				return interact.ajaxGet(requestURL);
+			}
+			return "";
+		},
+		
+		listProjects : function(){
+			var requestURL = "/dashview/{userName}/project/";
+			return interact.ajaxGet(requestURL);
+		}
 		
 		
 

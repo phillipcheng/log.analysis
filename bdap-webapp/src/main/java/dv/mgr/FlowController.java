@@ -3,6 +3,7 @@ package dv.mgr;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -362,9 +363,24 @@ public class FlowController {
 	}
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	List<FlowEntity> getAllFlow(@PathVariable String userName) {
+	List<Map<String, String>> getAllFlow(@PathVariable String userName) {
 		this.validateUser(userName);
-		return this.flowRepository.findAll();
+		List<FlowEntity> flowEntities = this.flowRepository.findAll();
+		List<Map<String, String>> flows = new ArrayList<Map<String, String>>();
+		if (flowEntities != null) {
+			Map<String, String> info;
+			ProjectEntity p;
+			for (FlowEntity f: flowEntities) {
+				info = new HashMap<String, String>();
+				p = projectRepository.getOne(f.getProjectId());
+				info.put("name", f.getName());
+				info.put("projectName", p != null ? p.getProjectName() : "");
+				info.put("owner", f.getOwner());
+				info.put("deployed", Boolean.toString(f.isDeployed()));
+				flows.add(info);
+			}
+		}
+		return flows;
 	}
 	
 	@RequestMapping(value = "/{flowId}/instance/{instanceid}/add", method = RequestMethod.GET)
@@ -662,7 +678,14 @@ public class FlowController {
 		EngineConf ec = flowDeployer.getEngineConfig();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
-		return this.flowMgr.getDFSFile(ec, filePath);
+		InMemFile f = this.flowMgr.getDFSFile(ec, filePath);
+		if (f != null && f.getContent() != null) {
+			/* Always return text data now */
+			f.setTextContent(new String(f.getContent(), StandardCharsets.UTF_8));
+			f.setContent(null);
+			f.setFileType(FileType.textData);
+		}
+		return f;
 	}
 
 	@RequestMapping(value = "/dfs/**", method = { RequestMethod.PUT, RequestMethod.POST })

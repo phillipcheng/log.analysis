@@ -206,7 +206,7 @@ var _In_data_node = function(txtId , gId) {
 		class: 'nodeChildG',
 		width: 0,
 		height: 0,
-		onclick:'_event.selectedData(\"'+txtId+'\",\"'+gId+'\")',
+		onmouseup:'_event.selectedData(\"'+txtId+'\",\"'+gId+'\")',
 		rect: {
 			id: txtId + "_rect",
 			G: gId,
@@ -225,7 +225,7 @@ var _Out_data_node = function(txtId , gId) {
 		height: 0,
 		G:gId,
 		show:false,
-		onclick:'_event.selectedData(\"'+txtId+'\",\"'+gId+'\")',
+		onmouseup:'_event.selectedData(\"'+txtId+'\",\"'+gId+'\")',
 		rect:{
 			id: txtId + "_rect",
 			G: gId,

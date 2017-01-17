@@ -275,6 +275,7 @@ var _draw = {
 		_build._build(gId, g_instance);
 
 		this._drawAboutPosition(gId);
+		_draw._drawNodeDataRelation();
 	},
 	_drawPropertyLeftDiv: function(gId, obj) {
 		var nodeData = g.node(gId);
@@ -285,13 +286,73 @@ var _draw = {
 		var notProperty = "@class,id,cmd.class";
 		if(obj["cmd.class"]) {
 			$.each(obj, function(k, v) {
-				if(typeof v == 'string') {
-					if(notProperty.indexOf(k) == -1) {
-						if(k.localeCompare("name") == 0) {
-							$("#rightupcssheaderstring").html(v);
-						}
+				var mySelfObj = selfPropertyInfor[gId + "_" + k];
+				if(mySelfObj) {
+					if(mySelfObj.type.localeCompare("string") == 0) {
 						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
 						drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+					} else if(mySelfObj.type.localeCompare("array") == 0) {
+						var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+						divobj.append("strong").text(k + ":");
+						divobj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + k + "')");
+						divobj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + k + "')");
+						if(typeof v == 'string') {
+							divobj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", v).on("keyup", function() {
+								var ary = [];
+								each(this.parentNode.childNodes, function() {
+									if(this.tagName.localeCompare("INPUT") == 0) {
+										ary.push(this.value);
+									}
+									return true;
+								});
+								each(result.nodes, function() {
+									if(this.id.localeCompare(gId) == 0) {
+										this[k] = ary;
+										//_draw._drawPropertyLeftDiv(gId, this);
+										_draw._drawProperty(gId, this);
+										return false;
+									}
+									return true;
+								});
+							});
+						} else {
+							each(v, function() {
+								divobj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", this).on("keyup", function() {
+									var ary = [];
+									each(this.parentNode.childNodes, function() {
+										if(this.tagName.localeCompare("INPUT") == 0) {
+											ary.push(this.value);
+										}
+										return true;
+									});
+									each(result.nodes, function() {
+										if(this.id.localeCompare(gId) == 0) {
+											this[k] = ary;
+											_draw._drawProperty(gId, this);
+											//_draw._drawPropertyLeftDiv(gId, this);
+											return false;
+										}
+										return true;
+									});
+								});
+								return true;
+							});
+						}
+					}
+				} else {
+					if(typeof v == 'string') {
+						if(notProperty.indexOf(k) == -1) {
+							if(k.localeCompare("name") == 0) {
+								$("#rightupcssheaderstring").html(v);
+							}
+							var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+							drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+						}
+					} else if(typeof v == 'object') {
+						if(k.localeCompare("inLets") != 0 && k.localeCompare("outlets") != 0) {
+							var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+							drawInputContent(divobj, gId, obj["cmd.class"].toString(), k, v);
+						}
 					}
 				}
 			});
@@ -313,6 +374,7 @@ var _draw = {
 			divobj.append("input").attr("type", "text").attr("value", "start").attr("placeholder", "start...").attr("onkeyup", "changeProperty('" + gId + "','name')");			
 		}
 
+		//单个属性
 		var divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
 		divobj.append("input").attr("type", "text").attr("placeholder", "format  k:v  ...").style({
 			background: 'silver'
@@ -324,7 +386,10 @@ var _draw = {
 					each(result.nodes, function(i, o) {
 						if(this.id.localeCompare(gId) == 0) {
 							this[tempValue[0].trim()] = tempValue[1].trim();
-							_draw._drawPropertyLeftDiv(gId,obj);
+							selfPropertyInfor[gId + "_" + tempValue[0].trim()] = {
+								type: 'string'
+							};
+							_draw._drawPropertyLeftDiv(gId, obj);
 							return false;
 						}
 						return true;
@@ -334,6 +399,15 @@ var _draw = {
 			this.value = "";
 		});
 
+		divobj = d3.select(".rightupcssbody").append("div").attr("class", "sublistgroup");
+		divobj.append("input").attr("id", "self_propertyName").attr("type", "text").attr("placeholder", "k...").style({
+			background: 'silver',
+			width: "35%"
+		})
+		divobj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "')");
+		divobj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "')");
+		divobj.append("button").text("save").attr("onclick", "saveSelfArrayProperty('" + gId + "')");
+
 		this._drawProperty(gId, obj);
 	},
 	_drawProperty: function(gId, obj) {
@@ -341,7 +415,7 @@ var _draw = {
 		var _index = 0;
 		var notProperty = "@class,id,cmd.class";
 		$.each(obj, function(k, v) {
-			if(typeof v == 'string') {
+			if((k.localeCompare("inLets") != 0) && (k.localeCompare("outlets") != 0)) {
 				if(notProperty.indexOf(k) == -1) {
 					if(v.length > 0) {
 						_index++;
@@ -367,13 +441,20 @@ var _draw = {
 			if(this.id.localeCompare(gId) == 0) {
 				$.each(this, function(k, v) {
 					var temp_k = k.toString().replaceAll(".", "");
-					if(typeof v == 'string' && v.length > 0) {
-						if(property_no_txt.indexOf(k) == -1) {
-							txt_index++;
-							d3.select("#" + gId + "_property")
-								.append("text").attr("id", gId + "_property_" + temp_k)
-								.attr("x", 0).attr("y", (txt_index * 20) - 5).text(k + ":" + v);
-						}
+					if(k.localeCompare("inLets")!=0&&k.localeCompare("outlets")!=0){
+						if(v.length > 0) {
+							if(property_no_txt.indexOf(k) == -1) {
+								txt_index++;
+								var finaleTxt = k + ":" + v;
+								var tempMaxLength = 35;
+								if(finaleTxt.length > 35) {
+									finaleTxt = finaleTxt.substring(0, 30) + "...";
+								}
+								d3.select("#" + gId + "_property")
+									.append("text").attr("id", gId + "_property_" + temp_k)
+									.attr("x", 0).attr("y", (txt_index * 20) - 5).text(finaleTxt);
+							}
+						}						
 					}
 				});
 				return false;
@@ -382,7 +463,7 @@ var _draw = {
 		});
 
 		_build._build(gId, g_child_Instance);
-		this._drawAboutPosition(gId);
+		//this._drawAboutPosition(gId);
 		_draw._drawDataInPutAndPropertyAndOutPut(gId);
 	},
 	_drawClearProperty: function(gId) {
@@ -470,9 +551,9 @@ var _draw = {
 	},
 	_drawNodeDataRelation: function() {
 		d3.select("#lineContainer").selectAll(".edgeData").remove();
-		var fromPoint = [];
-		var toPoint = [];
 		each(result.links, function() {
+			var fromPoint = [];
+			var toPoint = [];
 			var fromtxt, totxt;
 			fromtxt = this.fromNodeName;
 			totxt = this.toNodeName;
@@ -574,8 +655,8 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 	each(propertyInfor, function() {
 		if(notProperty.indexOf(propertyName) == -1) {
 			if(this["cmd.class"]) {
-				if(this["cmd.class"].default) {
-					if(this["cmd.class"].default.toString().indexOf(actionName) > -1) {
+//				if(this["cmd.class"].default) {
+//					if(this["cmd.class"].default.toString().indexOf(actionName) > -1) {
 						if(this[propertyName]) {
 							console.log(this);
 							var obj = this[propertyName];
@@ -583,11 +664,20 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 								divObj.append("strong").text(propertyName + ":");
 								var selectedObj = divObj.append("select").attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
 								each(obj["enum"], function(i, o) {
-									if(this.toString().localeCompare(obj["default"].toString()) == 0) {
-										selectedObj.append("option").attr("selected", "selected")
-											.attr("value", this).text(this);
-									} else {
-										selectedObj.append("option").attr("value", this).text(this);
+									if(propertyValue){
+										if(this.toString().localeCompare(propertyValue) == 0) {
+											selectedObj.append("option").attr("selected", "selected")
+												.attr("value", this).text(this);
+										} else {
+											selectedObj.append("option").attr("value", this).text(this);
+										}										
+									}else{
+										if(obj["default"]&&this.toString().localeCompare(obj["default"].toString()) == 0) {
+											selectedObj.append("option").attr("selected", "selected")
+												.attr("value", this).text(this);
+										} else {
+											selectedObj.append("option").attr("value", this).text(this);
+										}										
 									}
 									return true;
 								});
@@ -602,8 +692,49 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
 							} else if(obj["type"].toString().localeCompare("array") == 0) {
 								divObj.append("strong").text(propertyName + ":");
-								divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "you need input array...")
-									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+								divObj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + propertyName + "')");
+								divObj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + propertyName + "')");
+								if(typeof propertyValue == 'string') {
+										divObj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", propertyValue).on("keyup", function() {
+											var ary = [];
+											each(this.parentNode.childNodes, function() {
+												if(this.tagName.localeCompare("INPUT") == 0) {
+													ary.push(this.value);
+												}
+												return true;
+											});
+											each(result.nodes, function() {
+												if(this.id.localeCompare(gId) == 0) {
+													this[propertyName] = ary;
+													_draw._drawProperty(gId, this);
+													return false;
+												}
+												return true;
+											});
+										});
+								} else {
+									each(propertyValue, function() {
+										divObj.append("input").attr("type", "text").attr("placeholder", "...").attr("value", this).on("keyup", function() {
+											var ary = [];
+											each(this.parentNode.childNodes, function() {
+												if(this.tagName.localeCompare("INPUT") == 0) {
+													ary.push(this.value);
+												}
+												return true;
+											});
+											each(result.nodes, function() {
+												if(this.id.localeCompare(gId) == 0) {
+													this[propertyName] = ary;
+													_draw._drawProperty(gId, this);
+													return false;
+												}
+												return true;
+											});
+										});
+										return true;
+									});
+								}
+
 							} else if(obj["type"].toString().localeCompare("boolean") == 0) {
 								if(propertyValue.length > 0) {
 									if(propertyValue.localeCompare("true") == 0) {
@@ -618,29 +749,29 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 										.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
 								}
 
-								divObj.append("strong").text(propertyName + ":");
-							} else if(obj["type"].toString().localeCompare("integer") == 0) {
-								if(propertyValue.length == 0) {
-									if(obj["default"]) {
-										propertyValue = obj["default"];
-									} else {
-										propertyValue = "0";
-									}
-								}
-								divObj.append("strong").text(propertyName + ":");
-								divObj.append("input").attr("type", "number")
-									.attr("value", propertyValue)
-									.attr("placeholder", "you need input integer...")
-									.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
+						divObj.append("strong").text(propertyName + ":");
+					} else if(obj["type"].toString().localeCompare("integer") == 0) {
+						if(propertyValue.length == 0) {
+							if(obj["default"]) {
+								propertyValue = obj["default"];
+							} else {
+								propertyValue = "0";
 							}
-						} else {
-							divObj.append("strong").text(propertyName + ":");
-							divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
-								.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
 						}
-						return false;
+						divObj.append("strong").text(propertyName + ":");
+						divObj.append("input").attr("type", "number")
+							.attr("value", propertyValue)
+							.attr("placeholder", "you need input integer...")
+							.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
 					}
+				} else {
+					divObj.append("strong").text(propertyName + ":");
+					divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
+						.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
 				}
+				return false;
+				//					}
+				//				}
 			}
 		}
 		return true;
@@ -656,6 +787,7 @@ var addLeftDiv = function(keys, obj) {
 			show: false,
 			v: obj
 		});
+		result.data.push(obj);
 	} else {
 		dataSetList.unshift({
 			k: keys,
@@ -721,12 +853,27 @@ var display = function() {
 		txt += "<strong>name:</strong><input args='name' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.name + "'>";
 		txt += "<strong>location:</strong><input args='location' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.location + "'>";
 		txt += "<strong>dataFormat:</strong><select args='dataFormat' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
-		txt += "<option value='Line'>Line</option><option value='XML'>XML</option><option value='Text'>Text</option><option value='Binary'>Binary</option>";
-		txt += "<option value='Section'>Section</option><option value='Mixed'>Mixed</option><option value='FileName'>FileName</option></select>";
+		each(selfDataInfor["dataFormat"].v, function() {
+			txt += "<option value='" + this + "'>" + this + "</option>";
+			return true;
+		});
+		txt += "</select>";
+
+		//		txt += "<option value='Line'>Line</option><option value='XML'>XML</option><option value='Text'>Text</option><option value='Binary'>Binary</option>";
+		//		txt += "<option value='Section'>Section</option><option value='Mixed'>Mixed</option><option value='FileName'>FileName</option></select>";
+
 		txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
-		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
+		each(selfDataInfor["recordType"].v, function() {
+			txt += "<option value='" + this + "'>" + this + "</option>";
+			return true;
+		});
+		txt += "</select>";
+
+		//		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
+		//		
 		txt += "<strong>instance:</strong><input args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
 		txt += "</div></div></div>";
+
 		var content = $("#accordion").html();
 		content += txt;
 		$("#accordion").html(content);
@@ -800,6 +947,113 @@ var changeDataSetProeroty = function(gId) {
 		return true;
 	});
 }
+
+var saveSelfArrayProperty = function(gId) {
+	var propertyName = document.getElementById("self_propertyName").value;
+	if(propertyName) {
+		var e = window.event || arguments.callee.caller.arguments[0];
+		var o = getEventSources(e);
+		var ary = [];
+		each(o.parentNode.childNodes, function() {
+			if(this.tagName.localeCompare("INPUT") == 0) {
+				if(this.id) {
+
+				} else {
+					ary.push(this.value);
+				}
+			}
+			return true;
+		});
+		each(result.nodes, function() {
+			if(this.id.localeCompare(gId) == 0) {
+				this[propertyName] = ary;
+				selfPropertyInfor[gId + "_" + propertyName] = {
+					type: 'array'
+				};
+				//_draw._drawProperty(gId, this);
+				_draw._drawPropertyLeftDiv(gId, this);
+				return false;
+			}
+			return true;
+		});
+		while(true) {
+			var objInput = o.parentNode.childNodes[o.parentNode.childNodes.length - 1];
+			if(objInput.tagName.localeCompare("INPUT") == 0) {
+				o.parentNode.removeChild(objInput);
+			} else {
+				break;
+			}
+		}
+		console.log(result);
+	}
+}
+
+var addAndSubInput = function(direction, gId, propertyName) {
+	var e = window.event || arguments.callee.caller.arguments[0];
+	var o = getEventSources(e);
+	e.stopPropagation();
+	if(direction > 0) {
+		console.log(o.parentNode);
+		var objInput = document.createElement("input");
+		objInput.setAttribute("type", "text");
+		objInput.setAttribute("placeholder", "...");
+		if(propertyName) {
+			objInput.addEventListener("keyup", function() {
+				var ary = [];
+				each(o.parentNode.childNodes, function() {
+					if(this.tagName.localeCompare("INPUT") == 0) {
+						ary.push(this.value);
+					}
+					return true;
+				});
+				each(result.nodes, function() {
+					if(this.id.localeCompare(gId) == 0) {
+						this[propertyName] = ary;
+						_draw._drawProperty(gId, this);
+						return false;
+					}
+					return true;
+				});
+				console.log(result);
+			});
+			o.parentNode.appendChild(objInput);
+		}else {
+			o.parentNode.appendChild(objInput);
+			o.parentNode.parentNode.scrollTop = o.parentNode.parentNode.scrollHeight;
+		}
+	} else if(direction < 0) {
+		console.log(o.parentNode);
+		var objInput = o.parentNode.childNodes[o.parentNode.childNodes.length - 1];
+		if(objInput.tagName.localeCompare("INPUT") == 0) {
+			o.parentNode.removeChild(objInput);
+			each(result.nodes, function() {
+				if(this.id.localeCompare(gId) == 0) {
+					if(propertyName) {
+						if(typeof this[propertyName] == 'string'){
+							console.log("this[propertyName]", this[propertyName]);
+							this[propertyName] = '';
+							_draw._drawProperty(gId, this);
+						} else {
+							console.log("this[propertyName]", this[propertyName]);
+							this[propertyName].splice(this[propertyName].length - 1, 1);
+							if(this[propertyName].length==0&&selfPropertyInfor[gId+"_"+propertyName]){
+								delete this[propertyName];
+								_draw._drawPropertyLeftDiv(gId,this);
+							}else {
+								_draw._drawProperty(gId, this);
+							}
+						}
+					}
+					//_draw._drawProperty(gId, this);
+					return false;
+				}
+				return true;
+			});
+			
+		}
+	}
+}
+
 var changeProperty = function(gId, propertyName) {
 	var e = window.event || arguments.callee.caller.arguments[0];
 	var o = getEventSources(e);
@@ -807,12 +1061,23 @@ var changeProperty = function(gId, propertyName) {
 		$("#rightupcssheaderstring").html(o.value);
 		d3.select("#" + gId).select("text").text(o.value);
 	}
-	if(o.tagName.localeCompare("INPUT") == 0 && o.type.localeCompare("checkbox") == 0) {
+
+	if(selfPropertyInfor[gId+"_"+propertyName] && o.value.length==0) {
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
-				this[propertyName] = o.checked.toString();
-				var tempPropertyName = propertyName.replaceAll(".", "");
-				d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.checked);
+				delete this[propertyName];
+				_draw._drawPropertyLeftDiv(gId,this);
+				return false;
+			}
+			return true;
+		});
+	} else {
+		if(o.tagName.localeCompare("INPUT") == 0 && o.type.localeCompare("checkbox") == 0) {
+			each(result.nodes, function() {
+				if(this.id.localeCompare(gId) == 0) {
+					this[propertyName] = o.checked.toString();
+					var tempPropertyName = propertyName.replaceAll(".", "");
+					d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.checked);
 
 				_draw._drawProperty(gId, this);
 				return false;
@@ -838,11 +1103,12 @@ var changeProperty = function(gId, propertyName) {
 				var tempPropertyName = propertyName.replaceAll(".", "");
 				d3.select("#" + gId + "_property").select("#" + gId + "_property_" + tempPropertyName).text(propertyName + ":" + o.value);
 
-				_draw._drawProperty(gId, this);
-				return false;
-			}
-			return true;
-		});
+					_draw._drawProperty(gId, this);
+					return false;
+				}
+				return true;
+			});
+		}
 	}
 }
 
@@ -878,7 +1144,7 @@ var changeData = function(txtId, propertyName, gId) {
 			return true;
 		});
 	} else if(o.tagName.localeCompare("SELECT") == 0) {
-		d3.select("#" + txtId + "_" + propertyName).text(o.selectedOptions[0].innerText);
+		d3.select("#" + txtId + "_" + propertyName).text(o.selectedOptions[0].text);
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
 				each(this.inLets, function() {

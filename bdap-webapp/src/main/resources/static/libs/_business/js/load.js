@@ -15,12 +15,21 @@ var load = {
 			return;
 		}
 		var flowObj = interact.getFlow(flowid);
+		WHOLE_PROJECT_ID = flowObj.projectId;
 		console.log("flowObj", flowObj);
 		if(!this.isEmpty(flowObj)) {
 			if(this.isEmpty(flowObj.jsonContent)) {
 				return;
 			}
-			var flowContext = JSON.parse(flowObj.jsonContent);
+			var flowContext;
+			try
+			{
+				flowContext = JSON.parse(flowObj.jsonContent); 
+			}
+			catch(err)
+			{
+				msgShow('Info', 'please check flow context, it cannot be parsed.', 'Info');
+			}
 			console.log(flowObj);
 //			var flowContext = flowObj;
 			var nodes = flowContext.nodes;
@@ -118,7 +127,12 @@ var load = {
 				tempto = tempto.substring(tempto.indexOf("g_"));
 			}
 			g.setEdge(tempfrom, tempto);
-			result.links.push(obj);
+//			result.links.push(obj);
+			result.links.push({
+				fromNodeName:tempfrom,
+				toNodeName:tempto,
+				linkType:"success"
+			});
 			return true;
 		});
 	},
@@ -165,6 +179,6 @@ var load = {
 
 			return true;
 		});
-
+		_draw._drawNodeDataRelation();
 	}
 }

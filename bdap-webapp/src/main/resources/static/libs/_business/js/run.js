@@ -5,7 +5,10 @@ var run = {
 				if(obj.state == state) {
 					var fillColor = "fill:" + obj.color;
 					var currentClass = $("#"+nodeName).attr("class");
-					currentClass = currentClass.replaceAll("success", "").replaceAll("fail", "");
+					if(currentClass.indexOf("success") != -1 || currentClass.indexOf("fail") != -1){
+						return;
+					}
+					//currentClass = currentClass.replace("success", "").replace("fail", "");
 					if(thisObj.isSuccessful(state)){
 						currentClass = currentClass + " success";
 					}else if(thisObj.isFailed(state)){
@@ -30,44 +33,53 @@ var run = {
 		},
 		
 		runFlow : function(flowname){
+			var isRunned = false;
 			var thisObj = this;
-			if(isEmpty(flowname) && isEmpty(WHOLE_FLOW_NAME)){
-				return;
-			}
-			if(!isEmpty(flowname)){
-				WHOLE_FLOW_NAME = flowname;
-			}else {
-				flowname = WHOLE_FLOW_NAME;
-			}
-			
-			var flowid = flowname;
-			var requestURL = "/dashview/{userName}/flow/";
-			if(flowid == undefined || flowid == "") {
-				return;
-			}
-			requestURL += flowid;
-			$.ajax({
-                type: "post",
-                url: getAjaxAbsolutePath(requestURL),
-                success: function(data, textStatus){
-				  console.info(data);
-				  var instanceid = data;
-				  if(isEmpty(instanceid)){
-						console.info("run fail.");
+			$.messager.confirm('Info', 'will you run the flow?', function(i) {
+				if (i) {
+					isRunned = true;
+					if(isEmpty(flowname) && isEmpty(WHOLE_FLOW_NAME)){
 						return;
 					}
-					// save instance
-					interact.saveFlowInstance(flowname, instanceid);
-					WHOLE_INSTANCE_ID = instanceid;
-					//open websocket
-					thisObj.connectWebSoket(instanceid);
-                },
-                error: function(e){
-                	console.info(e);
-                }
+					if(!isEmpty(flowname)){
+						WHOLE_FLOW_NAME = flowname;
+					}else {
+						flowname = WHOLE_FLOW_NAME;
+					}
+					
+					var flowid = flowname;
+					var requestURL = "/dashview/{userName}/flow/";
+					if(flowid == undefined || flowid == "") {
+						return;
+					}
+					requestURL += flowid;
+					$.ajax({
+		                type: "post",
+		                url: getAjaxAbsolutePath(requestURL),
+		                success: function(data, textStatus){
+						  console.info(data);
+						  var instanceid = data;
+						  if(isEmpty(instanceid)){
+								console.info("run fail.");
+								return;
+							}
+							// save instance
+							interact.saveFlowInstance(flowname, instanceid);
+							FLOW_CURRENT_STAGE = "RUNNING";
+							var detailInfor = "Instance '" + instanceid + "' is created.";
+							msgShow('Info', detailInfor, 'info');
+							WHOLE_INSTANCE_ID = instanceid;
+							//open websocket
+							thisObj.connectWebSoket(instanceid);
+		                },
+		                error: function(e){
+		                	console.info(e);
+		                }
+					});	
+				}else{
+					isRunned = false;
+				}
 			});
-			
-//			var instanceid = interact.runFlow(flowname);
 			
 		},
 		
@@ -151,6 +163,43 @@ var run = {
 			if(!isEmpty(WHOLE_INSTANCE_ID) && !isEmpty(dataName)){
 				var url = "/dashview/pages/flowlog.html?type=flownodedata&dataname="+dataName+"&instanceid=" + WHOLE_INSTANCE_ID;
 				window.open(url,dataName ,"fullscreen=0,titlebar=yes",true);
+			}
+		},
+		
+		getFlowInstanceNodeStatus : function(nodename){
+			var thisObj = this;
+			if(!isEmpty(nodename)){
+				var requestURL = "/dashview/{userName}/flow/instances/{instanceId}/nodes/{nodeName}";
+				requestURL = requestURL.replace("{instanceId}", WHOLE_INSTANCE_ID).replace("{nodeName}", nodename);
+				$.ajax({
+	                type: "get",
+	                url: getAjaxAbsolutePath(requestURL),
+	                success: function(data, textStatus){
+					  console.info(data);
+					  //{"nodeId":"0000467-170104195305044-oozie-dbad-W@d1csvtransform","nodeName":"d1csvtransform","type":"map-reduce","status":"OK","outputFilePaths":null,"startTime":1484124372000,"endTime":1484124404000}
+					  if(isEmpty(data)){
+						  return;
+					  }
+					  var status = data.status;
+					  thisObj.changeNodeStyle(nodename, status);
+					  return data;
+	                },
+	                error: function(e){
+	                	console.info(e);
+	                }
+				});	
+			}
+		},
+		
+		changeAllNodeColor : function(){
+			var nodes = result.nodes;
+			var thisObj = this;
+			$.each(nodes, function(i, node){
+				var nodename = node.name; 
+				thisObj.getFlowInstanceNodeStatus(nodename);
+			});
+			if(!isEmpty(WHOLE_INSTANCE_ID) &&(FLOW_CURRENT_STAGE == 'RUNNING' || FLOW_CURRENT_STAGE == 'VIEW')){
+				thisObj.connectWebSoket(WHOLE_INSTANCE_ID);
 			}
 			
 		}

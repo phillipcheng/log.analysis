@@ -46,7 +46,7 @@
 						data-options="label:'targetFilePath:',required:true">
 		        </div>
 		        <div style="margin-bottom:20px">
-		            <input class="easyui-filebox" name="uploadFile" label="File1:" labelPosition="top" data-options="prompt:'Choose a file...'" style="width:80%">
+		            <input class="easyui-filebox" name="uploadFile" label="File:" labelPosition="top" data-options="prompt:'Choose a file...'" style="width:80%">
 		        </div>
 				</form>
 		        <div>
@@ -110,6 +110,7 @@
                 },
 				success : function(response) {
 					console.log("The server says: " + response);
+					$('#tt').datagrid('reload');
 				},
 				error : function(response) {
 					console.log("The server says error: ", response);

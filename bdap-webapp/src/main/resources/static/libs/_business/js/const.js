@@ -22,6 +22,15 @@ var _node_max_width = 300;
 
 var _node_max_property_width = 280;
 
+var USER_NAME = "george";
+var WEB_IP = "127.0.0.1";
+var WEB_PORT = "8080";
+if(window.location.hostname != null && window.location.port != null){
+	WEB_IP = window.location.hostname;
+	WEB_PORT = window.location.port;
+}
+console.info(WEB_IP + ":" +WEB_PORT);
+
 /**
  * save JSON
  */
@@ -43,6 +52,8 @@ var propertyInfor = [];
  * the whole flowname, to edit/view
  */
 var WHOLE_FLOW_NAME;
+
+var WHOLE_PROJECT_ID;
 /**
  * the whole instanceid to edit/view
  */
@@ -82,6 +93,9 @@ var NODE_RUNTIME_STATE = [{"state":"PREP", "color":""},
                           {"state":"FAILED", "color":"red"}];
 
 var websocket = null;
-var wsURI = "ws://127.0.0.1:8080/dashview/ws/george/flow/instances/";
+var wsURI = "ws://" + WEB_IP +":" + WEB_PORT + "/dashview/ws/"+USER_NAME+"/flow/instances/";
 
 
+var selfPropertyInfor = {};
+
+var selfDataInfor = {};

@@ -131,6 +131,8 @@ public class Util {
 			return FileType.textData;
 		else if (filePath.endsWith(".template"))
 			return FileType.textData;
+		else if (filePath.endsWith(".schema"))
+			return FileType.textData;
 		else
 			return FileType.binaryData;
 	}
