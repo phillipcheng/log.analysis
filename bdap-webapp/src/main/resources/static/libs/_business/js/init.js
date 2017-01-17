@@ -29,7 +29,22 @@ var clearTempLine = function() {
 }
 
 var remoteActionObj = {};
+var remotePropertyObj = {};
+
+var initPublicFunction = function(){
+	String.prototype.replaceAll = function(oldCharts,newCharts){
+		var txt = this;
+		while(txt.indexOf(oldCharts)>-1){
+			txt = txt.replace(oldCharts,newCharts);
+		}
+		return txt;
+	}
+};
+
 var init = function() {
+	actionLoadInit();
+	initPublicFunction();
+	console.info("WHOLE_PROJECT_ID: " + WHOLE_PROJECT_ID);
 	//初始化位置的偏移
 	clientwidth = document.body.clientWidth;
 	clientheight = document.body.clientHeight;
@@ -87,11 +102,13 @@ var init = function() {
 
 	document.getElementById("child_svg").style.left = (clientwidth - 180) + "px";
 	document.getElementById("child_svg").style.top = (clientheight - 210) + "px";
+
 	/**
 	 * 1.7
 	 * loadJOSN
 	 */
-	d3.json(getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR), function(data) {	
+	var commandsURL = getAjaxAbsolutePath(_HTTP_LOAD_ACTION_INFOR) + "?projectId=" + WHOLE_PROJECT_ID;
+	d3.json(commandsURL, function(data) {	
 //	d3.json(_HTTP_LOAD_ACTION_INFOR, function(data) {
 		remoteActionObj = data;
 		$.each(data, function(k, v) {
@@ -103,6 +120,31 @@ var init = function() {
 				.attr("onclick", "app.action({'label':'" + temp + "','cla':'" + k + "'})");
 		});
 	});
+	remotePropertyObj = interact.getFlowSchema();
+	console.info("remotePropertyObj: " + remotePropertyObj);
+	each(remotePropertyObj.properties.nodes.items.jsonSchemas,function(){
+			if(this.properties["cmd.class"]){
+				propertyInfor.push(this.properties);
+			}
+			return true;
+		});
+	
+	$.each(remotePropertyObj.properties.data.items.properties,function(k,v){
+		if(v.type.localeCompare("string")==0&&v.enum){
+			selfDataInfor[k] = {type:'string',v:v.enum};
+		}else if(v.type.localeCompare('boolean')==0){
+			selfDataInfor[k] = {type:'boolean'};
+		}else if(v.type.localeCompare('string')==0){
+			selfDataInfor[k] = {type:'string'};
+		}
+		return true;
+	});	
+	
+	actionLoadManager();
+	
+	d3.select("#a_title").text(WHOLE_FLOW_NAME );
+	result.name = WHOLE_FLOW_NAME;
+	result.wfName = WHOLE_FLOW_NAME;
 }
 
 /**
@@ -259,8 +301,9 @@ var compatibilityTools = function() {
  * @param {Object} relativePath
  */
 var getAjaxAbsolutePath = function(relativePath) {
-	var httpPath = "http://localhost:8080";
-	var userName = "george";
+//	var httpPath = "http://" + WEB_IP + ":" + WEB_PORT;
+	var httpPath = "";
+	var userName = USER_NAME;
 	if(relativePath != null && relativePath != '') {
 		relativePath = relativePath.replace("{userName}", userName);
 		httpPath += relativePath;
@@ -294,3 +337,100 @@ var remoeToInitPosition = function() {
 	current_zoom_x = init_zoom_x;
 	current_zoom_y = init_zoom_y;
 }
+
+var getRequestUrlParamString = function(name)
+{
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if(r!=null)return  unescape(r[2]); return null;
+}
+
+var actionLoadManager = function(){
+	// view  add  edit
+	var actionParam = getRequestUrlParamString("action");
+	var typeParam = getRequestUrlParamString("type");
+	var name = getRequestUrlParamString("name");
+	if(actionParam == 'view' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "VIEW";
+			load.loadBuild(name);
+		}, 200);
+		
+	}else if(actionParam == 'edit' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "DESIGN";
+			load.loadBuild(name);
+		}, 200);
+	} else if(actionParam == 'add' && typeParam =='flow'){
+		var flowname = getRequestUrlParamString("flowname");
+		var projectid = getRequestUrlParamString("projectid");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = "";
+		WHOLE_PROJECT_ID = projectid;
+		
+	}else if(actionParam == 'view' && typeParam =='job'){
+		var flowname = getRequestUrlParamString("flowname");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = name;
+		FLOW_CURRENT_STAGE = "RUNNING";
+		setTimeout(function(){
+			FLOW_CURRENT_STAGE = "VIEW";
+			load.loadBuild(flowname);
+			setTimeout(function(){
+				run.changeAllNodeColor();
+			}, 1000);
+		}, 200);
+	}else if(actionParam == 'edit' && typeParam =='job'){
+		
+	}
+//	var flowObj = interact.getFlow(WHOLE_FLOW_NAME);
+//	WHOLE_PROJECT_ID = flowObj.projectId;
+	
+	return true;
+}
+/**
+ * when page jump to flow page, init the relational parameters and const.
+ */
+var actionLoadInit = function(){
+	// view  add  edit
+	var actionParam = getRequestUrlParamString("action");
+	var typeParam = getRequestUrlParamString("type");
+	var name = getRequestUrlParamString("name");
+	if(actionParam == 'view' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		FLOW_CURRENT_STAGE = "VIEW";
+	}else if(actionParam == 'edit' && typeParam =='flow'){
+		WHOLE_FLOW_NAME = name;
+		FLOW_CURRENT_STAGE = "DESIGN";
+	} else if(actionParam == 'add' && typeParam =='flow'){
+		var flowname = getRequestUrlParamString("flowname");
+		var projectid = getRequestUrlParamString("projectid");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = "";
+		WHOLE_PROJECT_ID = projectid;
+		
+	}else if(actionParam == 'view' && typeParam =='job'){
+		var flowname = getRequestUrlParamString("flowname");
+		WHOLE_FLOW_NAME = flowname;
+		WHOLE_INSTANCE_ID = name;
+		FLOW_CURRENT_STAGE = "VIEW";
+	}else if(actionParam == 'edit' && typeParam =='job'){
+		
+	}
+	if(isEmpty(WHOLE_PROJECT_ID)){
+		var flowObj = interact.getFlow(WHOLE_FLOW_NAME);
+		WHOLE_PROJECT_ID = flowObj.projectId;
+	}
+	return true;
+}
+
+
+//title msgString msgType: [error,info,question,warning]
+var msgShow = function (title, msgString, msgType) {
+	$.messager.alert(title, msgString, msgType);
+}
+
+
+

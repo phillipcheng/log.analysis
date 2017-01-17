@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+<title></title>
+<style type="text/css">
+body {
+	font-size: 12px;
+	width: 98%;
+}
+
+.btabs {
+	border: 1px solid #8DB2E3;
+	font-size: 12px;
+	height: 26px;
+	list-style-type: none;
+	margin: 0;
+	padding: 4px 0 0 4px;
+	width: 100%;
+	background-color: #E0ECFF;
+}
+
+</style>
+<link href="../libs/_pagelib/css/default.css" rel="stylesheet"	type="text/css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/bootstrap/easyui.css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/icon.css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/color.css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/bootstrap/datalist.css" />
+<link rel="stylesheet" href="../libs/bootstrap/css/bootstrap.min.css" />
+
+<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../libs/_business/js/const.js"></script>
+<script type="text/javascript" src="../libs/_business/js/init.js"></script>
+<script type="text/javascript" src="../libs/_business/js/interact.js"></script>
+
+<script type="text/javascript">
+ 	function getRequestUrlParamString(name)
+	{
+	    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	    var r = window.location.search.substr(1).match(reg);
+	    if(r!=null)return  unescape(r[2]); return null;
+	}
+ 	
+ 	function openData(pathname){
+ 		if(isEmpty(pathname)){
+ 			$("#dataInformation").html("No data to show.");
+ 			return;
+ 		}
+ 		var data = interact.getDFSFile(pathname);
+ 		var content = data.textContent;
+ 		if(isEmpty(content)){
+ 			content = "No data to show.";
+ 		}
+ 		$("#dataInformation").html(content);
+ 	}
+ 	
+ 	function load(){
+ 		var type = getRequestUrlParamString("type");
+ 		var instanceid = getRequestUrlParamString("instanceid");
+ 		var data;
+ 		if(type == 'flowlog'){
+ 			$("#dataInformation").hide();
+ 			$("#dataConsole").hide();
+ 			data = interact.getFlowLog(instanceid);
+ 			data = data.replace("/\n/g","</br></br>");
+ 	 		$("#contextInformation").html(data);
+ 		}else if(type == 'flownodelog'){
+ 			$("#dataInformation").hide();
+ 			$("#dataConsole").hide();
+ 			var nodename = getRequestUrlParamString("nodename");
+ 			data = interact.getFlowNodeLog(instanceid, nodename);
+ 			var htmlStr = '<div class="list-group">';
+ 			if(data instanceof Array){
+ 				$.each(data, function(i, obj){
+ 					var containerIndex = obj.fileName.indexOf("container");
+ 					var container = "";
+ 					var job = "";
+ 					if(containerIndex > -1){
+ 						var strTemp = obj.fileName.substring(containerIndex);
+ 						var arrayTemp = strTemp.split("/");
+ 						if(arrayTemp.length >=2){
+ 							container = arrayTemp[0] + "   ";
+ 							job = arrayTemp[1];
+ 						}
+ 					}
+ 					htmlStr += "<a class='list-group-item' href='"+obj.fileName+"' target='_blank'><span style='color:red'>"+obj.fileType+"</span>  ("+container+job+")</a>";
+ 				});
+ 				htmlStr += "</div>";
+ 				$("#contextInformation").html(htmlStr);
+ 			}else{
+ 				$("#contextInformation").html(data);
+ 			}
+ 		}else if(type == 'flownodedata'){
+ 			$("#dataInformation").show();
+ 			$("#dataConsole").show();
+ 			
+ 			var dataname = getRequestUrlParamString("dataname");
+ 			data = interact.getFlowInstanceData(instanceid, dataname);
+ 			if(!isEmpty(data)){
+ 				var type = data.fileType;
+ 				if(type=="directoryList"){
+ 					var htmlStr = '<div class="list-group">';
+ 					var listStr = data.textContent;
+ 					var list = listStr.split("\n");
+ 					$.each(list, function(i, obj){
+ 						if(!isEmpty(obj)){
+ 							htmlStr += "<a class='list-group-item' href='javascript:void(0)' onclick='openData(\""+obj+"\")' target='_blank'>"+obj+"</a>";
+ 						}
+ 	 				});
+ 					htmlStr += "</div>";
+ 					var r = window.location;
+ 					console.info(r);
+ 					$("#contextInformation").html(htmlStr);
+ 				}else{
+ 					$("#contextInformation").html(data);
+ 				}
+ 			}
+ 	 		
+ 		}
+ 		if(isEmpty(data)){
+ 			$("#contextInformation").html("No data to show.");
+ 		}
+ 		
+ 	}
+ 	
+ 	
+ 	function loadInit(){
+ 		setTimeout(function(){
+ 			
+ 		},200);
+ 	}
+</script>
+</head>
+<body onload="load()">
+<div id="contextInformation" width="100%" style="height:auto"></div>
+<div id="dataConsole" width="103%" style="height:30px;background-color:#D2DDE1;padding-left:5px"><b>Data Console</b></div>
+<div id="dataInformation" width="103%" style="height:670px;background-color:#D2DDE1;padding:10px;word-wrap: break-word;overflow-y:auto;"></div>
+</body>
+</html>

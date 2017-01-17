@@ -21,6 +21,7 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.util.StringUtils;
 
 import bdap.util.Util;
 import etl.cmd.transform.ColOp;
@@ -48,12 +49,16 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public static final @ConfigKey(type=String[].class) String cfgkey_col_op="col.op";
 	public static final @ConfigKey String cfgkey_old_talbe="old.table";
 	public static final @ConfigKey(type=String[].class) String cfgkey_add_fields="add.fields";
+	public static final @ConfigKey String cfgkey_input_delimiter="input.delimiter";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_output_escape_csv="output.escape.csv";
 	
 	private boolean inputEndWithComma=false;
 	private String rowValidationStr;
 	private transient CompiledScript rowValidation;
 	private transient CompiledScript inputEndWithCommaCS;
 	private String oldTable;
+	private String delimiter=",";
+	private boolean outputEscapeCsv=false;
 	
 	private transient List<String> addFieldsNames;
 	private transient List<String> addFieldsTypes;
@@ -91,6 +96,8 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		addFieldsNames = new ArrayList<String>();
 		addFieldsTypes = new ArrayList<String>();
 		colOpList = new ArrayList<ColOp>();
+		delimiter=getCfgString(cfgkey_input_delimiter, ",");
+		outputEscapeCsv=getCfgBoolean(cfgkey_output_escape_csv, false);
 		
 		// compile the expression to speedup
 		if (rowValidationStr != null && rowValidationStr.length() > 0)
@@ -160,7 +167,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		
 		//get all fiels
 		List<String> items = new ArrayList<String>();
-		items.addAll(Arrays.asList(row.split(",", -1)));
+		items.addAll(Arrays.asList(row.split(delimiter, -1)));
 		
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
 		//process row validation
@@ -209,7 +216,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 		}catch(Exception e){
 			logger.error(String.format("error processing input:%s", row));
 		}
-		output = Util.getCsv(items, false);
+		output = Util.getCsv(items, ",", outputEscapeCsv, false);
 		logger.debug(String.format("tableName:%s, output:%s", tfName, output));
 		return Arrays.asList(new Tuple2<String, String>(tfName, output));
 	}

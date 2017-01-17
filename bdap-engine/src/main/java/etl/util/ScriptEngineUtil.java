@@ -28,6 +28,7 @@ public class ScriptEngineUtil {
 	}
 	
 	public static CompiledScript compileScript(String exp){
+		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine jsEngine = manager.getEngineByName("nashorn");
 		Compilable compEngine = (Compilable)jsEngine;
         CompiledScript cs = null;
@@ -40,7 +41,12 @@ public class ScriptEngineUtil {
 	}
 	
 	public static String eval(CompiledScript cs, Map<String, Object> variables){
-		Bindings bindings = new SimpleBindings();
+		Bindings bindings=cs.getEngine().getBindings(100);//Get Engine Scope
+		if(bindings==null){
+			bindings=new SimpleBindings();
+			cs.getEngine().setBindings(bindings, 100);
+		}
+		bindings.clear();
         if (variables!=null){
 			for (String key: variables.keySet()){
 				Object v = variables.get(key);
@@ -52,7 +58,7 @@ public class ScriptEngineUtil {
 			}
 		}
 		try {
-			Object ret = cs.eval(bindings);
+			Object ret = cs.eval();
 			logger.debug(String.format("eval get result: '%s'", ret));
 			if (ret!=null){
 				if (ret instanceof String){
@@ -68,7 +74,7 @@ public class ScriptEngineUtil {
 			}
 			return null;
 		} catch (Exception e) {
-			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
+			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables), e);
 			return null;
 		}
 	}
@@ -78,7 +84,12 @@ public class ScriptEngineUtil {
 	}
 	
 	public static Object evalObject(CompiledScript cs, String orgExp, Map<String, Object> variables){
-		Bindings bindings = new SimpleBindings();
+		Bindings bindings=cs.getEngine().getBindings(100);//Get Engine Scope
+		if(bindings==null){
+			bindings=new SimpleBindings();
+			cs.getEngine().setBindings(bindings, 100);
+		}
+		bindings.clear();
         if (variables!=null){
 			for (String key: variables.keySet()){
 				Object v = variables.get(key);
@@ -90,7 +101,7 @@ public class ScriptEngineUtil {
 			}
 		}
 		try {
-			Object ret = cs.eval(bindings);
+			Object ret = cs.eval();
 			logger.debug(String.format("eval get result: '%s'", ret));
 			return ret;
 		} catch (Exception e) {

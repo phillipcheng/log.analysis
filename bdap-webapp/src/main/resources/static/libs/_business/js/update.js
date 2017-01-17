@@ -1,6 +1,4 @@
 var update = function(theSelf, d, nodeData) {
-	console.log("-------------update:" + d + "--------------------");
-	console.log("nodeData:", nodeData);
 	if(nodeData.state.localeCompare("start") == 0 || nodeData.state.localeCompare("end") == 0 || nodeData.state.localeCompare("action") == 0) {
 		var theSelfObj = d3.select(theSelf);
 		theSelfObj.transition().duration(_TRANSITION_DURATION)
@@ -17,13 +15,34 @@ var update = function(theSelf, d, nodeData) {
 		txtObj.transition().duration(_TRANSITION_DURATION).attr("x", txtData.x).attr("y", txtData.y).text(txtData.txt);
 
 		if(nodeData.run) {
-			var runData = nodeData.run;
-			var temp = nodeData.width - 15;
-			temp += ",";
-			temp += nodeData.height - 15;
-			var runObj = theSelfObj.select("#" + d + "_g_run");
-			runObj.transition().duration(_TRANSITION_DURATION)
-				.attr("transform", "translate(" + temp + ")scale(1,1)");
+			if(WHOLE_INSTANCE_ID) { //实例
+				
+				var runData = nodeData.run;
+				var temp = nodeData.width - 15;
+				temp += ",";
+				temp += nodeData.height - 15;
+				var runObj = theSelfObj.select("#" + d + "_g_run");
+				runObj.transition().duration(_TRANSITION_DURATION)
+					.attr("transform", "translate(" + temp + ")scale(1,1)");
+				
+				d3.select("#run_" + d).attr("d", "M0,0L0,0");
+				
+				d3.select("#log_" + d).attr("r", 5);				
+
+			} else { //设计状态
+				var runData = nodeData.run;
+				var temp = nodeData.width - 15;
+				temp += ",";
+				temp += nodeData.height - 15;
+				var runObj = theSelfObj.select("#" + d + "_g_run");
+				runObj.transition().duration(_TRANSITION_DURATION)
+					.attr("transform", "translate(" + temp + ")scale(1,1)");
+				
+				d3.select("#run_" + d).attr("d", runData.d);
+				
+				d3.select("#log_" + d).attr("r", 0);
+			}
+
 		}
 
 		var txtData = nodeData.txt;
@@ -65,14 +84,85 @@ var update = function(theSelf, d, nodeData) {
 			addOutObjPath.transition().duration(_TRANSITION_DURATION).attr("self", addOutData.path.self);
 		}
 
+		//添加那8个数据点的x,y
+		if(nodeData.state.localeCompare("start") == 0) {
+			each(result.nodes, function() {
+				if(this.id.localeCompare(d) == 0) {
+					each(this.outlets, function(i, o) {
+						theSelfObj.select("#" + o.id + "_point")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y + nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("circle")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y + nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("path")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y + nodeData.height / 2));							
+						return true;
+					});
+				}
+				return true;
+			});
+		} else if(nodeData.state.localeCompare("end") == 0) {
+			each(result.nodes, function() {
+				if(this.id.localeCompare(d) == 0) {
+					each(this.inLets, function(i, o) {
+						theSelfObj.select("#" + o.id + "_point")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y - nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("circle")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y - nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("path")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y - nodeData.height / 2));							
+						return true;
+					});
+				}
+				return true;
+			});
+		} else {
+			each(result.nodes, function() {
+				if(this.id.localeCompare(d) == 0) {
+					each(this.inLets, function(i, o) {					
+						theSelfObj.select("#" + o.id + "_point")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y - nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("circle")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y - nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("path")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y - nodeData.height / 2));							
+						return true;
+					});
+				}
+				return true;
+			});
+			each(result.nodes, function() {
+				if(this.id.localeCompare(d) == 0) {
+					each(this.outlets, function(i, o) {
+						theSelfObj.select("#" + o.id + "_point")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y + nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("circle")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y + nodeData.height / 2));
+						theSelfObj.select("#" + o.id + "_point").select("path")
+							.attr("x", (nodeData.x + (40 * i) - nodeData.width / 2))
+							.attr("y", (nodeData.y + nodeData.height / 2));							
+						return true;
+					});
+				}
+				return true;
+			});
+		}
+
 	} else if(nodeData.state.localeCompare("group") == 0) {
 		var theSelfObj = d3.select(theSelf);
 		theSelfObj.transition().duration(_TRANSITION_DURATION)
 			.attr("transform", "translate(" + (nodeData.x - nodeData.width / 2) + "," + (nodeData.y - nodeData.height / 2) + ")scale(1,1)");
 		if(nodeData.display) {
-			console.log(theSelfObj.select("rect")[0]);
-			console.log(theSelfObj.select("rect")[0][0]);
-			console.log(nodeData);
 			if(theSelfObj.select("rect")[0][0]) {
 				theSelfObj.select("rect").attr("width", nodeData.width).attr("height", nodeData.height);
 			} else {
@@ -109,7 +199,6 @@ var smallNodeUpdate = function(theSelf, d, nodeData) {
 }
 
 var childNodeUpdate = function(theSelf, d, nodeData) {
-	console.log("childNodeUpdate", nodeData);
 	var theSelfObj = d3.select(theSelf);
 	var tempId = nodeData.id;
 	var nodeParentData = g.node(nodeData.G);

@@ -3,11 +3,11 @@ package dv.mgr;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,15 +40,21 @@ import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
 import dv.UserNotFoundException;
 import dv.db.dao.AccountRepository;
+import dv.db.dao.CommonDao;
 import dv.db.dao.FlowInstanceRepository;
 import dv.db.dao.FlowRepository;
+import dv.db.dao.ProjectRepository;
 import dv.db.entity.AccountEntity;
 import dv.db.entity.FlowEntity;
 import dv.db.entity.FlowInstanceEntity;
+import dv.db.entity.ProjectEntity;
+import dv.service.AppProjectClassLoader;
 import dv.ws.WebSocketManager;
 import etl.engine.ETLCmd;
+import etl.flow.CallSubFlowNode;
 import etl.flow.Data;
 import etl.flow.Flow;
+import etl.flow.Node;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
@@ -65,27 +71,33 @@ public class FlowController {
 	private static final String[] SEARCH_PACKAGES = new String[] {"etl.cmd"};
 	private static final String ACTION_NODE_CMDS_SEARCH_PACKAGES = "action.node.cmds.search.packages";
 	private static final String CMD_PARAMETER_PREFIX = "cfgkey_";
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	private String[] searchPackages;
 	
 	@Autowired
-	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, FlowMgr flowMgr, FlowDeployer flowDeployer, FlowInstanceRepository flowInstance) {
+	FlowController(FlowRepository flowRepository, AccountRepository accountRepository, ProjectRepository projectRepository, FlowMgr flowMgr, FlowDeployer flowDeployer,
+			FlowInstanceRepository flowInstance, CommonDao commonDao) {
 		this.flowRepository = flowRepository;
 		this.accountRepository = accountRepository;
+		this.projectRepository = projectRepository;
 		this.flowMgr = flowMgr;
 		this.flowDeployer = flowDeployer;
 		this.flowInstanceRepository = flowInstance;
+		this.commonDao = commonDao;
 		
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(config);
 		this.searchPackages = pc.getStringArray(ACTION_NODE_CMDS_SEARCH_PACKAGES);
 		if (searchPackages == null || searchPackages.length == 0)
 			searchPackages = SEARCH_PACKAGES;
 	}
-	
+
+	private final ProjectRepository projectRepository;
 	private final FlowRepository flowRepository;
 	private final AccountRepository accountRepository;
 	private final FlowMgr flowMgr;
 	private final FlowDeployer flowDeployer;
 	private final FlowInstanceRepository flowInstanceRepository;
+	private final CommonDao commonDao;
 	
 	private List<Class<?>> getETLCmdClasses() {
 		ClassPathScanningCandidateComponentProvider actionsProvider = new ClassPathScanningCandidateComponentProvider(false);
@@ -112,6 +124,50 @@ public class FlowController {
 	@RequestMapping(value = "/schema", method = RequestMethod.GET)
 	JsonSchema getFlowSchema() throws Exception {
 	    return FlowMgr.getFlowSchema(getETLCmdClasses());
+	}
+	
+	@RequestMapping(value = "/schema", method = RequestMethod.GET, params="projectId")
+	JsonSchema getFlowSchema(@RequestParam(value = "projectId") int projectId) throws Exception {
+		ProjectEntity pe = projectRepository.getOne(projectId);
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
+	    return FlowMgr.getFlowSchema(classes);
+	}
+	
+	@RequestMapping(value = "/schema", method = RequestMethod.GET, params="projectName")
+	JsonSchema getFlowSchema(@RequestParam(value = "projectName") String projectName) throws Exception {
+		ProjectEntity pe = projectRepository.findByName(projectName);
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
+	    return FlowMgr.getFlowSchema(classes);
 	}
 
 	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET)
@@ -147,11 +203,151 @@ public class FlowController {
 		return classNames;
 	}
 	
+	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET, params="projectId")
+	Map<String, List<String>> getActionNodeCommands(@RequestParam(value = "projectId") int projectId) {
+		ProjectEntity pe = projectRepository.getOne(projectId);
+		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
+		List<String> cmdParameters;
+		Field[] fields;
+		Object obj;
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
+		if (classes != null) {
+			for (Class<?> cls: classes) {
+				if (cls.getCanonicalName() != null) {
+					cmdParameters = new ArrayList<String>();
+					fields = cls.getFields();
+					if (fields != null) {
+						for (Field f: fields) {
+						    if (Modifier.isStatic(f.getModifiers()) && (f.getName().startsWith(CMD_PARAMETER_PREFIX) ||
+						    		f.isAnnotationPresent(ConfigKey.class))) {
+						        try {
+									obj = FieldUtils.readStaticField(f, true);
+							        if (obj != null)
+							        	cmdParameters.add(obj.toString());
+								} catch (IllegalAccessException e) {
+									logger.error(e.getMessage(), e);
+								}
+						    }
+						}
+					}
+					classNames.put(cls.getCanonicalName(), cmdParameters);
+				}
+			}
+		}
+		return classNames;
+	}
+	
+	@RequestMapping(value = "/node/types/action/commands", method = RequestMethod.GET, params="projectName")
+	Map<String, List<String>> getActionNodeCommands(@RequestParam(value = "projectName") String projectName) {
+		ProjectEntity pe = projectRepository.findByName(projectName);
+		Map<String, List<String>> classNames = new HashMap<String, List<String>>();
+		List<String> cmdParameters;
+		Field[] fields;
+		Object obj;
+		List<Class<?>> classes = getETLCmdClasses();
+		if (pe != null) {
+			String hdfsDir = JsonUtil.fromJsonString(pe.getContent(), "hdfsDir", String.class);
+			String t = JsonUtil.fromJsonString(pe.getContent(), "cmdClassSearchPackages", String.class);
+			List<String> searchPkgList = new ArrayList<String>();
+			for (String s: searchPackages)
+				searchPkgList.add(s);
+			if (t != null) {
+				String[] cmdClsSearchPkgs = t.split(",");
+				for (String s: cmdClsSearchPkgs)
+					searchPkgList.add(s);
+			}
+			AppProjectClassLoader clsLdr = new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+				flowDeployer.getDeployMethod(), hdfsDir);
+			classes.addAll(clsLdr.findClasses(searchPkgList.toArray(EMPTY_STRING_ARRAY), ETLCmd.class));
+		}
+		if (classes != null) {
+			for (Class<?> cls: classes) {
+				if (cls.getCanonicalName() != null) {
+					cmdParameters = new ArrayList<String>();
+					fields = cls.getFields();
+					if (fields != null) {
+						for (Field f: fields) {
+						    if (Modifier.isStatic(f.getModifiers()) && (f.getName().startsWith(CMD_PARAMETER_PREFIX) ||
+						    		f.isAnnotationPresent(ConfigKey.class))) {
+						        try {
+									obj = FieldUtils.readStaticField(f, true);
+							        if (obj != null)
+							        	cmdParameters.add(obj.toString());
+								} catch (IllegalAccessException e) {
+									logger.error(e.getMessage(), e);
+								}
+						    }
+						}
+					}
+					classNames.put(cls.getCanonicalName(), cmdParameters);
+				}
+			}
+		}
+		return classNames;
+	}
+	
+	@Deprecated
 	@RequestMapping(method = RequestMethod.POST)
 	ResponseEntity<?> add(@PathVariable String userName, @RequestBody Flow input) {
 		this.validateUser(userName);
-		FlowEntity fe = flowRepository.save(new FlowEntity(input.getName(),
-				userName, JsonUtil.toJsonString(input)));
+		FlowEntity fe = new FlowEntity(input.getName(),
+				userName, JsonUtil.toJsonString(input));
+		ProjectEntity pe = projectRepository.findByName("project1");
+		if (pe != null)
+			fe.setProjectId(pe.getId());
+		else
+			fe.setProjectId(0);
+		fe.setDeployed(false);
+		fe = flowRepository.save(fe);
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setLocation(ServletUriComponentsBuilder
+				.fromCurrentRequest().path("/{id}")
+				.buildAndExpand(fe.getName()).toUri());
+		return new ResponseEntity<>(null, httpHeaders, HttpStatus.CREATED);
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, params="projectId")
+	ResponseEntity<?> add(@PathVariable String userName, @RequestBody Flow input, @RequestParam(value = "projectId") int projectId) {
+		this.validateUser(userName);
+		FlowEntity fe = new FlowEntity(input.getName(),
+				userName, JsonUtil.toJsonString(input));
+		fe.setProjectId(projectId);
+		fe.setDeployed(false);
+		fe = flowRepository.save(fe);
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setLocation(ServletUriComponentsBuilder
+				.fromCurrentRequest().path("/{id}")
+				.buildAndExpand(fe.getName()).toUri());
+		return new ResponseEntity<>(null, httpHeaders, HttpStatus.CREATED);
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, params="projectName")
+	ResponseEntity<?> add(@PathVariable String userName, @RequestBody Flow input, @RequestParam(value = "projectName") String projectName) {
+		this.validateUser(userName);
+		FlowEntity fe = new FlowEntity(input.getName(),
+				userName, JsonUtil.toJsonString(input));
+		ProjectEntity pe = projectRepository.findByName(projectName);
+		if (pe != null)
+			fe.setProjectId(pe.getId());
+		fe.setDeployed(false);
+		fe = flowRepository.save(fe);
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setLocation(ServletUriComponentsBuilder
@@ -166,10 +362,41 @@ public class FlowController {
 		return this.flowRepository.findOne(flowId);
 	}
 	
-	@RequestMapping(value = "/allFlow", method = RequestMethod.GET)
-	List<FlowEntity> getAllFlow(@PathVariable String userName) {
+	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	List<Map<String, String>> getAllFlow(@PathVariable String userName) {
 		this.validateUser(userName);
-		return this.flowRepository.findAll();
+		List<FlowEntity> flowEntities = this.flowRepository.findAll();
+		List<Map<String, String>> flows = new ArrayList<Map<String, String>>();
+		if (flowEntities != null) {
+			Map<String, String> info;
+			ProjectEntity p;
+			for (FlowEntity f: flowEntities) {
+				info = new HashMap<String, String>();
+				p = projectRepository.getOne(f.getProjectId());
+				info.put("name", f.getName());
+				info.put("projectName", p != null ? p.getProjectName() : "");
+				info.put("owner", f.getOwner());
+				info.put("deployed", Boolean.toString(f.isDeployed()));
+				flows.add(info);
+			}
+		}
+		return flows;
+	}
+	
+	@RequestMapping(value = "/{flowId}/instance/{instanceid}/add", method = RequestMethod.GET)
+	void add(@PathVariable String userName, @PathVariable String flowId, @PathVariable String instanceid) {
+		this.validateUser(userName);
+		FlowInstanceEntity entity = new FlowInstanceEntity();
+		entity.setFlowName(flowId);
+		entity.setInstanceID(instanceid);
+		this.flowInstanceRepository.save(entity);
+	}
+	
+	@RequestMapping(value = "/instance/list", method = RequestMethod.GET)
+	List<Map<String, Object>> getAllInstance(@PathVariable String userName) {
+		this.validateUser(userName);
+		String sql = "SELECT instanceid, flowname, owner, updatetime FROM T_FLOWINSTANCE inner join t_flow on flowname = name where owner = '"+userName+"'";
+		return this.commonDao.getNativeMapBySQL(sql);
 	}
 	
 	@RequestMapping(value = "/allFlow/allInstance", method = RequestMethod.GET)
@@ -206,18 +433,51 @@ public class FlowController {
 		this.validateUser(userName);
 		this.flowInstanceRepository.delete(instanceId);
 	}
+
+	private void deployFlow(ProjectEntity pe, FlowEntity flowEntity) throws Exception {
+		if (!flowEntity.isDeployed()) {
+			Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
+			if (flow != null && flow.getNodes() != null) {
+				ProjectEntity subflowPE;
+				FlowEntity subflowEntity;
+				for (Node n: flow.getNodes()) {
+					if (n instanceof CallSubFlowNode) {
+						subflowEntity = flowRepository.getOne(((CallSubFlowNode) n).getSubFlowName());
+						if (subflowEntity != null && subflowEntity.getJsonContent() != null && subflowEntity.getJsonContent().length() > 0) {
+							subflowPE = projectRepository.getOne(flowEntity.getProjectId());
+							if (subflowPE != null)
+								deployFlow(subflowPE, subflowEntity);
+						}
+					}
+				}
+			}
+			
+			ClassLoader originalCl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(new AppProjectClassLoader(flowDeployer.getDefaultFS(),
+					flowDeployer.getDeployMethod(), FlowMgr.getDir(FileType.thirdpartyJar, flowDeployer.getProjectHdfsDir(pe.getProjectName()), flowEntity.getName(), flowDeployer.getOozieServerConf())));
+			flowMgr.deployFlow(pe.getProjectName(), flow, null, null, flowDeployer);
+			Thread.currentThread().setContextClassLoader(originalCl);
+			flowEntity.setDeployed(true);
+			flowRepository.save(flowEntity);
+		}
+	}
 	
 	@RequestMapping(value = "/{flowId}", method = RequestMethod.POST)
 	ResponseEntity<?> execute(@PathVariable String userName, @PathVariable String flowId) {
 		HttpHeaders httpHeaders = new HttpHeaders();
 		this.validateUser(userName);
 		try {
-			FlowEntity flowEntity = flowRepository.findOne(flowId);
+			FlowEntity flowEntity = flowRepository.getOne(flowId);
 			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
-				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
-				flowMgr.deployFlow("project1", flow, null, null, flowDeployer); //TODO
-				String flowInstanceId = flowMgr.executeFlow("project1", flowId, flowDeployer);
-				return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
+				ProjectEntity pe = projectRepository.getOne(flowEntity.getProjectId());
+				if (pe != null) {
+					String flowInstanceId;
+					deployFlow(pe, flowEntity);
+					flowInstanceId = flowMgr.executeFlow(pe.getProjectName(), flowId, flowDeployer);
+					return new ResponseEntity<String>(flowInstanceId, httpHeaders, HttpStatus.CREATED);
+				} else {
+					return new ResponseEntity<String>("Project entity not found or is empty", httpHeaders, HttpStatus.NOT_FOUND);
+				}
 			} else {
 				return new ResponseEntity<String>("Flow entity not found or is empty", httpHeaders, HttpStatus.NOT_FOUND);
 			}
@@ -299,41 +559,60 @@ public class FlowController {
 	FlowInfo getFlowInstance(@PathVariable String userName, @PathVariable String instanceId) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
-		return this.flowMgr.getFlowInfo("project1", oc, instanceId);
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null)
+			return this.flowMgr.getFlowInfo(pe.getProjectName(), oc, instanceId);
+		else
+			return null;
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/log", method = RequestMethod.GET)
 	String getFlowInstanceLog(@PathVariable String userName, @PathVariable String instanceId) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
-		return this.flowMgr.getFlowLog("project1", oc, instanceId);
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null)
+			return this.flowMgr.getFlowLog(pe.getProjectName(), oc, instanceId);
+		else
+			return null;
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/data/{dataName:.+}", method = RequestMethod.GET)
 	InMemFile getFlowInstanceData(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String dataName) {
 		this.validateUser(userName);
 		OozieConf oc = flowDeployer.getOozieServerConf();
-		FlowInfo flowInfo = this.flowMgr.getFlowInfo("project1", oc, instanceId);
-		if (flowInfo != null) {
-			FlowEntity flowEntity = this.flowRepository.findOne(flowInfo.getName());
-			if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
-				Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
-				List<Data> datalist = flow.getData();
-				if (datalist != null) {
-					EngineConf ec = flowDeployer.getEngineConfig();
-					for (Data d: datalist) {
-						if (d != null && d.getName() != null && d.isInstance() && d.getName().equals(dataName)) {
-							return this.flowMgr.getDFSFile(ec, d, flowInfo);
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null) {
+			FlowInfo flowInfo = this.flowMgr.getFlowInfo(pe.getProjectName(), oc, instanceId);
+			if (flowInfo != null) {
+				if (flowEntity != null && flowEntity.getJsonContent() != null && flowEntity.getJsonContent().length() > 0) {
+					Flow flow = JsonUtil.fromJsonString(flowEntity.getJsonContent(), Flow.class);
+					List<Data> datalist = flow.getData();
+					if (datalist != null) {
+						EngineConf ec = flowDeployer.getEngineConfig();
+						for (Data d: datalist) {
+							if (d != null && d.getName() != null && d.isInstance() && d.getName().equals(dataName)) {
+								return this.flowMgr.getDFSFile(ec, d, flowInfo);
+							}
 						}
 					}
+					return null;
+				} else {
+					logger.debug("Flow {} not found", flowInfo.getName());
+					return null;
 				}
-				return null;
 			} else {
-				logger.debug("Flow {} not found", flowInfo.getName());
+				logger.debug("Flow instance {} not found", instanceId);
 				return null;
 			}
 		} else {
-			logger.debug("Flow instance {} not found", instanceId);
+			logger.debug("Project entity {} not found", flowEntity.getProjectId());
 			return null;
 		}
 	}
@@ -342,14 +621,26 @@ public class FlowController {
 	NodeInfo getFlowNode(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
-		return this.flowMgr.getNodeInfo("project1", oc, instanceId, nodeName);
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null)
+			return this.flowMgr.getNodeInfo(pe.getProjectName(), oc, instanceId, nodeName);
+		else
+			return null;
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/log", method = RequestMethod.GET)
 	InMemFile[] getFlowNodeLog(@PathVariable String userName, @PathVariable String instanceId, @PathVariable String nodeName) {
 		OozieConf oc = flowDeployer.getOozieServerConf();
 		this.validateUser(userName);
-		return this.flowMgr.getNodeLog("project1", oc, instanceId, nodeName);
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null)
+			return this.flowMgr.getNodeLog(pe.getProjectName(), oc, instanceId, nodeName);
+		else
+			return null;
 	}
 	
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/inputfiles", method = RequestMethod.GET)
@@ -357,7 +648,13 @@ public class FlowController {
 		OozieConf oc = flowDeployer.getOozieServerConf();
 		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
-		return this.flowMgr.listNodeInputFiles("project1", oc, ec, instanceId, nodeName);
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null)
+			return this.flowMgr.listNodeInputFiles(pe.getProjectName(), oc, ec, instanceId, nodeName);
+		else
+			return null;
 	}
 
 	@RequestMapping(value = "/instances/{instanceId}/nodes/{nodeName}/outputfiles", method = RequestMethod.GET)
@@ -365,7 +662,13 @@ public class FlowController {
 		OozieConf oc = flowDeployer.getOozieServerConf();
 		EngineConf ec = flowDeployer.getEngineConfig();
 		this.validateUser(userName);
-		return this.flowMgr.listNodeOutputFiles("project1", oc, ec, instanceId, nodeName);
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null)
+			return this.flowMgr.listNodeOutputFiles(pe.getProjectName(), oc, ec, instanceId, nodeName);
+		else
+			return null;
 	}
 
 	@RequestMapping(value = "/dfs/**", method = RequestMethod.GET)
@@ -375,7 +678,14 @@ public class FlowController {
 		EngineConf ec = flowDeployer.getEngineConfig();
 		if (filePath != null && filePath.contains("/flow/dfs/"))
 			filePath = filePath.substring(filePath.indexOf("/flow/dfs/") + 9);
-		return this.flowMgr.getDFSFile(ec, filePath);
+		InMemFile f = this.flowMgr.getDFSFile(ec, filePath);
+		if (f != null && f.getContent() != null) {
+			/* Always return text data now */
+			f.setTextContent(new String(f.getContent(), StandardCharsets.UTF_8));
+			f.setContent(null);
+			f.setFileType(FileType.textData);
+		}
+		return f;
 	}
 
 	@RequestMapping(value = "/dfs/**", method = { RequestMethod.PUT, RequestMethod.POST })

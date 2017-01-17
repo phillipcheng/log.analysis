@@ -19,6 +19,12 @@ import org.springframework.core.io.Resource;
 
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
+import dv.db.dao.FlowInstanceRepository;
+import dv.db.dao.FlowRepository;
+import dv.db.dao.ProjectRepository;
+import dv.db.entity.FlowEntity;
+import dv.db.entity.FlowInstanceEntity;
+import dv.db.entity.ProjectEntity;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.InMemFile;
@@ -28,12 +34,19 @@ import etl.flow.mgr.InMemFile;
 public class FlowNodeInstanceLogHandler extends WebSocketServerEndpoint {
 	public static final Logger logger = LogManager.getLogger(FlowDataHandler.class);
 	private static final String LOG_FILE_PATH = "LogFilePath";
+	private static final String LOG_DIR_PATH = "LogDirPath";
 	private Session session;
 	
 	@Autowired
 	private FlowMgr flowMgr;
 	@Autowired
 	private FlowDeployer flowDeployer;
+	@Autowired
+	private ProjectRepository projectRepository;
+	@Autowired
+	private FlowRepository flowRepository;
+	@Autowired
+	private FlowInstanceRepository flowInstanceRepository;
 	
     @OnOpen
     public void onOpen(Session session) throws IOException {
@@ -55,37 +68,49 @@ public class FlowNodeInstanceLogHandler extends WebSocketServerEndpoint {
     	}
 		
     	validateUser(userName);
-    	
-    	Resource[] resources = flowMgr.getNodeLogResources("project1", flowDeployer.getOozieServerConf(), instanceId, nodeName);
-    	String projectDir;
-    	String logFilePath;
-    	
-    	if (resources != null) {
-    		InputStream in;
-    		String fileName;
-    		List<String> logFilePaths = new ArrayList<String>();
-    		for (Resource resource: resources) {
-	    		in = null;
-		    	try {
-			    	in = resource.getInputStream();
-			    	projectDir = flowDeployer.getProjectHdfsDir("project1");
-			    	if (!projectDir.endsWith(Path.SEPARATOR))
-			    		projectDir += Path.SEPARATOR;
-			    	fileName = resource.getFilename();
-			    	if (fileName != null) {
-			    		fileName = fileName.substring(fileName.indexOf("container_"));
-			    		fileName = fileName.substring(0, fileName.indexOf("?start="));
+
+		FlowInstanceEntity instance = this.flowInstanceRepository.getOne(instanceId);
+		FlowEntity flowEntity = this.flowRepository.getOne(instance.getFlowName());
+		ProjectEntity pe = this.projectRepository.getOne(flowEntity.getProjectId());
+		if (pe != null) {
+	    	Resource[] resources = flowMgr.getNodeLogResources(pe.getProjectName(), flowDeployer.getOozieServerConf(), instanceId, nodeName);
+	    	String projectDir;
+	    	String logFilePath;
+	    	
+	    	if (resources != null) {
+	    		InputStream in;
+	    		String fileName;
+	    		String logDirPath;
+	    		List<String> logFilePaths = new ArrayList<String>();
+	
+		    	projectDir = flowDeployer.getProjectHdfsDir(pe.getProjectName());
+		    	if (!projectDir.endsWith(Path.SEPARATOR))
+		    		projectDir += Path.SEPARATOR;
+		    	
+		    	logDirPath = projectDir + "logs" + Path.SEPARATOR + instanceId + Path.SEPARATOR;
+	    		
+	    		for (Resource resource: resources) {
+		    		in = null;
+			    	try {
+				    	in = resource.getInputStream();
+				    	fileName = resource.getFilename();
+				    	if (fileName != null) {
+				    		fileName = fileName.substring(fileName.indexOf("container_"));
+				    		fileName = fileName.substring(0, fileName.indexOf("?start="));
+				    	}
+				    	logFilePath = logDirPath + fileName;
+				    	flowDeployer.deploy(logFilePath, in);
+				    	logFilePaths.add(logFilePath);
+			    	} finally {
+			    		if (in != null)
+			    			in.close();
 			    	}
-			    	logFilePath = projectDir + "logs" + Path.SEPARATOR + instanceId + Path.SEPARATOR + fileName;
-			    	flowDeployer.deploy(logFilePath, in);
-			    	logFilePaths.add(logFilePath);
-		    	} finally {
-		    		if (in != null)
-		    			in.close();
-		    	}
-    		}
-	    	session.getUserProperties().put(LOG_FILE_PATH, logFilePaths);
-    	}
+	    		}
+	    		
+		    	session.getUserProperties().put(LOG_DIR_PATH, logDirPath);
+		    	session.getUserProperties().put(LOG_FILE_PATH, logFilePaths);
+	    	}
+		}
     }
     
     @OnMessage
@@ -101,18 +126,7 @@ public class FlowNodeInstanceLogHandler extends WebSocketServerEndpoint {
 				session.getBasicRemote().sendText("");
 			
 		} else if (session.getUserProperties().containsKey(LOG_FILE_PATH)) {
-	    	String instanceId;
-	    	if (session.getPathParameters() != null) {
-	    		instanceId = session.getPathParameters().get("instanceId");
-	    	} else {
-	    		instanceId = null;
-	    	}
-
-	    	String projectDir = flowDeployer.getProjectHdfsDir("project1");
-	    	if (!projectDir.endsWith(Path.SEPARATOR))
-	    		projectDir += Path.SEPARATOR;
-			
-	    	String filePath = projectDir + "logs" + Path.SEPARATOR + instanceId + Path.SEPARATOR;
+	    	String filePath = (String) session.getUserProperties().get(LOG_DIR_PATH);
 			List<String> logFilePaths = (List<String>) session.getUserProperties().get(LOG_FILE_PATH);
 			InMemFile fileList = new InMemFile(FileType.directoryList, filePath, directoryList(logFilePaths));
 

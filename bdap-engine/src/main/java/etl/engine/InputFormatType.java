@@ -8,6 +8,7 @@ public enum InputFormatType {
 	XML,
 	CombineXML,
 	FileName,//used for input is a directory
+	CombineFileName,
 	Binary,//
 	Section,//for kcv
 	Mixed,//join will follow
