@@ -73,7 +73,6 @@ public class GroupFun {
 	public static String convertTimeStampToString(String input){
 		if (input != null)
 			input = input.trim();
-		
 		if (input == null || input.length() == 0)
 			return input;
 		else {

@@ -44,7 +44,6 @@ public class TestGroupFun {
 		String output = GroupFun.convertTimeStampToString(input);
 		logger.info(output);
 		Assert.assertEquals(output, "2015/1/24 11:33:39");
-		
 		output = GroupFun.convertTimeStampToString("");
 		logger.info(output);
 		Assert.assertEquals(output, "");
