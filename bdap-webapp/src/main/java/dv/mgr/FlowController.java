@@ -363,9 +363,24 @@ public class FlowController {
 	}
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	List<FlowEntity> getAllFlow(@PathVariable String userName) {
+	List<Map<String, String>> getAllFlow(@PathVariable String userName) {
 		this.validateUser(userName);
-		return this.flowRepository.findAll();
+		List<FlowEntity> flowEntities = this.flowRepository.findAll();
+		List<Map<String, String>> flows = new ArrayList<Map<String, String>>();
+		if (flowEntities != null) {
+			Map<String, String> info;
+			ProjectEntity p;
+			for (FlowEntity f: flowEntities) {
+				info = new HashMap<String, String>();
+				p = projectRepository.getOne(f.getProjectId());
+				info.put("name", f.getName());
+				info.put("projectName", p != null ? p.getProjectName() : "");
+				info.put("owner", f.getOwner());
+				info.put("deployed", Boolean.toString(f.isDeployed()));
+				flows.add(info);
+			}
+		}
+		return flows;
 	}
 	
 	@RequestMapping(value = "/{flowId}/instance/{instanceid}/add", method = RequestMethod.GET)
