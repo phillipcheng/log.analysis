@@ -20,15 +20,17 @@ body {
 }
 
 </style>
-<link href="../libs/_pagelib/css/default.css" rel="stylesheet"
-	type="text/css" />
-<link rel="stylesheet" type="text/css"
-	href="../libs/easyui/themes/bootstrap/easyui.css" />
-<link rel="stylesheet" type="text/css"
-	href="../libs/easyui/themes/icon.css" />
+<link href="../libs/_pagelib/css/default.css" rel="stylesheet"	type="text/css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/bootstrap/easyui.css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/icon.css" />
+<link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/color.css" />
 
 <script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+
+<script type="text/javascript" src="../libs/_business/js/const.js"></script>
+<script type="text/javascript" src="../libs/_business/js/init.js"></script>
+<script type="text/javascript" src="../libs/_business/js/interact.js"></script>
 <script type="text/javascript">
 	// title msgString msgType: [error,info,question,warning]
 	function msgShow(title, msgString, msgType) {
@@ -36,32 +38,45 @@ body {
 	}
 	var type = '';
 	$(function() {
-		$('#tt').treegrid({
+		$('#tt').datagrid({
 			width : document.getElementById('div1').width,
 			height : document.getElementById('div1').heigh,
 			nowrap : false,
 			//striped : true,
 			collapsible : true,
 			//remoteSort : false,
-			//sortName : 'name',
+			//sortName : 'flowname',
 			//sortOrder : 'desc',
 			idField : 'name',
 			checkbox : false,
 			singleSelect: true,
 			rownumbers:true,
-			treeField: 'name',
+			//treeField: 'name',
 			method : 'get',
-			url : '/dashview/george/flow/allFlow/allInstance',
+			url : '/dashview/george/flow/list',
 			columns : [ [{
 				field : 'name',
-				title : 'Name',
-				width : $(this).width() * 0.75
-			}, {
-				field : 'size',
+				title : 'Flow Name',
+				width : $(this).width() * 0.3
+			},
+			{
+				field : 'projectName',
+				title : 'Project Name',
+				width : $(this).width() * 0.3
+			},
+			{
+				field : 'deployed',
+				title : 'Deployed',
+				sortable: true,
+				width : $(this).width() * 0.1
+			},
+			{
+				field : 'owner',
 				title : 'Owner',
-				width : $(this).width() * 0.2
+				sortable: true,
+				width : $(this).width() * 0.1
 			} ] ],
-			pagination : false
+			pagination : true
 		});
 		
 		
@@ -86,37 +101,67 @@ body {
 	function openIcon() {
 		$('#dd2').dialog('open');
 	}
+	
+	function importFlow() {
+		//initPage();
+		$('#importWind').window('open');
+		return;
+		//var url = "/dashview/dataFlow/app.html?action=add&type=flow";
+		//window.location.href = url;
+	}
 	function add() {
-		var url = "/dashview/dataFlow/app.html";
+		//initPage();
+		$('#addWind').window('open');
+		return;
+		//var url = "/dashview/dataFlow/app.html?action=add&type=flow";
+		//window.location.href = url;
+	}
+	function addWinSave() {
+		var flowname = $("#addFlowname").val();
+		var projectid = $("#addProjectid").combobox('getValue');
+		flowname = $.trim(flowname);
+		if(isEmpty(flowname)){
+			msgShow('Info', 'please input flow name.', 'Info');
+			return;
+		}
+		if(isEmpty(projectid) || projectid == '-10000'){
+			msgShow('Info', 'please select one project.', 'Info');
+			return;
+		}
+		
+		var url = "/dashview/dataFlow/app.html?action=add&type=flow&flowname="+flowname+"&projectid="+projectid;
+		window.location.href = url;
+	}
+	function view() {
+		var name = getSelectedRowName();
+		if(name == undefined || name == ''){
+			return;
+		}
+		var url = "/dashview/dataFlow/app.html?action=view&type=flow&name="+name;
 		window.location.href = url;
 	}
 	function edit() {
-		var url = "/dashview/dataFlow/app.html";
+		var name = getSelectedRowName();
+		if(name == undefined || name == ''){
+			return;
+		}
+		var url = "/dashview/dataFlow/app.html?action=edit&type=flow&name="+name;
 		window.location.href = url;
 	}
 	function del() {
 		//$('#tt').treegrid('getChecked');
-		var nodes = $('#tt').treegrid('getSelections');
+		var nodes = $('#tt').datagrid('getSelections');
 		if (nodes != null && nodes.length >0) {
 			var delURL;
 			var name = nodes[0].name;
-			if(nodes[0]._parentId){
-				delURL = "/dashview/george/flow/instance/"+name+"/del";
-			}else {
-				if(nodes[0].children.length > 0){
-					msgShow('Info', 'please first delete instance.', 'info');
-					return ;
-				}
-				delURL = "/dashview/george/flow/"+name+"/del";
-			}
-			
-			$.messager.confirm('Info', 'will you delete them ?', function(i) {
+			delURL = "/dashview/george/flow/"+name+"/del";
+			$.messager.confirm('Info', 'will you delete the flow?', function(i) {
 				if (i) {
 					$.get(delURL,
 							function(msg) {
 								//if (msg) {
 									msgShow('Info', 'delete successfully.', 'info');
-									$('#tt').treegrid('reload');
+									$('#tt').datagrid('reload');
 								//} else {
 								//	msgShow('Info', 'delete fail.', 'info');
 								//}
@@ -128,24 +173,159 @@ body {
 			msgShow('Info', 'please selected one row.', 'Info');
 		}
 	}
+	
+	function getSelectedRowName(){
+		var nodes = $('#tt').datagrid('getSelections');
+		var name;
+		if (nodes != null && nodes.length >0) {
+			name = nodes[0].name;
+		} else {
+			msgShow('Info', 'please selected one row.', 'Info');
+		}
+		return name;
+	}
+	
+	function importSave(){
+		var name = $("#importFlowname").val();
+		var context = $("#importFlowcontext").val();
+		var projectid = $('#importProjectid').combobox('getValue');
+		if($.trim(name) == ''){
+			msgShow('Info', 'please input Flow Name.', 'Info');
+			return;
+		}
+		if(isEmpty(projectid) || projectid == '-10000'){
+			msgShow('Info', 'please select one project.', 'Info');
+			return;
+		}
+		if($.trim(context) == ''){
+			msgShow('Info', 'please input Flow Context.', 'Info');
+			return;
+		}
+		//convert to json object
+		var saveResult;
+		try
+		{
+			saveResult = JSON.parse(context); 
+		}
+		catch(err)
+		{
+			msgShow('Info', 'please check flow context, it cannot be parsed.', 'Info');
+		}
+		
+		saveResult.wfName = name;
+		saveResult.name = name;
+		saveAsJson(saveResult, projectid);
+	}
+	
+	function saveAsJson(saveResult, projectId) {
+		$.ajax({
+			type: "post",
+			url: getAjaxAbsolutePath(_HTTP_SAVE_JSON) + "?projectId="+projectId ,
+			contentType: 'application/json',
+			data: JSON.stringify(saveResult),
+			//dataType: "json",
+			success: function(data, textStatus) {
+				$('#importWind').window('close');
+				msgShow('Info', 'save successfully.', 'Info');
+				$('#tt').datagrid('reload');
+			},
+			error: function(e) {
+				console.info(e);
+				msgShow('Info', 'save fail.', 'Info');
+			}
+		});
+	}
+	
+	var initPage = function (){
+		//var listPro = interact.listProjects();
+		var requestURL = "/dashview/{userName}/project/";
+		$.ajax({
+			type: "get",
+			dataType : "json",
+			url: getAjaxAbsolutePath(requestURL),
+			contentType: 'application/json',
+			data: "",
+			success: function(data, textStatus) {
+				var jsonArray = [];
+				var firstSelectObj = {"id":"-10000","projectName":"please select one"};
+				jsonArray.push(firstSelectObj);
+				//var dataOptions = $.extend([], jsonArray, data);
+				var dataOptions = jsonArray.concat(data);
+				$('#importProjectid').combobox({
+				      data : dataOptions,
+				      valueField:'id',
+				      textField:'projectName'
+				     });
+				$('#addProjectid').combobox({
+				      data : dataOptions,
+				      valueField:'id',
+				      textField:'projectName'
+				     });
+				$('#importProjectid').combobox('setValue','-10000');
+				$('#addProjectid').combobox('setValue','-10000');
+				//get value
+				//$('#importProjectid').combobox('getValue');
+			},
+			error: function(e) {
+				console.info(e);
+				msgShow('Info', 'Load project fail.', 'Info');
+			}
+		});
+	}
 
 </script>
 </head>
-<body style="background: white">
+<body style="background: white" onload="initPage()">
 	<form id="form1" runat="server">
 		<input id="HdId" type="hidden" /> <input id="HdUserId" type="hidden" />
 		<div class="btabs">
-			<span class="icon icon-Distribution">&nbsp;</span><a
-				href="javascript:void(0)" onclick="add()">View</a>
+			<span class="icon icon-import">&nbsp;</span><a href="javascript:void(0)" onclick="importFlow()">Import</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="view()"><span class="icon icon-Browse">&nbsp;</span>view</a>
 			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a>
 			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a> 
 			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="del()"><span class="icon icon-delete">&nbsp;</span>Delete</a>
 		</div>
 		<div style="height: 2px"></div>
 		<div id="div1" style="width: 100.5%">
-			<table id="tt" class="easyui-treegrid"></table>
+			<table id="tt" ></table>
 		</div>
 		
 	</form>
+	<div id="importWind" class="easyui-window" title="Import Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:60%;height:550px;padding:10px;">
+		<div style="margin-bottom:10px">
+            <input class="easyui-textbox" label="Flow Name:" labelPosition="top" id="importFlowname" style="width:50%;height:52px">
+        </div>
+        
+            <select id="importProjectid" class="easyui-combobox"  name="importProjectid" 
+             data-options="valueField: 'id', textField: 'projectName',  label: 'Project Name:', labelPosition: 'top' "  style="width:50%;">
+           </select>
+        <div style="margin-bottom:10px">
+			<input class="easyui-textbox" label="Flow Context:" labelPosition="top" id="importFlowcontext" name="message" data-options="multiline:true" style="width:98%;height:330px"></input>
+		</div>
+		<center>
+		<div style="margin-bottom:10px;">
+			<a href="javascript:void(0)" onclick="importSave()" class="easyui-linkbutton c8" style="width:80px;">Save</a>
+		</div>
+		</center>
+	</div>
+	
+	<div id="addWind" class="easyui-window" title="Add Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:300px;height:250px;padding:10px;">
+		<div style="margin-bottom:10px">
+            <input class="easyui-textbox" label="Flow Name:" labelPosition="top" id="addFlowname" style="width:90%;height:52px">
+        </div>
+        <div style="margin-bottom:10px">
+            <select id="addProjectid" class="easyui-combobox"  name="addProjectid" 
+             data-options="valueField: 'id', textField: 'projectName',  label: 'Project Name:', labelPosition: 'top' "  style="width:90%;">
+           </select>
+        </div>
+		<center>
+		</br>
+		</br>
+		<div style="margin-bottom:10px;">
+			<a href="javascript:void(0)" onclick="addWinSave()" class="easyui-linkbutton c8" style="width:80px;">Next</a>
+		</div>
+		</center>
+	</div>
+	
 </body>
 </html>

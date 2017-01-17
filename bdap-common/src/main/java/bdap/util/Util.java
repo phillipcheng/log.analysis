@@ -14,7 +14,7 @@ import java.util.zip.ZipOutputStream;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -37,14 +37,22 @@ public class Util {
 	}
 	
 	public static String getCsv(List<String> csv, boolean newline){
+		return getCsv(csv,",",false,newline);
+	}
+	
+	public static String getCsv(List<String> csv, String delimiter, boolean escapingCSV, boolean newline){
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<csv.size(); i++){
 			String v = (String) csv.get(i);
 			if (v!=null){
-				sb.append(v);
+				if(escapingCSV==true){
+					sb.append(StringEscapeUtils.escapeCsv(v));
+				}else{
+					sb.append(v);
+				}				
 			}
 			if (i<csv.size()-1){
-				sb.append(",");
+				sb.append(delimiter);
 			}
 		}
 		if (newline){
@@ -122,6 +130,8 @@ public class Util {
 		else if (filePath.endsWith(".sql"))
 			return FileType.textData;
 		else if (filePath.endsWith(".template"))
+			return FileType.textData;
+		else if (filePath.endsWith(".schema"))
 			return FileType.textData;
 		else
 			return FileType.binaryData;

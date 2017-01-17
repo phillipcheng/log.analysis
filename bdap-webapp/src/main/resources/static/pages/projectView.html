@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CheckBox Selection on DataGrid - jQuery EasyUI Demo</title>
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/bootstrap/easyui.css">
+<link rel="stylesheet" type="text/css"
+	href="../libs/easyui/themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+</head>
+<body>
+	<div class="easyui-panel" title="Project Information" style="width: 100%; padding: 30px 60px;">
+		<div align="left">
+			<form id="ff" action="#" method="post">
+				<div style="margin-bottom: 20px">
+					<input class="easyui-textbox" name="projectName"
+						style="width: 20%;"
+						data-options="label:'projectName:',required:true">
+				</div>
+				<div style="margin-bottom: 20px">
+					<input class="easyui-textbox" name="type" style="width: 20%;"
+						data-options="label:'type:',required:false">
+				</div>
+				<div style="margin-bottom: 20px">
+					<input class="easyui-textbox" name="hdfsDir" style="width: 20%;"
+						data-options="label:'hdfsDir',required:true">
+				</div>
+				<div style="margin-bottom: 20px">
+					<input class="easyui-textbox" name="cmdClassSearchPackages" style="width: 20%;"
+						data-options="label:'cmdClassSearchPackages',required:false">
+				</div>
+			</form>
+		</div>
+
+		<div id="div1" style="width: 80%; height: 100%">
+			<table id="tt" class="easyui-datagrid"></table>
+		</div>
+		<div style="text-align: left; padding: 5px 0">
+			<div class="easyui-panel" title="Upload File" style="width:80%;padding:30px 60px;">
+				<form id="upload" action="/dashview/player/project/" method="post">
+		        <div style="margin-bottom:20px">
+					<input class="easyui-textbox" name="targetFilePath" style="width: 20%" value="/"
+						data-options="label:'targetFilePath:',required:true">
+		        </div>
+		        <div style="margin-bottom:20px">
+		            <input class="easyui-filebox" name="uploadFile" label="File:" labelPosition="top" data-options="prompt:'Choose a file...'" style="width:80%">
+		        </div>
+				</form>
+		        <div>
+		            <a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:10%">Upload</a>
+		        </div>
+		    </div>
+		</div>
+	</div>
+	<script>
+		$(function() {
+			$('#tt')
+					.datagrid(
+							{
+								width : document.getElementById('div1').width,
+								height : document.getElementById('div1').heigh,
+								nowrap : false,
+								collapsible : true,
+								idField : 'id',
+								checkbox : false,
+								singleSelect : true,
+								rownumbers : true,
+								pagination : true,
+								method : 'get',
+								url : '/dashview/player/project/' + get('projectName') + '/dir',
+								columns : [ [ {
+									field : 'fileType',
+									title : 'File Type',
+									width : $(this).width() * 0.1
+								}, {
+									field : 'fileName',
+									title : 'File Name',
+									width : $(this).width() * 0.9
+								} ] ]
+							});
+		});
+		function get(name) {
+			if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
+				return decodeURIComponent(name[1]);
+		}
+
+		function submitForm() {
+			var targetPath = $('#upload')[0].targetFilePath.value;
+			if (!targetPath.startsWith("/"))
+				targetPath = "/" + targetPath;
+			$.ajax({
+				url : $('#upload').attr('action') + get('projectName') + '/dir' + targetPath,
+				type : $('#upload').attr('method'),
+				dataType : 'text',
+				data : new FormData($('#upload')[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                xhr: function() {  // custom xhr
+                    myXhr = $.ajaxSettings.xhr();
+                    if(myXhr.upload){ // if upload property exists
+                        myXhr.upload.addEventListener('progress', function(e) {
+                			console.log(e);
+                		}, false); // progressbar
+                    }
+                    return myXhr;
+                },
+				success : function(response) {
+					console.log("The server says: " + response);
+					$('#tt').datagrid('reload');
+				},
+				error : function(response) {
+					console.log("The server says error: ", response);
+				}
+			});
+		}
+		
+		function clearForm() {
+			$('#ff').form('clear');
+		}
+
+		$('#ff').form('load', {
+			projectName : get('projectName')
+		});
+
+		$.ajax({
+			url : '/dashview/player/project/' + get('projectName'),
+			type : 'get',
+			dataType : 'json',
+			contentType : 'application/json',
+			success : function(response) {
+				console.log("The server says: " + response);
+				$('#ff').form('load', JSON.parse(response.content));
+			},
+			error : function(response) {
+				console.log("The server says error: ", response);
+			}
+		});
+	</script>
+</body>
+</html>

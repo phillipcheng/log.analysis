@@ -2,7 +2,8 @@
   "@class" : "flow",
   "name" : "flow1",
   "outlets" : [ ],
-  "nodes" : [ {
+  "nodes" : [ 
+  {
     "@class" : "start",
     "name" : "start",
     "outlets" : [ ],
@@ -137,7 +138,8 @@
     "db.prefix" : "project1",
     "file.table.map" : "filename.substring(0\\,filename.indexOf('-r-'))"
   } ],
-  "links" : [ {
+  "links" : [ 
+  {
     "fromNodeName" : "start",
     "toNodeName" : "sftp",
     "linkType" : "success"
@@ -170,7 +172,8 @@
     "toNodeName" : "end",
     "linkType" : "success"
   } ],
-  "data" : [ {
+  "data" : [ 
+  {
     "name" : "sftp.map",
     "location" : "/flow1/sftpcfg/test1.sftp.map.properties",
     "dataFormat" : "Line",

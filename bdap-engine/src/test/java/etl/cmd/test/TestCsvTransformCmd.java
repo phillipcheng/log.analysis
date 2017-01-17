@@ -37,6 +37,20 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	public String getResourceSubFolder(){
 		return "csvtrans/";
 	}
+	
+	@Test
+	public void testDelimiterAndEscapeCsv() throws Exception{
+		String inputFolder = "/etltest/csvtransform/";
+		String outputFolder = "/etltest/csvtransformout/";
+		String csvtransProp = "csvtrans.de.properties";
+		String[] csvFiles = new String[] {"de.csv"};
+		
+		List<String> output = super.mapTest(inputFolder, outputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		logger.info("Output is:\n" + String.join("\n", output));
+		assertEquals(1, output.size());
+		assertTrue(output.get(0).indexOf("2017-1-12 00:00:00,GPS,\"Auth=true,Author=true\"")!=-1);
+//		assertTrue(output.contains("2017-1-12 00:00:00,GPS,\"Auth=true,Author=true\""));
+	}
 
 	private void testWriteSequenceFile() throws Exception{
 		File docDirectory = new File("src/test/resources/csvtrans/");

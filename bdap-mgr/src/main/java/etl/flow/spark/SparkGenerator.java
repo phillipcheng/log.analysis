@@ -112,11 +112,11 @@ public class SparkGenerator {
 				sb.append(String.format("%s %s=new %s(getWfName(), getWfid(), \"%s\", super.getDefaultFs(), null);\n", 
 						cmdClass, cmdVarName, cmdClass, propertyFileName));
 				String outputVarName =null;
-				boolean needFilter=false;
+				boolean multiOutput=false;
 				DataType outputDataType = null;
 				if (node.getOutlets().size()>1){//multiple outlet node, auto-generate an out data variable for filtering
 					outputVarName = anode.getName() + "Output";
-					needFilter=true;
+					multiOutput=true;
 					outputDataType = DataType.KeyValue;
 					//additional output variable declaration
 					sb.append(String.format("%s %s=%s;\n", "JavaPairRDD<String,String>", outputVarName, "null"));
@@ -154,7 +154,10 @@ public class SparkGenerator {
 				}else{
 					sb.append(String.format("%s.%s(%s,jsc,%s.class);\n", cmdVarName, methodName, inputVarName, inputFormat));
 				}
-				if (needFilter){//filter output
+				if (multiOutput){
+					//call cache
+					sb.append(String.format("%s.cache();\n", outputVarName));
+					//filter output
 					for (NodeLet outlet: node.getOutlets()){
 						//data1 = SparkUtil.filterPairRDD(sftpOutput, "data1");
 						String outletName = outlet.getName();

@@ -1,4 +1,5 @@
 var nodeIndex = 0;
+var tempDataMap = [];
 var result = {
 	'@class': "flow",
 	name: "flow1",
@@ -17,7 +18,9 @@ var app = {
 			gId = mainkey;
 		} else {
 			gId = "g_" + (new Date().getTime() + nodeIndex);
+			
 		}
+		gId ="start";
 		result.nodes.push({
 			'id': gId,
 			'@class': 'start',
@@ -47,11 +50,14 @@ var app = {
 				show: false,
 				state: 'show'
 			}],
-			'duration': '300'
+			'duration': '500'
 		});
 		var obj = _start_node(gId, 'start');
 		g.setNode(gId, obj);
-		_build._build();
+
+		if(!mainkey) {
+			_build._build();
+		}
 
 		var g_child_Instance = childsvg.find(gId);
 		if(g_child_Instance == null) {
@@ -93,8 +99,9 @@ var app = {
 		g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
 		g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
 
-		_build._build(gId, g_child_Instance);
-
+		if(!mainkey) {
+			_build._build(gId, g_child_Instance);
+		}
 	},
 	end: function(mainkey) {
 		nodeIndex++;
@@ -104,6 +111,7 @@ var app = {
 		} else {
 			gId = "g_" + (new Date().getTime() + nodeIndex);
 		}
+		gId ="end";
 		result.nodes.push({
 			'id': gId,
 			'@class': 'end',
@@ -136,7 +144,9 @@ var app = {
 		});
 		var obj = _end_node(gId, 'end');
 		g.setNode(gId, obj);
-		_build._build();
+		if(!mainkey) {
+			_build._build();
+		}
 
 		var g_child_Instance = childsvg.find(gId);
 		if(g_child_Instance == null) {
@@ -177,9 +187,9 @@ var app = {
 		g_child_Instance.setEdge(gId + "_OutData_0", gId + "_OutData_1");
 		g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
 		g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
-
-		_build._build(gId, g_child_Instance);
-
+		if(!mainkey){
+			_build._build(gId, g_child_Instance);	
+		}
 	},
 	action: function(jsonObj, mainkey) {
 		nodeIndex++;
@@ -195,8 +205,9 @@ var app = {
 				var propertyObj = {};
 				propertyObj["id"] = gId.toString();
 				propertyObj['@class'] = 'action';
-				propertyObj['cmd.class'] = '' + jsonObj.cla + '';
-				propertyObj['name'] = '' + jsonObj.label + '';
+				propertyObj['cmd.class'] = jsonObj.cla;
+				propertyObj['exe.type'] = 'mr';
+				propertyObj['name'] = jsonObj.label;
 				propertyObj['inLets'] = [{
 					id: gId + '_InData_0',
 					name: '',
@@ -249,14 +260,15 @@ var app = {
 				}];
 				propertyObj['input.format'] = '';
 				each(v, function(i, o) {
-					propertyObj[o.toString()] = '';
+					propertyObj[o.toString()] = getDefaultValue(jsonObj.cla, o.toString());
 					return true;
 				});
 				result.nodes.push(propertyObj);
 				var obj = _action_node(gId, jsonObj.label);
 				g.setNode(gId, obj);
-				_build._build();
-
+				if(!mainkey){
+					_build._build();
+				}
 				var g_child_Instance = childsvg.find(gId);
 				if(g_child_Instance == null) {
 					g_child_Instance = childsvg.initNewInstance(gId);
@@ -297,8 +309,9 @@ var app = {
 				g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
 				g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
 
-				_build._build(gId, g_child_Instance);
-
+				if(!mainkey){
+					_build._build(gId, g_child_Instance);	
+				}
 				return false;
 			}
 		});
@@ -310,9 +323,11 @@ var app = {
 	},
 	save: function() {
 		var thisObj = this;
-		var saveResult={};
+		var saveResult = {};
 		//deep copy
-		saveResult = $.extend(true,{}, result);;
+		saveResult = $.extend(true, {}, result);
+		
+                console.info(saveResult);
 		function findDataNewId(findId) {
 			var txt = "";
 			each(saveResult.data, function() {
@@ -325,16 +340,48 @@ var app = {
 			return txt;
 		}
 
-		//
 		each(saveResult.data, function() {
-			this.name = this.name + "_" + this.id;
+			if(this.id.indexOf("dataset_")>-1){
+				this.name = this.name + "_" + this.id;
+			}
 			return true;
 		});
-		
+
 		each(saveResult.nodes, function() {
-			this.name = this.id;
+			if(this["@class"].localeCompare("start")==0||this["@class"].localeCompare("end")==0){
+				
+			}else{
+				if(this.id.indexOf("g_")>-1){
+					this.name = this.name + "_" + this.id;
+				}
+				//删除多余的属性值
+				for(var tempk in this){
+					if(tempk != 'inLets' && tempk != 'outlets'){
+						var tempv = this[tempk];
+						if(tempv.length==0){
+							delete this[tempk];
+						}
+					}
+					
+				}
+			}
+			
 			return true;
-		});		
+		});
+
+		each(saveResult.links, function() {
+			var outThis = this;
+			each(saveResult.nodes, function() {
+				if(this.id.localeCompare(outThis.fromNodeName) == 0) {
+					outThis.fromNodeName = this.name;
+				}
+				if(this.id.localeCompare(outThis.toNodeName) == 0) {
+					outThis.toNodeName = this.name;
+				}
+				return true;
+			});
+			return true;
+		});
 
 		each(saveResult.nodes, function() {
 			var tempInLets = [];
@@ -367,29 +414,108 @@ var app = {
 
 			return true;
 		});
-		
-//		each(result.links,function(){
-//			
-//			return true;
-//		});
-		
-		console.log("result", JSON.stringify(saveResult) );
+
+		WHOLE_FLOW_NAME = saveResult.name;
+		if(isEmpty(WHOLE_FLOW_NAME)){
+			msgShow('Info', 'please input flow name.', 'info');
+			return;
+		}
+
 		thisObj.saveAsJson(saveResult);
+		console.log(JSON.stringify(result));
+		console.log(JSON.stringify(saveResult));
 	},
-	saveAsJson : function(saveResult) {
+	saveAsJson: function(saveResult) {
 		$.ajax({
 			type: "post",
-			url: getAjaxAbsolutePath(_HTTP_SAVE_JSON),
+			url: getAjaxAbsolutePath(_HTTP_SAVE_JSON) + "?projectId=" + WHOLE_PROJECT_ID,
 			contentType: 'application/json',
 			data: JSON.stringify(saveResult),
 			//dataType: "json",
 			success: function(data, textStatus) {
 				console.info(data);
+				msgShow('Info', 'save successfully.', 'info');
 			},
 			error: function(e) {
 				console.info(e);
+				msgShow('Info', 'save fail.', 'info');
 			}
 		});
+	},
+	loadJsonInfor:function(){
+		d3.json("http://localhost:8020/flow/loadJsonInfor", function(data) {
+			console.log("data", data);
+			each(data.data, function() {
+				var temobj = {};
+				temobj.k = this.name;
+				this.name = this.name.replace("_" + this.id, "");
+				temobj.v = this.name;
+				tempDataMap.push(temobj);
+				addLeftDiv(this.id, this);
+				return true;
+			});
+			each(data.nodes, function() {
+				createNode(this);
+				return true;
+			});
+			each(data.links, function() {
+				g.setEdge(this.fromNodeName, this.toNodeName);
+				return true;
+			});
+			_build._build();
+		});
+	}
+}
+
+var createNode = function(obj) {
+	console.log("---------------------createNode-----------------------------");
+	console.log(arguments);
+	var tempId = obj.id;
+	var tempName = obj.name;
+	tempName = tempName.replace("_" + tempId, "");
+	obj.name = tempName;
+	var o = null;
+	if(obj["@class"].toString().localeCompare("start") == 0) {
+
+	} else if(obj["@class"].toString().localeCompare("end") == 0) {
+
+	} else if(obj["@class"].toString().localeCompare("action") == 0) {
 
 	}
+}
+
+var getDefaultValue = function(cmdClass, propertyName) {
+	var txt = "";
+	each(propertyInfor, function() {
+		if(this["cmd.class"]) {
+			if(this["cmd.class"]["default"]) {
+				if(this["cmd.class"]["default"].toString().indexOf(cmdClass) > -1) {
+					if(this[propertyName]) {
+						if(this[propertyName]["type"].toString().localeCompare("boolean") == 0) {
+							if(this[propertyName]["default"] && this[propertyName]["default"].toString().localeCompare("true") == 0) {
+								txt = "true";
+							} else {
+								txt = "false";
+							}
+						} else if(this[propertyName]["enum"]) {
+							if(this[propertyName]["default"]) {
+								txt = this[propertyName]["default"].toString();
+							}
+						} else if(this[propertyName]["type"].toString().localeCompare("integer") == 0) {
+							if(this[propertyName]["default"]) {
+								txt = this[propertyName]["default"].toString();
+							} else {
+								txt = "0";
+							}
+						} else if(this[propertyName]["default"]) {
+							txt = this[propertyName]["default"].toString();
+						}
+					}
+					return false;
+				}
+			}
+		}
+		return true;
+	});
+	return txt;
 }
