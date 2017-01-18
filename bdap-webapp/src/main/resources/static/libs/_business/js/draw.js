@@ -854,7 +854,11 @@ var display = function() {
 		txt += "<strong>location:</strong><input args='location' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.location + "'>";
 		txt += "<strong>dataFormat:</strong><select args='dataFormat' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
 		each(selfDataInfor["dataFormat"].v, function() {
-			txt += "<option value='" + this + "'>" + this + "</option>";
+			if(this.localeCompare(o.v.dataFormat)==0){
+				txt += "<option selected='selected' value='" + this + "'>" + this + "</option>";
+			}else{
+				txt += "<option value='" + this + "'>" + this + "</option>";
+			}
 			return true;
 		});
 		txt += "</select>";
@@ -864,7 +868,12 @@ var display = function() {
 
 		txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
 		each(selfDataInfor["recordType"].v, function() {
-			txt += "<option value='" + this + "'>" + this + "</option>";
+			if(this.localeCompare(o.v.recordType)==0){
+				txt += "<option selected='selected' value='" + this + "'>" + this + "</option>";
+			}else{
+				txt += "<option value='" + this + "'>" + this + "</option>";
+			}
+			
 			return true;
 		});
 		txt += "</select>";
