@@ -312,6 +312,7 @@ var _event = {
 					
 					
 					_build._build();
+					_draw._drawNodeDataRelation();
 				});
 		}
 	},
@@ -346,6 +347,7 @@ var _event = {
 					display: "none"
 				});
 				_build._build();
+				_draw._drawNodeDataRelation();
 			});
 	},
 	selectedData: function(txtId, gId) {
@@ -410,6 +412,7 @@ var _event = {
 					d3.select("#d3contextmenu").style({
 						display: "none"
 					});
+					_draw._drawNodeDataRelation();
 				});
 			d3.select("#d3contextmenu").style({
 				display: "block",
