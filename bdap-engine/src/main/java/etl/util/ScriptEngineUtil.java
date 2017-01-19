@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -41,10 +42,10 @@ public class ScriptEngineUtil {
 	}
 	
 	public static String eval(CompiledScript cs, Map<String, Object> variables){
-		Bindings bindings=cs.getEngine().getBindings(100);//Get Engine Scope
+		Bindings bindings=cs.getEngine().getBindings(ScriptContext.ENGINE_SCOPE);//Get Engine Scope
 		if(bindings==null){
 			bindings=new SimpleBindings();
-			cs.getEngine().setBindings(bindings, 100);
+			cs.getEngine().setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 		}
 		bindings.clear();
         if (variables!=null){
@@ -84,10 +85,10 @@ public class ScriptEngineUtil {
 	}
 	
 	public static Object evalObject(CompiledScript cs, String orgExp, Map<String, Object> variables){
-		Bindings bindings=cs.getEngine().getBindings(100);//Get Engine Scope
+		Bindings bindings=cs.getEngine().getBindings(ScriptContext.ENGINE_SCOPE);//Get Engine Scope
 		if(bindings==null){
 			bindings=new SimpleBindings();
-			cs.getEngine().setBindings(bindings, 100);
+			cs.getEngine().setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 		}
 		bindings.clear();
         if (variables!=null){

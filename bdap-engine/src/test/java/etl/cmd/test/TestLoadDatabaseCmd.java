@@ -251,4 +251,37 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		assertTrue(keys.contains("MyCore_"));
 		
 	}
+	
+	@Test
+	public void testLoadDataWithPipeLineDelimiter() throws Exception{
+		String staticCfgName = "loadcsvmrPipelineDelimiter.properties";
+		String remoteCsvInputFolder = "/test/loadcsv/input/";
+		String remoteCsvOutputFolder = "/test/loadcsv/output/";
+		String schemaFolder="/test/loadcsv/schema/";
+		String localSchemaFileName = "multipleTableSchemas2.txt";
+		String[] csvFileNames = new String[]{"MyCore_Pipeline.csv"};
+		
+		//generate all the data files
+		getFs().delete(new Path(remoteCsvInputFolder), true);
+		getFs().delete(new Path(remoteCsvOutputFolder), true);
+		//
+		//copy schema file
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		//copy csv file
+		for (String csvFileName: csvFileNames){
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+		}
+		
+		LoadDataCmd cmd = new LoadDataCmd("wf1", "wfid1", this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(remoteCsvInputFolder, csvFileNames));
+		
+		List<String> output = super.mrTest(rfifs, remoteCsvOutputFolder, staticCfgName, testCmdClass, CombineFileNameInputFormat.class, 5);
+		logger.info("Output is:"+output);
+		assertTrue(output.size()>0);
+		
+	}
 }
