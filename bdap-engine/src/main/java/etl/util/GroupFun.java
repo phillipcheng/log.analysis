@@ -70,7 +70,11 @@ public class GroupFun {
 		}
 	}
 	
-	public static String convertTimeStampToString(String input){
+	public static String convertTimeStampToString(String input, String inputFormat,String timeZone){
+		SafeSimpleDateFormat sdf = null;
+		if(timeZone == null || "".equals(timeZone)){
+			timeZone = "GMT";
+		}
 		if (input != null)
 			input = input.trim();
 		if (input == null || input.length() == 0)
@@ -78,13 +82,14 @@ public class GroupFun {
 		else {
 			try {
 			Date date = new Date(Long.parseLong(input));
-			Calendar calendar = Calendar.getInstance();  
-			calendar.setTimeZone(TimeZone.getTimeZone("GMT"));  
-			calendar.setTime(date);  
-				return new StringBuffer().append(calendar.get(Calendar.YEAR)).append("/").append(calendar.get(Calendar.MONTH))
-						.append("/").append(calendar.get(Calendar.DATE)).append(" ")
-						.append(calendar.get(Calendar.HOUR)).append(":").append(calendar.get(Calendar.MINUTE))
-						.append(":").append(calendar.get(Calendar.SECOND)).toString();
+			if (dtMap.containsKey(inputFormat)){
+				sdf = dtMap.get(inputFormat);
+			}else{
+				sdf = new SafeSimpleDateFormat(inputFormat);
+				dtMap.put(inputFormat, sdf);
+			}
+			sdf.setTimeZone(TimeZone.getTimeZone(timeZone));
+			return sdf.format(date);
 			} catch(Exception e){
 				logger.error("", e);
 				return null;

@@ -880,9 +880,13 @@ var display = function() {
 
 		//		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
 		//		
-		txt += "<strong>instance:</strong><input args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+		txt += "<strong>instance:</strong>";
+		if(o.v.instance){
+			txt += "<input args='instance' checked='checked' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";	
+		}else{
+			txt += "<input args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+		}
 		txt += "</div></div></div>";
-
 		var content = $("#accordion").html();
 		content += txt;
 		$("#accordion").html(content);
