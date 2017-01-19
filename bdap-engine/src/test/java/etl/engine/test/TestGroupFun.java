@@ -41,10 +41,11 @@ public class TestGroupFun {
 	@Test
 	public void testConvertTimeStampToString(){
 		String input = " 1424820819999  ";
-		String output = GroupFun.convertTimeStampToString(input);
+		String fomrmat = "yyyy-MM-dd HH:mm:ss";
+		String output = GroupFun.convertTimeStampToString(input,fomrmat,null);
 		logger.info(output);
-		Assert.assertEquals(output, "2015/1/24 11:33:39");
-		output = GroupFun.convertTimeStampToString("");
+		Assert.assertEquals(output, "2015-02-24 23:33:39");
+		output = GroupFun.convertTimeStampToString("",fomrmat,null);
 		logger.info(output);
 		Assert.assertEquals(output, "");
 	}
