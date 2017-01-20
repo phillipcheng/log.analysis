@@ -1,5 +1,6 @@
 package etl.cmd;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -12,12 +13,13 @@ import javax.script.CompiledScript;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -211,15 +213,32 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		}
 	}
 	
-	private String buildString(CSVRecord csvRecord,List<IdxRange> idxRangeList, String delimiter){
+	private String buildStringByIdxRange(List<String> values,List<IdxRange> idxRangeList, String delimiter,boolean escapeCsv){
 		StringBuilder sb=new StringBuilder();
-		for(IdxRange idx:idxRangeList){
-			int end=idx.getEnd();
-			if(end==-1) end=csvRecord.size()-1;
-			for(int i=idx.getStart();i<=idx.getEnd();i++){
-				sb.append(csvRecord.get(i)).append(delimiter);
+		
+		if(idxRangeList==null){
+			if(values!=null && values.size()>0){
+				for(String value:values){
+					if(escapeCsv==true){
+						sb.append(StringEscapeUtils.escapeCsv(value)).append(delimiter);
+					}else{
+						sb.append(value).append(delimiter);
+					}						
+				}
 			}
-		}
+		}else{
+			for(IdxRange idx:idxRangeList){
+				int end=idx.getEnd();
+				if(end==-1) end=values.size()-1;
+				for(int i=idx.getStart();i<=idx.getEnd();i++){
+					if(escapeCsv==true){
+						sb.append(StringEscapeUtils.escapeCsv(values.get(i))).append(delimiter);
+					}else{
+						sb.append(values.get(i)).append(delimiter);
+					}
+				}
+			}
+		}		
 		
 		if(sb.length()>0){
 			sb.setLength(sb.length()-delimiter.length());
@@ -231,96 +250,117 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
 		super.init();
+		
 		//Read filename
 		getSystemVariables().put(VAR_NAME_FILE_NAME, tableName);
 		
 		//Parse input
 		CSVParser csvParser=CSVParser.parse(value, CSVFormat.DEFAULT.withTrim().withTrailingDelimiter(withTrailingDelimiter));
-		CSVRecord csvRecord=csvParser.getRecords().get(0);
-		String[] fields=new String[csvRecord.size()];
-		for(int i=0;i<csvRecord.size();i++){
-			fields[i]=csvRecord.get(i);
-		}
-		getSystemVariables().put(ColOp.VAR_NAME_FIELDS, fields);
+		List<CSVRecord> csvRecords=csvParser.getRecords();
 		
-		//Calculate table name,the realTableName is used to find in the schema file.
-		String originTableName;
-		String realTableName;
-		if(isSplitTable){
-			originTableName=buildString(csvRecord,splitTableFieldIdxList,"_");
-		}else{
-			originTableName=this.tableName;
-		}
-		realTableName=originTableName;
-		getSystemVariables().put(VAR_NAME_TABLE_NAME, originTableName);
-		getSystemVariables().put(VAR_NAME_ORIGIN_TABLE_NAME, originTableName);
-		if(tableNameMappingCS!=null){
-			realTableName=ScriptEngineUtil.eval(tableNameMappingCS, super.getSystemVariables());
-			getSystemVariables().put(VAR_NAME_TABLE_NAME, originTableName);
-		}
+		//Transpose each record
+		List<Tuple2<String, String>> results=new ArrayList<Tuple2<String, String>>();
 		
-		//Calculate output filename
-		String outputFileName=realTableName;
-		if(this.outputFileNameCS!=null){
-			outputFileName=ScriptEngineUtil.eval(outputFileNameCS, super.getSystemVariables());
-		}		
-		
-		//Get grouped columns
-		String groupedColumns=buildString(csvRecord,groupFieldList,",");
-		
-		//Transpose Preparation
-		if(!logicSchema.hasTable(realTableName)){
-			logger.warn("Table:{} cannot found in schema, drop row:{}", realTableName, value);
-			return null;
-		}
-		List<String> fieldNameList=logicSchema.getAttrNames(realTableName);
-		int transposeSize=fieldNameList.size()-tableFieldTransposeStartIndex;
-		if(transposeSize<0){
-			logger.warn("Table:{} field transpose start index out of bound, drop row:{}", realTableName, value);
-			return null;
-		}
-		List<String> transposeList=new ArrayList<String>(transposeSize);
-		for(int idx=0;idx<transposeSize;idx++) transposeList.add("");
-		
-		Map<String,Integer> transposeFieldLocation=transposeFieldLocationList.get(realTableName);
-		
-		for(int idx=0;idx<this.columnNameFieldIdxList.size();idx++){
-			int columnNameFieldIdx=this.columnNameFieldIdxList.get(idx);
-			int columnValueFieldIdx=this.columnValueFieldIdxList.get(idx);
-			//Read & validate column name and value
-			if(columnNameFieldIdx>=csvRecord.size()){
-				logger.info("The column.name.field:{} is greater than number of record columns:{}, drop row:{}",
-						new Object[]{columnNameFieldIdx, csvRecord.size(), value});
-				return null;
-			}
-			
-			if(columnValueFieldIdx>=csvRecord.size()){
-				logger.info("The column.value.field:{} is greater than number of record columns:{}, drop row:{}",
-						new Object[]{columnValueFieldIdx, csvRecord.size(), value});
-				return null;
-			}		
-			String colName=csvRecord.get(columnNameFieldIdx);
-			String colValue=csvRecord.get(columnValueFieldIdx);
-			
-			//Locate the column name position in the fields
-			Integer indexOfColName=transposeFieldLocation.get(colName);			
+		if(csvRecords!=null && csvRecords.size()>0){
+			for(CSVRecord csvRecord:csvRecords){				
+				//Read each field
+				String[] fields=new String[csvRecord.size()];
+				for(int i=0;i<csvRecord.size();i++){
+					fields[i]=csvRecord.get(i);
+				}
+				getSystemVariables().put(ColOp.VAR_NAME_FIELDS, fields);
+				
+				//Calculate table name,the realTableName is used to find in the schema file.
+				String originTableName;
+				if(isSplitTable){
+					//If use split, the table name is read from the split key
+					
+					originTableName=buildStringByIdxRange(Arrays.asList(fields),splitTableFieldIdxList,"_",false);
+				}else{
+					originTableName=this.tableName;
+				}
+				String realTableName=originTableName;
+				getSystemVariables().put(VAR_NAME_TABLE_NAME, realTableName);
+				getSystemVariables().put(VAR_NAME_ORIGIN_TABLE_NAME, originTableName);
+				if(tableNameMappingCS!=null){
+					realTableName=ScriptEngineUtil.eval(tableNameMappingCS, super.getSystemVariables());
+					getSystemVariables().put(VAR_NAME_TABLE_NAME, realTableName);
+				}
+				
+				//Check whether table exist
+				if(!logicSchema.hasTable(realTableName)){
+					logger.warn("Table:{} cannot found in schema, drop row:{}", realTableName, csvRecord);
+					continue;
+				}
+				
+				//Calculate output filename
+				String outputFileName=realTableName;
+				if(this.outputFileNameCS!=null){
+					outputFileName=ScriptEngineUtil.eval(outputFileNameCS, super.getSystemVariables());
+				}
+				
+				//Read grouped keys 
+				String groupKeys=buildStringByIdxRange(Arrays.asList(fields),groupFieldList,",",true);
+				
+				//Build Output key: outputFileName,tableName[,groupKeys]
+				String outputKey=outputFileName+","+realTableName+","+groupKeys;
+				
+				//Calculate table column index and value
+				List<Tuple2<String, String>> subResults=new ArrayList<Tuple2<String, String>>();
+				boolean hasError=false;
+				Map<String,Integer> transposeFieldLocation=transposeFieldLocationList.get(realTableName);
+				for(int idx=0;idx<this.columnNameFieldIdxList.size();idx++){
+					int columnNameFieldIdx=this.columnNameFieldIdxList.get(idx);
+					int columnValueFieldIdx=this.columnValueFieldIdxList.get(idx);
+					//Read & validate column name and value
+					if(columnNameFieldIdx>=csvRecord.size()){
+						hasError=true;
+						logger.info("The column.name.field:{} is greater than number of record columns:{}, drop row:{}",new Object[]{columnNameFieldIdx, csvRecord.size(), csvRecord});
+						break;
+					}
+					
+					if(columnValueFieldIdx>=csvRecord.size()){
+						hasError=true;
+						logger.info("The column.value.field:{} is greater than number of record columns:{}, drop row:{}",new Object[]{columnValueFieldIdx, csvRecord.size(), csvRecord});						
+						break;
+					}		
+					String colName=csvRecord.get(columnNameFieldIdx);
+					String colValue=csvRecord.get(columnValueFieldIdx);
+					
+					//Locate the column name position in the fields
+					Integer indexOfColName=transposeFieldLocation.get(colName);			
 
-			if(indexOfColName==null){
-				logger.info("Cannot find column:{} in table, drop row:{}", colName, value);
-				return null;
+					if(indexOfColName==null){
+						hasError=true;
+						logger.info("Cannot find column:{} in table, drop row:{}", colName, csvRecord);
+						break;
+					}
+
+					String outputValue=indexOfColName+","+colValue;
+					
+					Tuple2<String, String> result=new Tuple2<String, String>(outputKey, outputValue);
+					subResults.add(result);
+				}
+				
+				if(hasError==false){
+					results.addAll(subResults);
+				}
 			}
-			
-			//Transpose
-			transposeList.set(indexOfColName, colValue);	
+		}else{
+			logger.debug("No data:{}",value);
+			return null;
 		}
-		//key:table name,rows   value:value1,value2,,,,,valueN
-		String outputKey= outputFileName+","+groupedColumns;
-		String outputValue = String.join(",",transposeList);
-		if (context!=null){
-			context.write(new Text(outputKey), new Text(outputValue));
+		
+		//Output Result
+		//Key: outputFileName,tableName,groupKeys
+		//Value: table column index, table column value
+		if(context!=null){
+			for(Tuple2<String, String> result:results){
+				context.write(new Text(result._1),new Text(result._2));
+			}
 			return null;
 		}else{
-			return Arrays.asList(new Tuple2<String, String>(outputKey, outputValue));
+			return results;
 		}
 	}
 	
@@ -328,36 +368,44 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String,String,String>>();
-		List<String> recordMerged=null;
-		for(String value:values){
-			CSVParser csvParser=CSVParser.parse(value, CSVFormat.DEFAULT.withTrim().withTrailingDelimiter(false));
-			CSVRecord csvRecord=csvParser.getRecords().get(0);
-			if(recordMerged==null){
-				recordMerged=new ArrayList<String>();
-				for(String field:csvRecord){
-					recordMerged.add(field);
-				}
+		
+		String[] keys=StringUtils.split(key, ',');
+		String outputFileName=keys[0];
+		String tableName=keys[1];
+		String groupKeys="";
+		if(keys.length>2){
+			groupKeys=key.substring(outputFileName.length()+tableName.length()+2);
+		}
+		
+		List<String> fieldNameList=logicSchema.getAttrNames(tableName);
+		int size=fieldNameList.size()-tableFieldTransposeStartIndex;
+		if(size<0){
+			logger.warn("Table:{} field transpose start index out of bound, drop key:{}", tableName, key);
+			return ret;
+		}
+		List<String> recordFields=new ArrayList<String>(size);
+		for(int idx=0;idx<size;idx++) recordFields.add("");
+		for(String text:values){
+			int index=text.indexOf(',');
+			int position=Integer.parseInt(text.substring(0,index));
+			String value="";
+			if(index+1<text.length()) value=text.substring(index+1);
+			if(position<recordFields.size()){
+				recordFields.set(position, value);
 			}else{
-				for(int idx=0;idx<recordMerged.size();idx++){
-					if(recordMerged.get(idx).isEmpty() && !csvRecord.get(idx).isEmpty()){
-						recordMerged.set(idx, csvRecord.get(idx));
-					}					
-				}
+				logger.info("Table:{} field transpose index out of bound, drop position:{}, value:{}", tableName, position, value);
 			}
 		}
 		
-		String[] keys=key.toString().split(",");
-		String tableName=keys[0];
-		String[] keysWithoutTableName=new String[keys.length-1];
+		//Transfer the merge field value into csv format		
+		String mergedRecord=buildStringByIdxRange(recordFields,null,",",true);
 		
-		System.arraycopy(keys, 1, keysWithoutTableName, 0, keys.length-1);
-		String keyValue=String.join(",",keysWithoutTableName);
-		
-		if (super.getOutputType()==OutputType.multiple){
-			ret.add(new Tuple3<String,String,String>(keyValue, String.join(",", recordMerged), tableName));
-		}else{
-			ret.add(new Tuple3<String,String,String>(keyValue, String.join(",", recordMerged), ETLCmd.SINGLE_TABLE));
+		if (super.getOutputType() == OutputType.multiple) {
+			ret.add(new Tuple3<String, String, String>(groupKeys,mergedRecord, outputFileName));
+		} else {
+			ret.add(new Tuple3<String, String, String>(groupKeys,mergedRecord, ETLCmd.SINGLE_TABLE));
 		}
+		
 		return ret;
 	}
 	
