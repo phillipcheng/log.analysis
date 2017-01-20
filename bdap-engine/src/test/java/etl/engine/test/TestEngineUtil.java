@@ -89,12 +89,12 @@ public class TestEngineUtil extends TestETLCmd{
 		for(long i=0;i<c;i++){
 			String value=String.valueOf((int)(Math.random()*100));
 			Map<String,Object> var=new HashMap<String,Object>();
-			var.put("originTableName", value);
-			var.put("filename", value+"_BBG");
+			var.put("originTableName", value);			
 			String ret=ScriptEngineUtil.eval(cs, var);
+			var.put("filename", value+"_BBG");
 			var.put("value", ret);
 			ret=ScriptEngineUtil.eval(cs2, var);
-//			System.out.println(ret);
+			System.out.println(ret);
 //			assertEquals(value, ret);
 		}
 		long endTime=System.currentTimeMillis();

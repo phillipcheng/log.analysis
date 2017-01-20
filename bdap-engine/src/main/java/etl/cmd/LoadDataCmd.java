@@ -42,6 +42,8 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public static final @ConfigKey String cfgkey_load_sql = "load.sql";
 	public static final @ConfigKey(type=String[].class) String cfgkey_table_names="table.names";
 	public static final @ConfigKey String cfgkey_dbfile_path="dbfile.path";//for spark to generate dbinput files
+	public static final @ConfigKey String cfgkey_delimiter_exp="delimiter.exp";//for spark to generate dbinput files
+	
 	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
 	public static final String VAR_USERNAME="userName";
@@ -56,6 +58,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	//
 	private String loadSql;
 	private transient CompiledScript csLoadSql;
+	private transient CompiledScript delimiterCS;
 
 	private String[] tableNames;
 	
@@ -98,6 +101,11 @@ public class LoadDataCmd extends SchemaETLCmd{
 		if (this.loadSql!=null){
 			csLoadSql = ScriptEngineUtil.compileScript(loadSql);
 		}
+		
+		String delimiterExp=super.getCfgString(cfgkey_delimiter_exp, null);
+		if(delimiterExp!=null){
+			delimiterCS=ScriptEngineUtil.compileScript(delimiterExp);
+		}
 	}
 	
 	private List<String> prepareTableCopySQLs(String tableName, String[] files) {
@@ -114,8 +122,15 @@ public class LoadDataCmd extends SchemaETLCmd{
 					if (csLoadSql!=null){
 						sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
 					}else{
+						String delimiter=",";
+						if(delimiterCS!=null){
+							delimiter=ScriptEngineUtil.eval(delimiterCS, this.getSystemVariables());
+						}
+						
+						logger.info("Table:{}, Delimiter:{}, Files:\n{}, ",new Object[]{tableName, delimiter, files==null?"":String.join("\n", files)});
+						
 						sql = DBUtil.genCopyHdfsSql(null, logicSchema.getAttrNames(tableName), tableName, 
-								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype());
+								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype(),delimiter, "\"");
 					}
 					newCopysqls.add(sql);
 
