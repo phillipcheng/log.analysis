@@ -217,6 +217,8 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			int result = DBUtil.executeSqls(Arrays.asList(new String[] {createTableSql}), super.getPc());
 			//gen report info
 			loginfo.add(System.currentTimeMillis() + ":" + result + ":" + createTableSql);
+		} else {
+			loginfo.add(System.currentTimeMillis() + ":0:" + createTableSql);
 		}
 		
 		return tableSchema;
@@ -286,7 +288,14 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			if (dbtype != DBType.NONE){
 				int result = DBUtil.executeSqls(updateTableSqls, super.getPc());
 				//gen report info
-				loginfo.add(System.currentTimeMillis() + ":" + result + ":" + updateTableSqls);
+				for (String sql: updateTableSqls) {
+					i = result > 0 ? 1 : 0;
+					loginfo.add(System.currentTimeMillis() + ":" + i + ":" + sql);
+					result --;
+				}
+			} else
+				for (String sql: updateTableSqls) {
+					loginfo.add(System.currentTimeMillis() + ":0:" + sql);
 			}
 			
 			return tableSchema;

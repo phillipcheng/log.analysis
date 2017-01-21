@@ -23,7 +23,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.logging.log4j.LogManager;
@@ -219,13 +218,8 @@ public class UnpackCmd extends ETLCmd {
 	}
 	
 	public Map<String, Object> mapProcess(long offset, String row,
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
 		flatMapToPair(null, row, context);
 		return null;
-	}
-	
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
-		return super.reduceProcess(key, values, context, mos);
 	}
 }

@@ -52,7 +52,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 			else
 				t1 = 0;
 			if (i2 != -1)
-				t2 = Long.parseLong(text1.substring(0, i2));
+				t2 = Long.parseLong(text2.substring(0, i2));
 			else
 				t2 = 0;
 			return (int)(t1 - t2);
@@ -231,7 +231,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				}
 			});
 			JavaRDD<String> createTablesSql = input.values();
-			createTablesSql.sortBy(new Function<String, Long>() {
+			createTablesSql = createTablesSql.sortBy(new Function<String, Long>() {
 				private static final long serialVersionUID = 1L;
 				public Long call(String v1) throws Exception {
 					int i1 = v1.indexOf(":");
@@ -241,6 +241,12 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 						return Long.valueOf(0);
 				}
 			}, true, 1);
+			createTablesSql = createTablesSql.map(new Function<String, String>() {
+				private static final long serialVersionUID = 1L;
+				public String call(String v1) throws Exception {
+					return v1.substring(v1.lastIndexOf(":") + 1);
+				}
+			});
 			createTablesSql.saveAsTextFile(this.createTablesSqlFileName);
 			
 			return result.filter(new Function<Tuple2<String, String>, Boolean>(){
@@ -260,44 +266,43 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String,String,String>> out = new ArrayList<Tuple3<String,String,String>>();
 		if (CREATE_TABLES_SQL_KEY.equals(key)) {
-			for (String v: values) {
-				if(mos!=null){
-					/* For Hadoop MR */
-					FileSystem currentFs;
-					if (fs == null) {
-						try {
-							String fs_key = "fs.defaultFS";
-							Configuration conf = new Configuration();
-							if (defaultFs!=null){
-								conf.set(fs_key, defaultFs);
-							}
-							currentFs = FileSystem.get(conf);
-						}catch(Exception e){
-							logger.error("", e);
-							currentFs = null;
+			if (mos != null) {
+				/* For Hadoop MR */
+				FileSystem currentFs;
+				if (fs == null) {
+					try {
+						String fs_key = "fs.defaultFS";
+						Configuration conf = new Configuration();
+						if (defaultFs!=null){
+							conf.set(fs_key, defaultFs);
 						}
-					} else {
-						currentFs = fs;
+						currentFs = FileSystem.get(conf);
+					}catch(Exception e){
+						logger.error("", e);
+						currentFs = null;
 					}
-					List<String> createSqls = Lists.newArrayList(values);
-					Collections.sort(createSqls, CREATE_TABLES_SQL_COMPARATOR);
-					logger.debug("Append {} sqls to file: {}", createSqls.size(), this.createTablesSqlFileName);
-					HdfsUtil.appendDfsFile(currentFs, this.createTablesSqlFileName, createSqls);
-					
-				}else{
+				} else {
+					currentFs = fs;
+				}
+				List<String> createSqls = Lists.newArrayList(values);
+				Collections.sort(createSqls, CREATE_TABLES_SQL_COMPARATOR);
+				logger.debug("Append {} sqls to file: {}", createSqls.size(), this.createTablesSqlFileName);
+				
+				for (String sql: createSqls) {
+					sql = sql.substring(sql.lastIndexOf(":") + 1);
+					HdfsUtil.appendDfsFile(currentFs, this.createTablesSqlFileName, Arrays.asList(sql));
+				}
+
+			} else {
+				for (String v: values) {
 					/* For spark */
 					out.add(new Tuple3<String,String,String>(v, null, key));
 				}
 			}
 			
 		} else {
-			for (String v: values){
-				if(mos!=null){
-					mos.write((Text)null, new Text(v), key);
-				}else{
-					out.add(new Tuple3<String,String,String>(v, null, key));
-				}
-			}
+			for (String v: values)
+				out.add(new Tuple3<String,String,String>(v, null, key));
 		}
 		return out;
 	}
