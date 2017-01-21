@@ -14,7 +14,7 @@
 		<configuration>
 			<property>
 				<name>oozie.launcher.yarn.app.mapreduce.am.env</name>
-				<value>SPARK_HOME=/data/spark-2.0.0-bin-hadoop2.7/</value>
+				<value>SPARK_HOME=[[sparkhome]]</value>
 			</property>
 		</configuration>
 	</global>
@@ -38,9 +38,9 @@
             <argument>--total-executor-cores</argument>
             <argument>7</argument>
             <argument>--conf</argument>
-            <argument>spark.yarn.historyServer.address=http://192.85.247.104:18080</argument>
+            <argument>spark.yarn.historyServer.address=[[sparkhistoryserver]]</argument>
             <argument>--conf</argument>
-            <argument>spark.eventLog.dir=hdfs://192.85.247.104:19000/spark/logs</argument>
+            <argument>spark.eventLog.dir=[[defaultfs]]/spark/logs</argument>
             <argument>--conf</argument>
             <argument>spark.eventLog.enabled=true</argument>
             <argument>--jars</argument>

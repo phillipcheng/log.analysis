@@ -58,10 +58,12 @@ public class SchemaUtils {
 	private static class AttrNameCacheLoader extends CacheLoader<String, List<String>> implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private transient FileSystem fs;
+		private String defaultFs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
 		private Map<String, String> attrIdNameMap;
 		public AttrNameCacheLoader(String defaultFs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
+			this.defaultFs = defaultFs;
 			this.fs = HdfsUtil.getHadoopFs(defaultFs);
 			this.path = path;
 			this.clazz = clazz;
@@ -69,6 +71,10 @@ public class SchemaUtils {
 		}
 		public List<String> load(String tableName) throws Exception {
 			LogicSchema schema;
+			
+			if (fs == null) // Try init in case of remote job
+				fs = HdfsUtil.getHadoopFs(defaultFs);
+			
 			if (fs != null)
 				schema = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, path + tableName + "." + SCHEMA_FILENAME_EXTENSION, clazz);
 			else
@@ -91,10 +97,12 @@ public class SchemaUtils {
 	private static class AttrTypeCacheLoader extends CacheLoader<String, List<FieldType>> implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private transient FileSystem fs;
+		private String defaultFs;
 		private String path;
 		private Class<? extends LogicSchema> clazz;
 		private Map<String, String> attrIdNameMap;
 		public AttrTypeCacheLoader(String defaultFs, String path, Class<? extends LogicSchema> clazz, Map<String, String> attrIdNameMap) {
+			this.defaultFs = defaultFs;
 			this.fs = HdfsUtil.getHadoopFs(defaultFs);
 			this.path = path;
 			this.clazz = clazz;
@@ -102,6 +110,10 @@ public class SchemaUtils {
 		}
 		public List<FieldType> load(String tableName) throws Exception {
 			LogicSchema schema;
+			
+			if (fs == null) // Try init in case of remote job
+				fs = HdfsUtil.getHadoopFs(defaultFs);
+			
 			if (fs != null)
 				schema = (LogicSchema) HdfsUtil.fromDfsJsonFile(fs, path + tableName + "." + SCHEMA_FILENAME_EXTENSION, clazz);
 			else
@@ -195,7 +207,7 @@ public class SchemaUtils {
 		Path p = new Path(path);
 		FileSystem fs = HdfsUtil.getHadoopFs(defaultFs);
 		try {
-			schema.setIndex(fs.exists(p) && fs.isDirectory(p));
+			schema.setIndex(path.endsWith(Path.SEPARATOR) || (fs.exists(p) && fs.isDirectory(p)));
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 		}

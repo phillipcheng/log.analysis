@@ -25,7 +25,9 @@ public class FieldType implements Serializable{
 	
 	public static final String dateFormat="yyyy-MM-dd";
 	public static final String datetimeFormat="yyyy-MM-dd HH:mm:ss.SSS";//standard timestamp format, please convert to this before loading
+	public static final String datetimeRoughFormat="yyyy-MM-dd HH:mm:ss";//standard timestamp format, please convert to this before loading
 	public static final SafeSimpleDateFormat sdatetimeFormat = new SafeSimpleDateFormat(datetimeFormat);
+	public static final SafeSimpleDateFormat sdatetimeRoughFormat = new SafeSimpleDateFormat(datetimeRoughFormat);
 	public static final SafeSimpleDateFormat sdateFormat = new SafeSimpleDateFormat(dateFormat);
 	
 	public static final String HIVE_TYPE_NUMERIC="decimal";

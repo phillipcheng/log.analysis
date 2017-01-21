@@ -41,8 +41,9 @@ public class HdfsCmd extends ETLCmd{
 	public static final @ConfigKey(type=String[].class) String cfgkey_mv_from = "mv.from";
 	public static final @ConfigKey(type=String[].class) String cfgkey_mv_to = "mv.to";
 	//cfgkey for mr/spark
-	public static final @ConfigKey(type=String.class) String cfgkey_op="hdfs.op";
+	public static final @ConfigKey(type=HdfsOp.class) String cfgkey_op="hdfs.op";
 	public static final @ConfigKey(type=String.class) String cfgkey_rm_parent="rm.parent";
+	public static final @ConfigKey(type=Integer.class) String cfgkey_chmod_permissions="chmod.permissions";
 	public static final @ConfigKey(type=String.class) String cfgkey_mv_to_exp="mv.to.exp";//mv to file name based on mv from file name
 	public static final @ConfigKey(type=String.class) String cfgkey_clean_mv_to_folder="clean.mv.to.folder";
 	
@@ -58,6 +59,7 @@ public class HdfsCmd extends ETLCmd{
 	private String strMvTo;
 	private transient CompiledScript csMvTo=null;
 	private boolean cleanMvToFolder=false;
+	private transient FsPermission chmodPermissions=FsPermission.getDirDefault();
 	
 	public HdfsCmd(){
 		super();
@@ -105,6 +107,8 @@ public class HdfsCmd extends ETLCmd{
 			hdfsOp = HdfsOp.valueOf(hdfsOpStr);
 		}
 		rmParent = super.getCfgBoolean(cfgkey_rm_parent, true);
+		if (super.cfgContainsKey(cfgkey_chmod_permissions))
+			chmodPermissions = FsPermission.createImmutable(Short.valueOf(super.getCfgString(cfgkey_chmod_permissions, Short.toString(FsPermission.getDirDefault().toShort())), 8));
 		strMvTo = super.getCfgString(cfgkey_mv_to_exp, null);
 		if (strMvTo!=null){
 			csMvTo = ScriptEngineUtil.compileScript(strMvTo);
@@ -159,6 +163,10 @@ public class HdfsCmd extends ETLCmd{
 			}else{
 				logger.error(String.format("mv_to_exp not defined!!"));
 			}
+		}else if (HdfsOp.chmod == hdfsOp){
+			int lastIdx = filePath.lastIndexOf("/");
+			String parentPath = filePath.substring(0, lastIdx);
+			mapRet.add(new Tuple2<String, String>(parentPath, "1"));
 		}else{
 			logger.error(String.format("unsupported hdfs op in mr mode:%s", hdfsOp));
 		}
@@ -180,6 +188,9 @@ public class HdfsCmd extends ETLCmd{
 				boolean ret = super.getFs().delete(new Path(key), true);
 				logger.info(String.format("delete path:%s, ret:%b", key, ret));
 			}
+		} else if (HdfsOp.chmod==hdfsOp) {
+			super.getFs().setPermission(new Path(key), chmodPermissions);
+			logger.info(String.format("change permission of path:%s", key));
 		}
 		redRet.add(new Tuple3<String,String,String>(key, String.valueOf(cnt), SINGLE_TABLE));
 		return redRet;
