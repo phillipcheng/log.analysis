@@ -1,7 +1,6 @@
 package etl.util;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,22 +49,6 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 	public WriteSupport.WriteContext init(Configuration configuration) {
 		Map<String, String> extraMetaData = new HashMap<String, String>();
 		// extraMetaData.put(AvroReadSupport.AVRO_SCHEMA_METADATA_KEY, rootAvroSchema.toString());
-		logger.info(configuration);
-		try {
-			Configuration.dumpConfiguration(configuration, new Writer() {
-				public void write(char[] cbuf, int off, int len) throws IOException {
-					logger.info(new String(cbuf, off, len));
-				}
-
-				public void flush() throws IOException {
-				}
-				public void close() throws IOException {
-				}
-				
-			});
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		rootLogicSchema = parse(configuration.get(DEFAULT_FS), configuration.get(LOGIC_SCHEMA));
 		rootSchema = convert(rootLogicSchema, tableName);
 		return new WriteSupport.WriteContext(rootSchema, extraMetaData);
