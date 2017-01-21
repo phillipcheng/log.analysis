@@ -75,7 +75,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	private DBType dbtype = DBType.NONE;
 	private LockType lockType = LockType.jvm;
 	private String zookeeperUrl=null;
-	private CuratorFramework client;
+	private transient CuratorFramework client;
 	
 	public static int ZK_CONNECTION_TIMEOUT = 120000;//2 minutes
 	
@@ -208,18 +208,15 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		//update/create create-table-sql
 		logger.info(String.format("create/update table sqls are:%s", createTableSql));
 		
-		List<String> createTableSqls = Arrays.asList(new String[] {createTableSql});
-		HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, createTableSqls);
-		
 		//update logic schema file
 		if (schemaFile != null)
 			safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
 		
 		//execute the sql
 		if (dbtype != DBType.NONE){
-			int result = DBUtil.executeSqls(createTableSqls, super.getPc());
+			int result = DBUtil.executeSqls(Arrays.asList(new String[] {createTableSql}), super.getPc());
 			//gen report info
-			loginfo.add(result + ":" + createTableSql);
+			loginfo.add(System.currentTimeMillis() + ":" + result + ":" + createTableSql);
 		}
 		
 		return tableSchema;
@@ -281,8 +278,6 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			//update/create create-table-sql
 			logger.info(String.format("create/update table sqls are:%s", updateTableSqls));
 			
-			HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, updateTableSqls);
-			
 			//update logic schema file
 			if (schemaFile != null)
 				safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
@@ -291,7 +286,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			if (dbtype != DBType.NONE){
 				int result = DBUtil.executeSqls(updateTableSqls, super.getPc());
 				//gen report info
-				loginfo.add(result + ":" + updateTableSqls);
+				loginfo.add(System.currentTimeMillis() + ":" + result + ":" + updateTableSqls);
 			}
 			
 			return tableSchema;
@@ -386,9 +381,12 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	        }
 		}
 
-		if (LockType.zookeeper.equals(lockType))
-			lock = new InterProcessMutex(client, schemaFile);
-		else if (LockType.jvm.equals(lockType))
+		if (LockType.zookeeper.equals(lockType)) {
+			if (schemaFile.endsWith(Path.SEPARATOR))
+				lock = new InterProcessMutex(client, schemaFile + SchemaUtils.SCHEMA_INDEX_FILENAME);
+			else
+				lock = new InterProcessMutex(client, schemaFile);
+		} else if (LockType.jvm.equals(lockType))
 			lock = new JVMLock();
 		else
 			lock = new EmptyLock();

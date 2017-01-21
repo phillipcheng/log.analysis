@@ -15,6 +15,7 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
@@ -105,7 +106,7 @@ public class UnpackCmd extends ETLCmd {
 
 	//tfName not used
 	public List<Tuple2<String, String>> flatMapToPair(String tfName, String row, 
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
 		super.init();
 		//value is the src zip file path
 		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
@@ -148,6 +149,8 @@ public class UnpackCmd extends ETLCmd {
 					in = new ArchiveStreamFactory().createArchiveInputStream(bufIn);
 				
 				if (sequenceFile) {
+					int bufferSizeValue = fs.getConf().getInt(CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY,
+							CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT);
 					i = path.getName().indexOf('.');
 					if (i > 0)
 						fileName = path.getName().substring(0, i);
@@ -158,9 +161,9 @@ public class UnpackCmd extends ETLCmd {
 						writer = SequenceFile.createWriter(getHadoopConf(), SequenceFile.Writer.file(new Path(destFile)),
 							SequenceFile.Writer.keyClass(LongWritable.class),
 							SequenceFile.Writer.valueClass(Text.class),
-							SequenceFile.Writer.bufferSize(fs.getConf().getInt("io.file.buffer.size", 4096)));
+							SequenceFile.Writer.bufferSize(bufferSizeValue));
 					}
-					buffer = new byte[4096];
+					buffer = new byte[bufferSizeValue]; /* Read buffer size set to the same as hdfs io file buffer size */
 					
 					longKey = 0;
 					while ((entry = in.getNextEntry()) != null) {
@@ -172,7 +175,7 @@ public class UnpackCmd extends ETLCmd {
 				            value.append(NEW_LINE, 0, NEW_LINE.length);
 							while ((i = IOUtils.read(in, buffer)) > 0) {
 								value.append(buffer, 0, i);
-								if (i < 4096) /* EOF reached */
+								if (i < bufferSizeValue) /* EOF reached */
 									break;
 							}
 							if (context!=null){

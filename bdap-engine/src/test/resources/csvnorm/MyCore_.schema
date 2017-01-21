@@ -2,22 +2,10 @@
   "tableIdNameMap" : { },
   "attrIdNameMap" : { },
   "attrNameMap" : {
-    "MyCore_" : [ "SubNetwork", "ManagedElement", "endTime", "duration", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage", "VS.xPerCoreCpuUsage", "VS.yPerCoreCpuUsage" ]
+    "MyCore_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage", "VS.xPerCoreCpuUsage", "VS.yPerCoreCpuUsage" ]
   },
   "attrTypeMap" : {
     "MyCore_" : [ {
-      "type" : "STRING",
-      "size" : 70,
-      "precision" : 0,
-      "scale" : 0,
-      "aggrType" : "NONE"
-    }, {
-      "type" : "STRING",
-      "size" : 70,
-      "precision" : 0,
-      "scale" : 0,
-      "aggrType" : "NONE"
-    }, {
       "type" : "TIMESTAMP",
       "size" : 0,
       "precision" : 0,
@@ -26,6 +14,18 @@
     }, {
       "type" : "STRING",
       "size" : 10,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 70,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 70,
       "precision" : 0,
       "scale" : 0,
       "aggrType" : "NONE"

@@ -214,7 +214,7 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	//copy propertiesConf to jobConf
-	private void copyConf(){
+	protected void copyConf(){
 		Iterator it = pc.getKeys();
 		while (it.hasNext()){
 			String key = (String) it.next();

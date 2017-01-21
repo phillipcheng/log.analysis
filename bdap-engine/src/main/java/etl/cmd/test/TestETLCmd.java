@@ -6,7 +6,6 @@ import java.lang.reflect.Constructor;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,22 @@ import java.util.Map;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.parquet.column.page.PageReadStore;
+import org.apache.parquet.example.data.Group;
+import org.apache.parquet.example.data.simple.convert.GroupRecordConverter;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
+import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.io.ColumnIOFactory;
+import org.apache.parquet.io.MessageColumnIO;
+import org.apache.parquet.io.RecordReader;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Type;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -21,44 +36,45 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
 
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
-import etl.engine.DataType;
 import etl.engine.ETLCmd;
 import etl.engine.InvokeMapper;
 import etl.input.FilenameInputFormat;
-import etl.spark.SparkUtil;
+import etl.util.FieldType;
 import etl.util.GlobExpPathFilter;
 import scala.Tuple2;
 
 public abstract class TestETLCmd implements Serializable{
+	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(TestETLCmd.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-	
-	public static final String remoteUser = "dbadmin";
 	
 	private static String cfgProperties="testETLCmd.properties";
 	//private static String cfgProperties="testETLCmd_192.85.247.104.properties";
 	
-	private static String key_localFolder="localFolder";
-	private static String key_projectFolder="projectFolder";
-	private static String key_defaultFs="defaultFs";
-	private static String key_jobTracker="jobTracker";
-	private static String key_test_sftp="test.sftp";
-	private static String key_test_kafka="test.kafka";
-	private static String key_oozie_user="oozie.user";
+	private static final String key_localFolder="localFolder";
+	private static final String key_projectFolder="projectFolder";
+	private static final String key_defaultFs="defaultFs";
+	private static final String key_jobTracker="jobTracker";
+	private static final String key_test_sftp="test.sftp";
+	private static final String key_test_kafka="test.kafka";
+	private static final String key_oozie_user="oozie.user";
+	private static final String key_hdfs_user="hdfs.user";
 	
 	
 	private transient PropertiesConfiguration pc;
@@ -99,7 +115,8 @@ public abstract class TestETLCmd implements Serializable{
 		if (defaultFS.contains("127.0.0.1")){
 			fs = FileSystem.get(conf);
 		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			String hdfsUser = pc.getString(key_hdfs_user, "dbadmin");
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
 					fs = FileSystem.get(conf);
@@ -111,7 +128,7 @@ public abstract class TestETLCmd implements Serializable{
 	
 	//map test for cmd
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass) throws Exception {
+			String staticProperties, String[] inputDataFiles, String cmdClassName, Class<? extends InputFormat> inputFormatClass) throws Exception {
 		return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, inputFormatClass, null, false);
 	}
 	
@@ -124,7 +141,7 @@ public abstract class TestETLCmd implements Serializable{
 	}
 	
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
-			String staticProperties, String[] inputDataFiles, String cmdClassName, Class inputFormatClass, String inputFilter, boolean useIndividualFiles) throws Exception {
+			String staticProperties, String[] inputDataFiles, String cmdClassName, Class<? extends InputFormat> inputFormatClass, String inputFilter, boolean useIndividualFiles) throws Exception {
 		try {
 			getFs().delete(new Path(remoteOutputFolder), true);
 			if (inputDataFiles != null && inputDataFiles.length > 0) {
@@ -176,7 +193,8 @@ public abstract class TestETLCmd implements Serializable{
 	
 	//map-reduce test for cmd
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
-			String staticProperties, String cmdClassName, Class inputFormatClass, int numReducer) throws Exception {
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass,
+			Class<? extends OutputFormat> outputFormatClass, int numReducer) throws Exception {
 		getFs().delete(new Path(remoteOutputFolder), true);
 		for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
 			if (rfifs._2.length > 0) {
@@ -204,6 +222,7 @@ public abstract class TestETLCmd implements Serializable{
 		
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
+		job.setOutputFormatClass(outputFormatClass);
 		job.setInputFormatClass(inputFormatClass);
 		FileInputFormat.setInputDirRecursive(job, true);
 		
@@ -213,14 +232,98 @@ public abstract class TestETLCmd implements Serializable{
 		
 		FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 		job.waitForCompletion(true);
-		List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
+		List<String> output;
+		if (ParquetOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+			List<String> paths = HdfsUtil.listDfsFilePath(getFs(), remoteOutputFolder, true);
+			MessageType schema;
+			ParquetMetadata m;
+			ParquetFileReader r;
+			PageReadStore rowGroup;
+			MessageColumnIO columnIO;
+			RecordReader<Group> recordReader;
+			List<Type> fields;
+			int fieldIndex;
+			StringBuilder buffer;
+			PrimitiveType c;
+			Binary b;
+			
+			output = new ArrayList<String>();
+			for (String p: paths) {
+				if (p.endsWith(".parquet")) {
+					m = ParquetFileReader.readFooter(getConf(), new Path(p), ParquetMetadataConverter.NO_FILTER);
+					schema = m.getFileMetaData().getSchema();
+					r = null;
+					try {
+						r = new ParquetFileReader(getConf(), m.getFileMetaData(), new Path(p), m.getBlocks(), schema.getColumns());
+						rowGroup = r.readNextRowGroup();
+						if (rowGroup != null) {
+							columnIO = new ColumnIOFactory().getColumnIO(m.getFileMetaData().getSchema());
+							recordReader = columnIO.getRecordReader(rowGroup, new GroupRecordConverter(schema));
+							fields = schema.getFields();
+							for (int i = 0; i < rowGroup.getRowCount(); i++) {
+								final Group g = recordReader.read();
+								fieldIndex = 0;
+								buffer = new StringBuilder();
+								for (Type f: fields) {
+									c = f.asPrimitiveType();
+									if (PrimitiveTypeName.BINARY.equals(c.getPrimitiveTypeName())) {
+										buffer.append(g.getString(fieldIndex, 0));
+									} else if (PrimitiveTypeName.INT32.equals(c.getPrimitiveTypeName())) {
+										buffer.append(g.getInteger(fieldIndex, 0));
+									} else if (PrimitiveTypeName.INT64.equals(c.getPrimitiveTypeName())) {
+										if (OriginalType.TIMESTAMP_MILLIS.equals(c.getOriginalType())) {
+											buffer.append(FieldType.sdatetimeRoughFormat.format(new Date(g.getLong(fieldIndex, 0))));
+										} else if (OriginalType.DATE.equals(c.getOriginalType())) {
+											buffer.append(FieldType.sdateFormat.format(new Date(g.getLong(fieldIndex, 0))));
+										} else {
+											buffer.append(g.getLong(fieldIndex, 0));
+										}
+									} else if (PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY.equals(c.getPrimitiveTypeName())) {
+										b = g.getBinary(fieldIndex, 0);
+										if (OriginalType.DECIMAL.equals(c.getOriginalType())) {
+											buffer.append(new HiveDecimalWritable(b.getBytes(), c.getDecimalMetadata().getScale()).getHiveDecimal().toString());
+										} else {
+											buffer.append(b.toString());
+										}
+									} else if (PrimitiveTypeName.FLOAT.equals(c.getPrimitiveTypeName())) {
+										buffer.append(g.getFloat(fieldIndex, 0));
+									} else if (PrimitiveTypeName.DOUBLE.equals(c.getPrimitiveTypeName())) {
+										buffer.append(g.getDouble(fieldIndex, 0));
+									}
+									fieldIndex ++;
+									if (fieldIndex < fields.size())
+										buffer.append(",");
+								}
+								output.add(buffer.toString());
+							}
+						}
+					} finally {
+						if (r != null)
+							r.close();
+					}
+				}
+			}
+		} else
+			output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
 		return output;
+		
+	}
+
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass,
+			Class<? extends OutputFormat> outputFormatClass) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, outputFormatClass, 1);
+	}
+	
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass, int numReducer) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, TextOutputFormat.class, numReducer);
 		
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
-			String staticProperties, String cmdClassName, Class inputFormatClass) throws Exception {
-		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, 1);
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, TextOutputFormat.class, 1);
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
