@@ -74,7 +74,7 @@ public class TestFileNameUpdateCmd extends TestETLCmd{
 		getFs().setPermission(new Path(inputFolder + csvFileName1), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));
 		getFs().setPermission(new Path(inputFolder + csvFileName2), new FsPermission(FsAction.ALL,FsAction.ALL,FsAction.ALL));	
 		
-		super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, true);
+		super.mapTest(inputFolder, outputFolder, staticCfgName, inputFiles,cmdClassName, true);
 		
 		//result
 		List<String> output = HdfsUtil.listDfsFile(getFs(), inputFolder);

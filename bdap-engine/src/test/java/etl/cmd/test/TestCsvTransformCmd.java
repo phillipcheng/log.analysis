@@ -53,7 +53,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 	}
 
 	private void testWriteSequenceFile() throws Exception{
-		File docDirectory = new File("src/test/resources/csvtrans/");
+		File docDirectory = new File(getLocalFolder());
 		String sequenceFilePath = "/etltest/csvtransform/seqFile";
 		getFs().delete(new Path("/etltest/csvtransform/"), true);
         org.apache.hadoop.io.SequenceFile.Writer.Option filePath = SequenceFile.Writer
