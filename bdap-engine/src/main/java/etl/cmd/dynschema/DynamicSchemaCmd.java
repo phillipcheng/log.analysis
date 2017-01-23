@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,23 +40,6 @@ import etl.util.FieldType;
 public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private static final String CREATE_TABLES_SQL_KEY = "<<create-tables-sql>>";
-	private static final Comparator<String> CREATE_TABLES_SQL_COMPARATOR = new Comparator<String>() {
-		public int compare(String text1, String text2) { /* To sort ascendantly by timestamp */
-			int i1 = text1.indexOf(":");
-			int i2 = text2.indexOf(":");
-			long t1;
-			long t2;
-			if (i1 != -1)
-				t1 = Long.parseLong(text1.substring(0, i1));
-			else
-				t1 = 0;
-			if (i2 != -1)
-				t2 = Long.parseLong(text2.substring(0, i2));
-			else
-				t2 = 0;
-			return (int)(t1 - t2);
-		}
-	};
 
 	public static final @ConfigKey(type=DynSchemaProcessType.class,defaultValue="genCsv") String cfgkey_process_type="process.type";
 	
