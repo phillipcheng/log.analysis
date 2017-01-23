@@ -14,11 +14,16 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+
 import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
+import etl.output.ParquetOutputFormat;
 import etl.spark.RDDMultipleTextOutputFormat;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
@@ -26,6 +31,7 @@ import scala.Tuple2;
 
 public class SaveDataCmd extends SchemaETLCmd {
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LogManager.getLogger(SaveDataCmd.class);
 	//cfgkey
 	public static final @ConfigKey String cfgkey_log_tmp_dir="log.tmp.dir";
 	
@@ -81,9 +87,14 @@ public class SaveDataCmd extends SchemaETLCmd {
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
 		logger.info(String.format("%s:%s", cfgkey_log_tmp_dir, logTmpDir));
-		input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
+		copyConf();
+		if (ParquetInputFormat.class.isAssignableFrom(inputFormatClass)) {
+			input.saveAsNewAPIHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, ParquetOutputFormat.class, getHadoopConf());
+		} else
+			input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
 		//TODO use input.saveAsNewAPIHadoopFile(path, keyClass, valueClass, outputFormatClass);
 		return input.groupByKey().keys().flatMapToPair(new PairFlatMapFunction<String, String, String>(){
+			private static final long serialVersionUID = 1L;
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
 				init();

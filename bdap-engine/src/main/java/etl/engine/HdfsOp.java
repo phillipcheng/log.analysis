@@ -4,4 +4,5 @@ public enum HdfsOp {
 	rm,
 	mkdir,
 	mv,
+	chmod
 }

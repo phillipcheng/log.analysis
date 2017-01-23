@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -47,9 +49,26 @@ import etl.util.VarType;
 
 public abstract class SchemaETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LogManager.getLogger(SchemaETLCmd.class);
 	private static final String SCHEMA_TMP_FILENAME_EXTENSION = "tmp";
 	private static final Random RANDOM_GEN = new Random();
-	public static final Logger logger = LogManager.getLogger(SchemaETLCmd.class);
+	protected static final Comparator<String> CREATE_TABLES_SQL_COMPARATOR = new Comparator<String>() {
+		public int compare(String text1, String text2) { /* To sort ascendantly by timestamp */
+			int i1 = text1.indexOf(":");
+			int i2 = text2.indexOf(":");
+			long t1;
+			long t2;
+			if (i1 != -1)
+				t1 = Long.parseLong(text1.substring(0, i1));
+			else
+				t1 = 0;
+			if (i2 != -1)
+				t2 = Long.parseLong(text2.substring(0, i2));
+			else
+				t2 = 0;
+			return (int)(t1 - t2);
+		}
+	};
 
 	//cfgkey
 	public static final @ConfigKey String cfgkey_schema_file="schema.file";
@@ -75,7 +94,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	private DBType dbtype = DBType.NONE;
 	private LockType lockType = LockType.jvm;
 	private String zookeeperUrl=null;
-	private CuratorFramework client;
+	private transient CuratorFramework client;
 	
 	public static int ZK_CONNECTION_TIMEOUT = 120000;//2 minutes
 	
@@ -208,18 +227,17 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		//update/create create-table-sql
 		logger.info(String.format("create/update table sqls are:%s", createTableSql));
 		
-		List<String> createTableSqls = Arrays.asList(new String[] {createTableSql});
-		HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, createTableSqls);
-		
 		//update logic schema file
 		if (schemaFile != null)
 			safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
 		
 		//execute the sql
 		if (dbtype != DBType.NONE){
-			int result = DBUtil.executeSqls(createTableSqls, super.getPc());
+			int result = DBUtil.executeSqls(Arrays.asList(new String[] {createTableSql}), super.getPc());
 			//gen report info
-			loginfo.add(result + ":" + createTableSql);
+			loginfo.add(System.currentTimeMillis() + ":" + result + ":" + createTableSql);
+		} else {
+			loginfo.add(System.currentTimeMillis() + ":0:" + createTableSql);
 		}
 		
 		return tableSchema;
@@ -281,8 +299,6 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			//update/create create-table-sql
 			logger.info(String.format("create/update table sqls are:%s", updateTableSqls));
 			
-			HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, updateTableSqls);
-			
 			//update logic schema file
 			if (schemaFile != null)
 				safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
@@ -291,7 +307,14 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			if (dbtype != DBType.NONE){
 				int result = DBUtil.executeSqls(updateTableSqls, super.getPc());
 				//gen report info
-				loginfo.add(result + ":" + updateTableSqls);
+				for (String sql: updateTableSqls) {
+					i = result > 0 ? 1 : 0;
+					loginfo.add(System.currentTimeMillis() + ":" + i + ":" + sql);
+					result --;
+				}
+			} else
+				for (String sql: updateTableSqls) {
+					loginfo.add(System.currentTimeMillis() + ":0:" + sql);
 			}
 			
 			return tableSchema;
@@ -386,9 +409,12 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	        }
 		}
 
-		if (LockType.zookeeper.equals(lockType))
-			lock = new InterProcessMutex(client, schemaFile);
-		else if (LockType.jvm.equals(lockType))
+		if (LockType.zookeeper.equals(lockType)) {
+			if (schemaFile.endsWith(Path.SEPARATOR))
+				lock = new InterProcessMutex(client, schemaFile + SchemaUtils.SCHEMA_INDEX_FILENAME);
+			else
+				lock = new InterProcessMutex(client, schemaFile);
+		} else if (LockType.jvm.equals(lockType))
 			lock = new JVMLock();
 		else
 			lock = new EmptyLock();
@@ -438,7 +464,17 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	public List<String> updateSchema(Map<String, List<String>> attrNamesMap, Map<String, List<FieldType>> attrTypesMap){
-		return updateSchema(null, null, attrNamesMap, attrTypesMap);
+		List<String> loginfo = updateSchema(null, null, attrNamesMap, attrTypesMap);
+
+		Collections.sort(loginfo, CREATE_TABLES_SQL_COMPARATOR);
+		logger.debug("Append {} sqls to file: {}", loginfo.size(), this.createTablesSqlFileName);
+		
+		for (String sql: loginfo) {
+			sql = sql.substring(sql.lastIndexOf(":") + 1);
+			HdfsUtil.appendDfsFile(getFs(), this.createTablesSqlFileName, Arrays.asList(sql));
+		}
+		
+		return loginfo;
 	}
 	
 	/**

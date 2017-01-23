@@ -5,6 +5,7 @@ public enum InputFormatType {
 	Line,
 	Text,
 	SequenceFile,
+	ParquetFile,
 	XML,
 	CombineXML,
 	FileName,//used for input is a directory

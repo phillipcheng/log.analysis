@@ -115,7 +115,9 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		//schema
 		getFs().delete(new Path(schemaFolder + "schema-index.schema"), true);
 		getFs().delete(new Path(schemaFolder + "MyCore_.schema"), true);
+		getFs().delete(new Path(schemaFolder), true);
 		getFs().delete(new Path(sqlFile), true);
+		getFs().mkdirs(new Path(schemaFolder));
 		
 		//run cmd
 		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();

@@ -70,7 +70,8 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 		if (getDefaultFS().contains("127.0.0.1")){
 			test1Fun();
 		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			String hdfsUser = this.getPc().getString("hdfs.user", "dbadmin");
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
 					test1Fun();
