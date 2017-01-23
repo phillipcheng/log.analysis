@@ -85,7 +85,7 @@ public class StreamLogProcessor {
 						
 						SaveDataCmd saveDataCmd = new SaveDataCmd(wfName, batchid, null, defaultFs, null);
 						saveDataCmd.setSendLog(false);
-						saveDataCmd.sparkProcessKeyValue(v1, jsc.sparkContext(), TextInputFormat.class);
+						saveDataCmd.sparkProcessKeyValue(v1, jsc.sparkContext(), TextInputFormat.class, null);
 						
 						LoadDataCmd loadDataCmd = new LoadDataCmd(wfName, batchid, null, "log", defaultFs, null);
 						//if logs are imported to db, import and then delete the files

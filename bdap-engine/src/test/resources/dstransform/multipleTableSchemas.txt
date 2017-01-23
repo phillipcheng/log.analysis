@@ -1,0 +1,100 @@
+{
+  "attrNameMap" : {
+    "MyCore_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ],
+    "MyCore1_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage" ]
+  },
+  "attrTypeMap" : {
+    "MyCore_" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 70,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 70,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 54,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "STRING",
+      "size" : 72,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    } ],
+    "MyCore1_" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 70,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 70,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 54,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "STRING",
+      "size" : 72,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5
+    } ]
+  }
+}

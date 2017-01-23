@@ -7,7 +7,6 @@ import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +19,14 @@ import org.apache.hadoop.fs.Path;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Types;
+import org.apache.parquet.schema.Types.MessageTypeBuilder;
+import org.apache.spark.sql.types.DataType;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -37,17 +44,17 @@ public class SchemaUtils {
 	public static final String SCHEMA_INDEX_FILENAME = "schema-index." + SCHEMA_FILENAME_EXTENSION;
 	
 	public static FieldType getFieldType(int type, int size, int digits){
-		if (Types.TIMESTAMP == type){
+		if (java.sql.Types.TIMESTAMP == type){
 			return new FieldType(VarType.TIMESTAMP);
-		}else if (Types.VARCHAR == type){
+		}else if (java.sql.Types.VARCHAR == type){
 			return new FieldType(VarType.STRING, size);
-		}else if (Types.NUMERIC == type){
+		}else if (java.sql.Types.NUMERIC == type){
 			return new FieldType(VarType.NUMERIC, size, digits);
-		}else if (Types.DECIMAL == type){
+		}else if (java.sql.Types.DECIMAL == type){
 			return new FieldType(VarType.NUMERIC, size, digits);
-		}else if (Types.BIGINT == type){
+		}else if (java.sql.Types.BIGINT == type){
 			return new FieldType(VarType.INT);
-		}else if (Types.DATE == type){
+		}else if (java.sql.Types.DATE == type){
 			return new FieldType(VarType.DATE);
 		}else{
 			logger.error(String.format("not supported:%d", type));
@@ -450,5 +457,131 @@ public class SchemaUtils {
 			}
 		}
 		return true;
+	}
+	
+//convert to parquet schema
+	private static final int MAX_DECIMAL_BYTES = 16;
+	public static long maxPrecision(int numBytes) {
+		return Math.round( // convert double to long
+				Math.floor(Math.log10( // number of base-10 digits
+						Math.pow(2, 8 * numBytes - 1) - 1) // max value stored
+														   // in numBytes
+				));
+	}
+	
+	public static int minBytes(int precision) {
+		int bytes;
+		for (bytes = 1; bytes < MAX_DECIMAL_BYTES; bytes ++)
+			if (precision < maxPrecision(bytes))
+				return bytes;
+		return bytes;
+	}
+	
+	public static MessageType convertToParquetSchema(LogicSchema logicSchema, String tableName) {
+		MessageTypeBuilder m = Types.buildMessage();
+		if (logicSchema.hasTable(tableName)) {
+			List<String> attrs = logicSchema.getAttrNames(tableName);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(tableName);
+			int i;
+			if (attrs != null && attrTypes != null && attrs.size() > 0 && attrs.size() == attrTypes.size()) {
+				FieldType type;
+				String name;
+				for (i = 0; i < attrs.size(); i ++) {
+					type = attrTypes.get(i);
+					name = attrs.get(i);
+					switch (type.getType()) {
+					case STRING:
+					case JAVASCRIPT:
+					case REGEXP:
+					case GLOBEXP:
+					case STRINGLIST:
+						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).as(OriginalType.UTF8).named(name));
+						break;
+					case TIMESTAMP:
+						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(name));
+						break;
+					case DATE:
+						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.DATE).named(name));
+						break;
+					case NUMERIC:
+						m.addField(Types.required(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(minBytes(type.getPrecision()))
+								.as(OriginalType.DECIMAL).precision(type.getPrecision()).scale(type.getScale()).named(name));
+						break;
+					case INT:
+						m.addField(Types.required(PrimitiveTypeName.INT32).as(OriginalType.INT_32).named(name));
+						break;
+					case FLOAT:
+						m.addField(Types.required(PrimitiveTypeName.FLOAT).named(name));
+						break;
+					case BOOLEAN:
+						m.addField(Types.required(PrimitiveTypeName.BOOLEAN).named(name));
+						break;
+					case ARRAY:
+					case LIST:
+					case OBJECT:
+						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
+						break;
+					default:
+						logger.error("Unknown type: {}, set as binary", type);
+						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
+						break;
+					}
+				}
+			} else {
+				/* Empty schema only has id */
+				m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.INT_64).named("id"));
+			}
+		} else {
+			/* Empty schema only has id */
+			m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.INT_64).named("id"));
+		}
+		return m.named(tableName);
+	}
+//convert to spark sql struct type
+	public static StructType convertToSparkSqlSchema(LogicSchema logicSchema, String tableName) {
+		if (logicSchema.hasTable(tableName)){
+			StructType st = new StructType();
+			List<String> attrs = logicSchema.getAttrNames(tableName);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(tableName);
+			FieldType type;
+			String name;
+			for (int i = 0; i < attrs.size(); i ++) {
+				name = attrs.get(i);
+				type = attrTypes.get(i);
+				DataType dt = null;
+				switch (type.getType()) {
+					case STRING:
+						dt = DataTypes.StringType;
+						break;
+					case TIMESTAMP:
+						dt = DataTypes.TimestampType;
+						break;
+					case DATE:
+						dt = DataTypes.DateType;
+						break;
+					case NUMERIC:
+						dt = DataTypes.DoubleType;
+						break;
+					case INT:
+						dt = DataTypes.IntegerType;
+						break;
+					case FLOAT:
+						dt = DataTypes.FloatType;
+						break;
+					case BOOLEAN:
+						dt = DataTypes.BooleanType;
+						break;
+					default:
+						logger.error("Unknown type: {}, set as binary", type);
+						dt = DataTypes.BinaryType;
+						break;
+				}
+				st.add(DataTypes.createStructField(name, dt, true));
+			}
+			return st;
+		}else{
+			logger.error(String.format("table %s not found in logicSchema.", tableName));
+			return null;
+		}
 	}
 }

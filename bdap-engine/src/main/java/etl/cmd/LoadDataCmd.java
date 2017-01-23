@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.SparkSession;
 
 import bdap.util.HdfsUtil;
 import etl.engine.ProcessMode;
@@ -253,7 +254,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	 */
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass){
+			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		return input.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override

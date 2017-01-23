@@ -30,8 +30,11 @@ import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.StructType;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -354,8 +357,9 @@ public abstract class TestETLCmd implements Serializable{
 	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
 			String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass, 
 			Map<String, String> addConf) throws Exception{
-		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
-		JavaSparkContext jsc = new JavaSparkContext(conf);
+		SparkSession spark = SparkSession.builder().appName("wfName").master("local[5]").getOrCreate();
+		SparkContext sc = spark.sparkContext();
+		JavaSparkContext jsc = new JavaSparkContext(sc);
 		try {
 			getFs().delete(new Path(remoteInputFolder), true);
 			List<String> inputPaths = new ArrayList<String>();
@@ -377,7 +381,7 @@ public abstract class TestETLCmd implements Serializable{
 			if (addConf!=null){
 				cmd.copyConf(addConf);
 			}
-			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass);
+			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass, spark);
 			List<String> keys = result.keys().collect();
 			List<String> values = result.values().collect();
 			return new Tuple2<List<String>, List<String>>(keys, values);

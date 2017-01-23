@@ -35,6 +35,7 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.SparkSession;
 
 import etl.input.FilenameInputFormat;
 import etl.util.ConfigKey;
@@ -299,19 +300,19 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass){
+			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		JavaPairRDD<String, String> pairs = input.mapToPair(new PairFunction<String, String, String>(){
 			@Override
 			public Tuple2<String, String> call(String t) throws Exception {
 				return new Tuple2<String, String>(null, t);
 			}
 		});
-		return sparkProcessKeyValue(pairs, jsc, inputFormatClass);
+		return sparkProcessKeyValue(pairs, jsc, inputFormatClass, spark);
 	}
 	
 	//inputFormatClass is null called from sparkProcessFilesToKV, do not need to call mapkey again
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass){
+			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
@@ -329,9 +330,6 @@ public abstract class ETLCmd implements Serializable{
 					String key = lineInput._1;
 					if (key!=null && inputFormatClass!=null){//called directly from data, need map
 						key = mapKey(key);
-					}
-					if (key!=null && strFileTableMap!=null && lineInput._1!=null && lineInput._1.equals(key)){//debug
-						logger.warn(String.format("get null while mapkey. fileToTableExp:%s, system var:%s", strFileTableMap, getSystemVariables()));
 					}
 					List<Tuple2<String, String>> ret1 = flatMapToPair(key, lineInput._2, null);
 					if (ret1!=null){
@@ -375,7 +373,7 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass){
+			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		JavaPairRDD<String, String> prdd = null;
 		for (String file:inputfiles.collect()){
 			copyConf();
@@ -412,10 +410,11 @@ public abstract class ETLCmd implements Serializable{
 				prdd = prdd.union(tprdd);
 			}
 		}
-		return sparkProcessKeyValue(prdd, jsc, null);
+		return sparkProcessKeyValue(prdd, jsc, null, spark);
 	}
 	
-	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
+	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, 
+			Class<? extends InputFormat> inputFormatClass){
 		return input.flatMap(new FlatMapFunction<String,String>(){
 			@Override
 			public Iterator<String> call(String t) throws Exception {

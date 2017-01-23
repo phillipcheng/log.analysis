@@ -15,6 +15,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.SparkSession;
 
 import com.google.common.collect.Lists;
 
@@ -220,8 +221,8 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 	
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc,
-			Class<? extends InputFormat> inputFormatClass) {
-		JavaPairRDD<String, String> result = super.sparkProcessKeyValue(input, jsc, inputFormatClass);
+			Class<? extends InputFormat> inputFormatClass, SparkSession spark) {
+		JavaPairRDD<String, String> result = super.sparkProcessKeyValue(input, jsc, inputFormatClass, spark);
 		
 		if (processType == DynSchemaProcessType.checkSchema || processType == DynSchemaProcessType.both) {
 			input = result.filter(new Function<Tuple2<String, String>, Boolean>(){
@@ -292,7 +293,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 					sql = sql.substring(sql.lastIndexOf(":") + 1);
 					HdfsUtil.appendDfsFile(currentFs, this.createTablesSqlFileName, Arrays.asList(sql));
 				}
-
 			} else {
 				for (String v: values) {
 					/* For spark */

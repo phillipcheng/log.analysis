@@ -18,6 +18,8 @@ import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.sql.SparkSession;
+
 import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
 import etl.output.ParquetOutputFormat;
@@ -81,7 +83,7 @@ public class SaveDataCmd extends SchemaETLCmd {
 	
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass){
+			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		logger.info(String.format("%s:%s", cfgkey_log_tmp_dir, logTmpDir));
 		copyConf();
 		if (ParquetInputFormat.class.isAssignableFrom(inputFormatClass)) {

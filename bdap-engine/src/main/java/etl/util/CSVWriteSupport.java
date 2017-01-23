@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.script.CompiledScript;
@@ -28,9 +27,6 @@ import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
-import org.apache.parquet.schema.Types;
-import org.apache.parquet.schema.Types.MessageTypeBuilder;
-
 import bdap.util.EngineConf;
 import bdap.util.PropertiesUtil;
 import etl.engine.ETLCmd;
@@ -40,7 +36,6 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 	public static final Logger logger = LogManager.getLogger(CSVWriteSupport.class);
 	private static final String LOGIC_SCHEMA = "logic.schema";
 	private static final String DEFAULT_FS = "fs.defaultFS";
-	private static final int MAX_DECIMAL_BYTES = 16;
 	private RecordConsumer recordConsumer;
 	private MessageType rootSchema;
 	private LogicSchema rootLogicSchema;
@@ -50,7 +45,7 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 		Map<String, String> extraMetaData = new HashMap<String, String>();
 		// extraMetaData.put(AvroReadSupport.AVRO_SCHEMA_METADATA_KEY, rootAvroSchema.toString());
 		rootLogicSchema = parse(configuration.get(DEFAULT_FS), configuration.get(LOGIC_SCHEMA));
-		rootSchema = convert(rootLogicSchema, tableName);
+		rootSchema = SchemaUtils.convertToParquetSchema(rootLogicSchema, tableName);
 		return new WriteSupport.WriteContext(rootSchema, extraMetaData);
 	}
 
@@ -81,83 +76,6 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 		
 		logger.debug("table name: {}", tableName);
 	}
-	
-	private static long maxPrecision(int numBytes) {
-		return Math.round( // convert double to long
-				Math.floor(Math.log10( // number of base-10 digits
-						Math.pow(2, 8 * numBytes - 1) - 1) // max value stored
-														   // in numBytes
-				));
-	}
-
-	private int minBytes(int precision) {
-		int bytes;
-		for (bytes = 1; bytes < MAX_DECIMAL_BYTES; bytes ++)
-			if (precision < maxPrecision(bytes))
-				return bytes;
-		return bytes;
-	}
-
-	private MessageType convert(LogicSchema logicSchema, String tableName) {
-		MessageTypeBuilder m = Types.buildMessage();
-		if (logicSchema.hasTable(tableName)) {
-			List<String> attrs = logicSchema.getAttrNames(tableName);
-			List<FieldType> attrTypes = logicSchema.getAttrTypes(tableName);
-			int i;
-			if (attrs != null && attrTypes != null && attrs.size() > 0 && attrs.size() == attrTypes.size()) {
-				FieldType type;
-				String name;
-				for (i = 0; i < attrs.size(); i ++) {
-					type = attrTypes.get(i);
-					name = attrs.get(i);
-					switch (type.getType()) {
-					case STRING:
-					case JAVASCRIPT:
-					case REGEXP:
-					case GLOBEXP:
-					case STRINGLIST:
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).as(OriginalType.UTF8).named(name));
-						break;
-					case TIMESTAMP:
-						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(name));
-						break;
-					case DATE:
-						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.DATE).named(name));
-						break;
-					case NUMERIC:
-						m.addField(Types.required(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(minBytes(type.getPrecision()))
-								.as(OriginalType.DECIMAL).precision(type.getPrecision()).scale(type.getScale()).named(name));
-						break;
-					case INT:
-						m.addField(Types.required(PrimitiveTypeName.INT32).as(OriginalType.INT_32).named(name));
-						break;
-					case FLOAT:
-						m.addField(Types.required(PrimitiveTypeName.FLOAT).named(name));
-						break;
-					case BOOLEAN:
-						m.addField(Types.required(PrimitiveTypeName.BOOLEAN).named(name));
-						break;
-					case ARRAY:
-					case LIST:
-					case OBJECT:
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
-						break;
-					default:
-						logger.error("Unknown type: {}, set as binary", type);
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
-						break;
-					}
-				}
-			} else {
-				/* Empty schema only has id */
-				m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.INT_64).named("id"));
-			}
-		} else {
-			/* Empty schema only has id */
-			m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.INT_64).named("id"));
-		}
-		return m.named(tableName);
-	}
 
 	private LogicSchema parse(String defaultFs, String location) {
 		if (location != null && location.length() > 0) {
@@ -178,7 +96,7 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 	private Binary decimalToBinary(final HiveDecimal hiveDecimal, int prec, int scale) {
 		byte[] decimalBytes = hiveDecimal.setScale(scale).unscaledValue().toByteArray();
 		// Estimated number of bytes needed.
-		int precToBytes = minBytes(prec);
+		int precToBytes = SchemaUtils.minBytes(prec);
 		if (precToBytes == decimalBytes.length) {
 			// No padding needed.
 			return Binary.fromConstantByteArray(decimalBytes);
@@ -273,11 +191,9 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 					}
 			        recordConsumer.endField(fieldName, index);
 					index ++;
-				}
-				
+				}	
 			    recordConsumer.endMessage();
 			}
-
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			

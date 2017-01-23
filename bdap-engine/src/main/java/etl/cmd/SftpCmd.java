@@ -19,6 +19,7 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.sql.SparkSession;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -407,7 +408,8 @@ public class SftpCmd extends ETLCmd {
 	 * called from sparkProcessFileToKV, key: file Name, v: line value
 	 */
 	@Override
-	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
+	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, 
+			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
