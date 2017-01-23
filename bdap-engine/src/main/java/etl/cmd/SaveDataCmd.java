@@ -14,10 +14,13 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+
 import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
 import etl.output.ParquetOutputFormat;
@@ -28,6 +31,7 @@ import scala.Tuple2;
 
 public class SaveDataCmd extends SchemaETLCmd {
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LogManager.getLogger(SaveDataCmd.class);
 	//cfgkey
 	public static final @ConfigKey String cfgkey_log_tmp_dir="log.tmp.dir";
 	
