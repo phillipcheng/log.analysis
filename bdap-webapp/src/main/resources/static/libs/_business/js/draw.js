@@ -168,7 +168,7 @@ var _draw = {
 			nodeData.height = nodeData.height + _node_data_height;
 		}
 
-		if(hadInput || hadInput) {
+		if(hadInput || hadOutput) {
 			nodeData.width = _node_max_width;
 			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
 		} else if(parseInt(property_height) == 0) {
