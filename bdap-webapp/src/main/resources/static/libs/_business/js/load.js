@@ -8,7 +8,7 @@ var load = {
 	},
 	loadBuild: function(flowid) {
 		if(isLoaded) {
-			return;
+			//return;
 		}
 		CONST_DURATION = 10;
 		if(isEmpty(flowid)){
