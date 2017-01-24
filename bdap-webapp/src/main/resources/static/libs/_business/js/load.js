@@ -25,6 +25,41 @@ var load = {
 			try
 			{
 				flowContext = JSON.parse(flowObj.jsonContent); 
+				
+				//******************************清除现有的内容
+				dataSetList = [];
+				result.nodes = [];
+				result.outlets = [];
+				result.links = [];
+				result.data = [];
+				result.inLets = [];
+				
+				var tempnodes = g.nodes();
+				each(tempnodes,function(){
+					var temp_g_child_Instance = childsvg.find(this);
+					if(temp_g_child_Instance){
+						temp_g_child_Instance.removeNode(this+"_InData_0");
+						temp_g_child_Instance.removeNode(this+"_InData_1");
+						temp_g_child_Instance.removeNode(this+"_InData_2");
+						temp_g_child_Instance.removeNode(this+"_InData_3");
+						
+						temp_g_child_Instance.removeNode(this+"_property");
+						
+						temp_g_child_Instance.removeNode(this+"_OutData_0");
+						temp_g_child_Instance.removeNode(this+"_OutData_1");
+						temp_g_child_Instance.removeNode(this+"_OutData_2");
+						temp_g_child_Instance.removeNode(this+"_OutData_3");
+					}
+					g.removeNode(this);
+					return true;
+				});
+				
+				$("#rightupcssbody").html("");
+				d3.select("#divrightup").style({
+					"display": "none"
+				});
+			
+				//******************************清除现有的内容
 			}
 			catch(err)
 			{
@@ -32,6 +67,8 @@ var load = {
 			}
 			console.log(flowObj);
 //			var flowContext = flowObj;
+
+
 			var nodes = flowContext.nodes;
 			var links = flowContext.links;
 			var datas = flowContext.data;
