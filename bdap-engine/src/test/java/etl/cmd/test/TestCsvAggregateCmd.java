@@ -60,16 +60,15 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String schemaFile = "om_map_merged.schema";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
 		
-		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
+		List<String> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvAggregateCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
 		//assertion
-		logger.info("Output is:\n"+String.join("\n", output));
-		assertEquals(4, output.size());
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("71DB021D7868,A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
+		logger.info("Output is:\n"+String.join("\n", ret));
+		assertEquals(4, ret.size());
+		assertTrue(ret.contains("000003FE234C,A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(ret.contains("000003FE234C,A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(ret.contains("000003FE234C,A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(ret.contains("71DB021D7868,A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
 	}
 	
 	@Test
@@ -95,17 +94,14 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String csvtransProp = "NoSchemaSum.properties";
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
-		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
+		List<String> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
 				TextInputFormat.class);
-		List<String> values = ret._2;
-		ArrayList<String> output = new ArrayList<String>();
-		output.addAll(values);
-		Collections.sort(output);
-		logger.info("Output is:\n"+ String.join("\n", output));
+		Collections.sort(ret);
+		logger.info("Output is:\n"+ String.join("\n", ret));
 		
 		// assertion
-		assertTrue(output.size() ==12);
-		String sampleOutput = output.get(6);
+		assertTrue(ret.size() ==12);
+		String sampleOutput = ret.get(6);
 		String[] csvs = sampleOutput.split(",", -1);
 		assertTrue("2.0".equals(csvs[6]));
 	}

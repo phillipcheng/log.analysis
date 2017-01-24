@@ -1,4 +1,4 @@
-package etl.spark;
+package etl.output;
 
 import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat;
 

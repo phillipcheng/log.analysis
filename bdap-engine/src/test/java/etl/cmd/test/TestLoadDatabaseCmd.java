@@ -6,7 +6,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 
 //log4j2
@@ -34,7 +33,6 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 
 		String staticCfgName = "loadcsvds1.properties";
 		String wfid="wfid1";
-		String prefix = "sgsiwf";
 		String localSchemaFileName = "test1_schemas.txt";
 		String csvFileName = "MyCore_.csv";
 
@@ -243,10 +241,9 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		
 		//copy schema file
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
-		Tuple2<List<String>, List<String>> output = super.sparkTestKV(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, 
+		List<String> keys = super.sparkTestKVKeys(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, 
 				FilenameInputFormat.class);
 		//check hdfs
-		List<String> keys = output._1;
 		logger.info(String.format("output keys:\n %s", String.join("\n", keys)));
 		assertTrue(keys.contains("MyCore_"));
 		

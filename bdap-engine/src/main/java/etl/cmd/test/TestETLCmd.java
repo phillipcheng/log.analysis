@@ -349,14 +349,18 @@ public abstract class TestETLCmd implements Serializable{
 	
 	//spark test for cmd
 	//spark test for cmd
-	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
 		String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass) throws Exception{
-		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null);
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null, false);
+	}
+	public List<String> sparkTestKVKeys(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null, true);
 	}
 	
-	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
 			String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass, 
-			Map<String, String> addConf) throws Exception{
+			Map<String, String> addConf, boolean key) throws Exception{
 		SparkSession spark = SparkSession.builder().appName("wfName").master("local[5]").getOrCreate();
 		SparkContext sc = spark.sparkContext();
 		JavaSparkContext jsc = new JavaSparkContext(sc);
@@ -382,9 +386,17 @@ public abstract class TestETLCmd implements Serializable{
 				cmd.copyConf(addConf);
 			}
 			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass, spark);
-			List<String> keys = result.keys().collect();
-			List<String> values = result.values().collect();
-			return new Tuple2<List<String>, List<String>>(keys, values);
+			//List<String> keys = result.keys().collect();
+			
+			List<String> ret = new ArrayList<String>();
+			if (key){
+				List<String> keys = result.keys().collect();
+				ret.addAll(keys);
+			}else{
+				List<String> values = result.values().collect();
+				ret.addAll(values);
+			}
+			return ret;
 		}finally{
 			jsc.close();
 		}

@@ -112,6 +112,11 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			sparkSqlSchemaMap.put(tn, SchemaUtils.convertToSparkSqlSchema(logicSchema, tn));
 		}
 	}
+	
+	public StructType getSparkSqlSchema(String tableName){
+		return sparkSqlSchemaMap.get(tableName);
+	}
+	
 	/**
 	 * Additional parameters:
 	 * @param loadSchema: if true, load the schema in init

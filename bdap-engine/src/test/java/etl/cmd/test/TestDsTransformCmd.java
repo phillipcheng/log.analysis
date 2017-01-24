@@ -14,11 +14,9 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import bdap.util.HdfsUtil;
-import etl.cmd.CsvAggregateCmd;
-import etl.engine.LogicSchema;
+import etl.cmd.DatasetSqlCmd;
 import etl.util.GroupFun;
-import scala.Tuple2;
+import etl.util.StringUtil;
 
 public class TestDsTransformCmd extends TestETLCmd {
 	private static final long serialVersionUID = 1L;
@@ -32,24 +30,23 @@ public class TestDsTransformCmd extends TestETLCmd {
 	
 	@Test
 	public void testLeftJoinSpark() throws Exception{
-		String remoteInputFolder = "/etltest/dstransform/";
+		String remoteInputFolder = "/etltest/dssql_data/";//hardcoded in the properties
 		String csvtransProp = "mergetable.leftjoin.properties";
 		String[] csvFiles = new String[] {"femto-r-00000", "RRC_connection_establishments-r-00000"};
 		//prepare schema
-		String cfgFolder = "/etltest/dstransform/"; //hardcoded in the properties
+		String cfgFolder = "/etltest/dssql_schema/"; 
 		String schemaFile = "om_map_merged.schema";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
 		
-		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvAggregateCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
+		List<String> output = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
+				etl.cmd.DatasetSqlCmd.class, TextInputFormat.class);
 		//assertion
 		logger.info("Output is:\n"+String.join("\n", output));
 		assertEquals(4, output.size());
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-01 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-01 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 09:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 10:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,EOF,2016-12-12 03:30:01.000,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056,105,106,13,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("71DB021D7868,A,E,2016-12-12 11:00:00.000,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,EOF,,,,,,,,,,,,,,,,,,,,,"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 09:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2016-12-12 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59.0,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056.0,105.0,106.0,13.0,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 10:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,10.0,0.0,0.0,0.0,0.0,0.0,0,2016-12-12 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59.0,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056.0,105.0,106.0,13.0,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-01 10:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,10.0,0.0,0.0,0.0,0.0,0.0,0,2016-12-01 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59.0,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056.0,105.0,106.0,13.0,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(output.contains("71DB021D7868,A,E,2016-12-12 11:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,,,,,0,,,,,,,0,0,0,0,,,,,,"));
 	}
 	
 	@Test
@@ -58,84 +55,87 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String csvtransProp = "NoSchemaSum.properties";
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
-		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
-				TextInputFormat.class);
-		List<String> values = ret._2;
+		List<String> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
+				DatasetSqlCmd.class, TextInputFormat.class);
 		ArrayList<String> output = new ArrayList<String>();
-		output.addAll(values);
+		output.addAll(ret);
 		Collections.sort(output);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		
 		// assertion
 		assertTrue(output.size() ==12);
-		String sampleOutput = output.get(6);
-		String[] csvs = sampleOutput.split(",", -1);
-		assertTrue("2.0".equals(csvs[6]));
+		List<String> col = StringUtil.getColumn(output, 6);
+		assertTrue(col.contains("2.0"));
 	}
 	
 	@Test
 	public void noSchemaMax() throws Exception {
 		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 		String csvtransProp = "NoSchemaMax.properties";
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		
 		// assertion
 		assertTrue(output.size() ==12);
-		String sampleOutput = output.get(6);
-		String[] csvs = sampleOutput.split(",", -1);
-		logger.info(csvs[8]);
-		assertTrue("56193.0".equals(csvs[8]));
+		List<String> col = StringUtil.getColumn(output, 8);
+		assertTrue(col.contains("56193.0"));
 	}
 	
 	@Test
 	public void noSchemaCount() throws Exception {
 		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 		String csvtransProp = "NoSchemaCount.properties";
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		
 		// assertion
 		assertTrue(output.size() ==12);
-		String sampleOutput = output.get(6);
-		String[] csvs = sampleOutput.split(",", -1);
-		assertTrue(csvs[csvs.length-1].equals("2"));
+		int cnt = output.get(0).split(",",-1).length;
+		List<String> col = StringUtil.getColumn(output, cnt-1);
+		assertTrue(col.contains("2"));
 	}
 	
 	@Test
 	public void multipleTablesNoMerge() throws Exception {
 		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 		String csvtransProp = "multipleTablesNoMerge.properties";
 		String[] csvFiles = new String[] {"MyCore_.data","MyCore1_.data"};
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		//prepare schema
+		String cfgFolder = "/etltest/cfg/"; //referenced from properties
+		String schemaFile = "multipleTableSchemas.txt";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
+		
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		// assertion
 		assertTrue(output.size() == 4);
 	}
 	
 	@Test
-	public void testGroupFun() throws Exception {
+	public void testTimestampFormat() throws Exception {
 		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 		String csvtransProp = "csvAggrGroupFun1.properties";
 		String[] csvFiles = new String[] {"MyCore_.data"};
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-		logger.info("Output is:"+String.join("\n", output));
+		//prepare schema
+		String cfgFolder = "/etltest/cfg/"; //referenced from properties
+		String schemaFile = "dynschema_test1_schemas.txt";
+		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
+		//
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		logger.info("Output is:\n"+String.join("\n", output));
 		// assertion
 		assertTrue(output.size()==4);
+		List<String> col = StringUtil.getColumn(output, 0);
+		assertTrue(col.contains("23"));
 	}
 	
 	@Test
 	public void mergeIntoOneTable() throws Exception {
 		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 		String csvtransProp = "csvAggrMergeTablesOuterjoin.properties";
 		String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
 		//prepare schema
@@ -143,13 +143,13 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String schemaFile = "multipleTableSchemas.txt";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
 		logger.info("Output is:\n"+String.join("\n", output));
 		String dt = "2016-03-28T11:05:00+00:00";
 		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
 		String hour = GroupFun.hour(dt, dtformat);
 		String day = GroupFun.day(dt, dtformat);
-		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0.0,0.0,0.0,114258.0,114258.0",
+		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0,0,0,114258.0,114258.0",
 				hour, day);
 		logger.info("Excpet has:{}",csv);
 		assertTrue(output.contains(csv));
@@ -158,13 +158,12 @@ public class TestDsTransformCmd extends TestETLCmd {
 	@Test
 	public void testNoGroupAggr() throws Exception {
 		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 		String csvtransProp = "csvAggrNoGroup.properties";
 		String[] csvFiles = new String[] {"data1.data"};
 		//prepare data
 		String dataFile = "maxA"; 
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+dataFile), new Path("/data/"+dataFile));
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
 		logger.info("Output is:"+output);
 		
 		// assertion
@@ -177,7 +176,6 @@ public class TestDsTransformCmd extends TestETLCmd {
 	@Test
 	public void mergeIntoMultiple() throws Exception {
 		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
 		String csvtransProp = "mergeIntoMultiple.properties";
 		String[] csvFiles = new String[] {"MyCore_.do", "MyCore1_.do"};
 		//prepare schema
@@ -185,17 +183,15 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String schemaFile = "multipleTableSchemas.txt";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-		List<String> files = HdfsUtil.listDfsFile(super.getFs(), remoteCsvOutputFolder);
-		assertTrue(files.contains("MyCoreMerge1-r-00000"));
-		assertTrue(files.contains("MyCoreMerge2-r-00000"));
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
 		logger.info("Output is:\n"+String.join("\n", output));
 		String dt = "2016-03-28T11:05:00+00:00";
 		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
 		String hour = GroupFun.hour(dt, dtformat);
 		String day = GroupFun.day(dt, dtformat);
-		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0.0,0.0,0.0,114258.0,114258.0",
+		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0,0,0,114258.0,114258.0",
 				hour, day);
+		logger.info(String.format("expect contains: \n%s", csv));
 		assertTrue(output.contains(csv));
 	}
 	
@@ -203,7 +199,6 @@ public class TestDsTransformCmd extends TestETLCmd {
 	public void testCsvCount() throws Exception {
 		String staticCfgName = "csvcount.properties";
 		String inputFolder = "/test/csvcount/input/";
-		String outputFolder = "/test/csvcount/output/";
 		String csvFileName1 = "sample1.csv";
 		String csvFileName2 = "sample2.csv";
 		
@@ -213,7 +208,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName1), new Path(inputFolder + csvFileName1));
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName2), new Path(inputFolder + csvFileName2));
 		
-		List<String> output = super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles, testCmdClass, false);
+		List<String> output = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, DatasetSqlCmd.class, TextInputFormat.class);
 		logger.info("Output is:\n"+String.join("\n",output));
 		
 		Assert.assertEquals(5, output.size());
@@ -223,77 +218,4 @@ public class TestDsTransformCmd extends TestETLCmd {
 		Assert.assertTrue(output.contains("Name2,B,2"));
 		Assert.assertTrue(output.contains("Name2,D,2"));
 	}
-	
-	@Test
-	public void testCsvSplitCount() throws Exception{
-		String staticCfgName = "csvcount.split.properties";
-		String inputFolder = "/test/csvcount/input/";
-		String outputFolder = "/test/csvcount/output/";
-		String csvFileName1 = "sample3.csv";
-		String csvFileName2 = "sample4.csv";
-		
-		String[] inputFiles = new String[]{csvFileName1,csvFileName2};
-		//copy csv file
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName1), new Path(inputFolder + csvFileName1));
-		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName2), new Path(inputFolder + csvFileName2));
-		
-		List<String> output = super.mrTest(inputFolder, outputFolder, staticCfgName, inputFiles, testCmdClass, false);
-		logger.info("Output is:\n"+String.join("\n",output));
-		
-		Assert.assertEquals(5, output.size());
-		Assert.assertEquals("2016-10-12 10:10:00.0,2016-10-12 10:10:04.999,1", output.get(0));
-		Assert.assertEquals("2016-10-12 10:10:05.0,2016-10-12 10:10:09.999,1", output.get(1));
-		Assert.assertEquals("2016-10-12 10:10:10.0,2016-10-12 10:10:14.999,1", output.get(2));
-		Assert.assertEquals("2016-10-12 10:10:15.0,2016-10-12 10:10:19.999,2", output.get(3));
-		Assert.assertEquals("2016-10-12 10:10:20.0,2016-10-12 10:10:24.999,1", output.get(4));
-	}
-	
-	@Test
-	public void testMergeTableCheckOrder() throws Exception{
-		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-		String csvtransProp = "csvAggrMergeTablesOuterjoinCheckOrder.properties";
-		String[] csvFiles = new String[] {"MyCoreA.do", "MyCoreZ.do"};
-		//prepare schema
-		String schemaFolder = "/etltest/aggr/cfg/"; //hardcoded in the properties
-		String schemaFile = "multipleTableCheckOrderSchemas.txt";
-		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
-		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-		logger.info("Output is:\n"+String.join("\n", output));
-		String dt = "2016-03-28T11:05:00+00:00";
-		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
-		String hour = GroupFun.hour(dt, dtformat);
-		String day = GroupFun.day(dt, dtformat);
-		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,114258.0,114258.0,1.0,114258.0,114258.0",
-				hour, day);
-		assertTrue(output.contains(csv));
-		
-		CsvAggregateCmd cmd = new CsvAggregateCmd("wf1", "wf1", this.getResourceSubFolder() + csvtransProp, getDefaultFS(), null);
-		cmd.sgProcess();
-		LogicSchema ls = cmd.getLogicSchema();
-		logger.info(String.format("ls:%s", ls));
-		List<String> mergeAttrNames = ls.getAttrNameMap().get("MyCoreAZMerge_");
-		String expectedNames = "[endTimeHour, endTimeDay, duration, SubNetwork, ManagedElement, Machine, MyCoreA_VS.avePerCoreCpuUsage, "
-				+ "MyCoreA_VS.peakPerCoreCpuUsage, MyCoreZ_MyCore, MyCoreZ_VS.avePerCoreCpuUsage, MyCoreZ_VS.peakPerCoreCpuUsage]";
-		assertTrue(expectedNames.equals(mergeAttrNames.toString()));
-	}
-	
-	@Test
-	public void noSchemaSumFiterGroupKeys() throws Exception {
-		String remoteCsvFolder = "/etltest/dstransform/";
-		String remoteCsvOutputFolder = "/etltest/csvaggrout/";
-		String csvtransProp = "NoSchemaSumFilterGroupKeys.properties";
-		String[] csvFiles = new String[] {"csvaggregate.csv"};
-		
-		List<String> output = super.mrTest(remoteCsvFolder, remoteCsvOutputFolder, csvtransProp, csvFiles, testCmdClass, false);
-		logger.info("Output is:\n"+ String.join("\n", output));
-		
-		// assertion
-		assertTrue(output.size() ==12);
-		String sampleOutput = output.get(6);
-		String[] csvs = sampleOutput.split(",", -1);
-		assertTrue("2.0".equals(csvs[1]));
-	}
-	
 }

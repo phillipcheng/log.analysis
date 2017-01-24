@@ -19,8 +19,8 @@ import etl.cmd.SaveDataCmd;
 import etl.cmd.SftpCmd;
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
-import etl.spark.SparkUtil;
 import etl.util.ConfigKey;
+import etl.util.SparkUtil;
 
 public class Flow1SparkCmd extends ETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;

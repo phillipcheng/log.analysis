@@ -15,6 +15,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -35,11 +38,19 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 
+import etl.cmd.SchemaETLCmd;
 import etl.input.FilenameInputFormat;
 import etl.util.ConfigKey;
+import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
+import etl.util.SparkUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
 
@@ -61,7 +72,9 @@ public abstract class ETLCmd implements Serializable{
 	public static final @ConfigKey(type=Boolean.class) String cfgkey_skip_header="skip.header";
 	public static final @ConfigKey String cfgkey_skip_header_exp="skip.header.exp";
 	public static final @ConfigKey String cfgkey_file_table_map="file.table.map";
-	public static final @ConfigKey String cfgkey_key_value_sep="key.value.sep";//NOT USED YET
+	public static final @ConfigKey String cfgkey_key_value_sep="key.value.sep";//key value sep
+	public static final @ConfigKey String cfgkey_csv_value_sep="input.delimiter";//csv value sep
+	public static final @ConfigKey String cfgkey_input_endwith_delimiter="input.endwithcomma";//ending delimiter
 	public static final @ConfigKey String cfgkey_record_type="record.type";//override what defined on the input data
 	public static final @ConfigKey String cfgkey_input_format="input.format";//override what defined on the input data
 	
@@ -70,9 +83,10 @@ public abstract class ETLCmd implements Serializable{
 	public static final String VAR_NAME_FILE_NAME="filename";
 	public static final String VAR_NAME_PATH_NAME="pathname";//including filename
 	
-	public static final String DEFAULT_KEY_SEP="\t";
-	public static final String KEY_SEP=",";
+	public static final String DEFAULT_KEY_VALUE_SEP="\t";
+	public static final String DEFAULT_CSV_VALUE_SEP=",";
 	public static final String SINGLE_TABLE="singleTable";
+	public static final String COLUMN_PREFIX="c";
 	
 	protected String wfName;//wf template name
 	protected String wfid;
@@ -85,7 +99,9 @@ public abstract class ETLCmd implements Serializable{
 	protected transient CompiledScript skipHeaderCS;
 	protected String strFileTableMap;
 	protected transient CompiledScript expFileTableMap;
-	protected String keyValueSep=null;
+	protected String keyValueSep=DEFAULT_KEY_VALUE_SEP;
+	protected String csvValueSep=DEFAULT_CSV_VALUE_SEP;
+	protected boolean inputEndwithDelimiter=false;
 	protected DataType recordType = null;
 	protected InputFormatType inputFormatType = null;
 	
@@ -188,7 +204,9 @@ public abstract class ETLCmd implements Serializable{
 		if (strInputFormatType!=null){
 			inputFormatType = InputFormatType.valueOf(strInputFormatType);
 		}
-		
+		this.csvValueSep=getCfgString(cfgkey_csv_value_sep, DEFAULT_CSV_VALUE_SEP);
+		this.keyValueSep=getCfgString(cfgkey_key_value_sep, DEFAULT_KEY_VALUE_SEP);
+		this.inputEndwithDelimiter=getCfgBoolean(cfgkey_input_endwith_delimiter, false);
 	}
 	
 	public void init(){
@@ -201,35 +219,12 @@ public abstract class ETLCmd implements Serializable{
 		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 	}
 	
-	public Map<String, Object> getSystemVariables(){
-		return systemVariables;
-	}
-	
-	public static Iterable<String> itTois(Iterable<Text> values){
-		List<String> svalues = new ArrayList<String>();
-		Iterator<Text> vit = values.iterator();
-		while (vit.hasNext()){
-			svalues.add(vit.next().toString());
-		}
-		return svalues;
-	}
-	
-	//copy propertiesConf to jobConf
-	protected void copyConf(){
-		Iterator it = pc.getKeys();
-		while (it.hasNext()){
-			String key = (String) it.next();
-			String value = pc.getString(key);
-			logger.debug(String.format("copy property:%s:%s", key, value));
-			this.conf.set(key, value);
-		}
-	}
-	
-	public void copyConf(Map<String, String> inPc){
-		for (String key: inPc.keySet()){
-			String value = inPc.get(key);
-			this.conf.set(key, value);
-		}
+/*************
+ * Overridable methods
+ ***********/
+	//in MapReduce Mode, do I have the reduce phase?
+	public boolean hasReduce(){
+		return true;
 	}
 	
 	//will be overriden by schema-etl-cmd
@@ -237,39 +232,23 @@ public abstract class ETLCmd implements Serializable{
 		return key;
 	}
 	
-	public String getTableNameSetPathFileName(String pathName){
-		getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		int lastSep = pathName.lastIndexOf("/");
-		String fileName = pathName.substring(lastSep+1);
-		getSystemVariables().put(VAR_NAME_FILE_NAME, fileName);
-		if (expFileTableMap!=null){
-			return ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
-		}else{
-			return pathName;
-		}
+	//using sparkSql to process, otherwise do default spark map reduce way
+	public boolean useSparkSql(){
+		return false;
 	}
 	
-	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
-		if (context.getInputSplit() instanceof FileSplit){
-			Path path=((FileSplit) context.getInputSplit()).getPath();
-			getSystemVariables().put(VAR_NAME_PATH_NAME, path.toString());
-			String inputFileName = path.getName();
-			this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
-			String tableName = inputFileName;
-			if (expFileTableMap!=null){
-				tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
-			}
-			return tableName;
-		}else{
-			return null;
-		}
+	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, int singleTableColNum){
+		logger.error(String.format("Empty dataSetProcess impl!!! %s", this));
+		return null;
 	}
 	
+	//base map method sub class needs to implement, for both mapreduce and spark
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
 		logger.error(String.format("Empty flatMapToPair impl!!! %s", this));
 		return null;
 	}
 	
+	//base reduce method sub class needs to implement, for both mapreduce and spark
 	//k,v,baseoutput
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
@@ -277,31 +256,11 @@ public abstract class ETLCmd implements Serializable{
 		return null;
 	}
 	
-	//if pathName is null, pathName is the 1st line of the content
-	private List<Tuple2<String, String>> processSequenceFile(String pathName, String content){
-		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
-		String[] lines = content.split("\n");
-		if (pathName==null){
-			pathName = lines[0];
-		}
-		String key = mapKey(pathName);
-		boolean skipFirstLine = skipHeader;
-		if (!skipHeader && skipHeaderCS!=null){
-			boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, getSystemVariables());
-			skipFirstLine = skipFirstLine || skip;
-		}
-		int start=1;
-		if (skipFirstLine) start++;
-		for (int i=start; i<lines.length; i++){
-			String line = lines[i];
-			ret.add(new Tuple2<String, String>(key, line));
-		}
-		return ret;
-	}
-	
+	//K to KV
 	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		JavaPairRDD<String, String> pairs = input.mapToPair(new PairFunction<String, String, String>(){
+			private static final long serialVersionUID = 1L;
 			@Override
 			public Tuple2<String, String> call(String t) throws Exception {
 				return new Tuple2<String, String>(null, t);
@@ -310,10 +269,10 @@ public abstract class ETLCmd implements Serializable{
 		return sparkProcessKeyValue(pairs, jsc, inputFormatClass, spark);
 	}
 	
-	//inputFormatClass is null called from sparkProcessFilesToKV, do not need to call mapkey again
+	//KV to KV
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
-		JavaPairRDD<String, String> csvgroup = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+		JavaPairRDD<String,String> processedInput = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
 			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
@@ -324,54 +283,124 @@ public abstract class ETLCmd implements Serializable{
 				}else{
 					linesInput.add(t);
 				}
-				logger.debug(String.format("input to sparkprocesskeyvalue %s:%s", staticCfg, linesInput));
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
 				for (Tuple2<String, String> lineInput:linesInput){
 					String key = lineInput._1;
-					if (key!=null && inputFormatClass!=null){//called directly from data, need map
+					if (key!=null && inputFormatClass!=null){
+						//called directly from data, need map, otherwise called from sparkProcessFilesToKV, do not need to mapkey again
 						key = mapKey(key);
 					}
-					List<Tuple2<String, String>> ret1 = flatMapToPair(key, lineInput._2, null);
-					if (ret1!=null){
-						ret.addAll(ret1);
-					}
+					ret.add(new Tuple2<String,String>(key, lineInput._2));
 				}
 				return ret.iterator();
 			}
-		}).filter(new Function<Tuple2<String, String>, Boolean>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Boolean call(Tuple2<String, String> v1) throws Exception {
-				if (v1==null){
-					return false;
-				}else{
-					return true;
-				}
-			}
 		});
-		if (this.hasReduce()){
-			JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().flatMapToPair(new PairFlatMapFunction<Tuple2<String, Iterable<String>>, String, String>(){
-				private static final long serialVersionUID = 1L;
-				@Override
-				public Iterator<Tuple2<String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
-					List<Tuple3<String, String, String>> t3l = reduceByKey(t._1, t._2, null, null);
-					List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
-					for (Tuple3<String, String, String> t3 : t3l){
-						if (t3._2()!=null){
-							ret.add(new Tuple2<String, String>(t3._3(), t3._1() + KEY_SEP + t3._2()));
+		if (this.useSparkSql()){
+			if (this instanceof SchemaETLCmd){
+				int singleTableColNum=0;
+				SchemaETLCmd scmd = (SchemaETLCmd) this;
+				if (scmd.getLogicSchema()==null){//schema less, each field is treated as string typed
+					JavaRDD<String> frdd = processedInput.values();
+					singleTableColNum = frdd.top(1).get(0).split(csvValueSep,-1).length;
+					StructType st = new StructType();
+					for (int i=0; i<singleTableColNum; i++){
+						st = st.add(DataTypes.createStructField(COLUMN_PREFIX+i, DataTypes.StringType, true));
+					}
+					char delimiter = csvValueSep.charAt(0);
+					//no schema, then all input goes to 1 table SINGLE_TABLE
+					JavaRDD<Row> rowRDD = frdd.map(new Function<String, Row>() {
+						private static final long serialVersionUID = 1L;
+						@Override
+						  public Row call(String record) throws Exception {
+							//String[] fvs = record.split(csvValueSep, -1);
+							CSVParser csvParser=CSVParser.parse(record, CSVFormat.DEFAULT.withTrim().
+									withDelimiter(delimiter).withTrailingDelimiter(inputEndwithDelimiter).
+									withSkipHeaderRecord(skipHeader));
+							CSVRecord csvRecord = csvParser.getRecords().get(0);
+							String[] fvs = new String[csvRecord.size()];
+							for (int i=0; i<fvs.length; i++){
+								fvs[i]=csvRecord.get(i);
+							}
+						    return RowFactory.create(fvs);
+						  }
+						});
+					Dataset<Row> dfr = spark.createDataFrame(rowRDD, st);
+					dfr.createOrReplaceTempView(SINGLE_TABLE);
+				}else{
+					List<String> keys = processedInput.keys().distinct().collect();
+					for (String key: keys){
+						JavaRDD<String> frdd = SparkUtil.filterPairRDD(processedInput, key);
+						StructType st = scmd.getSparkSqlSchema(key);
+						if (st!=null){
+							JavaRDD<Row> rowRDD = frdd.map(new Function<String, Row>() {
+								private static final long serialVersionUID = 1L;
+								@Override
+								  public Row call(String record) throws Exception {
+									Object[] attributes = SchemaUtils.convertFromStringValues(
+											scmd.getLogicSchema(), key, record, csvValueSep, 
+											inputEndwithDelimiter, skipHeader);
+								    return RowFactory.create(attributes);
+								  }
+								});
+							Dataset<Row> dfr = spark.createDataFrame(rowRDD, st);
+							dfr.createOrReplaceTempView(key);
 						}else{
-							ret.add(new Tuple2<String, String>(t3._3(), t3._1()));
+							logger.error("schema not found for %s", key);
+							return null;
 						}
 					}
-					return ret.iterator();
+				}
+				return dataSetProcess(jsc, spark, singleTableColNum);
+			}else{
+				logger.error(String.format("expected SchemaETLCmd subclasses. %s", this.getClass().getName()));
+				return null;
+			}
+		}else{
+			JavaPairRDD<String, String> csvgroup = processedInput.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+				private static final long serialVersionUID = 1L;
+				@Override
+				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
+					init();
+					List<Tuple2<String, String>> ret1 = flatMapToPair(t._1, t._2, null);
+					if (ret1!=null) return ret1.iterator();
+					else return null;
+				}
+			}).filter(new Function<Tuple2<String, String>, Boolean>(){
+				private static final long serialVersionUID = 1L;
+				@Override
+				public Boolean call(Tuple2<String, String> v1) throws Exception {
+					if (v1==null){
+						return false;
+					}else{
+						return true;
+					}
 				}
 			});
-			return csvaggr;
-		}else{
-			return csvgroup;
+			if (this.hasReduce()){
+				JavaPairRDD<String, String> csvaggr = csvgroup.groupByKey().flatMapToPair(new PairFlatMapFunction<Tuple2<String, Iterable<String>>, String, String>(){
+					private static final long serialVersionUID = 1L;
+					@Override
+					public Iterator<Tuple2<String, String>> call(Tuple2<String, Iterable<String>> t) throws Exception {
+						List<Tuple3<String, String, String>> t3l = reduceByKey(t._1, t._2, null, null);
+						List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
+						for (Tuple3<String, String, String> t3 : t3l){
+							if (t3._2()!=null){
+								ret.add(new Tuple2<String, String>(t3._3(), t3._1() + keyValueSep + t3._2()));
+							}else{
+								ret.add(new Tuple2<String, String>(t3._3(), t3._1()));
+							}
+						}
+						return ret.iterator();
+					}
+				});
+				return csvaggr;
+			}else{
+				return csvgroup;
+			}
 		}
 	}
 	
+	//Files to KV
 	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
 		JavaPairRDD<String, String> prdd = null;
@@ -413,6 +442,7 @@ public abstract class ETLCmd implements Serializable{
 		return sparkProcessKeyValue(prdd, jsc, null, spark);
 	}
 	
+	//V to V
 	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, 
 			Class<? extends InputFormat> inputFormatClass){
 		return input.flatMap(new FlatMapFunction<String,String>(){
@@ -447,7 +477,7 @@ public abstract class ETLCmd implements Serializable{
 		}
 		String[] kv=null;
 		if (context.getConfiguration().get(sys_cfgkey_use_keyvalue, null)!=null){
-			kv = row.split(DEFAULT_KEY_SEP, 2);//try to split to key value, if failed use file name as key
+			kv = row.split(keyValueSep, 2);//try to split to key value, if failed use file name as key
 		}
 		String tfName = null;
 		if (kv!=null && kv.length==2){
@@ -467,7 +497,6 @@ public abstract class ETLCmd implements Serializable{
 				}
 			}
 		}
-	
 		return null;
 	}
 	
@@ -502,12 +531,10 @@ public abstract class ETLCmd implements Serializable{
 	//for long running command
 	public void close(){
 	}
-	
-	//in MapReduce Mode, do I have the reduce phase?
-	public boolean hasReduce(){
-		return true;
-	}
-	
+
+/*************
+ * Utility methods
+ ****/		
 	public VarDef[] getCfgVar(){
 		return new VarDef[]{new VarDef(cfgkey_vars, VarType.STRINGLIST)};
 	}
@@ -519,6 +546,90 @@ public abstract class ETLCmd implements Serializable{
 				new VarDef(VAR_NAME_PATH_NAME, VarType.STRING)};
 	}
 	
+	public Map<String, Object> getSystemVariables(){
+		return systemVariables;
+	}
+	
+	//copy propertiesConf to jobConf
+	protected void copyConf(){
+		Iterator<String> it = pc.getKeys();
+		while (it.hasNext()){
+			String key = it.next();
+			String value = pc.getString(key);
+			logger.debug(String.format("copy property:%s:%s", key, value));
+			this.conf.set(key, value);
+		}
+	}
+	
+	public void copyConf(Map<String, String> inPc){
+		for (String key: inPc.keySet()){
+			String value = inPc.get(key);
+			this.conf.set(key, value);
+		}
+	}
+	
+	public String getTableNameSetPathFileName(String pathName){
+		getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
+		int lastSep = pathName.lastIndexOf("/");
+		String fileName = pathName.substring(lastSep+1);
+		getSystemVariables().put(VAR_NAME_FILE_NAME, fileName);
+		if (expFileTableMap!=null){
+			return ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+		}else{
+			return pathName;
+		}
+	}
+	
+	public String getTableNameSetFileNameByContext(Mapper<LongWritable, Text, Text, Text>.Context context){
+		if (context.getInputSplit() instanceof FileSplit){
+			Path path=((FileSplit) context.getInputSplit()).getPath();
+			getSystemVariables().put(VAR_NAME_PATH_NAME, path.toString());
+			String inputFileName = path.getName();
+			this.getSystemVariables().put(VAR_NAME_FILE_NAME, inputFileName);
+			String tableName = inputFileName;
+			if (expFileTableMap!=null){
+				tableName = ScriptEngineUtil.eval(expFileTableMap, this.getSystemVariables());
+			}
+			return tableName;
+		}else{
+			return null;
+		}
+	}
+	
+	//if pathName is null, pathName is the 1st line of the content
+	private List<Tuple2<String, String>> processSequenceFile(String pathName, String content){
+		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
+		String[] lines = content.split("\n");
+		if (pathName==null){
+			pathName = lines[0];
+		}
+		String key = mapKey(pathName);
+		boolean skipFirstLine = skipHeader;
+		if (!skipHeader && skipHeaderCS!=null){
+			boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, getSystemVariables());
+			skipFirstLine = skipFirstLine || skip;
+		}
+		int start=1;
+		if (skipFirstLine) start++;
+		for (int i=start; i<lines.length; i++){
+			String line = lines[i];
+			ret.add(new Tuple2<String, String>(key, line));
+		}
+		return ret;
+	}
+
+	public static Iterable<String> itTois(Iterable<Text> values){
+		List<String> svalues = new ArrayList<String>();
+		Iterator<Text> vit = values.iterator();
+		while (vit.hasNext()){
+			svalues.add(vit.next().toString());
+		}
+		return svalues;
+	}
+
+/*********
+ * Cfg operations
+ */
 	public boolean cfgContainsKey(String key){
 		String realKey = key;
 		if (prefix!=null){
@@ -601,7 +712,9 @@ public abstract class ETLCmd implements Serializable{
 		}
 	}
 	
-	///
+/**********
+ * setter and getter
+ */
 	public Configuration getHadoopConf(){
 		return conf;
 	}

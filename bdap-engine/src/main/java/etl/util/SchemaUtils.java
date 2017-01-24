@@ -7,12 +7,18 @@ import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -24,8 +30,11 @@ import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Types;
 import org.apache.parquet.schema.Types.MessageTypeBuilder;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
 import com.google.common.cache.Cache;
@@ -576,12 +585,104 @@ public class SchemaUtils {
 						dt = DataTypes.BinaryType;
 						break;
 				}
-				st.add(DataTypes.createStructField(name, dt, true));
+				st = st.add(DataTypes.createStructField(name, dt, true));
 			}
 			return st;
 		}else{
 			logger.error(String.format("table %s not found in logicSchema.", tableName));
 			return null;
 		}
+	}
+	
+	public static Object[] convertFromStringValues(LogicSchema logicSchema, String tableName, 
+			String row, String csvValueSep, boolean inputEndwithDelimiter, boolean skipHeader) throws Exception {
+		CSVParser csvParser=CSVParser.parse(row, 
+				CSVFormat.DEFAULT.withTrim().withDelimiter(csvValueSep.charAt(0)).
+				withTrailingDelimiter(inputEndwithDelimiter).withSkipHeaderRecord(skipHeader));
+	    CSVRecord csvr = csvParser.getRecords().get(0);
+		if (logicSchema.hasTable(tableName)){
+			List<FieldType> ftl = logicSchema.getAttrTypes(tableName);
+			if (ftl.size()!=csvr.size()){
+				logger.error(String.format("input %s not match with schema %s", row, ftl));
+				return null;
+			}
+			Object[] ret = new Object[csvr.size()];
+			for (int i=0; i<ftl.size(); i++){
+				FieldType ft = ftl.get(i);
+				String fv = csvr.get(i).trim();
+				if ("".equals(fv)){
+					ret[i]=null;
+				}else{
+					if (VarType.TIMESTAMP==ft.getType()){
+						Timestamp ts = null;
+						String sdtformat = ft.getDtformat();
+						if (sdtformat!=null){
+							Date dt = GroupFun.getStandardizeDt(fv, sdtformat);
+							if (dt!=null){
+								ts = new Timestamp(dt.getTime());
+							}
+						}else{
+							try {
+								ts = Timestamp.valueOf(fv);
+							}catch(Exception e){
+								logger.error(String.format("can't parse timestamp field %s", fv));
+							}
+						}
+						ret[i]=ts;
+					}else if (VarType.NUMERIC==ft.getType()){
+						Double d = null;
+						try {
+							d= Double.valueOf(fv);
+						}catch(Exception e){
+							logger.warn(String.format("can't parse %s as double", fv));
+						}
+						ret[i]=d;
+					}else if (VarType.INT==ft.getType()){
+						Integer d = null;
+						try {
+							d= Integer.valueOf(fv);
+						}catch(Exception e){
+							logger.warn(String.format("can't parse %s as integer", fv));
+						}
+						ret[i]=d;
+					}else{
+						ret[i]=fv;
+					}
+				}
+			}
+			return ret;
+		}else{
+			logger.error(String.format("table not found: %s", tableName));
+			return null;
+		}
+	}
+	
+	public static boolean isNumericType(StructField sf){
+		if (sf.dataType()==DataTypes.DoubleType||sf.dataType()==DataTypes.FloatType
+				||sf.dataType()==DataTypes.IntegerType||sf.dataType()==DataTypes.LongType){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	public static String convertToString(Row row, String csvValueSep) {
+		StringBuffer sb = new StringBuffer();
+		StructType st = row.schema();
+		for (int i=0; i<row.length(); i++){
+			StructField sf = st.fields()[i];
+			if (row.isNullAt(i)){
+				if (isNumericType(sf)){//set numeric null to 0
+					sb.append("0");
+				}else{
+					sb.append("");
+				}
+			}else{
+				sb.append(row.get(i).toString());
+			}
+			if (i<row.length()-1){
+				sb.append(csvValueSep);
+			}
+		}
+		return sb.toString();
 	}
 }

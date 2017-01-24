@@ -25,7 +25,7 @@ import org.apache.spark.sql.SparkSession;
 import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
 import etl.output.ParquetOutputFormat;
-import etl.spark.RDDMultipleTextOutputFormat;
+import etl.output.RDDMultipleTextOutputFormat;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;

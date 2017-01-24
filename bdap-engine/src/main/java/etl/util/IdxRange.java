@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.csv.CSVRecord;
+
 public class IdxRange implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
@@ -23,6 +25,11 @@ public class IdxRange implements Serializable{
 	public IdxRange(int start, int end){
 		this.start = start;
 		this.end = end;
+	}
+	
+	@Override
+	public String toString(){
+		return String.format("%d:%d", start, end);
 	}
 	
 	public int getStart() {
@@ -60,5 +67,81 @@ public class IdxRange implements Serializable{
 			}
 		}
 		return irList;
+	}
+	
+	public static List<Integer> getIdxInRange(List<IdxRange> irl, int fieldNum){
+		List<Integer> idxList = new ArrayList<Integer>();
+		for (IdxRange ir: irl){
+			int start = ir.getStart();
+			int end = ir.getEnd();
+			if (ir.getEnd()==-1){
+				end = fieldNum-1;
+			}
+			for (int i=start; i<=end; i++){
+				idxList.add(i);
+			}
+		}
+		return idxList;
+	}
+	
+	public static List<Integer> getIdxOutRange(List<IdxRange> irl, int fieldNum){
+		boolean[] idxMap=new boolean[fieldNum];//true skip
+		for (IdxRange ir: irl){
+			int start = ir.getStart();
+			int end = ir.getEnd();
+			if (ir.getEnd()==-1){
+				end = fieldNum-1;
+			}
+			for (int i=start; i<=end; i++){
+				idxMap[i]=true;
+			}
+		}
+		List<Integer> idxList = new ArrayList<Integer>();
+		for (int i=0; i<fieldNum; i++){
+			if (!idxMap[i]){
+				idxList.add(i);
+			}
+		}
+		return idxList;
+	}
+	
+	public static List<String> getFieldsInRange(CSVRecord r, List<IdxRange> irl){
+		List<String> keys = new ArrayList<String>();
+		for (IdxRange ir: irl){
+			int start = ir.getStart();
+			int end = ir.getEnd();
+			if (ir.getEnd()==-1){
+				end = r.size()-1;
+			}
+			for (int i=start; i<=end; i++){
+				keys.add(r.get(i));
+			}
+		}
+		return keys;
+	}
+	
+	public static List<String> getFieldsOutRange(CSVRecord r, List<IdxRange> irl, int fieldNum){
+		boolean[] idxMap=new boolean[fieldNum];//true skip
+		for (IdxRange ir: irl){
+			int start = ir.getStart();
+			int end = ir.getEnd();
+			if (ir.getEnd()==-1){
+				end = r.size()-1;
+			}
+			for (int i=start; i<=end; i++){
+				idxMap[i]=true;
+			}
+		}
+		List<String> values = new ArrayList<String>();
+		for (int i=0; i<fieldNum; i++){
+			if (!idxMap[i]){
+				if (r!=null){
+					values.add(r.get(i));
+				}else{
+					values.add("");
+				}
+			}
+		}
+		return values;
 	}
 }
