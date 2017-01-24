@@ -10,63 +10,7 @@ Big Data Analysis Platform
 ![ETL Log](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/etllog.png)
 # Reusable, Extensible Cmd Library
 ![Component Library](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/cmd-library.png)
-## 1. CSV Transformation Cmd
-![Csv Transform Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/csvtransform.png)
 
-User can specify following column operations (Update, Split, Remove) on the fields for each line of the csv file.
-###  Columns Update
-User can merge a range of columns by specifying the merge expression.
-
-    Example 1:
-```
-col.op=u|68:(fields[68].concat('-')).concat(fields[69])
-```
-    update column 68 as join column 68, '-', and column 69
-    
-    Example 2:
-```
-col.op=u|0:(Number(fields[0])*7*24*3600 + Number(fields[1])).toString()
-```
-    column 0 is number of week since epoch, and column 1 is the time part
-    this update expression caculate the epoch time by merging these two columns
-### Column Split
-User can split specific column by specify the separator.
-
-    Example 1:
-```
-col.op=s|3:.
-```
-    Split the column 3 into multiple fields by separator '.'
-### Column Remove
-
-    Example 1:
-```
-col.op=r|3:
-```
-    Remove column 3
-### Skip header
-Some input files comes with the header line, we need to skip that line for output.
-
-    Example 1:
-```
-skip.header=true
-```
-### Row Ends with comma
-Some input csv files, each line comes with an ending comma, we need to tell Command about this.
-
-    Example 1:
-```
-input.endwithcomma=true
-```
-### Row Validation
-Some input csv files has corrupted lines not intended to be sent to output.
-We enable user to specify the row validation expression to validate each line
-
-    Example 1:
-```
-row.validation=fields.length>10
-```
-    For this Cmd, the system varaible "fields" (an array of fields for each line) is passed.
 ## 2. Csv Aggregation Cmd
 ![Csv Aggregate Cmd](https://raw.githubusercontent.com/phillipcheng/log.analysis/master/bdap-engine/pic/csvaggregate.png)
 
