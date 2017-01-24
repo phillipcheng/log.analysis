@@ -36,6 +36,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 
+import bdap.util.EngineConf;
 import etl.input.FilenameInputFormat;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
@@ -214,7 +215,7 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	//copy propertiesConf to jobConf
-	protected void copyConf(){
+	public void copyConf(){
 		Iterator it = pc.getKeys();
 		while (it.hasNext()){
 			String key = (String) it.next();
@@ -222,6 +223,7 @@ public abstract class ETLCmd implements Serializable{
 			logger.debug(String.format("copy property:%s:%s", key, value));
 			this.conf.set(key, value);
 		}
+		this.conf.set(EngineConf.cfgkey_staticconfigfile, staticCfg);
 	}
 	
 	public void copyConf(Map<String, String> inPc){
@@ -229,6 +231,7 @@ public abstract class ETLCmd implements Serializable{
 			String value = inPc.get(key);
 			this.conf.set(key, value);
 		}
+		this.conf.set(EngineConf.cfgkey_staticconfigfile, staticCfg);
 	}
 	
 	//will be overriden by schema-etl-cmd
