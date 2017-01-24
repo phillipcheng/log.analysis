@@ -46,6 +46,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
 import etl.cmd.SchemaETLCmd;
+import bdap.util.EngineConf;
 import etl.input.FilenameInputFormat;
 import etl.util.ConfigKey;
 import etl.util.SchemaUtils;
@@ -551,7 +552,7 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	//copy propertiesConf to jobConf
-	protected void copyConf(){
+	public void copyConf(){
 		Iterator<String> it = pc.getKeys();
 		while (it.hasNext()){
 			String key = it.next();
