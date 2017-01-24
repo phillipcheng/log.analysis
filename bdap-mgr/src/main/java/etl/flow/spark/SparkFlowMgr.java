@@ -40,6 +40,8 @@ public class SparkFlowMgr extends OozieFlowMgr {
 	public static final String replace_sparkhome="[[sparkhome]]";
 	public static final String replace_defaultfs="[[defaultfs]]";
 	public static final String replace_sparkhistoryserver="[[sparkhistoryserver]]";
+
+	private static final String key_engineJars = "engineJars";
 	
 	public SparkFlowMgr() {
 		super();
@@ -126,7 +128,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 		List<String> libfiles = fd.listFiles(String.format("%s%s%s/lib", fd.getDefaultFS(), hdfsPrjFolder, flowName));
 		if (libfiles != null) {
 			for (String f: libfiles) {
-				if (f.endsWith(".jar")) {
+				if (f.endsWith(".jar") && (!f.startsWith(flowName))) {
 					String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), hdfsPrjFolder, flowName, f);
 					if (thirdPartyJarsSb.indexOf(strJar) == -1)
 						thirdPartyJarsSb.append(",").append(strJar);
@@ -175,6 +177,26 @@ public class SparkFlowMgr extends OozieFlowMgr {
 			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
 			property.setName(OozieConf.key_cmdClassName);
 			property.setValue(fqClassCmdName);
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName(key_engineJars);
+			List<String> libfiles = fd.listFiles(String.format("%s%s/lib", fd.getDefaultFS(), fd.getPlatformRemoteDist()));
+			StringBuilder engineJarsSb = new StringBuilder();
+			if (libfiles != null) {
+				int i = 0;
+				for (String f: libfiles) {
+					if (f.endsWith(".jar") && (!f.startsWith("bdap.engine-"))) {
+						String strJar=String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), f);
+						if (i == 0)
+							engineJarsSb.append(strJar);
+						else
+							engineJarsSb.append(",").append(strJar);
+						i ++;
+					}
+				}
+			}
+			property.setValue(engineJarsSb.toString());
 			bodyConf.getProperty().add(property);
 		}
 		return bodyConf;
