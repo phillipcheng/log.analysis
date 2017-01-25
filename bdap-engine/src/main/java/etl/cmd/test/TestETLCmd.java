@@ -167,13 +167,7 @@ public abstract class TestETLCmd implements Serializable{
 			if (inputFilter!=null){
 				getConf().set(GlobExpPathFilter.cfgkey_path_filters, inputFilter);
 			}
-			String hdfsUser = pc.getString(key_hdfs_user, "dbadmin");
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-			Job job = ugi.doAs(new PrivilegedExceptionAction<Job>() {
-				public Job run() throws Exception {
-					return Job.getInstance(getConf(), "testCmd");
-				}
-			});
+			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer
 			job.setOutputKeyClass(Text.class);
@@ -225,13 +219,7 @@ public abstract class TestETLCmd implements Serializable{
 		getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
 		getConf().set("mapreduce.output.textoutputformat.separator", ",");
 		getConf().set("mapreduce.job.reduces", String.valueOf(numReducer));
-		String hdfsUser = pc.getString(key_hdfs_user, "dbadmin");
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-		Job job = ugi.doAs(new PrivilegedExceptionAction<Job>() {
-			public Job run() throws Exception {
-				return Job.getInstance(getConf(), "testCmd");
-			}
-		});
+		Job job = Job.getInstance(getConf(), "testCmd");
 		job.setMapperClass(InvokeMapper.class);
 		job.setReducerClass(etl.engine.InvokeReducer.class);
 		

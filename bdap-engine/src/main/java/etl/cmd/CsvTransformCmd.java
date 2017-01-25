@@ -170,7 +170,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			if (valid instanceof Boolean) {
 				if (!(Boolean)valid) {
 					logger.debug("invalid row:" + row);
-					return null;
+					return new ArrayList<Tuple2<String,String>>();//return empty tuple2 list
 				}
 			} /* If result is not boolean, the expression has no effect */
 		}

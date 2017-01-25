@@ -50,7 +50,7 @@ public class GroupFun {
 		if (d!=null){
 			return FieldType.sdatetimeFormat.format(d);
 		}else{
-			return null;
+			return "";
 		}
 	}
 	

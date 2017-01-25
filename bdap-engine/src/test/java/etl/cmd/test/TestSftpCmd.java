@@ -178,19 +178,9 @@ public class TestSftpCmd extends TestETLCmd {
 		String ftpFolder = cmd.getFromDirs()[0];
 		SftpInfo sftpInfo = EngineUtil.getInstance().getSftpInfo();
 		SftpUtil.sftpFromLocal(sftpInfo, super.getLocalFolder()+"data", ftpFolder);
-		List<String> ret = cmd.sgProcess();
-		logger.info(ret);
-		
-		//assertion
-		List<String> fl = HdfsUtil.listDfsFile(cmd.getFs(), dfsIncomingFolder);
-		String file = fl.get(0);//file name is map key
-		logger.info(fl);
-		assertTrue(fl.size()==1);
-		assertTrue(fl.get(0).equals("0"));
-		
-		List<String> contents = HdfsUtil.stringsFromDfsFile(cmd.getFs(), dfsIncomingFolder+file);
-		logger.info(String.format("fileNamesOnly contents:\n%s", String.join("\n", contents)));
-		assertTrue(contents.size()==3);
+		List<String> ret = cmd.process(null);
+		logger.info(String.format("fileNamesOnly contents:\n%s", String.join("\n", ret)));
+		assertTrue(ret.size()==3);
 	}
 	
 	@Test

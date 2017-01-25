@@ -145,7 +145,9 @@ public abstract class SchemaETLCmd extends ETLCmd{
 				if (SchemaUtils.existsRemoteJsonPath(defaultFs, schemaFile)){
 					schemaFileName = schemaFilePath.getName();
 					this.logicSchema = SchemaUtils.fromRemoteJsonPath(defaultFs, schemaFile, LogicSchema.class);
-					loadSparkSchema();
+					if (useSparkSql()){
+						loadSparkSchema();
+					}
 				}else{
 					this.logicSchema = SchemaUtils.newRemoteInstance(defaultFs, schemaFile);
 					logger.warn(String.format("schema file %s not exists.", schemaFile));

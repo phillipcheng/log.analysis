@@ -136,7 +136,7 @@ public class SftpCmd extends ETLCmd {
 		deleteOnly = super.getCfgBoolean(cfgkey_delete_only, false);
 	}
 
-	public List<String> process(long mapKey, String row){
+	public List<String> process(String row){
 		logger.info(String.format("param: %s", row));
 		super.init();
 		
@@ -353,7 +353,7 @@ public class SftpCmd extends ETLCmd {
 	
 	@Override
 	public List<String> sgProcess(){
-		List<String> ret = process(0, null);
+		List<String> ret = process(null);
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
 		logInfo.add(fileNumberTransfer + "");
@@ -365,7 +365,7 @@ public class SftpCmd extends ETLCmd {
 			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
 		//override param
 		Map<String, Object> retMap = new HashMap<String, Object>();
-		List<String> files = process(offset, row);
+		List<String> files = process(row);
 		try {
 			for (String file: files){
 				if (output_default_key.equals(outputKey)){
@@ -392,7 +392,7 @@ public class SftpCmd extends ETLCmd {
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, 
 			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
-		List<String> fileList = process(0, value);
+		List<String> fileList = process(value);
 		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 		for (String file:fileList){
 			if (output_default_key.equals(outputKey)){
@@ -413,7 +413,7 @@ public class SftpCmd extends ETLCmd {
 		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-				List<String> fileList = process(0, t);
+				List<String> fileList = process(t);
 				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 				for (String file:fileList){
 					if (output_default_key.equals(outputKey)){

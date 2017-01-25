@@ -18,6 +18,7 @@ import bdap.util.HdfsUtil;
 import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
 import etl.util.GroupFun;
+import etl.util.StringUtil;
 import scala.Tuple2;
 
 public class TestCsvAggregateCmd extends TestETLCmd {
@@ -101,9 +102,8 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		
 		// assertion
 		assertTrue(ret.size() ==12);
-		String sampleOutput = ret.get(6);
-		String[] csvs = sampleOutput.split(",", -1);
-		assertTrue("2.0".equals(csvs[6]));
+		List<String> col = StringUtil.getColumn(ret, 6);
+		assertTrue(col.contains("2.0"));
 	}
 	
 	@Test

@@ -386,7 +386,7 @@ public abstract class ETLCmd implements Serializable{
 						List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
 						for (Tuple3<String, String, String> t3 : t3l){
 							if (t3._2()!=null){
-								ret.add(new Tuple2<String, String>(t3._3(), t3._1() + keyValueSep + t3._2()));
+								ret.add(new Tuple2<String, String>(t3._3(), t3._1() + csvValueSep + t3._2()));
 							}else{
 								ret.add(new Tuple2<String, String>(t3._3(), t3._1()));
 							}
