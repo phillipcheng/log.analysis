@@ -23,7 +23,7 @@ import etl.flow.Node;
 import etl.flow.NodeLet;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowMgr;
-import etl.spark.SparkUtil;
+import etl.util.SparkUtil;
 
 public class SparkGenerator {
 	public static final Logger logger = LogManager.getLogger(SparkGenerator.class);

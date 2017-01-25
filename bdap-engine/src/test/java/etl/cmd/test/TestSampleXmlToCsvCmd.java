@@ -90,9 +90,8 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		addConf.put("xmlinput.row.end", "</measValue>");
 		addConf.put("xmlinput.row.max.number", "3");
 	
-		Tuple2<List<String>, List<String>> ret = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, 
-				etl.cmd.testcmd.SampleXml2CsvCmd.class, etl.input.XmlInputFormat.class, addConf);
-		List<String> output = ret._2;
+		List<String> output = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, 
+				etl.cmd.testcmd.SampleXml2CsvCmd.class, etl.input.XmlInputFormat.class, addConf, false);
 		logger.info(String.format("output:\n%s", String.join("\n", output)));
 		//check results
 		assertTrue(output.size()==14);

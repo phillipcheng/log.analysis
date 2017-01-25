@@ -276,7 +276,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	}
 	public <T> List<T> getIdxedList(List<T> input, List<IdxRange> irl, int idxMax){
 		List<T> tlist = new ArrayList<T>();
-		List<Integer> idxList = GroupOp.getIdxInRange(irl, idxMax);
+		List<Integer> idxList = IdxRange.getIdxInRange(irl, idxMax);
 		for (int i:idxList){
 			tlist.add(input.get(i));
 		}
@@ -498,7 +498,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				
 				executedAggrOp=true;
 			}else{
-				List<Integer> idxList = GroupOp.getIdxInRange(aop.getIdxRangeList(), fieldNum);
+				List<Integer> idxList = IdxRange.getIdxInRange(aop.getIdxRangeList(), fieldNum);
 				for (int idx:idxList){
 					if(AggrOperator.keep==op){
 						keepOpOutputIdxInputIndxMap.put(aggrValues.size(), idx);
@@ -589,7 +589,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 			if(AggrOperator.count==ao){
 				fieldValues.add("0");
 			}else{
-				List<Integer> idxList = GroupOp.getIdxInRange(aop.getIdxRangeList(), fieldNum);
+				List<Integer> idxList = IdxRange.getIdxInRange(aop.getIdxRangeList(), fieldNum);
 				for (int idx:idxList){
 					if(AggrOperator.keep!=ao){
 						fieldValues.add("0.0");

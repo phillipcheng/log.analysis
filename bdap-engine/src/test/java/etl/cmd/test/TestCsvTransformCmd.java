@@ -109,9 +109,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "seqfile.csvtrans.properties";
 		String[] csvFiles = new String[] {"seqFile"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(inputFolder, csvFiles, csvtransProp, etl.cmd.CsvTransformCmd.class, 
+		List<String> output = super.sparkTestKV(inputFolder, csvFiles, csvtransProp, etl.cmd.CsvTransformCmd.class, 
 				SequenceFileInputFormat.class);
-		List<String> output = ret._2;
 		logger.info("Output is:\n" + String.join("\n", output));
 	
 		assertTrue(output.size()==10);
@@ -149,10 +148,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans-nothing.properties";
 		String[] csvFiles = new String[] {"P111.csv", "P112.csv"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvTransformCmd.class, 
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvTransformCmd.class, 
 				FilenameInputFormat.class);
-
-		List<String> output = ret._2;
 		logger.info("Output is:\n" + String.join("\n", output));
 		assertTrue(output.size()==2);
 	}
@@ -183,9 +180,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans.properties";
 		String[] csvFiles = new String[] {"PJ24002A_BBG2.csv"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
 		logger.info("Output is:\n" + String.join("\n", output));
 		
 		// assertion
@@ -223,9 +219,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans3.properties";
 		String[] csvFiles = new String[]{"csvtrans2.csv"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//assertion
 		assertTrue(output.size() > 0);
@@ -264,9 +259,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans2.properties";
 		String[] csvFiles = new String[]{"csvtrans2.csv"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//
 		assertTrue(output.size() > 0);
@@ -305,9 +299,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans.telecom.properties";
 		String[] csvFiles = new String[]{"telecom.csv"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//
 		String row1 = output.get(0);
@@ -351,9 +344,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String schemaFile = "dynschema_test1_schemas.txt";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//assertion
 		String row1 = output.get(0);
@@ -390,9 +382,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans.multiplefiles.properties";
 		String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvInputFolder, csvFiles, csvtransProp, 
+		List<String> output = super.sparkTestKV(remoteCsvInputFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//assert
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -452,9 +443,8 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String csvtransProp = "csvtrans.tosinglefile.properties";
 		String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(remoteCsvInputFolder, csvFiles, csvtransProp, 
+		List<String> keys = super.sparkTestKVKeys(remoteCsvInputFolder, csvFiles, csvtransProp, 
 				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
-		List<String> keys = ret._1;
 		logger.info(String.format("Output is:\n%s", String.join("\n", keys)));
 		//assert
 		Set<String> uniqueKeys = new HashSet<String>();

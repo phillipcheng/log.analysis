@@ -106,7 +106,7 @@ public class TestCsvNormalizeCmd extends TestETLCmd {
 			}
 			SaveDataCmd saveDataCmd = new SaveDataCmd("wfName", "wfId", cfgProperties, this.getDefaultFS(), null);
 			saveDataCmd.getPc().addProperty("logic.schema", "/etltest/csvnorm/schema");
-			result = saveDataCmd.sparkProcessKeyValue(result, jsc, ParquetInputFormat.class);
+			result = saveDataCmd.sparkProcessKeyValue(result, jsc, ParquetInputFormat.class, null);
 			List<String> keys = result.keys().collect();
 			List<String> values = result.values().collect();
 			Tuple2<List<String>, List<String>> ret = new Tuple2<List<String>, List<String>>(keys, values);

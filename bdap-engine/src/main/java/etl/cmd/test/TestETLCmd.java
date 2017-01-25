@@ -30,8 +30,11 @@ import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.StructType;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -164,13 +167,7 @@ public abstract class TestETLCmd implements Serializable{
 			if (inputFilter!=null){
 				getConf().set(GlobExpPathFilter.cfgkey_path_filters, inputFilter);
 			}
-			String hdfsUser = pc.getString(key_hdfs_user, "dbadmin");
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-			Job job = ugi.doAs(new PrivilegedExceptionAction<Job>() {
-				public Job run() throws Exception {
-					return Job.getInstance(getConf(), "testCmd");
-				}
-			});
+			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer
 			job.setOutputKeyClass(Text.class);
@@ -222,13 +219,7 @@ public abstract class TestETLCmd implements Serializable{
 		getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
 		getConf().set("mapreduce.output.textoutputformat.separator", ",");
 		getConf().set("mapreduce.job.reduces", String.valueOf(numReducer));
-		String hdfsUser = pc.getString(key_hdfs_user, "dbadmin");
-		UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
-		Job job = ugi.doAs(new PrivilegedExceptionAction<Job>() {
-			public Job run() throws Exception {
-				return Job.getInstance(getConf(), "testCmd");
-			}
-		});
+		Job job = Job.getInstance(getConf(), "testCmd");
 		job.setMapperClass(InvokeMapper.class);
 		job.setReducerClass(etl.engine.InvokeReducer.class);
 		
@@ -364,16 +355,21 @@ public abstract class TestETLCmd implements Serializable{
 	
 	//spark test for cmd
 	//spark test for cmd
-	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
 		String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass) throws Exception{
-		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null);
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null, false);
+	}
+	public List<String> sparkTestKVKeys(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null, true);
 	}
 	
-	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
 			String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass, 
-			Map<String, String> addConf) throws Exception{
-		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
-		JavaSparkContext jsc = new JavaSparkContext(conf);
+			Map<String, String> addConf, boolean key) throws Exception{
+		SparkSession spark = SparkSession.builder().appName("wfName").master("local[5]").getOrCreate();
+		SparkContext sc = spark.sparkContext();
+		JavaSparkContext jsc = new JavaSparkContext(sc);
 		try {
 			getFs().delete(new Path(remoteInputFolder), true);
 			List<String> inputPaths = new ArrayList<String>();
@@ -395,10 +391,18 @@ public abstract class TestETLCmd implements Serializable{
 			if (addConf!=null){
 				cmd.copyConf(addConf);
 			}
-			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass);
-			List<String> keys = result.keys().collect();
-			List<String> values = result.values().collect();
-			return new Tuple2<List<String>, List<String>>(keys, values);
+			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass, spark);
+			//List<String> keys = result.keys().collect();
+			
+			List<String> ret = new ArrayList<String>();
+			if (key){
+				List<String> keys = result.keys().collect();
+				ret.addAll(keys);
+			}else{
+				List<String> values = result.values().collect();
+				ret.addAll(values);
+			}
+			return ret;
 		}finally{
 			jsc.close();
 		}
@@ -427,7 +431,7 @@ public abstract class TestETLCmd implements Serializable{
 		if (addConf!=null){
 			cmd.copyConf(addConf);
 		}
-		return cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass);
+		return cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass, null);
 	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 

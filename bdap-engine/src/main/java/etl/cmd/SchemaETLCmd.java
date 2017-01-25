@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.sql.types.StructType;
 
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
@@ -88,6 +90,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	protected String schemaFileName;
 	protected String dbPrefix;
 	protected LogicSchema logicSchema;
+	protected Map<String, StructType> sparkSqlSchemaMap=null;
 	protected String createTablesSqlFileName;
 	protected OutputType outputType = OutputType.multiple;
 	
@@ -102,10 +105,21 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, true);
 	}
+	
+	private void loadSparkSchema(){
+		sparkSqlSchemaMap = new HashMap<String, StructType>();
+		for (String tn: logicSchema.getTableNames()){
+			sparkSqlSchemaMap.put(tn, SchemaUtils.convertToSparkSqlSchema(logicSchema, tn));
+		}
+	}
+	
+	public StructType getSparkSqlSchema(String tableName){
+		return sparkSqlSchemaMap.get(tableName);
+	}
+	
 	/**
 	 * Additional parameters:
 	 * @param loadSchema: if true, load the schema in init
-	 * @param zkUrl: if not null, lock before reade
 	 */
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, 
 			ProcessMode pm, boolean loadSchema){
@@ -131,6 +145,9 @@ public abstract class SchemaETLCmd extends ETLCmd{
 				if (SchemaUtils.existsRemoteJsonPath(defaultFs, schemaFile)){
 					schemaFileName = schemaFilePath.getName();
 					this.logicSchema = SchemaUtils.fromRemoteJsonPath(defaultFs, schemaFile, LogicSchema.class);
+					if (useSparkSql()){
+						loadSparkSchema();
+					}
 				}else{
 					this.logicSchema = SchemaUtils.newRemoteInstance(defaultFs, schemaFile);
 					logger.warn(String.format("schema file %s not exists.", schemaFile));

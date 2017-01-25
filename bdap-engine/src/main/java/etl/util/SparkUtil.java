@@ -1,8 +1,6 @@
-package etl.spark;
+package etl.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +16,7 @@ import etl.engine.DataType;
 import etl.input.FilenameTextInputFormat;
 import scala.Tuple2;
 
+//methods needed for generated Spark Driver code
 public class SparkUtil {
 
 	public static final Logger logger = LogManager.getLogger(SparkUtil.class);
@@ -26,6 +25,7 @@ public class SparkUtil {
 		return jsc.parallelize(Arrays.asList(new String[]{str}));
 	}
 	
+	//
 	public static JavaRDD<String> fromFile(String paths, JavaSparkContext jsc){
 		return jsc.textFile(paths);
 	}
@@ -45,6 +45,7 @@ public class SparkUtil {
 		});
 	}
 	
+	//
 	public static JavaRDD<String> filterPairRDD(JavaPairRDD<String,String> input, String key){
 		return input.filter(new Function<Tuple2<String,String>, Boolean>(){
 			@Override
@@ -79,22 +80,6 @@ public class SparkUtil {
 			methodName = "sparkProcessV2KV";
 		}
 		return methodName;
-	}
-	
-	public static List<String> getValues(JavaPairRDD<String, String> input){
-		List<String> out = new ArrayList<String>();
-		for (Tuple2<String, String> t: input.collect()){
-			out.add(t._2);
-		}
-		return out;
-	}
-	
-	public static List<String> getKeys(JavaPairRDD<String, String> input){
-		List<String> out = new ArrayList<String>();
-		for (Tuple2<String, String> t: input.collect()){
-			out.add(t._1);
-		}
-		return out;
 	}
 	
 	public static JavaPairRDD<String, String> flip(JavaPairRDD<String, String> input){
