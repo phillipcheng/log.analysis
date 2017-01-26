@@ -78,6 +78,9 @@ public class SparkFlowMgr extends OozieFlowMgr {
 		String classesRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getClassesFolder());
 		if (!Files.exists(Paths.get(classesRootDir))) Files.createDirectories(Paths.get(classesRootDir));
 		String cpPath = String.format("%s/buildlib/*", fd.getPlatformLocalDist());
+		if (jars != null)
+			for (String jar: jars)
+				cpPath = cpPath + File.pathSeparator + jar;
 		String javacmd = String.format("%s/javac -cp \"%s\" -d %s %s/%s/%s.java", ssc.getJdkBin(), cpPath, 
 				classesRootDir, srcRootDir, prjName, flowName);
 		logger.info(javacmd);
@@ -125,16 +128,21 @@ public class SparkFlowMgr extends OozieFlowMgr {
 			String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), hdfsPrjFolder, flowName, jar.getFileName());
 			thirdPartyJarsSb.append(",").append(strJar);
 		}
-		List<String> libfiles = fd.listFiles(String.format("%s%s%s/lib", fd.getDefaultFS(), hdfsPrjFolder, flowName));
-		if (libfiles != null) {
-			for (String f: libfiles) {
-				if (f.endsWith(".jar") && (!f.startsWith(flowName))) {
-					String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), hdfsPrjFolder, flowName, f);
-					if (thirdPartyJarsSb.indexOf(strJar) == -1)
-						thirdPartyJarsSb.append(",").append(strJar);
+		
+		if (fd.existsDir(String.format("%s%s%s/lib", fd.getDefaultFS(), hdfsPrjFolder, flowName))) {
+			/* Add 3rd party jars if the lib directory exists */
+			List<String> libfiles = fd.listFiles(String.format("%s%s%s/lib", fd.getDefaultFS(), hdfsPrjFolder, flowName));
+			if (libfiles != null) {
+				for (String f: libfiles) {
+					if (f.endsWith(".jar") && (!f.startsWith(flowName))) {
+						String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), hdfsPrjFolder, flowName, f);
+						if (thirdPartyJarsSb.indexOf(strJar) == -1)
+							thirdPartyJarsSb.append(",").append(strJar);
+					}
 				}
 			}
 		}
+		
 		String sparkWf = sparkWfTemplate.replace(replace_wfname, wfName).replace(replace_thirdpartyjars, thirdPartyJarsSb.toString())
 				.replace(replace_defaultfs, fd.getDefaultFS()).replace(replace_sparkhome, ssc.getSparkHome()).replace(replace_sparkhistoryserver, ssc.getSparkHistoryServer());
 		remoteImFiles.add(new InMemFile(FileType.oozieWfXml, String.format("%s_workflow.xml", flowName), sparkWf.getBytes(StandardCharsets.UTF_8)));

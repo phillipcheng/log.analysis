@@ -311,8 +311,13 @@ public class FlowDeployer {
 		}
 		return ret;
 	}
+	
 	public List<String> readFile(String path) {
 		return deployMethod.readFile(path);
+	}
+
+	public boolean existsDir(String path) {
+		return deployMethod.exists(path);
 	}
 	
 	private void deploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
@@ -475,6 +480,11 @@ public class FlowDeployer {
 	public org.apache.hadoop.conf.Configuration getConf(){
 		return conf;
 	}
+	
+	public Configuration getPc() {
+		return pc;
+	}
+	
 	public String getPlatformLocalDist() {
 		return platformLocalDist;
 	}
