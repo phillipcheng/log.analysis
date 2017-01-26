@@ -212,4 +212,8 @@ public class SSHDeployMethod extends SftpInfo implements DeployMethod {
 			session = null;
 		}
 	}
+
+	public boolean exists(String path) {
+		return false;
+	}
 }

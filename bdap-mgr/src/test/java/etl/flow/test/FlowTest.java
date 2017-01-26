@@ -37,7 +37,7 @@ public class FlowTest {
 	public static void initData(FlowDeployer deployer, String prjName, String flowName, SftpInfo ftpInfo){
 		String hdfsFolder = deployer.getProjectHdfsDir(prjName);
 		SftpUtil.sftpFromLocal(ftpInfo, String.format("%sdata", getRelativeResourceFolder()), 
-				String.format("/data/flow1/"));
+				String.format(deployer.getPc().getString("sftp.server.data.dir", "") + "/data/flow1/"));
 		deployer.delete(String.format("%s%s", hdfsFolder, flowName), true);
 		deployer.copyFromLocalFile(false, true, String.format("%sdata/sftpcfg/test1.sftp.map.properties", getRelativeResourceFolder()), 
 				"/flow1/sftpcfg/test1.sftp.map.properties");
@@ -53,7 +53,8 @@ public class FlowTest {
 		apacheDeployer.installEngine(false);
 		String prjName = "project1";
 		String flowName="flow1";
-		SftpInfo ftpInfo = new SftpInfo("dbadmin", "password", "192.85.247.104", 22);
+		SftpInfo ftpInfo = new SftpInfo(apacheDeployer.getPc().getString("sftp.server.user", "dbadmin"), apacheDeployer.getPc().getString("sftp.server.passwd", "password"),
+				apacheDeployer.getPc().getString("sftp.server.ip", "192.85.247.104"), apacheDeployer.getPc().getInt("sftp.server.port", 22));
 		initData(apacheDeployer, prjName, flowName, ftpInfo);
 		apacheDeployer.runDeploy(prjName, flowName, jars, null, useJson, et);
 		String wfId = apacheDeployer.runExecute(prjName, flowName, et);
