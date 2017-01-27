@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvAggregateCmd;
+import etl.engine.InputFormatType;
 import etl.engine.LogicSchema;
 import etl.util.GroupFun;
 import etl.util.StringUtil;
@@ -62,7 +63,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
 		
 		List<String> ret = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvAggregateCmd.class, TextInputFormat.class);
+				etl.cmd.CsvAggregateCmd.class, InputFormatType.Text);
 		//assertion
 		logger.info("Output is:\n"+String.join("\n", ret));
 		assertEquals(4, ret.size());
@@ -96,7 +97,7 @@ public class TestCsvAggregateCmd extends TestETLCmd {
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
 		List<String> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvAggregateCmd.class, 
-				TextInputFormat.class);
+				InputFormatType.Text);
 		Collections.sort(ret);
 		logger.info("Output is:\n"+ String.join("\n", ret));
 		

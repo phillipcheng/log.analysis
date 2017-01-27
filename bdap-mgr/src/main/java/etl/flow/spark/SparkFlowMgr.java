@@ -57,25 +57,28 @@ public class SparkFlowMgr extends OozieFlowMgr {
 
 	@Override
 	public boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception{
-		boolean manual=false;
+		boolean global=false;//all generate flow treated as one project, for understanding how the platform is used, should be false in production
 		String flowName = flow.getName();
 		SparkServerConf ssc = fd.getSparkServerConf();
-		String prjFolder = String.format("%s/%s", ssc.getTmpFolder(), prjName);
+		
+		String globalPrjName=prjName;
+		if (global) globalPrjName="global";
+		
+		String prjFolder = String.format("%s/%s", ssc.getTmpFolder(), globalPrjName);
 		Files.createDirectories(Paths.get(prjFolder));
 		//clean up the prjFolder
-		if (!manual){
+		if (!global){
 			Files.walk(Paths.get(prjFolder), FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
 		}
-		String targetDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getTargetFolder());
+		
+		String targetDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getTargetFolder());
 		Files.createDirectories(Paths.get(targetDir));
 		//generate the driver java file
-		String srcRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getSrcFolder());
+		String srcRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getSrcFolder());
 		if (!Files.exists(Paths.get(srcRootDir))) Files.createDirectories(Paths.get(srcRootDir));
-		if (!manual){
-			SparkGenerator.genDriverJava(prjName, flow, srcRootDir, ssc);
-		}
+		SparkGenerator.genDriverJava(prjName, flow, srcRootDir, ssc);
 		//compile the file
-		String classesRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getClassesFolder());
+		String classesRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getClassesFolder());
 		if (!Files.exists(Paths.get(classesRootDir))) Files.createDirectories(Paths.get(classesRootDir));
 		String cpPath = String.format("%s/buildlib/*", fd.getPlatformLocalDist());
 		if (jars != null)

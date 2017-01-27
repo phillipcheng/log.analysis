@@ -33,16 +33,6 @@ public class FlowDeployer {
 	public static final Logger logger = LogManager.getLogger(FlowDeployer.class);
 	public static final String defaultCfgProperties = "testFlow.properties";
 	
-	public static final String prop_inputformat_line="org.apache.hadoop.mapreduce.lib.input.NLineInputFormat";
-	public static final String prop_inputformat_textfile="org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
-	public static final String prop_inputformat_textfile_keyvalue="org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat";
-	public static final String prop_inputformat_sequencefile="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
-	public static final String prop_inputformat_parquetfile="org.apache.parquet.hadoop.ParquetInputFormat";
-	public static final String prop_inputformat_xmlfile="etl.input.XmlInputFormat";
-	public static final String prop_inputformat_combine_xmlfile="etl.input.CombineXmlInputFormat";
-	public static final String prop_inputformat_filename="etl.input.FilenameInputFormat";
-	public static final String prop_inputformat_combine_filename="etl.input.CombineFileNameInputFormat";
-	
 	public static final String prop_outputformat_textfile="org.apache.hadoop.mapreduce.lib.output.TextOutputFormat";
 	public static final String prop_outputformat_parquetfile="etl.output.ParquetOutputFormat";
 	
@@ -111,28 +101,6 @@ public class FlowDeployer {
 			return new DefaultDeployMethod(remoteUser, defaultFs);
 	}
     
-    public static String getInputFormat(InputFormatType ift){
-		if (InputFormatType.Line == ift){
-			return prop_inputformat_line;
-		}else if (InputFormatType.Text == ift){
-			return prop_inputformat_textfile;
-		}else if (InputFormatType.SequenceFile == ift){
-			return prop_inputformat_sequencefile;
-		}else if (InputFormatType.ParquetFile == ift){
-			return prop_inputformat_parquetfile;
-		}else if (InputFormatType.XML == ift){
-			return prop_inputformat_xmlfile;
-		}else if (InputFormatType.CombineXML == ift){
-			return prop_inputformat_combine_xmlfile;
-		}else if (InputFormatType.FileName == ift){
-			return prop_inputformat_filename;
-		}else if (InputFormatType.CombineFileName == ift){
-			return prop_inputformat_combine_filename;
-		}else{
-			logger.error(String.format("inputformat:%s not supported", ift));
-			return null;
-		}
-	}
     
     public static String getOutputFormat(InputFormatType ift){
     	if (InputFormatType.ParquetFile.equals(ift))

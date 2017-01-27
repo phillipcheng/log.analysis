@@ -27,6 +27,7 @@ import etl.cmd.HdfsCmd;
 import etl.cmd.LoadDataCmd;
 import etl.cmd.SaveDataCmd;
 import etl.engine.EngineUtil;
+import etl.engine.InputFormatType;
 import etl.output.RDDMultipleTextOutputFormat;
 import etl.util.DBType;
 import etl.util.StringUtil;
@@ -85,7 +86,7 @@ public class StreamLogProcessor {
 						
 						SaveDataCmd saveDataCmd = new SaveDataCmd(wfName, batchid, null, defaultFs, null);
 						saveDataCmd.setSendLog(false);
-						saveDataCmd.sparkProcessKeyValue(v1, jsc.sparkContext(), TextInputFormat.class, null);
+						saveDataCmd.sparkProcessKeyValue(v1, jsc.sparkContext(), InputFormatType.Text, null);
 						
 						LoadDataCmd loadDataCmd = new LoadDataCmd(wfName, batchid, null, "log", defaultFs, null);
 						//if logs are imported to db, import and then delete the files

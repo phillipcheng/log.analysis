@@ -32,6 +32,7 @@ import bdap.util.HdfsUtil;
 //
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
+import etl.engine.InputFormatType;
 import etl.engine.LogicSchema;
 import etl.engine.ProcessMode;
 import etl.util.ConfigKey;
@@ -202,9 +203,10 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		return null;
 	}
 	
+	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc,
-			Class<? extends InputFormat> inputFormatClass, SparkSession spark) {
-		JavaPairRDD<String, String> result = super.sparkProcessKeyValue(input, jsc, inputFormatClass, spark);
+			InputFormatType ift, SparkSession spark) {
+		JavaPairRDD<String, String> result = super.sparkProcessKeyValue(input, jsc, ift, spark);
 		
 		if (processType == DynSchemaProcessType.checkSchema || processType == DynSchemaProcessType.both) {
 			input = result.filter(new Function<Tuple2<String, String>, Boolean>(){

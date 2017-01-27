@@ -18,6 +18,7 @@ import etl.cmd.CsvTransformCmd;
 import etl.cmd.SaveDataCmd;
 import etl.cmd.SftpCmd;
 import etl.engine.ETLCmd;
+import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.SparkUtil;
@@ -70,21 +71,21 @@ public class Flow1SparkCmd extends ETLCmd implements Serializable{
 		JavaPairRDD<String,String> mergeCsvs;
 		
 		SftpCmd sftpCmd = new SftpCmd(getWfName(), getWfid(), resFolder + "action_sftp.properties", super.getDefaultFs(), null);
-		sftpOutput = sftpCmd.sparkProcessV2KV(sftpMap, jsc, TextInputFormat.class, spark);
+		sftpOutput = sftpCmd.sparkProcessV2KV(sftpMap, jsc, InputFormatType.Text, spark);
 		data1 = SparkUtil.filterPairRDD(sftpOutput, "data1");
 		data2 = SparkUtil.filterPairRDD(sftpOutput, "data2");
 		
 		CsvTransformCmd d1csvTransformCmd = new CsvTransformCmd(wfName, wfid, resFolder + "action_d1csvtransform.properties", defaultFs, null, ProcessMode.Single);
-		data1trans = d1csvTransformCmd.sparkProcessFilesToKV(data1, jsc, TextInputFormat.class, spark);
+		data1trans = d1csvTransformCmd.sparkProcessFilesToKV(data1, jsc, InputFormatType.Text, spark);
 		
 		CsvTransformCmd d2csvTransformCmd = new CsvTransformCmd(wfName, wfid, resFolder + "action_d2csvtransform.properties", defaultFs, null, ProcessMode.Single);
-		data2trans = d2csvTransformCmd.sparkProcessFilesToKV(data2, jsc, TextInputFormat.class, spark);
+		data2trans = d2csvTransformCmd.sparkProcessFilesToKV(data2, jsc, InputFormatType.Text, spark);
 		
 		CsvAggregateCmd mergeCmd = new CsvAggregateCmd(wfName, wfid, resFolder + "action_csvaggr.properties", defaultFs, null);
-		mergeCsvs = mergeCmd.sparkProcessKeyValue(data1trans.union(data2trans), jsc, TextInputFormat.class, spark);
+		mergeCsvs = mergeCmd.sparkProcessKeyValue(data1trans.union(data2trans), jsc, InputFormatType.Text, spark);
 		
 		SaveDataCmd saveCmd = new SaveDataCmd(wfName, wfid, resFolder + "action_csvsave.properties", defaultFs, null);
-		saveCmd.sparkProcessKeyValue(mergeCsvs, jsc, TextInputFormat.class, spark);
+		saveCmd.sparkProcessKeyValue(mergeCsvs, jsc, InputFormatType.Text, spark);
 		
 		jsc.close();
 		

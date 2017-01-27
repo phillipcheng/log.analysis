@@ -40,6 +40,7 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
+import etl.engine.InputFormatType;
 import etl.engine.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
@@ -409,7 +410,7 @@ public class SftpCmd extends ETLCmd {
 	 */
 	@Override
 	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
+			InputFormatType ift, SparkSession spark){
 		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
 			@Override
 			public Iterator<Tuple2<String, String>> call(String t) throws Exception {

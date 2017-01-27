@@ -11,6 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
+import etl.engine.InputFormatType;
 import scala.Tuple2;
 
 //log4j2
@@ -91,7 +92,7 @@ public class TestSampleXmlToCsvCmd extends TestETLCmd{
 		addConf.put("xmlinput.row.max.number", "3");
 	
 		List<String> output = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, 
-				etl.cmd.testcmd.SampleXml2CsvCmd.class, etl.input.XmlInputFormat.class, addConf, false);
+				etl.cmd.testcmd.SampleXml2CsvCmd.class, InputFormatType.XML, addConf, false);
 		logger.info(String.format("output:\n%s", String.join("\n", output)));
 		//check results
 		assertTrue(output.size()==14);
