@@ -56,6 +56,7 @@ public class SparkGenerator {
 		sb.append("import java.util.*;\n");
 		sb.append("import org.apache.log4j.Logger;\n");
 		sb.append("import org.apache.spark.SparkConf;\n");
+		sb.append("import org.apache.spark.SparkContext;;\n");
 		sb.append("import org.apache.spark.api.java.JavaPairRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaSparkContext;\n");
@@ -71,7 +72,8 @@ public class SparkGenerator {
 		sb.append("List<String> retInfo = new ArrayList<String>();\n");
 		sb.append(String.format("SparkConf conf = new SparkConf().setAppName(getWfName());\n"));
 		sb.append(String.format("SparkSession spark = SparkSession.builder().config(conf).getOrCreate();\n"));
-		sb.append("JavaSparkContext jsc = new JavaSparkContext(conf);\n");
+		sb.append("SparkContext sc = spark.sparkContext();\n");
+		sb.append("JavaSparkContext jsc = new JavaSparkContext(sc);\n");
 		//gen cmds
 		List<Node> nodes = flow.getActionTopoOrder();
 		List<Data> datas = flow.getData();
