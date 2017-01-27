@@ -56,6 +56,7 @@ public class SparkGenerator {
 		sb.append("import java.util.*;\n");
 		sb.append("import org.apache.log4j.Logger;\n");
 		sb.append("import org.apache.spark.SparkConf;\n");
+		sb.append("import org.apache.spark.SparkContext;;\n");
 		sb.append("import org.apache.spark.api.java.JavaPairRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaSparkContext;\n");
@@ -69,7 +70,6 @@ public class SparkGenerator {
 		//gen sgProcess
 		sb.append("public List<String> sgProcess() {\n");
 		sb.append("List<String> retInfo = new ArrayList<String>();\n");
-		//sb.append(String.format("SparkConf conf = new SparkConf().setAppName(getWfName());\n"));
 		sb.append(String.format("SparkSession spark = SparkSession.builder().appName(getWfName()).getOrCreate();\n"));
 		sb.append("JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());\n");
 		//gen cmds
