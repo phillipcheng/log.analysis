@@ -15,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import etl.cmd.DatasetSqlCmd;
+import etl.engine.InputFormatType;
 import etl.util.GroupFun;
 import etl.util.StringUtil;
 
@@ -39,7 +40,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
 		
 		List<String> output = super.sparkTestKV(remoteInputFolder, csvFiles, csvtransProp, 
-				etl.cmd.DatasetSqlCmd.class, TextInputFormat.class);
+				etl.cmd.DatasetSqlCmd.class, InputFormatType.Text);
 		//assertion
 		logger.info("Output is:\n"+String.join("\n", output));
 		assertEquals(4, output.size());
@@ -56,7 +57,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
 		List<String> ret = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
-				DatasetSqlCmd.class, TextInputFormat.class);
+				DatasetSqlCmd.class, InputFormatType.Text);
 		ArrayList<String> output = new ArrayList<String>();
 		output.addAll(ret);
 		Collections.sort(output);
@@ -74,7 +75,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String csvtransProp = "NoSchemaMax.properties";
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
-		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		
 		// assertion
@@ -89,7 +90,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String csvtransProp = "NoSchemaCount.properties";
 		String[] csvFiles = new String[] {"csvaggregate.csv"};
 		
-		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		
 		// assertion
@@ -109,7 +110,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String schemaFile = "multipleTableSchemas.txt";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
 		
-		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n"+ String.join("\n", output));
 		// assertion
 		assertTrue(output.size() == 4);
@@ -125,7 +126,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String schemaFile = "dynschema_test1_schemas.txt";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(cfgFolder+schemaFile));
 		//
-		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n"+String.join("\n", output));
 		// assertion
 		assertTrue(output.size()==4);
@@ -143,7 +144,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String schemaFile = "multipleTableSchemas.txt";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 		
-		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n"+String.join("\n", output));
 		String dt = "2016-03-28T11:05:00+00:00";
 		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
@@ -163,7 +164,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		//prepare data
 		String dataFile = "maxA"; 
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+dataFile), new Path("/data/"+dataFile));
-		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:"+output);
 		
 		// assertion
@@ -183,7 +184,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String schemaFile = "multipleTableSchemas.txt";
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 		
-		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n"+String.join("\n", output));
 		String dt = "2016-03-28T11:05:00+00:00";
 		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
@@ -208,7 +209,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName1), new Path(inputFolder + csvFileName1));
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName2), new Path(inputFolder + csvFileName2));
 		
-		List<String> output = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, DatasetSqlCmd.class, TextInputFormat.class);
+		List<String> output = super.sparkTestKV(inputFolder, inputFiles, staticCfgName, DatasetSqlCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n"+String.join("\n",output));
 		
 		Assert.assertEquals(5, output.size());

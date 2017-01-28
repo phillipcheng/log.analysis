@@ -214,7 +214,7 @@ public class OozieGenerator {
 		//input properties
 		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
 		inputFormatTypeCp.setName(prop_inputformat);
-		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift));
+		inputFormatTypeCp.setValue(ETLCmd.getInputFormat(ift).getName());
 		pl.add(inputFormatTypeCp);
 		if (dt == DataType.KeyPath || dt == DataType.KeyValue){
 			CONFIGURATION.Property useKeyValueCp = new CONFIGURATION.Property();

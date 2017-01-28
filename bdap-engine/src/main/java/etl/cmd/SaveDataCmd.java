@@ -220,11 +220,12 @@ public class SaveDataCmd extends SchemaETLCmd {
 		}
 	}
 	
+	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass, SparkSession spark){
+			InputFormatType ift, SparkSession spark){
 		logger.info(String.format("%s:%s", cfgkey_log_tmp_dir, logTmpDir));
 		copyConf();
-		if (ParquetInputFormat.class.isAssignableFrom(inputFormatClass)) {
+		if (InputFormatType.ParquetFile==ift) {
 			saveAsNewAPIHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), getHadoopConf(), input, ParquetOutputFormat.class);
 			
 			

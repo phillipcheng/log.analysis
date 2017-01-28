@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
+import etl.engine.InputFormatType;
 import etl.input.CombineFileNameInputFormat;
 import etl.input.FilenameInputFormat;
 import etl.util.DBType;
@@ -242,7 +243,7 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		//copy schema file
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
 		List<String> keys = super.sparkTestKVKeys(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, 
-				FilenameInputFormat.class);
+				InputFormatType.FileName);
 		//check hdfs
 		logger.info(String.format("output keys:\n %s", String.join("\n", keys)));
 		assertTrue(keys.contains("MyCore_"));

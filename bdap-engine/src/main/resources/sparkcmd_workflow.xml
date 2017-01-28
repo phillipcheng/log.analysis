@@ -47,10 +47,7 @@
             <argument>spark.eventLog.dir=[[defaultfs]]/spark/logs</argument>
             <argument>--conf</argument>
             <argument>spark.eventLog.enabled=true</argument>
-            <argument>--conf</argument>
-            <argument>spark.driver.userClassPathFirst=true</argument>
-            <argument>--conf</argument>
-            <argument>spark.executor.userClassPathFirst=true</argument>
+            
             <argument>--jars</argument>
             <argument>${BDAP_LIB_JARS},${APP_LIB}/${wfName}.jar[[thirdpartyjars]]</argument>
             <argument>${BDAP_LIB}/bdap.engine-VVERSIONN.jar</argument>

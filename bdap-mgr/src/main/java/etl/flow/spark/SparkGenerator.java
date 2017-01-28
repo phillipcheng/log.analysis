@@ -17,12 +17,12 @@ import java.nio.file.StandardOpenOption;
 import bdap.util.JavaCodeGenUtil;
 import etl.engine.DataType;
 import etl.engine.ETLCmd;
+import etl.engine.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.Node;
 import etl.flow.NodeLet;
-import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowMgr;
 import etl.util.SparkUtil;
 
@@ -70,10 +70,8 @@ public class SparkGenerator {
 		//gen sgProcess
 		sb.append("public List<String> sgProcess() {\n");
 		sb.append("List<String> retInfo = new ArrayList<String>();\n");
-		sb.append(String.format("SparkConf conf = new SparkConf().setAppName(getWfName());\n"));
-		sb.append(String.format("SparkSession spark = SparkSession.builder().config(conf).getOrCreate();\n"));
-		sb.append("SparkContext sc = spark.sparkContext();\n");
-		sb.append("JavaSparkContext jsc = new JavaSparkContext(sc);\n");
+		sb.append(String.format("SparkSession spark = SparkSession.builder().appName(getWfName()).getOrCreate();\n"));
+		sb.append("JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());\n");
 		//gen cmds
 		List<Node> nodes = flow.getActionTopoOrder();
 		List<Data> datas = flow.getData();
@@ -135,7 +133,6 @@ public class SparkGenerator {
 				}
 				//cmd execution line
 				//data1trans = d1csvTransformCmd.sparkProcessFilesToKV(data1, jsc, TextInputFormat.class);
-				String inputFormat=null;
 				String inputVarName=null;
 				for (int i=0; i<node.getInLets().size(); i++){
 					NodeLet inl = node.getInLets().get(i);
@@ -153,11 +150,11 @@ public class SparkGenerator {
 				if (methodName==null){
 					logger.error(String.format("input:%s, output:%s pair on action:%s not supported.", inputDataType, outputDataType, anode.getName()));
 				}
-				inputFormat = FlowDeployer.getInputFormat(inData.getDataFormat());
+				String inputFormatName = InputFormatType.class.getName() + "." + inData.getDataFormat().toString();
 				if (outputVarName!=null){
-					sb.append(String.format("%s=%s.%s(%s,jsc,%s.class,spark);\n", outputVarName, cmdVarName, methodName, inputVarName, inputFormat));
+					sb.append(String.format("%s=%s.%s(%s,jsc,%s,spark);\n", outputVarName, cmdVarName, methodName, inputVarName, inputFormatName));
 				}else{
-					sb.append(String.format("%s.%s(%s,jsc,%s.class,spark);\n", cmdVarName, methodName, inputVarName, inputFormat));
+					sb.append(String.format("%s.%s(%s,jsc,%s,spark);\n", cmdVarName, methodName, inputVarName, inputFormatName));
 				}
 				if (multiOutput){
 					//call cache

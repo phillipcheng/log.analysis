@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
+import etl.engine.InputFormatType;
 import etl.input.CombineWithFileNameTextInputFormat;
 import etl.input.FilenameInputFormat;
 import scala.Tuple2;
@@ -110,7 +111,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[] {"seqFile"};
 		
 		List<String> output = super.sparkTestKV(inputFolder, csvFiles, csvtransProp, etl.cmd.CsvTransformCmd.class, 
-				SequenceFileInputFormat.class);
+			InputFormatType.SequenceFile);
 		logger.info("Output is:\n" + String.join("\n", output));
 	
 		assertTrue(output.size()==10);
@@ -149,7 +150,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[] {"P111.csv", "P112.csv"};
 		
 		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, etl.cmd.CsvTransformCmd.class, 
-				FilenameInputFormat.class);
+				InputFormatType.FileName);
 		logger.info("Output is:\n" + String.join("\n", output));
 		assertTrue(output.size()==2);
 	}
@@ -181,7 +182,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[] {"PJ24002A_BBG2.csv"};
 		
 		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
+				etl.cmd.CsvTransformCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n" + String.join("\n", output));
 		
 		// assertion
@@ -220,7 +221,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[]{"csvtrans2.csv"};
 		
 		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
+				etl.cmd.CsvTransformCmd.class, InputFormatType.Text);
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//assertion
 		assertTrue(output.size() > 0);
@@ -260,7 +261,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[]{"csvtrans2.csv"};
 		
 		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
+				etl.cmd.CsvTransformCmd.class, InputFormatType.Text);
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//
 		assertTrue(output.size() > 0);
@@ -300,7 +301,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[]{"telecom.csv"};
 		
 		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
+				etl.cmd.CsvTransformCmd.class, InputFormatType.Text);
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//
 		String row1 = output.get(0);
@@ -345,7 +346,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		getFs().copyFromLocalFile(false, true, new Path(this.getLocalFolder()+schemaFile), new Path(schemaFolder+schemaFile));
 		
 		List<String> output = super.sparkTestKV(remoteCsvFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
+				etl.cmd.CsvTransformCmd.class, InputFormatType.Text);
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//assertion
 		String row1 = output.get(0);
@@ -383,7 +384,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
 		
 		List<String> output = super.sparkTestKV(remoteCsvInputFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
+				etl.cmd.CsvTransformCmd.class, InputFormatType.Text);
 		logger.info(String.format("Output is:\n%s", String.join("\n", output)));
 		//assert
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -444,7 +445,7 @@ public class TestCsvTransformCmd extends TestETLCmd {
 		String[] csvFiles = new String[]{"DPC_PoolType_nss7_","PoolType_mi_SNEType_"};
 		
 		List<String> keys = super.sparkTestKVKeys(remoteCsvInputFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransformCmd.class, TextInputFormat.class);
+				etl.cmd.CsvTransformCmd.class, InputFormatType.Text);
 		logger.info(String.format("Output is:\n%s", String.join("\n", keys)));
 		//assert
 		Set<String> uniqueKeys = new HashSet<String>();
