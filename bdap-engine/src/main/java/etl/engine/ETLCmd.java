@@ -430,7 +430,7 @@ public abstract class ETLCmd implements Serializable{
 	//Files to KV
 	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, InputFormatType ift, SparkSession spark){
 		JavaPairRDD<String, String> prdd = null;
-		Class<? extends InputFormat> inputFormatClass = getInputFormat(ift);
+		Class<? extends InputFormat<LongWritable, Text>> inputFormatClass = getInputFormat(ift);
 		for (String file:inputfiles.collect()){
 			copyConf();
 			JobConf jobConf = new JobConf(this.getHadoopConf());
@@ -443,7 +443,7 @@ public abstract class ETLCmd implements Serializable{
 				public Iterator<Tuple2<String, String>> call(Tuple2<LongWritable, Text> t) throws Exception {
 					init();
 					List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
-					if (inputFormatClass.isAssignableFrom(SequenceFileInputFormat.class)){
+					if (SequenceFileInputFormat.class.isAssignableFrom(inputFormatClass)){
 						ret.addAll(processSequenceFile(null, t._2.toString()));
 					}else{
 						String key = null;

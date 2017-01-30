@@ -2,7 +2,6 @@ package etl.cmd.test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 import etl.cmd.HdfsCmd;
