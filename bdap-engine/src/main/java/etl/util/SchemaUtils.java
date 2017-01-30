@@ -620,6 +620,8 @@ public class SchemaUtils {
 							Date dt = GroupFun.getStandardizeDt(fv, sdtformat);
 							if (dt!=null){
 								ts = new Timestamp(dt.getTime());
+							}else{
+								logger.error(String.format("can't standardize %s with format:%s", fv, sdtformat));
 							}
 						}else{
 							try {

@@ -8,10 +8,15 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import etl.cmd.transform.TableIdx;
+import etl.engine.ETLCmd;
+import etl.engine.LogicSchema;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 
@@ -26,8 +31,71 @@ public class DBUtil {
 	public static final String key_db_password="db.password";
 	public static final String key_db_loginTimeout="db.loginTimeout";
 
+	public static final String var_prefix="$";//idx variable prefix
+	
 	private static String normalizeDBFieldName(String fn){
 		return fn.replaceAll("[ .-]", "_");
+	}
+	
+	public static List<String> getFieldNames(TableIdx ti, LogicSchema ls){
+		List<String> ret = new ArrayList<String>();
+		List<Integer> indexes = IdxRange.getIdxInRange(ti.getIdxR(), ti.getColNum());
+		if (ETLCmd.SINGLE_TABLE.equals(ti.getTableName())){
+			for (int idx:indexes){
+				ret.add(ETLCmd.COLUMN_PREFIX+idx);
+			}
+		}else{
+			List<String> an = ls.getAttrNames(ti.getTableName());
+			for (int idx:indexes){
+				ret.add(an.get(idx));
+			}
+		}
+		return ret;
+	}
+	//expand the idx variables in the sql
+	public static String updateVar(String sql, Map<String, TableIdx> idxMap, LogicSchema ls){
+		for (String vn: idxMap.keySet()){
+			String varName = var_prefix + vn;
+			TableIdx ti = idxMap.get(vn);
+			int i = sql.lastIndexOf(varName);
+			while(i >= 0) {
+				//at i we found varName
+				int begin = i;//include
+				int end = begin + varName.length();//exclude
+				int replaceBegin=begin;
+				int replaceEnd=end;
+				String functionName=null;
+				if (sql.length()>end && sql.charAt(end)==')'){//replace function
+					replaceEnd++;
+					begin--;//(
+					char ch=sql.charAt(begin);
+					while(ch!=' '){
+						replaceBegin--;
+						ch=sql.charAt(replaceBegin);
+					}
+					replaceBegin++;
+					functionName = sql.substring(replaceBegin, begin);
+				}
+				List<String> fns = getFieldNames(ti, ls);
+				StringBuffer sb = new StringBuffer();
+				for (int j=0; j<fns.size(); j++){
+					String fn = fns.get(j);
+					if (functionName!=null){
+						sb.append(String.format("%s(%s.%s)", functionName, ti.getTableName(), fn));
+					}else{
+						sb.append(String.format("%s.%s", ti.getTableName(), fn));
+					}
+					if (j<fns.size()-1){
+						sb.append(",");
+					}
+				}
+				//replace sql from replaceBegin to replaceEnd
+				sql = sql.substring(0, replaceBegin) + sb.toString() + sql.substring(replaceEnd);
+				logger.debug(String.format("sql:%s", sql));
+			    i = sql.lastIndexOf(varName, i-1);
+			}
+		}
+		return sql;
 	}
 	
 	private static List<String> normalizeDBFieldNames(List<String> fieldNameList){

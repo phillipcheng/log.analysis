@@ -273,29 +273,32 @@ public abstract class ETLCmd implements Serializable{
 	//KV to KV
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			InputFormatType ift, SparkSession spark){
-		JavaPairRDD<String,String> processedInput = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-				init();
-				List<Tuple2<String, String>> linesInput = new ArrayList<Tuple2<String,String>>();
-				if (InputFormatType.SequenceFile == ift){
-					linesInput.addAll(processSequenceFile(t._1, t._2));
-				}else{
-					linesInput.add(t);
-				}
-				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
-				for (Tuple2<String, String> lineInput:linesInput){
-					String key = lineInput._1;
-					if (key!=null && ift!=null){
-						//called directly from data, need map, otherwise called from sparkProcessFilesToKV, do not need to mapkey again
-						key = mapKey(key);
+		JavaPairRDD<String,String> processedInput = input;
+		if (ift!=null){
+			processedInput = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+				private static final long serialVersionUID = 1L;
+				@Override
+				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
+					init();
+					List<Tuple2<String, String>> linesInput = new ArrayList<Tuple2<String,String>>();
+					if (InputFormatType.SequenceFile == ift){
+						linesInput.addAll(processSequenceFile(t._1, t._2));
+					}else{
+						linesInput.add(t);
 					}
-					ret.add(new Tuple2<String,String>(key, lineInput._2));
+					List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
+					for (Tuple2<String, String> lineInput:linesInput){
+						String key = lineInput._1;
+						if (key!=null && ift!=null){
+							//called directly from data, need map, otherwise called from sparkProcessFilesToKV, do not need to mapkey again
+							key = mapKey(key);
+						}
+						ret.add(new Tuple2<String,String>(key, lineInput._2));
+					}
+					return ret.iterator();
 				}
-				return ret.iterator();
-			}
-		});
+			});
+		}
 		if (this.useSparkSql()){
 			if (this instanceof SchemaETLCmd){
 				int singleTableColNum=0;
@@ -401,19 +404,19 @@ public abstract class ETLCmd implements Serializable{
 		}
 	}
 	
-	public static Class<? extends InputFormat> getInputFormat(InputFormatType ift){
+	public static Class<? extends InputFormat<LongWritable, Text>> getInputFormat(InputFormatType ift){
 		if (InputFormatType.Line == ift){
 			return org.apache.hadoop.mapreduce.lib.input.NLineInputFormat.class;
 		}else if (InputFormatType.Text == ift){
 			return org.apache.hadoop.mapreduce.lib.input.TextInputFormat.class;
 		}else if (InputFormatType.SequenceFile == ift){
-			return org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat.class;
-		}else if (InputFormatType.ParquetFile == ift){
-			return org.apache.parquet.hadoop.ParquetInputFormat.class;
+			return etl.input.LTSequenceFileInputFormat.class;
 		}else if (InputFormatType.XML == ift){
 			return etl.input.XmlInputFormat.class;
 		}else if (InputFormatType.CombineXML == ift){
 			return etl.input.CombineXmlInputFormat.class;
+		}else if (InputFormatType.CombineWithFileNameText == ift){
+			return etl.input.CombineWithFileNameTextInputFormat.class;
 		}else if (InputFormatType.FileName == ift){
 			return etl.input.FilenameInputFormat.class;
 		}else if (InputFormatType.CombineFileName == ift){
