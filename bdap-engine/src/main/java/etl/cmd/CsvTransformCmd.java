@@ -218,8 +218,7 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<Tuple2<String, String>> output = new ArrayList<Tuple2<String, String>>();
-		if (context.getInputFormatClass().isAssignableFrom(SequenceFileInputFormat.class)){
+		if (SequenceFileInputFormat.class.isAssignableFrom(context.getInputFormatClass())){
 			String[] lines = row.split("\n");
 			String pathName = lines[0];
 			String tfName = getTableNameSetPathFileName(pathName);

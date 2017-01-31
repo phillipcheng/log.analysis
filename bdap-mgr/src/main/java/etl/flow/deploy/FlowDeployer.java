@@ -312,6 +312,8 @@ public class FlowDeployer {
 				}else{
 					logger.error(String.format("engine type:%s not supported for deploy.",et));
 				}
+			}else{
+				logger.error(String.format("json file %s not found!", jsonFile));
 			}
 		}
 	}

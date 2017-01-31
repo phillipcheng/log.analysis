@@ -1,5 +1,7 @@
 package etl.engine;
 
+import org.apache.hadoop.mapreduce.InputFormat;
+
 //used when the dataType has path, describe the content within the file, which inputFormat
 public enum InputFormatType {
 	Line,
@@ -10,7 +12,9 @@ public enum InputFormatType {
 	CombineXML,
 	FileName,//used for input is a directory
 	CombineFileName,
+	CombineWithFileNameText,
 	Binary,//
 	Section,//for kcv
 	Mixed,//join will follow
+	
 }

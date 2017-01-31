@@ -1,10 +1,7 @@
 package etl.cmd;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -16,9 +13,11 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
+import etl.cmd.transform.TableIdx;
 import etl.engine.ETLCmd;
 import etl.engine.ProcessMode;
 import etl.util.ConfigKey;
+import etl.util.DBUtil;
 import etl.util.IdxRange;
 import etl.util.SchemaUtils;
 import scala.Tuple2;
@@ -32,27 +31,12 @@ public class DatasetSqlCmd extends SchemaETLCmd {
 	
 	public static final String no_table_value="no";
 	public static final String key_idx="idx";
-	public static final String var_prefix="$";
-	
-	
+
 	public static final @ConfigKey String cfgkey_sqls = "sqls";
 	public static final @ConfigKey String cfgkey_new_tables = "new.tables";
 	
 	private String[] sqls;
 	private String[] newtables;
-	
-	class TableIdx implements Serializable{
-		String tableName;
-		List<IdxRange> idxR;
-		int colNum;
-		TableIdx(String n, List<IdxRange> i){
-			tableName = n;
-			idxR = i;
-		}
-		public String toString(){
-			return String.format("%s,%d,%s", tableName,colNum, idxR);
-		}
-	}
 	private Map<String, TableIdx> idxMap;
 	
 	//for serialization
@@ -86,86 +70,26 @@ public class DatasetSqlCmd extends SchemaETLCmd {
 		}
 		logger.info(String.format("idxMap:%s", idxMap));
 	}
+	
 	@Override
 	public boolean useSparkSql(){
 		return true;
 	}
 	
-	private List<String> getFieldNames(String idxVarName){
-		List<String> ret = new ArrayList<String>();
-		TableIdx ti = idxMap.get(idxVarName);
-		List<Integer> indexes = IdxRange.getIdxInRange(ti.idxR, ti.colNum);
-		if (ETLCmd.SINGLE_TABLE.equals(ti.tableName)){
-			for (int idx:indexes){
-				ret.add(ETLCmd.COLUMN_PREFIX+idx);
-			}
-		}else{
-			List<String> an = super.logicSchema.getAttrNames(ti.tableName);
-			for (int idx:indexes){
-				ret.add(an.get(idx));
-			}
-		}
-		return ret;
-	}
-	
-	private String updateVar(String sql){
-		for (String vn: idxMap.keySet()){
-			String varName = var_prefix + vn;
-			TableIdx ti = idxMap.get(vn);
-			int i = sql.lastIndexOf(varName);
-			while(i >= 0) {
-				//at i we found varName
-				int begin = i;//include
-				int end = begin + varName.length();//exclude
-				int replaceBegin=begin;
-				int replaceEnd=end;
-				String functionName=null;
-				if (sql.length()>end && sql.charAt(end)==')'){//replace function
-					replaceEnd++;
-					begin--;//(
-					char ch=sql.charAt(begin);
-					while(ch!=' '){
-						replaceBegin--;
-						ch=sql.charAt(replaceBegin);
-					}
-					replaceBegin++;
-					functionName = sql.substring(replaceBegin, begin);
-				}
-				List<String> fns = getFieldNames(vn);
-				StringBuffer sb = new StringBuffer();
-				for (int j=0; j<fns.size(); j++){
-					String fn = fns.get(j);
-					if (functionName!=null){
-						sb.append(String.format("%s(%s.%s)", functionName, ti.tableName, fn));
-					}else{
-						sb.append(String.format("%s.%s", ti.tableName, fn));
-					}
-					if (j<fns.size()-1){
-						sb.append(",");
-					}
-				}
-				//replace sql from replaceBegin to replaceEnd
-				sql = sql.substring(0, replaceBegin) + sb.toString() + sql.substring(replaceEnd);
-				logger.debug(String.format("sql:%s", sql));
-			    i = sql.lastIndexOf(varName, i-1);
-			}
-		}
-		return sql;
-	}
 	@Override
 	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, int singleTableColNum){
 		for (String vn: idxMap.keySet()){
 			TableIdx ti = idxMap.get(vn);
-			if (ETLCmd.SINGLE_TABLE.equals(ti.tableName)){
-				ti.colNum=singleTableColNum;
+			if (ETLCmd.SINGLE_TABLE.equals(ti.getTableName())){
+				ti.setColNum(singleTableColNum);
 			}else{
-				ti.colNum=super.getLogicSchema().getAttrNames(ti.tableName).size();
+				ti.setColNum(getLogicSchema().getAttrNames(ti.getTableName()).size());
 			}
 		}
 		JavaPairRDD<String,String> ret = JavaPairRDD.fromJavaRDD(jsc.emptyRDD());
 		for (int i=0; i<sqls.length; i++){
 			String rawSql = sqls[i];
-			String cookedSql=updateVar(rawSql);
+			String cookedSql=DBUtil.updateVar(rawSql, idxMap, this.getLogicSchema());
 			Dataset<Row> r = spark.sql(cookedSql);//execute sql
 			String newTable = newtables.length==0?ETLCmd.SINGLE_TABLE:newtables[i];
 			if (!no_table_value.equals(newTable)){//output
