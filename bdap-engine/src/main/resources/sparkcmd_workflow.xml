@@ -37,6 +37,8 @@
             <argument>yarn</argument>
             <argument>--deploy-mode</argument>
             <argument>cluster</argument>
+            <argument>--num-executors</argument>
+            <argument>4</argument>
             <argument>--executor-memory</argument>
             <argument>7G</argument>
             <argument>--total-executor-cores</argument>

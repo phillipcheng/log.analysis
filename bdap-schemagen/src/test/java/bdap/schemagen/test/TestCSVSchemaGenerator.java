@@ -15,6 +15,7 @@ import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
 import etl.util.DBType;
 import etl.util.SchemaUtils;
+import etl.util.StoreFormat;
 import etl.util.VarType;
 
 public class TestCSVSchemaGenerator {
@@ -62,7 +63,7 @@ public class TestCSVSchemaGenerator {
 			
 			JsonUtil.toLocalJsonFile("test.ls", ls);
 			
-			List<String> ddl = SchemaUtils.genCreateSqlByLogicSchema(ls, "test", DBType.VERTICA);
+			List<String> ddl = SchemaUtils.genCreateSqlByLogicSchema(ls, "test", DBType.VERTICA, StoreFormat.text);
 			if (ddl != null && ddl.size() > 0) {
 				BufferedWriter writer = new BufferedWriter(new FileWriter("test.ddl"));
 				for (String line: ddl) {

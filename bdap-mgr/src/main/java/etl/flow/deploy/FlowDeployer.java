@@ -318,16 +318,12 @@ public class FlowDeployer {
 		}
 	}
 	
-	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, boolean skipSchema, EngineType et) {
+	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, EngineType et) {
 		try {
-			deploy(projectName, flowName, jars, propFiles, fromJson, skipSchema, et);
+			deploy(projectName, flowName, jars, propFiles, true, false, et);
 		}catch(Exception e){
 			logger.error("", e);
 		}
-	}
-	
-	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, EngineType et) {
-		runDeploy(projectName, flowName, jars, propFiles, fromJson, false, et);
 	}
 	
 	private String execute(String prjName, String flowName, EngineType et){
@@ -429,7 +425,7 @@ public class FlowDeployer {
 			if (args.length>4){
 				jars = args[4].split(",");
 			}
-			fd.runDeploy(prjName, flowName, jars, null, false, EngineType.valueOf(engineType));
+			fd.runDeploy(prjName, flowName, jars, null, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runFlow.toString().equals(cmd)){
 			fd.runExecute(prjName, flowName, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runCoordinator.toString().equals(cmd)){

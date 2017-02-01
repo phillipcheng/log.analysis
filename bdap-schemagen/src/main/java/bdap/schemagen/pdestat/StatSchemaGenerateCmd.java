@@ -200,7 +200,8 @@ public class StatSchemaGenerateCmd extends SchemaETLCmd {
 					logicSchema.updateTableAttrs(tn, newTableObjNamesAdded.get(tn));
 					logicSchema.updateTableAttrTypes(tn, newTableObjTypesAdded.get(tn));
 					//gen update sql
-					createTableSqls.add(DBUtil.genCreateTableSql(newTableObjNamesAdded.get(tn), newTableObjTypesAdded.get(tn), tn, 	dbPrefix, super.getDbtype()));
+					createTableSqls.add(DBUtil.genCreateTableSql(newTableObjNamesAdded.get(tn), newTableObjTypesAdded.get(tn), 
+							tn, 	dbPrefix, super.getDbtype(), super.getStoreFormat()));
 				}
 				
 				

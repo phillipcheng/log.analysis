@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.script.CompiledScript;
 
@@ -52,6 +53,7 @@ import etl.util.ConfigKey;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
 import etl.util.SparkUtil;
+import etl.util.StringUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
 
@@ -78,6 +80,7 @@ public abstract class ETLCmd implements Serializable{
 	public static final @ConfigKey String cfgkey_input_endwith_delimiter="input.endwithcomma";//ending delimiter
 	public static final @ConfigKey String cfgkey_record_type="record.type";//override what defined on the input data
 	public static final @ConfigKey String cfgkey_input_format="input.format";//override what defined on the input data
+	public static final @ConfigKey String cfgkey_path_filters="path.filters";//filter the input files for spark
 	
 	//system variables
 	public static final String VAR_NAME_TABLE_NAME="tablename";
@@ -105,6 +108,9 @@ public abstract class ETLCmd implements Serializable{
 	protected boolean inputEndwithDelimiter=false;
 	protected DataType recordType = null;
 	protected InputFormatType inputFormatType = null;
+	protected String[] pathFilters = null;
+	protected transient List<Pattern> pathFilterExps = null;
+	
 	
 	protected transient FileSystem fs;
 	private transient PropertiesConfiguration pc;
@@ -208,16 +214,17 @@ public abstract class ETLCmd implements Serializable{
 		this.csvValueSep=getCfgString(cfgkey_csv_value_sep, DEFAULT_CSV_VALUE_SEP);
 		this.keyValueSep=getCfgString(cfgkey_key_value_sep, DEFAULT_KEY_VALUE_SEP);
 		this.inputEndwithDelimiter=getCfgBoolean(cfgkey_input_endwith_delimiter, false);
+		pathFilters = getCfgStringArray(cfgkey_path_filters);
+		pathFilterExps = new ArrayList<Pattern>();
+		for (String pathFilter:pathFilters){
+			pathFilterExps.add(Pattern.compile(StringUtil.convertGlobToRegEx(pathFilter)));
+		}
 	}
 	
 	public void init(){
 		if (fs==null){
 			init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		}
-	}
-	
-	public void reinit(){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 	}
 	
 /*************
@@ -274,8 +281,23 @@ public abstract class ETLCmd implements Serializable{
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			InputFormatType ift, SparkSession spark){
 		JavaPairRDD<String,String> processedInput = input;
+		logger.info("pathFilter:" + pathFilters);
+		if (pathFilters!=null && pathFilters.length>0){
+			processedInput = input.filter(new Function<Tuple2<String,String>, Boolean>(){
+				@Override
+				public Boolean call(Tuple2<String, String> v1) throws Exception {
+					init();
+					for (Pattern p: pathFilterExps){
+						if (p.matcher(v1._1).matches()){
+							return true;
+						}
+					}
+					return false;
+				}
+			});
+		}
 		if (ift!=null){
-			processedInput = input.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
+			processedInput = processedInput.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 				private static final long serialVersionUID = 1L;
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
@@ -366,18 +388,10 @@ public abstract class ETLCmd implements Serializable{
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
 					init();
 					List<Tuple2<String, String>> ret1 = flatMapToPair(t._1, t._2, null);
-					if (ret1!=null) return ret1.iterator();
-					else return null;
-				}
-			}).filter(new Function<Tuple2<String, String>, Boolean>(){
-				private static final long serialVersionUID = 1L;
-				@Override
-				public Boolean call(Tuple2<String, String> v1) throws Exception {
-					if (v1==null){
-						return false;
-					}else{
-						return true;
-					}
+					if (ret1!=null) 
+						return ret1.iterator();
+					else 
+						return new ArrayList<Tuple2<String,String>>().iterator();
 				}
 			});
 			if (this.hasReduce()){

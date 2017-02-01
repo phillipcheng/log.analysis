@@ -3,6 +3,8 @@ package etl.cmd;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,6 +72,8 @@ public class SftpCmd extends ETLCmd {
 	public static final @ConfigKey(type=Integer.class) String cfgkey_file_limit ="file.limit";
 	public static final @ConfigKey(type=Boolean.class) String cfgkey_names_only="sftp.names.only";
 	public static final @ConfigKey(defaultValue="default") String cfgkey_output_key="output.key";
+	public static final @ConfigKey(defaultValue="false") String cfgkey_from_local="from.local";
+	
 	public static final String paramkey_src_file="src.file";
 
 	public static final String separator = "/";
@@ -90,8 +94,9 @@ public class SftpCmd extends ETLCmd {
 	private boolean sftpClean=false;
 	private int fileLimit=0;
 	private boolean sftpNamesOnly = false; //when this is true, we lost the capability to enable the overlap of the multiple SftpCmd to process the same dir.
-	private boolean deleteOnly=false;
-	private String outputKey;
+	private boolean deleteOnly=false;//delete source files without tranfer them
+	private String outputKey; //the group name/output key of the files
+	private boolean fromLocal=false; //copy to hdfs from local folder, for windows based testing, hard to setup sftp server
 	
 	public SftpCmd(){
 		super();
@@ -135,9 +140,10 @@ public class SftpCmd extends ETLCmd {
 		}
 		this.outputKey = super.getCfgString(cfgkey_output_key, output_default_key);
 		deleteOnly = super.getCfgBoolean(cfgkey_delete_only, false);
+		fromLocal = super.getCfgBoolean(cfgkey_from_local, false);
 	}
 
-	public List<String> process(String row){
+	public List<String> process(String row) throws Exception {
 		logger.info(String.format("param: %s", row));
 		super.init();
 		
@@ -195,61 +201,81 @@ public class SftpCmd extends ETLCmd {
 		ChannelSftp sftpChannel = null;
 		int sftConnectRetryCntTemp = 1;
 		List<String> files = new ArrayList<String>();
-		try {
-			// connect
-			JSch jsch = new JSch();
-			Channel channel = null;
-			session = jsch.getSession(user, host, port);
-			session.setConfig("StrictHostKeyChecking", "no");
-			session.setPassword(pass);
-
-			// retry for session connect
-			while (sftConnectRetryCntTemp <= sftpConnectRetryCount) {
-				try {
-					session.setTimeout(this.sftpConnectRetryWait);
-					session.connect();
-					channel = session.openChannel("sftp");
+		if (fromLocal){
+			//copy files from fromDirs to incomingFolder
+			String flDir = fromDirs[0];
+			Iterator<java.nio.file.Path> pi = Files.list(Paths.get(flDir)).iterator();
+			int i=0;
+			while (pi.hasNext()){
+				if (fileLimit>0 && i>=fileLimit){
 					break;
-				} catch (Exception e) {
-					if (sftConnectRetryCntTemp == sftpConnectRetryCount) {
-						logger.error("Reached maximum number of times for connecting session.");
-						throw new SftpException(0, 
-								String.format("Reached maximum number of times for connecting sftp session to %s", this.host));
-					}
-					logger.error("Session connection failed. retrying..." + sftConnectRetryCntTemp);
-					sftConnectRetryCntTemp++;
+				}else{
+					java.nio.file.Path p = pi.next();
+					String fname = p.getFileName().toString();
+					String destFile = String.format("%s/%s", this.incomingFolder, fname);
+					this.getFs().copyFromLocalFile(false, true, new org.apache.hadoop.fs.Path(p.toString()), 
+							new org.apache.hadoop.fs.Path(destFile));
+					i++;
+					files.add(destFile);
 				}
 			}
-			channel.connect();
-			sftpChannel = (ChannelSftp) channel;
-			for (String fromDir:fromDirs){
-				files.addAll(
-					dirCopy(sftpChannel, fromDir, incomingFolder, 0)
-				);
-				
-				if (this.fileLimit>0 && files.size()>=this.fileLimit)
-					break;
+		}else{
+			try {
+				// connect
+				JSch jsch = new JSch();
+				Channel channel = null;
+				session = jsch.getSession(user, host, port);
+				session.setConfig("StrictHostKeyChecking", "no");
+				session.setPassword(pass);
+	
+				// retry for session connect
+				while (sftConnectRetryCntTemp <= sftpConnectRetryCount) {
+					try {
+						session.setTimeout(this.sftpConnectRetryWait);
+						session.connect();
+						channel = session.openChannel("sftp");
+						break;
+					} catch (Exception e) {
+						if (sftConnectRetryCntTemp == sftpConnectRetryCount) {
+							logger.error("Reached maximum number of times for connecting session.");
+							throw new SftpException(0, 
+									String.format("Reached maximum number of times for connecting sftp session to %s", this.host));
+						}
+						logger.error("Session connection failed. retrying..." + sftConnectRetryCntTemp);
+						sftConnectRetryCntTemp++;
+					}
+				}
+				channel.connect();
+				sftpChannel = (ChannelSftp) channel;
+				for (String fromDir:fromDirs){
+					files.addAll(
+						dirCopy(sftpChannel, fromDir, incomingFolder, 0)
+					);
+					
+					if (this.fileLimit>0 && files.size()>=this.fileLimit)
+						break;
+				}
+			} catch (Exception e) {
+				logger.error("Exception while processing SFTP:", e);
+			} finally {
+				if (sftpChannel != null) {
+					sftpChannel.exit();
+				}
+				if (session != null) {
+					session.disconnect();
+				}
 			}
-		} catch (Exception e) {
-			logger.error("Exception while processing SFTP:", e);
-		} finally {
-			if (sftpChannel != null) {
-				sftpChannel.exit();
-			}
-			if (session != null) {
-				session.disconnect();
+			if (this.sftpNamesOnly){//write out the output file containing sftpserver, sftp user name and file name
+				List<String> outputList = new ArrayList<String>();
+				String[] argNames = new String[]{cfgkey_sftp_host, cfgkey_sftp_user, paramkey_src_file};
+				for (String srcFile: files){
+					String[] argValues = new String[]{this.host, this.user, srcFile};
+					outputList.add(ParamUtil.makeMapParams(argNames, argValues));
+				}
+				return outputList;
 			}
 		}
 		
-		if (this.sftpNamesOnly){//write out the output file containing sftpserver, sftp user name and file name
-			List<String> outputList = new ArrayList<String>();
-			String[] argNames = new String[]{cfgkey_sftp_host, cfgkey_sftp_user, paramkey_src_file};
-			for (String srcFile: files){
-				String[] argValues = new String[]{this.host, this.user, srcFile};
-				outputList.add(ParamUtil.makeMapParams(argNames, argValues));
-			}
-			return outputList;
-		}
 		return files;
 	}
 	
@@ -353,7 +379,7 @@ public class SftpCmd extends ETLCmd {
 	}
 	
 	@Override
-	public List<String> sgProcess(){
+	public List<String> sgProcess() throws Exception{
 		List<String> ret = process(null);
 		int fileNumberTransfer=ret.size();
 		List<String> logInfo = new ArrayList<String>();
@@ -363,7 +389,7 @@ public class SftpCmd extends ETLCmd {
 	
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, 
-			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		//override param
 		Map<String, Object> retMap = new HashMap<String, Object>();
 		List<String> files = process(row);

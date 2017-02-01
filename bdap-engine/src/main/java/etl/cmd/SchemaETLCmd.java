@@ -46,6 +46,7 @@ import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
+import etl.util.StoreFormat;
 import etl.util.VarDef;
 import etl.util.VarType;
 
@@ -77,6 +78,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	public static final @ConfigKey String cfgkey_create_sql="create.sql";
 	public static final @ConfigKey String cfgkey_db_prefix="db.prefix"; //db schema
 	public static final @ConfigKey(type=DBType.class,defaultValue="none") String cfgkey_db_type="db.type";
+	public static final @ConfigKey(type=StoreFormat.class,defaultValue="text") String cfgkey_store_format="store.format";
 	public static final @ConfigKey(type=OutputType.class,defaultValue="multiple") String cfgkey_output_type="output.type";
 	public static final @ConfigKey(type=LockType.class,defaultValue="jvm") String cfgkey_lock_type="lock.type";
 	public static final @ConfigKey String cfgkey_zookeeper_url="zookeeper.url";
@@ -95,6 +97,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	protected OutputType outputType = OutputType.multiple;
 	
 	private DBType dbtype = DBType.NONE;
+	private StoreFormat storeFormat = StoreFormat.text;
 	private LockType lockType = LockType.jvm;
 	private String zookeeperUrl=null;
 	private transient CuratorFramework client;
@@ -164,6 +167,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		if (strDbType!=null){
 			dbtype = DBType.fromValue(strDbType);
 		}
+		storeFormat = StoreFormat.valueOf(super.getCfgString(cfgkey_store_format, StoreFormat.text.toString()));
 		String strOutputType = super.getCfgString(cfgkey_output_type, null);
 		if (strOutputType!=null){
 			outputType = OutputType.valueOf(strOutputType);
@@ -196,7 +200,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		for (String newTable: attrsMap.keySet()){
 			List<String> newAttrs = attrsMap.get(newTable);
 			List<FieldType> newTypes = attrTypesMap.get(newTable);
-			createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, dbPrefix, getDbtype())+";\n");
+			createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, dbPrefix, getDbtype(), storeFormat)+";\n");
 		}
 		JsonUtil.toLocalJsonFile(schemaFile, newls);
 		try {
@@ -238,8 +242,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 				tableSchema.getAttrIdNameMap().put(attrIds.get(i), attrNames.get(i));
 		
 		//generate create table
-		String createTableSql = DBUtil.genCreateTableSql(attrNames, attrTypes, name, 
-				dbPrefix, getDbtype());
+		String createTableSql = DBUtil.genCreateTableSql(attrNames, attrTypes, name, dbPrefix, getDbtype(), storeFormat);
 		
 		//update/create create-table-sql
 		logger.info(String.format("create/update table sqls are:%s", createTableSql));
@@ -541,7 +544,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	public List<String> getCreateSqls(){
-		return SchemaUtils.genCreateSqlByLogicSchema(this.logicSchema, this.dbPrefix, this.dbtype);
+		return SchemaUtils.genCreateSqlByLogicSchema(this.logicSchema, this.dbPrefix, this.dbtype, storeFormat);
 	}
 	
 	public List<String> getDropSqls(){
@@ -605,5 +608,13 @@ public abstract class SchemaETLCmd extends ETLCmd{
 
 	public void setOutputType(OutputType outputType) {
 		this.outputType = outputType;
+	}
+
+	public StoreFormat getStoreFormat() {
+		return storeFormat;
+	}
+
+	public void setStoreFormat(StoreFormat storeFormat) {
+		this.storeFormat = storeFormat;
 	}
 }
