@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.SchemaETLCmd;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;

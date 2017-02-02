@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import etl.cmd.transform.TableIdx;
 import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
+import etl.engine.types.DBType;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 

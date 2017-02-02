@@ -21,7 +21,7 @@ import org.junit.Test;
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvNormalizeCmd;
 import etl.cmd.SaveDataCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.InputFormatType;
 import etl.output.ParquetOutputFormat;
 import scala.Tuple2;
 

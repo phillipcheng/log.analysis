@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +19,10 @@ import bdap.util.EngineConf;
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
-import etl.engine.InputFormatType;
+import etl.engine.ETLCmd;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.OutputFormat;
+import etl.flow.ActionNode;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.mgr.FlowMgr;
@@ -102,11 +106,19 @@ public class FlowDeployer {
 	}
     
     
-    public static String getOutputFormat(InputFormatType ift){
-    	if (InputFormatType.ParquetFile.equals(ift))
-			return prop_outputformat_parquetfile;
-		else
+    public static String getOutputFormat(ActionNode an){
+    	Map<String, Object> sysProperties = an.getSysProperties();
+    	OutputFormat of = OutputFormat.text;
+    	if (sysProperties.containsKey(ETLCmd.cfgkey_output_file_format)){
+    		of = OutputFormat.valueOf((String) sysProperties.get(ETLCmd.cfgkey_output_file_format));
+    		if (OutputFormat.parquet==of){
+    			return prop_outputformat_parquetfile;
+    		}else{
+    			return prop_outputformat_textfile;
+    		}
+    	}else{
 			return prop_outputformat_textfile;
+    	}
 	}
     
 	public String getProjectHdfsDir(String prjName){

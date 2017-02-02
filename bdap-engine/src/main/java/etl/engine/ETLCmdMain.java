@@ -14,6 +14,8 @@ import java.util.concurrent.ScheduledFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import etl.engine.types.ProcessMode;
+
 public class ETLCmdMain {
 	
 	public static final Logger logger = LogManager.getLogger(ETLCmdMain.class);

@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Lists;
 
 import etl.engine.ETLCmd;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;

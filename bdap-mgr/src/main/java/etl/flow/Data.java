@@ -7,8 +7,8 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
-import etl.engine.DataType;
-import etl.engine.InputFormatType;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
 
 public class Data {
 	

@@ -46,6 +46,7 @@ import com.google.common.cache.RemovalNotification;
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
+import etl.engine.types.DBType;
 
 public class SchemaUtils {
 	public static final Logger logger = LogManager.getLogger(SchemaUtils.class);
@@ -576,7 +577,7 @@ public class SchemaUtils {
 						dt = DataTypes.DateType;
 						break;
 					case NUMERIC:
-						dt = DataTypes.DoubleType;
+						dt = DataTypes.DoubleType;//TODO use numeric type()
 						break;
 					case INT:
 						dt = DataTypes.IntegerType;
@@ -596,7 +597,7 @@ public class SchemaUtils {
 			}
 			return st;
 		}else{
-			logger.error(String.format("table %s not found in logicSchema.", tableName));
+			logger.error(String.format("table %s not found in logicSchema:%s.", tableName, logicSchema.getTableNames()));
 			return null;
 		}
 	}
@@ -661,7 +662,7 @@ public class SchemaUtils {
 			}
 			return ret;
 		}else{
-			logger.error(String.format("table not found: %s", tableName));
+			logger.error(String.format("table not found: %s in logicSchema: %s.", tableName, logicSchema.getTableNames()));
 			return null;
 		}
 	}

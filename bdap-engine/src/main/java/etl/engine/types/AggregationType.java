@@ -1,4 +1,4 @@
-package etl.util;
+package etl.engine.types;
 
 public enum AggregationType {
 	NONE,

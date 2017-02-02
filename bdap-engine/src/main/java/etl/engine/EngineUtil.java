@@ -17,6 +17,8 @@ import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 import bdap.util.PropertiesUtil;
 import bdap.util.SftpInfo;
+import etl.engine.types.MRMode;
+import etl.engine.types.ProcessMode;
 import etl.log.ETLLog;
 import etl.log.LogType;
 

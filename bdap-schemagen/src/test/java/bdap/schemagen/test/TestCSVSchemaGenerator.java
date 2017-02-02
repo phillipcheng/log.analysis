@@ -13,7 +13,7 @@ import bdap.schemagen.config.FieldConfig;
 import bdap.schemagen.config.ItemConfig;
 import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.SchemaUtils;
 import etl.util.StoreFormat;
 import etl.util.VarType;

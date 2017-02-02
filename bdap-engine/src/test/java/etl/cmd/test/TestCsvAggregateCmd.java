@@ -16,8 +16,8 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvAggregateCmd;
-import etl.engine.InputFormatType;
 import etl.engine.LogicSchema;
+import etl.engine.types.InputFormatType;
 import etl.util.GroupFun;
 import etl.util.StringUtil;
 import scala.Tuple2;

@@ -20,7 +20,7 @@ import bdap.schemagen.config.ItemConfig;
 import bdap.schemagen.datamodel.GenLogicSchema;
 import bdap.schemagen.spi.SchemaGenerator;
 import etl.engine.LogicSchema;
-import etl.util.AggregationType;
+import etl.engine.types.AggregationType;
 import etl.util.FieldType;
 import etl.util.VarType;
 

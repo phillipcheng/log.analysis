@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.FieldType;
 import etl.util.SchemaUtils;
 import etl.util.StoreFormat;

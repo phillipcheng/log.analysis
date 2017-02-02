@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 
 import etl.engine.EngineUtil
 import etl.engine.ETLCmd
-import etl.engine.InputFormatType
+import etl.engine.types.InputFormatType
 import etl.input._
 import etl.util.ScriptEngineUtil
 import etl.util.SchemaUtils

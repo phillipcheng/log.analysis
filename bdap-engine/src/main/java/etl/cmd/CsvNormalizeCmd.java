@@ -16,7 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.engine.LogicSchema;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import scala.Tuple2;
 import scala.Tuple3;
 
@@ -25,6 +25,9 @@ public class CsvNormalizeCmd extends SchemaETLCmd {
 	private static final Logger logger = LogManager.getLogger(CsvNormalizeCmd.class);
 	private static final char DELIMITER = CSVFormat.DEFAULT.getDelimiter();
 
+	public CsvNormalizeCmd(){	
+	}
+	
 	public CsvNormalizeCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
 	}

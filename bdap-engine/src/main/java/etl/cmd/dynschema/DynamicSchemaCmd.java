@@ -32,9 +32,9 @@ import bdap.util.HdfsUtil;
 //
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
-import etl.engine.InputFormatType;
 import etl.engine.LogicSchema;
-import etl.engine.ProcessMode;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.DBUtil;
 import etl.util.FieldType;

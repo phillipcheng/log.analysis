@@ -29,7 +29,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
-import etl.engine.ProcessMode;
+import etl.engine.types.OutputFormat;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
@@ -41,7 +42,6 @@ public class UnpackCmd extends ETLCmd {
 	public static final Logger logger = LogManager.getLogger(UnpackCmd.class);
 	public static final @ConfigKey String cfgkey_input_file_filter="input.file.filter";
 	public static final @ConfigKey String cfgkey_output_file_filter="output.file.filter";
-	public static final @ConfigKey(type=String.class,defaultValue="default",format="enum:default|sequence") String cfgkey_unpack_file_format="output.file.format";
 	private static final byte[] NEW_LINE = "\n".getBytes(StandardCharsets.UTF_8);
 	
 	private FilenameFilter inputFileFilter;
@@ -70,8 +70,8 @@ public class UnpackCmd extends ETLCmd {
 		String fileFilterExp;
 		String fileFilter;
 		
-		String unpackFileFormat = super.getCfgString(cfgkey_unpack_file_format, "default");
-		if ("sequence".equals(unpackFileFormat))
+		OutputFormat unpackFileFormat = OutputFormat.valueOf(super.getCfgString(cfgkey_output_file_format, OutputFormat.text.toString()));
+		if (unpackFileFormat == OutputFormat.sequence)
 			sequenceFile = true;
 		else
 			sequenceFile = false;

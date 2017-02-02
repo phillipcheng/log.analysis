@@ -24,11 +24,11 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.SparkSession;
 
 import bdap.util.HdfsUtil;
-import etl.engine.ProcessMode;
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.DBType;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
-import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;

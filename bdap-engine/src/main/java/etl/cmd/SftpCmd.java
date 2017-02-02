@@ -42,8 +42,8 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
-import etl.engine.ProcessMode;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;

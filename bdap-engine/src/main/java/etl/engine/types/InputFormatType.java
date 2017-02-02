@@ -1,6 +1,4 @@
-package etl.engine;
-
-import org.apache.hadoop.mapreduce.InputFormat;
+package etl.engine.types;
 
 //used when the dataType has path, describe the content within the file, which inputFormat
 public enum InputFormatType {

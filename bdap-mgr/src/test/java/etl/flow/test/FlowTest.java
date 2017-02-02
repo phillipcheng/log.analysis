@@ -12,12 +12,12 @@ import org.junit.Test;
 import bdap.util.HdfsUtil;
 import bdap.util.SftpInfo;
 import bdap.util.SftpUtil;
+import etl.engine.types.DBType;
 import etl.flow.deploy.DefaultDeployMethod;
 import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
 import etl.flow.oozie.OozieFlowMgr;
-import etl.util.DBType;
 import etl.util.SchemaUtils;
 
 public class FlowTest {

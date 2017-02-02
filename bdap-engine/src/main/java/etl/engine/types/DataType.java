@@ -1,4 +1,4 @@
-package etl.engine;
+package etl.engine.types;
 
 //describe each tuple
 public enum DataType {

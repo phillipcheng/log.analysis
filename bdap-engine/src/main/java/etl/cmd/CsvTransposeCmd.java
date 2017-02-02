@@ -25,9 +25,9 @@ import org.apache.logging.log4j.Logger;
 
 import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
-import etl.engine.MRMode;
-import etl.engine.OutputType;
-import etl.engine.ProcessMode;
+import etl.engine.types.MRMode;
+import etl.engine.types.OutputType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;

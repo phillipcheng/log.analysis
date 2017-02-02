@@ -18,7 +18,7 @@ import bdap.util.XmlUtil;
 import etl.cmd.dynschema.DynamicSchemaCmd;
 import etl.cmd.dynschema.DynamicTableSchema;
 import etl.engine.LogicSchema;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.FieldType;
 import etl.util.VarType;
 

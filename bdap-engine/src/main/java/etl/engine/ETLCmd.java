@@ -47,7 +47,10 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
 import etl.cmd.SchemaETLCmd;
-import bdap.util.EngineConf;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.MRMode;
+import etl.engine.types.ProcessMode;
 import etl.input.FilenameInputFormat;
 import etl.util.ConfigKey;
 import etl.util.SchemaUtils;
@@ -81,6 +84,7 @@ public abstract class ETLCmd implements Serializable{
 	public static final @ConfigKey String cfgkey_record_type="record.type";//override what defined on the input data
 	public static final @ConfigKey String cfgkey_input_format="input.format";//override what defined on the input data
 	public static final @ConfigKey String cfgkey_path_filters="path.filters";//filter the input files for spark
+	public static final @ConfigKey(type=etl.engine.types.OutputFormat.class) String cfgkey_output_file_format="output.file.format";
 	
 	//system variables
 	public static final String VAR_NAME_TABLE_NAME="tablename";
@@ -245,7 +249,7 @@ public abstract class ETLCmd implements Serializable{
 		return false;
 	}
 	
-	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, int singleTableColNum){
+	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, Map<String, Dataset<Row>> dfmap){
 		logger.error(String.format("Empty dataSetProcess impl!!! %s", this));
 		return null;
 	}
@@ -275,6 +279,26 @@ public abstract class ETLCmd implements Serializable{
 			}
 		});
 		return sparkProcessKeyValue(pairs, jsc, ift, spark);
+	}
+	
+	public static JavaRDD<Row> filterPairRDDRow(JavaPairRDD<String,Row> input, String key){
+		return input.filter(new Function<Tuple2<String,Row>, Boolean>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Boolean call(Tuple2<String, Row> v1) throws Exception {
+				if (key.equals(v1._1)){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		}).map(new Function<Tuple2<String, Row>, Row>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Row call(Tuple2<String, Row> v1) throws Exception {
+				return v1._2;
+			}
+		});
 	}
 	
 	//KV to KV
@@ -325,16 +349,16 @@ public abstract class ETLCmd implements Serializable{
 			if (this instanceof SchemaETLCmd){
 				int singleTableColNum=0;
 				SchemaETLCmd scmd = (SchemaETLCmd) this;
+				Map<String, Dataset<Row>> dfMap = new HashMap<String, Dataset<Row>>();
 				if (scmd.getLogicSchema()==null){//schema less, each field is treated as string typed
-					JavaRDD<String> frdd = processedInput.values();
-					singleTableColNum = frdd.top(1).get(0).split(csvValueSep,-1).length;
 					StructType st = new StructType();
+					singleTableColNum = processedInput.take(1).get(0)._2.split(csvValueSep,-1).length;
 					for (int i=0; i<singleTableColNum; i++){
 						st = st.add(DataTypes.createStructField(COLUMN_PREFIX+i, DataTypes.StringType, true));
 					}
 					char delimiter = csvValueSep.charAt(0);
 					//no schema, then all input goes to 1 table SINGLE_TABLE
-					JavaRDD<Row> rowRDD = frdd.map(new Function<String, Row>() {
+					JavaRDD<Row> rowRDD = processedInput.values().map(new Function<String, Row>() {
 						private static final long serialVersionUID = 1L;
 						@Override
 						  public Row call(String record) throws Exception {
@@ -352,31 +376,34 @@ public abstract class ETLCmd implements Serializable{
 						});
 					Dataset<Row> dfr = spark.createDataFrame(rowRDD, st);
 					dfr.createOrReplaceTempView(SINGLE_TABLE);
+					dfMap.put(SINGLE_TABLE, dfr);
 				}else{
-					List<String> keys = processedInput.keys().distinct().collect();
+					JavaPairRDD<String, Row> srrdd = processedInput.mapToPair(new PairFunction<Tuple2<String,String>, String, Row>(){
+						private static final long serialVersionUID = 1L;
+						@Override
+						  public Tuple2<String, Row> call(Tuple2<String, String> t) throws Exception {
+							Object[] attributes = SchemaUtils.convertFromStringValues(
+									scmd.getLogicSchema(), t._1, t._2, csvValueSep, 
+									inputEndwithDelimiter, skipHeader);
+						    return new Tuple2<String, Row>(t._1, RowFactory.create(attributes));
+						  }
+						});
+					List<String> keys = srrdd.keys().distinct().collect();
+					logger.info(String.format("%d keys:%s", keys.size(), keys));
 					for (String key: keys){
-						JavaRDD<String> frdd = SparkUtil.filterPairRDD(processedInput, key);
+						JavaRDD<Row> frdd = filterPairRDDRow(srrdd, key);
 						StructType st = scmd.getSparkSqlSchema(key);
 						if (st!=null){
-							JavaRDD<Row> rowRDD = frdd.map(new Function<String, Row>() {
-								private static final long serialVersionUID = 1L;
-								@Override
-								  public Row call(String record) throws Exception {
-									Object[] attributes = SchemaUtils.convertFromStringValues(
-											scmd.getLogicSchema(), key, record, csvValueSep, 
-											inputEndwithDelimiter, skipHeader);
-								    return RowFactory.create(attributes);
-								  }
-								});
-							Dataset<Row> dfr = spark.createDataFrame(rowRDD, st);
+							Dataset<Row> dfr = spark.createDataFrame(frdd, st);
 							dfr.createOrReplaceTempView(key);
+							dfMap.put(key, dfr);
 						}else{
-							logger.error("schema not found for %s", key);
+							logger.error(String.format("schema not found for %s", key));
 							return null;
 						}
 					}
 				}
-				return dataSetProcess(jsc, spark, singleTableColNum);
+				return dataSetProcess(jsc, spark, dfMap);
 			}else{
 				logger.error(String.format("expected SchemaETLCmd subclasses. %s", this.getClass().getName()));
 				return null;

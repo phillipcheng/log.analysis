@@ -15,7 +15,7 @@ import org.apache.spark.sql.SparkSession;
 
 import etl.cmd.transform.TableIdx;
 import etl.engine.ETLCmd;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.DBUtil;
 import etl.util.IdxRange;
@@ -77,11 +77,16 @@ public class DatasetSqlCmd extends SchemaETLCmd {
 	}
 	
 	@Override
-	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, int singleTableColNum){
+	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, Map<String, Dataset<Row>> dfMap){
 		for (String vn: idxMap.keySet()){
 			TableIdx ti = idxMap.get(vn);
 			if (ETLCmd.SINGLE_TABLE.equals(ti.getTableName())){
-				ti.setColNum(singleTableColNum);
+				Dataset<Row> ds = dfMap.get(ETLCmd.SINGLE_TABLE);
+				if (ds!=null){
+					ti.setColNum(ds.columns().length);
+				}else{
+					logger.error(String.format("dataset %s not found.", ETLCmd.SINGLE_TABLE));
+				}
 			}else{
 				ti.setColNum(getLogicSchema().getAttrNames(ti.getTableName()).size());
 			}
