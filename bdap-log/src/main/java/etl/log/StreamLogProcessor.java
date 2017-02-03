@@ -27,9 +27,9 @@ import etl.cmd.HdfsCmd;
 import etl.cmd.LoadDataCmd;
 import etl.cmd.SaveDataCmd;
 import etl.engine.EngineUtil;
-import etl.engine.InputFormatType;
+import etl.engine.types.DBType;
+import etl.engine.types.InputFormatType;
 import etl.output.RDDMultipleTextOutputFormat;
-import etl.util.DBType;
 import etl.util.StringUtil;
 import scala.Tuple2;
 

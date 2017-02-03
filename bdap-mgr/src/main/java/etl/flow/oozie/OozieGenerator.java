@@ -13,9 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
-import etl.engine.DataType;
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.CallSubFlowNode;
 import etl.flow.CoordConf;
@@ -247,7 +247,7 @@ public class OozieGenerator {
 				}else{
 					outputDataDir = d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow());
 				}
-				outputFormatCp.setValue(FlowDeployer.getOutputFormat(d.getDataFormat()));
+				outputFormatCp.setValue(FlowDeployer.getOutputFormat(an));
 				outputDirCp.setValue(outputDataDir);
 				pl.add(outputDirCp);
 				{

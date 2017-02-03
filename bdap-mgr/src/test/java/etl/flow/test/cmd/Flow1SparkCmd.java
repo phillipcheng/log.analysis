@@ -18,8 +18,8 @@ import etl.cmd.CsvTransformCmd;
 import etl.cmd.SaveDataCmd;
 import etl.cmd.SftpCmd;
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
-import etl.engine.ProcessMode;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.SparkUtil;
 

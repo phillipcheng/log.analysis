@@ -15,10 +15,10 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.DBType;
+import etl.engine.types.InputFormatType;
 import etl.input.CombineFileNameInputFormat;
 import etl.input.FilenameInputFormat;
-import etl.util.DBType;
 import etl.util.DBUtil;
 import scala.Tuple2;
 

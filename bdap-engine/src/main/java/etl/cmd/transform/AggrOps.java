@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import etl.engine.AggrOperator;
+import etl.engine.types.AggrOperator;
 import etl.util.IdxRange;
 
 public class AggrOps implements Serializable{

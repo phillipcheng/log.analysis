@@ -15,7 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import etl.cmd.DatasetSqlCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.InputFormatType;
 import etl.util.GroupFun;
 import etl.util.StringUtil;
 

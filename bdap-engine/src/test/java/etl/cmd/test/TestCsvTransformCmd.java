@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import etl.engine.InputFormatType;
+import etl.engine.types.InputFormatType;
 import etl.input.CombineWithFileNameTextInputFormat;
 import etl.input.FilenameInputFormat;
 import scala.Tuple2;

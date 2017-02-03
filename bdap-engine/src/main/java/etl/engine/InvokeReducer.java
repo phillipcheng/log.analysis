@@ -8,6 +8,8 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import etl.engine.types.ProcessMode;
+
 
 public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 	public static final Logger logger = LogManager.getLogger(InvokeMapper.class);

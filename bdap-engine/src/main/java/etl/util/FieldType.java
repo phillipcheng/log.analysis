@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import etl.engine.SafeSimpleDateFormat;
+import etl.engine.types.AggregationType;
+import etl.engine.types.DBType;
 
 
 public class FieldType implements Serializable{

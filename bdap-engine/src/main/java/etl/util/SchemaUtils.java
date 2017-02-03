@@ -46,6 +46,7 @@ import com.google.common.cache.RemovalNotification;
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
+import etl.engine.types.DBType;
 
 public class SchemaUtils {
 	public static final Logger logger = LogManager.getLogger(SchemaUtils.class);
@@ -399,19 +400,26 @@ public class SchemaUtils {
 	}
 	
 	public static List<String> genCreateSqlByLogicSchema(LogicSchema ls, String dbSchema, DBType dbtype){
+		return genCreateSqlByLogicSchema(ls, dbSchema, dbtype, StoreFormat.text);
+	}
+	
+	public static List<String> genCreateSqlByLogicSchema(LogicSchema ls, String dbSchema, DBType dbtype, StoreFormat sf){
 		List<String> sqls = new ArrayList<String>();
 		for (String tn: ls.getTableNames()){
 			List<String> attrNames = ls.getAttrNames(tn);
 			List<FieldType> attrTypes = ls.getAttrTypes(tn);
-			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbSchema, dbtype);
+			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbSchema, dbtype, sf);
 			sqls.add(sql);
 		}
 		return sqls;
 	}
 	
 	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype) throws Exception {
+		genCreateSqls(schemaFile, outputSql, dbSchema, dbtype, StoreFormat.text);
+	}
+	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype, StoreFormat sf) throws Exception {
 		LogicSchema ls = fromLocalJsonPath(schemaFile, LogicSchema.class);
-		List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype);
+		List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype, sf);
 		StringBuffer sb = new StringBuffer();
 		for (String sql:sqls){
 			sb.append(sql).append(";").append("\n");
@@ -569,7 +577,7 @@ public class SchemaUtils {
 						dt = DataTypes.DateType;
 						break;
 					case NUMERIC:
-						dt = DataTypes.DoubleType;
+						dt = DataTypes.DoubleType;//TODO use numeric type()
 						break;
 					case INT:
 						dt = DataTypes.IntegerType;
@@ -589,7 +597,7 @@ public class SchemaUtils {
 			}
 			return st;
 		}else{
-			logger.error(String.format("table %s not found in logicSchema.", tableName));
+			logger.error(String.format("table %s not found in logicSchema:%s.", tableName, logicSchema.getTableNames()));
 			return null;
 		}
 	}
@@ -654,7 +662,7 @@ public class SchemaUtils {
 			}
 			return ret;
 		}else{
-			logger.error(String.format("table not found: %s", tableName));
+			logger.error(String.format("table not found: %s in logicSchema: %s.", tableName, logicSchema.getTableNames()));
 			return null;
 		}
 	}

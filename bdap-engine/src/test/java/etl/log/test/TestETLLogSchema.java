@@ -11,9 +11,10 @@ import org.junit.Test;
 
 import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.FieldType;
 import etl.util.SchemaUtils;
+import etl.util.StoreFormat;
 
 public class TestETLLogSchema {
 	@Test
@@ -51,7 +52,8 @@ public class TestETLLogSchema {
 	
 	@Test
 	public void genVerticaSqlFromSchema() throws Exception{
-		SchemaUtils.genCreateSqls(getResourceFolder() + "logschema.txt", getResourceFolder() + "generated/etllog.vertica.sql", "etllog", DBType.VERTICA);
+		SchemaUtils.genCreateSqls(getResourceFolder() + "logschema.txt", getResourceFolder() + "generated/etllog.vertica.sql", "etllog", 
+				DBType.VERTICA, StoreFormat.text);
 		File file1 = new File(getResourceFolder() + "etllog.vertica.sql");
 		File file2 = new File(getResourceFolder() + "generated/etllog.vertica.sql");
 		assertTrue(FileUtils.contentEquals(file1, file2));
@@ -59,7 +61,8 @@ public class TestETLLogSchema {
 	
 	@Test
 	public void genHiveSqlFromSchema() throws Exception{
-		SchemaUtils.genCreateSqls(getResourceFolder() + "logschema.txt", getResourceFolder() + "generated/etllog.hive.sql", "etllog", DBType.HIVE);
+		SchemaUtils.genCreateSqls(getResourceFolder() + "logschema.txt", getResourceFolder() + "generated/etllog.hive.sql", "etllog", 
+				DBType.HIVE, StoreFormat.text);
 		File file1 = new File(getResourceFolder() + "etllog.hive.sql");
 		File file2 = new File(getResourceFolder() + "generated/etllog.hive.sql");
 		assertTrue(FileUtils.contentEquals(file1, file2));

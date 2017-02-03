@@ -1,4 +1,4 @@
-package etl.engine;
+package etl.engine.types;
 
 //used for logging condition
 public enum MRMode {

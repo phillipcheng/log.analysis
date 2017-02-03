@@ -1,4 +1,4 @@
-package etl.engine;
+package etl.engine.types;
 
 public enum ProcessMode {
 	Map,

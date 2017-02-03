@@ -12,7 +12,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 
-import etl.engine.DataType;
+import etl.engine.types.DataType;
 import etl.input.FilenameTextInputFormat;
 import scala.Tuple2;
 

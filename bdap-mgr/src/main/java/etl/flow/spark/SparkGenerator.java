@@ -15,9 +15,9 @@ import java.nio.file.StandardOpenOption;
 
 
 import bdap.util.JavaCodeGenUtil;
-import etl.engine.DataType;
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.Data;
 import etl.flow.Flow;
@@ -65,7 +65,7 @@ public class SparkGenerator {
 		sb.append(String.format("public class %s extends %s implements %s {\n", className, ETLCmd.class.getName(), Serializable.class.getName()));
 		sb.append(String.format("public static final Logger logger = Logger.getLogger(%s.class);\n", className));
 		//gen constructor
-		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, etl.engine.ProcessMode pm){\n", className));
+		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, etl.engine.types.ProcessMode pm){\n", className));
 		sb.append("init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);}\n");
 		//gen sgProcess
 		sb.append("public List<String> sgProcess() {\n");

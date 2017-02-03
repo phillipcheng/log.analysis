@@ -11,7 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
 import bdap.util.HdfsUtil;
-import etl.engine.InputFormatType;
+import etl.engine.types.InputFormatType;
 import scala.Tuple2;
 
 //log4j2

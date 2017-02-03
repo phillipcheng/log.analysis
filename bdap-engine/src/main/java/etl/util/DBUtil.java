@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import etl.cmd.transform.TableIdx;
 import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
+import etl.engine.types.DBType;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 
@@ -117,7 +118,7 @@ public class DBUtil {
 	}
 
 	public static String genCreateTableSql(List<String> fieldNameList, List<FieldType> fieldTypeList, 
-			String tn, String dbschema, DBType dbtype){
+			String tn, String dbschema, DBType dbtype, StoreFormat sf){
 		List<String> fnl = normalizeDBFieldNames(fieldNameList);
 		StringBuffer tablesql = new StringBuffer();
 		//gen table sql
@@ -132,7 +133,13 @@ public class DBUtil {
 		}
 		tablesql.append(")");
 		if (DBType.HIVE == dbtype){
-			tablesql.append(" ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"");
+			if (StoreFormat.parquet==sf){
+				tablesql.append(" STORED AS PARQUET");
+			}else if (StoreFormat.text==sf){
+				tablesql.append(" ROW FORMAT DELIMITED FIELDS TERMINATED BY \",\"");
+			}else{
+				logger.error(String.format("format not supported:%s", sf));
+			}
 		}
 		return tablesql.toString();
 	}

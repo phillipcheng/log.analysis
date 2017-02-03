@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.FieldType;
 import etl.util.SchemaUtils;
 import etl.util.VarType;

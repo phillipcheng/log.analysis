@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import etl.engine.InputFormatType;
+import etl.engine.types.InputFormatType;
 import scala.Tuple2;
 
 public class TestCsvTransposeCmd extends TestETLCmd {
