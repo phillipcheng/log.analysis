@@ -512,7 +512,7 @@ public class SchemaUtils {
 					case REGEXP:
 					case GLOBEXP:
 					case STRINGLIST:
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).as(OriginalType.UTF8).named(name));
+						m.addField(Types.required(PrimitiveTypeName.BINARY) /* Hive doesn't support .length(type.getSize()) */ .as(OriginalType.UTF8).named(name));
 						break;
 					case TIMESTAMP:
 						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(name));
@@ -536,11 +536,11 @@ public class SchemaUtils {
 					case ARRAY:
 					case LIST:
 					case OBJECT:
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
+						m.addField(Types.required(PrimitiveTypeName.BINARY).named(name));
 						break;
 					default:
 						logger.error("Unknown type: {}, set as binary", type);
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
+						m.addField(Types.required(PrimitiveTypeName.BINARY).named(name));
 						break;
 					}
 				}
