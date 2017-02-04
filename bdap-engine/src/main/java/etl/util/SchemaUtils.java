@@ -512,7 +512,7 @@ public class SchemaUtils {
 					case REGEXP:
 					case GLOBEXP:
 					case STRINGLIST:
-						m.addField(Types.required(PrimitiveTypeName.BINARY).as(OriginalType.UTF8).named(name));
+						m.addField(Types.required(PrimitiveTypeName.BINARY) /* Hive doesn't support .length(type.getSize()) */ .as(OriginalType.UTF8).named(name));
 						break;
 					case TIMESTAMP:
 						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(name));
