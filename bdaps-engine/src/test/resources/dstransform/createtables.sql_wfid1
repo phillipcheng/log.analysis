@@ -1,0 +1,1 @@
+create table if not exists sgsiwf.MyCore_(endTime TIMESTAMP WITH TIMEZONE not null,duration varchar(10),SubNetwork varchar(70),ManagedElement varchar(70),Machine varchar(54),MyCore numeric(15,5),UUID varchar(72),VS_avePerCoreCpuUsage numeric(15,5),VS_peakPerCoreCpuUsage numeric(15,5));

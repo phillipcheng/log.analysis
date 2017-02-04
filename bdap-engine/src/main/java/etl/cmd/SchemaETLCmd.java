@@ -31,6 +31,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 
 import bdap.util.HdfsUtil;
@@ -116,8 +117,23 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		}
 	}
 	
-	public StructType getSparkSqlSchema(String tableName){
-		return sparkSqlSchemaMap.get(tableName);
+	public static Map<Integer, StructType> stCache = new HashMap<Integer, StructType>();
+	
+	public StructType getSparkSqlSchema(String tableName, int num){
+		if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+			if (stCache.containsKey(num)){
+				return stCache.get(num);
+			}else{
+				StructType st = new StructType();
+				for (int i=0; i<num; i++){
+					st = st.add(DataTypes.createStructField(COLUMN_PREFIX+i, DataTypes.StringType, true));
+				}
+				stCache.put(num, st);
+				return st;
+			}
+		}else{
+			return sparkSqlSchemaMap.get(tableName);
+		}
 	}
 	
 	/**

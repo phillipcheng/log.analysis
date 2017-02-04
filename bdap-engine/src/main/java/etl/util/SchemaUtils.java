@@ -9,9 +9,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +31,6 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Types;
 import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
@@ -45,6 +44,7 @@ import com.google.common.cache.RemovalNotification;
 
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
+import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
 import etl.engine.types.DBType;
 
@@ -512,7 +512,7 @@ public class SchemaUtils {
 					case REGEXP:
 					case GLOBEXP:
 					case STRINGLIST:
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).as(OriginalType.UTF8).named(name));
+						m.addField(Types.required(PrimitiveTypeName.BINARY).as(OriginalType.UTF8).named(name));
 						break;
 					case TIMESTAMP:
 						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(name));
@@ -536,11 +536,11 @@ public class SchemaUtils {
 					case ARRAY:
 					case LIST:
 					case OBJECT:
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
+						m.addField(Types.required(PrimitiveTypeName.BINARY).named(name));
 						break;
 					default:
 						logger.error("Unknown type: {}, set as binary", type);
-						m.addField(Types.required(PrimitiveTypeName.BINARY).length(type.getSize()).named(name));
+						m.addField(Types.required(PrimitiveTypeName.BINARY).named(name));
 						break;
 					}
 				}
@@ -577,7 +577,7 @@ public class SchemaUtils {
 						dt = DataTypes.DateType;
 						break;
 					case NUMERIC:
-						dt = DataTypes.DoubleType;//TODO use numeric type()
+						dt = DataTypes.createDecimalType(type.getPrecision(), type.getScale());
 						break;
 					case INT:
 						dt = DataTypes.IntegerType;
@@ -608,8 +608,14 @@ public class SchemaUtils {
 				CSVFormat.DEFAULT.withTrim().withDelimiter(csvValueSep.charAt(0)).
 				withTrailingDelimiter(inputEndwithDelimiter).withSkipHeaderRecord(skipHeader));
 	    CSVRecord csvr = csvParser.getRecords().get(0);
-		if (logicSchema.hasTable(tableName)){
-			List<FieldType> ftl = logicSchema.getAttrTypes(tableName);
+	    List<FieldType> ftl = null;
+		if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+			ftl = Collections.nCopies(csvr.size(), new FieldType(VarType.STRING));
+		}else{
+			ftl = logicSchema.getAttrTypes(tableName);
+		}
+		
+	    if (ETLCmd.SINGLE_TABLE.equals(tableName) || logicSchema.hasTable(tableName)){
 			if (ftl.size()!=csvr.size()){
 				logger.error(String.format("input %s not match with schema %s", row, ftl));
 				return null;
@@ -640,9 +646,9 @@ public class SchemaUtils {
 						}
 						ret[i]=ts;
 					}else if (VarType.NUMERIC==ft.getType()){
-						Double d = null;
+						java.math.BigDecimal d = null;
 						try {
-							d= Double.valueOf(fv);
+							d=  java.math.BigDecimal.valueOf(Double.valueOf(fv));
 						}catch(Exception e){
 							logger.warn(String.format("can't parse %s as double", fv));
 						}

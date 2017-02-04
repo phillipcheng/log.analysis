@@ -42,6 +42,8 @@
 				<include name="log4j-api-*.jar"/>
 				<include name="bdap.*.jar"/>
 				<include name="spark-core*.jar"/>
+				<include name="spark-sql*.jar"/>
+				<include name="spark-catalyst*.jar"/>
 				<include name="scala-library*.jar"/>
 				<include name="parquet-hadoop-bundle*.jar"/>
 			</fileset>

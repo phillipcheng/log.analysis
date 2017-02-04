@@ -29,12 +29,12 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import bdap.util.EngineConf;
 import bdap.util.PropertiesUtil;
+import etl.cmd.SchemaETLCmd;
 import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
 
 public class CSVWriteSupport extends WriteSupport<Text> {
 	public static final Logger logger = LogManager.getLogger(CSVWriteSupport.class);
-	private static final String LOGIC_SCHEMA = "logic.schema";
 	private static final String DEFAULT_FS = "fs.defaultFS";
 	private RecordConsumer recordConsumer;
 	private MessageType rootSchema;
@@ -44,7 +44,7 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 	public WriteSupport.WriteContext init(Configuration configuration) {
 		Map<String, String> extraMetaData = new HashMap<String, String>();
 		// extraMetaData.put(AvroReadSupport.AVRO_SCHEMA_METADATA_KEY, rootAvroSchema.toString());
-		rootLogicSchema = parse(configuration.get(DEFAULT_FS), configuration.get(LOGIC_SCHEMA));
+		rootLogicSchema = parse(configuration.get(DEFAULT_FS), configuration.get(SchemaETLCmd.cfgkey_schema_file));
 		rootSchema = SchemaUtils.convertToParquetSchema(rootLogicSchema, tableName);
 		return new WriteSupport.WriteContext(rootSchema, extraMetaData);
 	}
@@ -59,8 +59,10 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 		String strFileTableMap = configuration.get(ETLCmd.cfgkey_file_table_map);
 		if (strFileTableMap == null) {
 			String staticConf = configuration.get(EngineConf.cfgkey_staticconfigfile);
-			PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(staticConf);
-			strFileTableMap = pc.getString(ETLCmd.cfgkey_file_table_map);
+			if (staticConf!=null){
+				PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(staticConf);
+				strFileTableMap = pc.getString(ETLCmd.cfgkey_file_table_map);
+			}
 		}
 		CompiledScript expFileTableMap = null;
 		if (strFileTableMap!=null){
@@ -74,7 +76,7 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 			tableName = pathName;
 		}
 		
-		logger.debug("table name: {}", tableName);
+		logger.info("table name: {}", tableName);
 	}
 
 	private LogicSchema parse(String defaultFs, String location) {

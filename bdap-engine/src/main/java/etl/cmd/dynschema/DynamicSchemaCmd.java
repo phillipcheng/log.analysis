@@ -124,6 +124,11 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 	}
 	
+	@Override
+	public boolean hasReduce(){
+		return false;
+	}
+	
 	//tableName to csv
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String key, String text, Mapper<LongWritable, Text, Text, Text>.Context context){

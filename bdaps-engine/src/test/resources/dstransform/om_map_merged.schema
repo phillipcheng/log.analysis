@@ -1,0 +1,250 @@
+{
+  "attrNameMap" : {
+    "femto" : [ "STATE_UPDATE_TIME","HOSTNAME", "MACADDRESS", "SERVING_MDB", "MARKET_ID", "PROVISIONING_STATUS", "COUNTY_FIPS", "OVERLAY_MACRO_ECGI", "ZIP_CODE", "SOFTWAREVERSION", "LAST_PWRUP_TIME", "MME_POOL_ID", "PRIMARY_FEGW", "SECONDARY_FEGW", "BAND_CLASS", "LATITUDE", "LONGITUDE", "STATE_CODE", "DEVICE_TYPE", "FEMTO_ECGI","VENDOR"],
+    "RRC_connection_establishments" : [ "Type", "FemtoType", "CollectionStartTime", "CollectionEndTime", "CSGID", "CellIdentity", "MACID", "BandClass", "cNum", "mcID", "EstabCause", "Index3", "Index4", "Index5", "ConnEstabAtt", "ConnEstabSucc", "ConnEstabFail_CP_CC_TO", "ConnEstabFail_CP_CC_FAIL", "ConnEstabFail_UP_MAC_FAIL", "ConnEstabFail_UP_PDCP_FAIL", "ConnEstabFail_UP_RLC_FAIL", "ConnEstabFail_RRC_SIG_TO", "ConnEstabFail_S1AP_LINK_FAIL", "ConnEstabFail_S1AP_SIG_FAIL", "ConnEstabReject_CP_CC_FAIL", "ConnEstabReject_CP_CAPA_CAC_FAIL", "ConnEstabReject_S1AP_MME_OVLD" ]
+   },
+  "attrTypeMap" : {
+    "femto" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    },{
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 12,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 25,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 5,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 11,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 11,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 11,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 2,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }],
+    "RRC_connection_establishments" : [ {
+      "type" : "STRING",
+      "size" : 1,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 1,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 32,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "INT",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 10,
+      "scale" : 0
+    } ]
+  }
+}

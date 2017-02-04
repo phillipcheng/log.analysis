@@ -108,7 +108,8 @@ public class HdfsCmd extends ETLCmd{
 		}
 		rmParent = super.getCfgBoolean(cfgkey_rm_parent, true);
 		if (super.cfgContainsKey(cfgkey_chmod_permissions))
-			chmodPermissions = FsPermission.createImmutable(Short.valueOf(super.getCfgString(cfgkey_chmod_permissions, Short.toString(FsPermission.getDirDefault().toShort())), 8));
+			chmodPermissions = FsPermission.createImmutable(
+					Short.valueOf(super.getCfgString(cfgkey_chmod_permissions, Short.toString(FsPermission.getDirDefault().toShort())), 8));
 		strMvTo = super.getCfgString(cfgkey_mv_to_exp, null);
 		if (strMvTo!=null){
 			csMvTo = ScriptEngineUtil.compileScript(strMvTo);
