@@ -15,4 +15,5 @@ public interface DeployMethod {
 	public void copyFromLocalFile(boolean delSrc, boolean overwrite, String localPath, String remotePath);
 	public List<String> listFiles(String path);
 	public List<String> readFile(String path);
+	public boolean exists(String path);
 }

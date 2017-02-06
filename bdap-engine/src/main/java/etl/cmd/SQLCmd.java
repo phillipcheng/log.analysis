@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,20 +20,14 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
-
 import bdap.util.Util;
 import etl.engine.ETLCmd;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.SequenceUtil;
@@ -98,9 +91,7 @@ public class SQLCmd extends ETLCmd {
 				}
 			}
 		}
-		
 		return new String(chars);
-		
 	}
 	
 	@Override
@@ -122,20 +113,6 @@ public class SQLCmd extends ETLCmd {
 		logInfo.add(String.valueOf(ret.size()));
 		retMap.put(ETLCmd.RESULT_KEY_LOG, logInfo);
 		return retMap;
-	}
-	
-	/*
-	 * called from sparkProcessFileToKV, key: file Name, v: line value
-	 */
-	@Override
-	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, Class<? extends InputFormat> inputFormatClass){
-		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
-			@Override
-			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-				List<Tuple2<String, String>> ret =process(0, t);
-				return ret.iterator();
-			}
-		});
 	}
 	
 	@Override
@@ -173,7 +150,6 @@ public class SQLCmd extends ETLCmd {
 		//Execute SQL and extract data			
 		List<Tuple2<String, String>> ret=process(driver, url, user, password, sqls, outputFilePrefixs);
 		return ret;
-		
 	}
 
 	private List<Tuple2<String, String>> process(String driver, String url, String user, String password, String[] sqls, String[] outputFilePrefixs) {

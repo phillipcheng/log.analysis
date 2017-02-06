@@ -3,35 +3,50 @@ package etl.cmd.dynschema;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.SparkSession;
+
+import com.google.common.collect.Lists;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import scala.Tuple2;
 import scala.Tuple3;
+import bdap.util.HdfsUtil;
 //
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
 import etl.engine.LogicSchema;
-import etl.engine.ProcessMode;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 
 public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
+	private static final String CREATE_TABLES_SQL_KEY = "<<create-tables-sql>>";
 
 	public static final @ConfigKey(type=DynSchemaProcessType.class,defaultValue="genCsv") String cfgkey_process_type="process.type";
 	
 	public static final Logger logger = LogManager.getLogger(DynamicSchemaCmd.class);
-	
+
 	private DynSchemaProcessType processType = DynSchemaProcessType.genCsv;
 	
 	@Override
@@ -61,9 +76,13 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	private UpdatedTable checkSchemaUpdate(DynamicTableSchema dt){
 		String tableName = dt.getName();
 		UpdatedTable ut = new UpdatedTable();
+		List<String> orgSchemaAttributes;
 		ut.name = tableName;
 		ut.id = dt.getId();
-		List<String> orgSchemaAttributes = logicSchema.getAttrNames(tableName);
+		if (logicSchema.hasTable(tableName))
+			orgSchemaAttributes = logicSchema.getAttrNames(tableName);
+		else
+			orgSchemaAttributes = null;
 		//check new attribute
 		List<String> curAttrNames = dt.getFieldNames();
 		List<String> curAttrIds = dt.getFieldIds();
@@ -105,23 +124,38 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 	}
 	
+	@Override
+	public boolean hasReduce(){
+		return false;
+	}
+	
 	//tableName to csv
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String key, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
 		try {
+			List<Tuple2<String, String>> retList = new ArrayList<Tuple2<String, String>>();
 			DynamicTableSchema dt = getDynamicTable(text, this.logicSchema);
 			if (this.processType == DynSchemaProcessType.checkSchema || this.processType==DynSchemaProcessType.both){
 				UpdatedTable ut = checkSchemaUpdate(dt);
 				if (ut != null) {//needs update
 					logger.info(String.format("detect update needed, lock the schema for table %s", dt.getName()));
-					updateSchema(ut.id, ut.name, ut.attrIds, ut.attrNames, ut.attrTypes);
+					List<String> logInfo = updateSchema(ut.id, ut.name, ut.attrIds, ut.attrNames, ut.attrTypes);
+					
+					if (logInfo != null) {
+						for (String info: logInfo) {
+							if (context!=null){
+								context.write(new Text(CREATE_TABLES_SQL_KEY), new Text(info));
+							}else{
+								retList.add(new Tuple2<String, String>(CREATE_TABLES_SQL_KEY, info));
+							}
+						}
+					}
 				}
 			}
 			
 			if (this.processType == DynSchemaProcessType.genCsv || this.processType==DynSchemaProcessType.both){
 				//geneate csv
-				List<Tuple2<String, String>> retList = new ArrayList<Tuple2<String, String>>();
 				String tableName = dt.getName();
 				List<String> orgAttrs = logicSchema.getAttrNames(tableName);
 				if (orgAttrs!=null){
@@ -162,10 +196,11 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 							retList.add(new Tuple2<String, String>(tableName, csv));
 						}
 					}
-					if (context==null){
-						return retList;
-					}
 				}
+			}
+			
+			if (context==null){
+				return retList;
 			}
 		}catch(Exception e){
 			logger.error("", e);
@@ -174,15 +209,89 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 	
 	@Override
+	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc,
+			InputFormatType ift, SparkSession spark) {
+		JavaPairRDD<String, String> result = super.sparkProcessKeyValue(input, jsc, ift, spark);
+		
+		if (processType == DynSchemaProcessType.checkSchema || processType == DynSchemaProcessType.both) {
+			input = result.filter(new Function<Tuple2<String, String>, Boolean>(){
+				private static final long serialVersionUID = 1L;
+				public Boolean call(Tuple2<String, String> v1) throws Exception {
+					return v1 != null && v1._1 != null && CREATE_TABLES_SQL_KEY.equals(v1._1);
+				}
+			});
+			JavaRDD<String> createTablesSql = input.values();
+			createTablesSql = createTablesSql.sortBy(new Function<String, Long>() {
+				private static final long serialVersionUID = 1L;
+				public Long call(String v1) throws Exception {
+					int i1 = v1.indexOf(":");
+					if (i1 != -1)
+						return Long.parseLong(v1.substring(0, i1));
+					else
+						return Long.valueOf(0);
+				}
+			}, true, 1);
+			createTablesSql = createTablesSql.map(new Function<String, String>() {
+				private static final long serialVersionUID = 1L;
+				public String call(String v1) throws Exception {
+					return v1.substring(v1.lastIndexOf(":") + 1);
+				}
+			});
+			createTablesSql.saveAsTextFile(this.createTablesSqlFileName);
+			
+			return result.filter(new Function<Tuple2<String, String>, Boolean>(){
+				private static final long serialVersionUID = 1L;
+				public Boolean call(Tuple2<String, String> v1) throws Exception {
+					return v1 != null && v1._1 != null && !CREATE_TABLES_SQL_KEY.equals(v1._1);
+				}
+			});
+			
+		} else {
+			return result;
+		}
+	}
+
+	@Override
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String,String,String>> out = new ArrayList<Tuple3<String,String,String>>();
-		for (String v: values){
-			if(mos!=null){
-				mos.write(new Text(v), null, key);
-			}else{
-				out.add(new Tuple3<String,String,String>(v, null, key));
+		if (CREATE_TABLES_SQL_KEY.equals(key)) {
+			if (mos != null) {
+				/* For Hadoop MR */
+				FileSystem currentFs;
+				if (fs == null) {
+					try {
+						String fs_key = "fs.defaultFS";
+						Configuration conf = new Configuration();
+						if (defaultFs!=null){
+							conf.set(fs_key, defaultFs);
+						}
+						currentFs = FileSystem.get(conf);
+					}catch(Exception e){
+						logger.error("", e);
+						currentFs = null;
+					}
+				} else {
+					currentFs = fs;
+				}
+				List<String> createSqls = Lists.newArrayList(values);
+				Collections.sort(createSqls, CREATE_TABLES_SQL_COMPARATOR);
+				logger.debug("Append {} sqls to file: {}", createSqls.size(), this.createTablesSqlFileName);
+				
+				for (String sql: createSqls) {
+					sql = sql.substring(sql.lastIndexOf(":") + 1);
+					HdfsUtil.appendDfsFile(currentFs, this.createTablesSqlFileName, Arrays.asList(sql));
+				}
+			} else {
+				for (String v: values) {
+					/* For spark */
+					out.add(new Tuple3<String,String,String>(v, null, key));
+				}
 			}
+			
+		} else {
+			for (String v: values)
+				out.add(new Tuple3<String,String,String>(v, null, key));
 		}
 		return out;
 	}

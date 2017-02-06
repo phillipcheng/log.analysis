@@ -75,7 +75,6 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		start = fileSplit.getStart();
 		end = start + fileSplit.getLength();
 		Path file = fileSplit.getPath();
-		logger.debug(String.format("file split, start:%d, end:%d, file:%s", start, end, file.toString()));
 		FileSystem fs = file.getFileSystem(conf);
 		fsin = new XmlInputStream(fs.open(fileSplit.getPath()), start, end);
 		fsin.seek(start);
@@ -117,10 +116,10 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 						value.append(buffer.getData(), 0, buffer.getLength());
 						i = i + 1;
 					}else{
-						logger.debug(String.format("not match the endTag:%s at %d, end at %d", new String(endTag), dataIn.getPos(), dataIn.getEnd()));
+						//logger.debug(String.format("not match the endTag:%s at %d, end at %d", new String(endTag), dataIn.getPos(), dataIn.getEnd()));
 					}
 				}else{
-					logger.debug(String.format("not match the startTag:%s at %d, end at %d", new String(startTag), dataIn.getPos(), dataIn.getEnd()));
+					//logger.debug(String.format("not match the startTag:%s at %d, end at %d", new String(startTag), dataIn.getPos(), dataIn.getEnd()));
 				}
 			} finally {
 				buffer.reset();
@@ -207,7 +206,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 			value.clear();
 			hasNext = nextKeyValue(fsin, startTag, endTag, header, footer, 1);
 		}
-		logger.debug(String.format("nextKeyValue, key:%s, value:%s, hasNext:%b", key, value, hasNext));
+		//logger.debug(String.format("nextKeyValue, key:%s, value:%s, hasNext:%b", key, value, hasNext));
 		return hasNext;
 	}
 

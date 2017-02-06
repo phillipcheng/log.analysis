@@ -5,6 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -28,34 +31,55 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
 import etl.engine.ETLCmd;
-import etl.engine.LockType;
 import etl.engine.LogicSchema;
-import etl.engine.OutputType;
-import etl.engine.ProcessMode;
+import etl.engine.types.DBType;
+import etl.engine.types.LockType;
+import etl.engine.types.OutputType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
-import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
+import etl.util.StoreFormat;
 import etl.util.VarDef;
 import etl.util.VarType;
 
 public abstract class SchemaETLCmd extends ETLCmd{
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LogManager.getLogger(SchemaETLCmd.class);
 	private static final String SCHEMA_TMP_FILENAME_EXTENSION = "tmp";
 	private static final Random RANDOM_GEN = new Random();
-	public static final Logger logger = LogManager.getLogger(SchemaETLCmd.class);
+	protected static final Comparator<String> CREATE_TABLES_SQL_COMPARATOR = new Comparator<String>() {
+		public int compare(String text1, String text2) { /* To sort ascendantly by timestamp */
+			int i1 = text1.indexOf(":");
+			int i2 = text2.indexOf(":");
+			long t1;
+			long t2;
+			if (i1 != -1)
+				t1 = Long.parseLong(text1.substring(0, i1));
+			else
+				t1 = 0;
+			if (i2 != -1)
+				t2 = Long.parseLong(text2.substring(0, i2));
+			else
+				t2 = 0;
+			return (int)(t1 - t2);
+		}
+	};
 
 	//cfgkey
 	public static final @ConfigKey String cfgkey_schema_file="schema.file";
 	public static final @ConfigKey String cfgkey_create_sql="create.sql";
 	public static final @ConfigKey String cfgkey_db_prefix="db.prefix"; //db schema
 	public static final @ConfigKey(type=DBType.class,defaultValue="none") String cfgkey_db_type="db.type";
+	public static final @ConfigKey(type=StoreFormat.class,defaultValue="text") String cfgkey_store_format="store.format";
 	public static final @ConfigKey(type=OutputType.class,defaultValue="multiple") String cfgkey_output_type="output.type";
 	public static final @ConfigKey(type=LockType.class,defaultValue="jvm") String cfgkey_lock_type="lock.type";
 	public static final @ConfigKey String cfgkey_zookeeper_url="zookeeper.url";
@@ -69,13 +93,15 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	protected String schemaFileName;
 	protected String dbPrefix;
 	protected LogicSchema logicSchema;
+	protected Map<String, StructType> sparkSqlSchemaMap=null;
 	protected String createTablesSqlFileName;
 	protected OutputType outputType = OutputType.multiple;
 	
 	private DBType dbtype = DBType.NONE;
+	private StoreFormat storeFormat = StoreFormat.text;
 	private LockType lockType = LockType.jvm;
 	private String zookeeperUrl=null;
-	private CuratorFramework client;
+	private transient CuratorFramework client;
 	
 	public static int ZK_CONNECTION_TIMEOUT = 120000;//2 minutes
 	
@@ -83,10 +109,36 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm, true);
 	}
+	
+	private void loadSparkSchema(){
+		sparkSqlSchemaMap = new HashMap<String, StructType>();
+		for (String tn: logicSchema.getTableNames()){
+			sparkSqlSchemaMap.put(tn, SchemaUtils.convertToSparkSqlSchema(logicSchema, tn));
+		}
+	}
+	
+	public static Map<Integer, StructType> stCache = new HashMap<Integer, StructType>();
+	
+	public StructType getSparkSqlSchema(String tableName, int num){
+		if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+			if (stCache.containsKey(num)){
+				return stCache.get(num);
+			}else{
+				StructType st = new StructType();
+				for (int i=0; i<num; i++){
+					st = st.add(DataTypes.createStructField(COLUMN_PREFIX+i, DataTypes.StringType, true));
+				}
+				stCache.put(num, st);
+				return st;
+			}
+		}else{
+			return sparkSqlSchemaMap.get(tableName);
+		}
+	}
+	
 	/**
 	 * Additional parameters:
 	 * @param loadSchema: if true, load the schema in init
-	 * @param zkUrl: if not null, lock before reade
 	 */
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, 
 			ProcessMode pm, boolean loadSchema){
@@ -112,6 +164,9 @@ public abstract class SchemaETLCmd extends ETLCmd{
 				if (SchemaUtils.existsRemoteJsonPath(defaultFs, schemaFile)){
 					schemaFileName = schemaFilePath.getName();
 					this.logicSchema = SchemaUtils.fromRemoteJsonPath(defaultFs, schemaFile, LogicSchema.class);
+					if (useSparkSql()){
+						loadSparkSchema();
+					}
 				}else{
 					this.logicSchema = SchemaUtils.newRemoteInstance(defaultFs, schemaFile);
 					logger.warn(String.format("schema file %s not exists.", schemaFile));
@@ -128,6 +183,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		if (strDbType!=null){
 			dbtype = DBType.fromValue(strDbType);
 		}
+		storeFormat = StoreFormat.valueOf(super.getCfgString(cfgkey_store_format, StoreFormat.text.toString()));
 		String strOutputType = super.getCfgString(cfgkey_output_type, null);
 		if (strOutputType!=null){
 			outputType = OutputType.valueOf(strOutputType);
@@ -160,7 +216,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		for (String newTable: attrsMap.keySet()){
 			List<String> newAttrs = attrsMap.get(newTable);
 			List<FieldType> newTypes = attrTypesMap.get(newTable);
-			createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, dbPrefix, getDbtype())+";\n");
+			createTableSqls.add(DBUtil.genCreateTableSql(newAttrs, newTypes, newTable, dbPrefix, getDbtype(), storeFormat)+";\n");
 		}
 		JsonUtil.toLocalJsonFile(schemaFile, newls);
 		try {
@@ -202,14 +258,10 @@ public abstract class SchemaETLCmd extends ETLCmd{
 				tableSchema.getAttrIdNameMap().put(attrIds.get(i), attrNames.get(i));
 		
 		//generate create table
-		String createTableSql = DBUtil.genCreateTableSql(attrNames, attrTypes, name, 
-				dbPrefix, getDbtype());
+		String createTableSql = DBUtil.genCreateTableSql(attrNames, attrTypes, name, dbPrefix, getDbtype(), storeFormat);
 		
 		//update/create create-table-sql
 		logger.info(String.format("create/update table sqls are:%s", createTableSql));
-		
-		List<String> createTableSqls = Arrays.asList(new String[] {createTableSql});
-		HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, createTableSqls);
 		
 		//update logic schema file
 		if (schemaFile != null)
@@ -217,9 +269,11 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		
 		//execute the sql
 		if (dbtype != DBType.NONE){
-			int result = DBUtil.executeSqls(createTableSqls, super.getPc());
+			int result = DBUtil.executeSqls(Arrays.asList(new String[] {createTableSql}), super.getPc());
 			//gen report info
-			loginfo.add(result + ":" + createTableSql);
+			loginfo.add(System.currentTimeMillis() + ":" + result + ":" + createTableSql);
+		} else {
+			loginfo.add(System.currentTimeMillis() + ":0:" + createTableSql);
 		}
 		
 		return tableSchema;
@@ -281,8 +335,6 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			//update/create create-table-sql
 			logger.info(String.format("create/update table sqls are:%s", updateTableSqls));
 			
-			HdfsUtil.appendDfsFile(fs, this.createTablesSqlFileName, updateTableSqls);
-			
 			//update logic schema file
 			if (schemaFile != null)
 				safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
@@ -291,7 +343,14 @@ public abstract class SchemaETLCmd extends ETLCmd{
 			if (dbtype != DBType.NONE){
 				int result = DBUtil.executeSqls(updateTableSqls, super.getPc());
 				//gen report info
-				loginfo.add(result + ":" + updateTableSqls);
+				for (String sql: updateTableSqls) {
+					i = result > 0 ? 1 : 0;
+					loginfo.add(System.currentTimeMillis() + ":" + i + ":" + sql);
+					result --;
+				}
+			} else
+				for (String sql: updateTableSqls) {
+					loginfo.add(System.currentTimeMillis() + ":0:" + sql);
 			}
 			
 			return tableSchema;
@@ -386,9 +445,12 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	        }
 		}
 
-		if (LockType.zookeeper.equals(lockType))
-			lock = new InterProcessMutex(client, schemaFile);
-		else if (LockType.jvm.equals(lockType))
+		if (LockType.zookeeper.equals(lockType)) {
+			if (schemaFile.endsWith(Path.SEPARATOR))
+				lock = new InterProcessMutex(client, schemaFile + SchemaUtils.SCHEMA_INDEX_FILENAME);
+			else
+				lock = new InterProcessMutex(client, schemaFile);
+		} else if (LockType.jvm.equals(lockType))
 			lock = new JVMLock();
 		else
 			lock = new EmptyLock();
@@ -438,7 +500,17 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	public List<String> updateSchema(Map<String, List<String>> attrNamesMap, Map<String, List<FieldType>> attrTypesMap){
-		return updateSchema(null, null, attrNamesMap, attrTypesMap);
+		List<String> loginfo = updateSchema(null, null, attrNamesMap, attrTypesMap);
+
+		Collections.sort(loginfo, CREATE_TABLES_SQL_COMPARATOR);
+		logger.debug("Append {} sqls to file: {}", loginfo.size(), this.createTablesSqlFileName);
+		
+		for (String sql: loginfo) {
+			sql = sql.substring(sql.lastIndexOf(":") + 1);
+			HdfsUtil.appendDfsFile(getFs(), this.createTablesSqlFileName, Arrays.asList(sql));
+		}
+		
+		return loginfo;
 	}
 	
 	/**
@@ -488,7 +560,7 @@ public abstract class SchemaETLCmd extends ETLCmd{
 	}
 	
 	public List<String> getCreateSqls(){
-		return SchemaUtils.genCreateSqlByLogicSchema(this.logicSchema, this.dbPrefix, this.dbtype);
+		return SchemaUtils.genCreateSqlByLogicSchema(this.logicSchema, this.dbPrefix, this.dbtype, storeFormat);
 	}
 	
 	public List<String> getDropSqls(){
@@ -552,5 +624,13 @@ public abstract class SchemaETLCmd extends ETLCmd{
 
 	public void setOutputType(OutputType outputType) {
 		this.outputType = outputType;
+	}
+
+	public StoreFormat getStoreFormat() {
+		return storeFormat;
+	}
+
+	public void setStoreFormat(StoreFormat storeFormat) {
+		this.storeFormat = storeFormat;
 	}
 }

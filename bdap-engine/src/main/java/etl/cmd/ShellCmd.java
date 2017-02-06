@@ -23,7 +23,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import etl.engine.ETLCmd;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.StringUtil;
 import scala.Tuple2;
@@ -115,7 +115,7 @@ public class ShellCmd extends ETLCmd {
 			logger.info(String.format("shell, ret:%s", ret));
 			String k = tableName;
 			String v = ret;
-			String[] kv = ret.split(DEFAULT_KEY_SEP, 2);//try to split to key value, if failed use file name as key
+			String[] kv = ret.split(DEFAULT_KEY_VALUE_SEP, 2);//try to split to key value, if failed use file name as key
 			if (kv.length==2){
 				k = kv[0];
 				v = kv[1];

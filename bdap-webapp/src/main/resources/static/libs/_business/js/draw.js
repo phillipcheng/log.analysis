@@ -168,7 +168,7 @@ var _draw = {
 			nodeData.height = nodeData.height + _node_data_height;
 		}
 
-		if(hadInput || hadInput) {
+		if(hadInput || hadOutput) {
 			nodeData.width = _node_max_width;
 			nodeData.pro.transform = "translate(" + (_node_max_width - 10) + ",10)scale(1,1)";
 		} else if(parseInt(property_height) == 0) {
@@ -652,18 +652,21 @@ var _draw = {
  */
 var drawInputContent = function(divObj, gId, actionName, propertyName, propertyValue) {
 	var notProperty = "@class,id,cmd.class";
-	each(propertyInfor, function() {
-		if(notProperty.indexOf(propertyName) == -1) {
-			if(this["cmd.class"]) {
-//				if(this["cmd.class"].default) {
-//					if(this["cmd.class"].default.toString().indexOf(actionName) > -1) {
-						if(this[propertyName]) {
-							console.log(this);
-							var obj = this[propertyName];
-							if(obj["enum"]) {
+	console.log(selfPropertyInfor);
+	if(selfPropertyInfor[gId+"_"+propertyName]){
+		divObj.append("strong").text(propertyName + ":");
+		divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...").attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+		return ;
+	}
+	if(notProperty.indexOf(propertyName) == -1) {
+		each(propertyInfor,function(i,o){
+			if(this["cmd.class"]&&this[propertyName]){
+				console.log(propertyName,this);
+				var propertyObject = this[propertyName];
+				if(propertyObject["enum"]){
 								divObj.append("strong").text(propertyName + ":");
 								var selectedObj = divObj.append("select").attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
-								each(obj["enum"], function(i, o) {
+								each(propertyObject["enum"], function(i, o) {
 									if(propertyValue){
 										if(this.toString().localeCompare(propertyValue) == 0) {
 											selectedObj.append("option").attr("selected", "selected")
@@ -672,7 +675,7 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 											selectedObj.append("option").attr("value", this).text(this);
 										}										
 									}else{
-										if(obj["default"]&&this.toString().localeCompare(obj["default"].toString()) == 0) {
+										if(propertyObject["default"]&&this.toString().localeCompare(obj["default"].toString()) == 0) {
 											selectedObj.append("option").attr("selected", "selected")
 												.attr("value", this).text(this);
 										} else {
@@ -680,17 +683,8 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 										}										
 									}
 									return true;
-								});
-							} else if(obj["type"].toString().localeCompare("string") == 0) {
-								if(propertyValue.length == 0) {
-									if(obj.default) {
-										propertyValue = obj.default;
-									}
-								}
-								divObj.append("strong").text(propertyName + ":");
-								divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
-									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
-							} else if(obj["type"].toString().localeCompare("array") == 0) {
+								});			
+				}else if(propertyObject["type"].toString().localeCompare("array") == 0){
 								divObj.append("strong").text(propertyName + ":");
 								divObj.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + propertyName + "')");
 								divObj.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + propertyName + "')");
@@ -733,9 +727,8 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 										});
 										return true;
 									});
-								}
-
-							} else if(obj["type"].toString().localeCompare("boolean") == 0) {
+								}					
+				}else if(propertyObject["type"].toString().localeCompare("boolean") == 0){
 								if(propertyValue.length > 0) {
 									if(propertyValue.localeCompare("true") == 0) {
 										divObj.append("input").attr("type", "checkbox").attr("checked", propertyValue).attr("placeholder", "you need input array...")
@@ -749,11 +742,11 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 										.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
 								}
 
-						divObj.append("strong").text(propertyName + ":");
-					} else if(obj["type"].toString().localeCompare("integer") == 0) {
+						divObj.append("strong").text(propertyName + ":");					
+				}else if(propertyObject["type"].toString().localeCompare("integer") == 0) {
 						if(propertyValue.length == 0) {
-							if(obj["default"]) {
-								propertyValue = obj["default"];
+							if(propertyObject["default"]) {
+								propertyValue = propertyObject["default"];
 							} else {
 								propertyValue = "0";
 							}
@@ -762,20 +755,22 @@ var drawInputContent = function(divObj, gId, actionName, propertyName, propertyV
 						divObj.append("input").attr("type", "number")
 							.attr("value", propertyValue)
 							.attr("placeholder", "you need input integer...")
-							.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");
-					}
-				} else {
-					divObj.append("strong").text(propertyName + ":");
-					divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
-						.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
+							.attr("onchange", "changeProperty('" + gId + "','" + propertyName + "')");					
+				}else if(propertyObject["type"].toString().localeCompare("string") == 0) {
+								if(propertyValue.length == 0) {
+									if(propertyObject.default) {
+										propertyValue = propertyObject.default;
+									}
+								}
+								divObj.append("strong").text(propertyName + ":");
+								divObj.append("input").attr("type", "text").attr("value", propertyValue).attr("placeholder", "...")
+									.attr("onkeyup", "changeProperty('" + gId + "','" + propertyName + "')");
 				}
 				return false;
-				//					}
-				//				}
 			}
-		}
-		return true;
-	});
+			return true;
+		});
+	}
 }
 
 var dataSetList = [];

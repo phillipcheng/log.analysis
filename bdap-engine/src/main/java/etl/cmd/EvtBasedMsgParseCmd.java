@@ -21,8 +21,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import etl.engine.ETLCmd;
-import etl.engine.MRMode;
-import etl.engine.ProcessMode;
+import etl.engine.types.MRMode;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 
 public class EvtBasedMsgParseCmd extends ETLCmd{

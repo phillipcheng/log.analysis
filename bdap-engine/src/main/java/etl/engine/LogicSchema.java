@@ -129,6 +129,15 @@ public class LogicSchema implements Serializable{
 		this.tableIdNameMap = tableIdNameMap;
 	}
 	
+	@JsonIgnore
+	public Map<String, String> getAttrIdNameMap(String tableName) {
+		if (hasTable(tableName))
+			/* Only load table when the table exists */
+			attrNameMap.get(tableName);//load table
+		
+		return attrIdNameMap;
+	}
+	
 	public Map<String, String> getAttrIdNameMap() {
 		return attrIdNameMap;
 	}

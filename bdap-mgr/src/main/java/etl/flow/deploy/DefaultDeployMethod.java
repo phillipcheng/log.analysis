@@ -85,4 +85,13 @@ public class DefaultDeployMethod implements DeployMethod {
 	public List<String> readFile(String path) {
 		return HdfsUtil.stringsFromDfsFile(fs, path);
 	}
+
+	public boolean exists(String path) {
+		try {
+			return fs.exists(new Path(path));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return false;
+		}
+	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -14,16 +15,16 @@ import java.nio.file.StandardOpenOption;
 
 
 import bdap.util.JavaCodeGenUtil;
-import etl.engine.DataType;
 import etl.engine.ETLCmd;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.Data;
 import etl.flow.Flow;
 import etl.flow.Node;
 import etl.flow.NodeLet;
-import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowMgr;
-import etl.spark.SparkUtil;
+import etl.util.SparkUtil;
 
 public class SparkGenerator {
 	public static final Logger logger = LogManager.getLogger(SparkGenerator.class);
@@ -55,20 +56,22 @@ public class SparkGenerator {
 		sb.append("import java.util.*;\n");
 		sb.append("import org.apache.log4j.Logger;\n");
 		sb.append("import org.apache.spark.SparkConf;\n");
+		sb.append("import org.apache.spark.SparkContext;;\n");
 		sb.append("import org.apache.spark.api.java.JavaPairRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaSparkContext;\n");
+		sb.append("import org.apache.spark.sql.SparkSession;\n");
 		//begin class
 		sb.append(String.format("public class %s extends %s implements %s {\n", className, ETLCmd.class.getName(), Serializable.class.getName()));
 		sb.append(String.format("public static final Logger logger = Logger.getLogger(%s.class);\n", className));
 		//gen constructor
-		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, etl.engine.ProcessMode pm){\n", className));
+		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, etl.engine.types.ProcessMode pm){\n", className));
 		sb.append("init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);}\n");
 		//gen sgProcess
 		sb.append("public List<String> sgProcess() {\n");
 		sb.append("List<String> retInfo = new ArrayList<String>();\n");
-		sb.append(String.format("SparkConf conf = new SparkConf().setAppName(getWfName());\n"));
-		sb.append("JavaSparkContext jsc = new JavaSparkContext(conf);\n");
+		sb.append(String.format("SparkSession spark = SparkSession.builder().appName(getWfName()).getOrCreate();\n"));
+		sb.append("JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());\n");
 		//gen cmds
 		List<Node> nodes = flow.getActionTopoOrder();
 		List<Data> datas = flow.getData();
@@ -87,13 +90,13 @@ public class SparkGenerator {
 			if (!data.isInstance()){
 				if (data.getRecordType().equals(DataType.Path) ||data.getRecordType().equals(DataType.Value)){
 					//JavaRDD<String> sftpMap= SparkUtil.fromFile(this.getDefaultFs() + "/flow1/sftpcfg/test1.sftp.map.properties", jsc);
-					initValue = String.format("etl.spark.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc)", data.getLocation());
+					initValue = String.format("etl.util.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc)", data.getLocation());
 				}else if (data.getRecordType().equals(DataType.KeyPath) ||data.getRecordType().equals(DataType.KeyValue)){
 					if (data.getBaseOutput()!=null){
-						initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), \"%s\")", 
+						initValue = String.format("etl.util.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), \"%s\")", 
 							data.getLocation(), data.getBaseOutput());
 					}else{
-						initValue = String.format("etl.spark.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), null)", 
+						initValue = String.format("etl.util.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), null)", 
 								data.getLocation());
 					}
 				}
@@ -130,7 +133,6 @@ public class SparkGenerator {
 				}
 				//cmd execution line
 				//data1trans = d1csvTransformCmd.sparkProcessFilesToKV(data1, jsc, TextInputFormat.class);
-				String inputFormat=null;
 				String inputVarName=null;
 				for (int i=0; i<node.getInLets().size(); i++){
 					NodeLet inl = node.getInLets().get(i);
@@ -148,11 +150,11 @@ public class SparkGenerator {
 				if (methodName==null){
 					logger.error(String.format("input:%s, output:%s pair on action:%s not supported.", inputDataType, outputDataType, anode.getName()));
 				}
-				inputFormat = FlowDeployer.getInputFormat(inData.getDataFormat());
+				String inputFormatName = InputFormatType.class.getName() + "." + inData.getDataFormat().toString();
 				if (outputVarName!=null){
-					sb.append(String.format("%s=%s.%s(%s,jsc,%s.class);\n", outputVarName, cmdVarName, methodName, inputVarName, inputFormat));
+					sb.append(String.format("%s=%s.%s(%s,jsc,%s,spark);\n", outputVarName, cmdVarName, methodName, inputVarName, inputFormatName));
 				}else{
-					sb.append(String.format("%s.%s(%s,jsc,%s.class);\n", cmdVarName, methodName, inputVarName, inputFormat));
+					sb.append(String.format("%s.%s(%s,jsc,%s,spark);\n", cmdVarName, methodName, inputVarName, inputFormatName));
 				}
 				if (multiOutput){
 					//call cache
@@ -163,7 +165,7 @@ public class SparkGenerator {
 						String outletName = outlet.getName();
 						String dataVarName = JavaCodeGenUtil.getVarName(outlet.getDataName());
 						if (outletName.equals(dataVarName)){
-							sb.append(String.format("%s=etl.spark.SparkUtil.filterPairRDD(%s,\"%s\");\n", outletName, outputVarName, outletName));
+							sb.append(String.format("%s=etl.util.SparkUtil.filterPairRDD(%s,\"%s\");\n", outletName, outputVarName, outletName));
 						}else{
 							logger.error(String.format("for split, the outlet name must same as the dataset name. now:%s!=%s", outletName, dataVarName));
 						}

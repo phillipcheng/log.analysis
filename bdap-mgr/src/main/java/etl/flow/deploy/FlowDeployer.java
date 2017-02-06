@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +19,10 @@ import bdap.util.EngineConf;
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
 import bdap.util.PropertiesUtil;
-import etl.engine.InputFormatType;
+import etl.engine.ETLCmd;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.OutputFormat;
+import etl.flow.ActionNode;
 import etl.flow.CoordConf;
 import etl.flow.Flow;
 import etl.flow.mgr.FlowMgr;
@@ -33,14 +37,8 @@ public class FlowDeployer {
 	public static final Logger logger = LogManager.getLogger(FlowDeployer.class);
 	public static final String defaultCfgProperties = "testFlow.properties";
 	
-	public static final String prop_inputformat_line="org.apache.hadoop.mapreduce.lib.input.NLineInputFormat";
-	public static final String prop_inputformat_textfile="org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
-	public static final String prop_inputformat_textfile_keyvalue="org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat";
-	public static final String prop_inputformat_sequencefile="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat";
-	public static final String prop_inputformat_xmlfile="etl.input.XmlInputFormat";
-	public static final String prop_inputformat_combine_xmlfile="etl.input.CombineXmlInputFormat";
-	public static final String prop_inputformat_filename="etl.input.FilenameInputFormat";
-	public static final String prop_inputformat_combine_filename="etl.input.CombineFileNameInputFormat";
+	public static final String prop_outputformat_textfile="org.apache.hadoop.mapreduce.lib.output.TextOutputFormat";
+	public static final String prop_outputformat_parquetfile="etl.output.ParquetOutputFormat";
 	
 	public static String coordinator_xml="coordinator.xml";
 	public static String spark_wfxml="sparkcmd_workflow.xml";
@@ -107,25 +105,20 @@ public class FlowDeployer {
 			return new DefaultDeployMethod(remoteUser, defaultFs);
 	}
     
-    public static String getInputFormat(InputFormatType ift){
-		if (InputFormatType.Line == ift){
-			return prop_inputformat_line;
-		}else if (InputFormatType.Text == ift){
-			return prop_inputformat_textfile;
-		}else if (InputFormatType.SequenceFile == ift){
-			return prop_inputformat_sequencefile;
-		}else if (InputFormatType.XML == ift){
-			return prop_inputformat_xmlfile;
-		}else if (InputFormatType.CombineXML == ift){
-			return prop_inputformat_combine_xmlfile;
-		}else if (InputFormatType.FileName == ift){
-			return prop_inputformat_filename;
-		}else if (InputFormatType.CombineFileName == ift){
-			return prop_inputformat_combine_filename;
-		}else{
-			logger.error(String.format("inputformat:%s not supported", ift));
-			return null;
-		}
+    
+    public static String getOutputFormat(ActionNode an){
+    	Map<String, Object> sysProperties = an.getSysProperties();
+    	OutputFormat of = OutputFormat.text;
+    	if (sysProperties.containsKey(ETLCmd.cfgkey_output_file_format)){
+    		of = OutputFormat.valueOf((String) sysProperties.get(ETLCmd.cfgkey_output_file_format));
+    		if (OutputFormat.parquet==of){
+    			return prop_outputformat_parquetfile;
+    		}else{
+    			return prop_outputformat_textfile;
+    		}
+    	}else{
+			return prop_outputformat_textfile;
+    	}
 	}
     
 	public String getProjectHdfsDir(String prjName){
@@ -298,8 +291,13 @@ public class FlowDeployer {
 		}
 		return ret;
 	}
+	
 	public List<String> readFile(String path) {
 		return deployMethod.readFile(path);
+	}
+
+	public boolean existsDir(String path) {
+		return deployMethod.exists(path);
 	}
 	
 	private void deploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, boolean skipSchema, EngineType et) throws Exception{
@@ -326,20 +324,18 @@ public class FlowDeployer {
 				}else{
 					logger.error(String.format("engine type:%s not supported for deploy.",et));
 				}
+			}else{
+				logger.error(String.format("json file %s not found!", jsonFile));
 			}
 		}
 	}
 	
-	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, boolean skipSchema, EngineType et) {
+	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, EngineType et) {
 		try {
-			deploy(projectName, flowName, jars, propFiles, fromJson, skipSchema, et);
+			deploy(projectName, flowName, jars, propFiles, true, false, et);
 		}catch(Exception e){
 			logger.error("", e);
 		}
-	}
-	
-	public void runDeploy(String projectName, String flowName, String[] jars, String[] propFiles, boolean fromJson, EngineType et) {
-		runDeploy(projectName, flowName, jars, propFiles, fromJson, false, et);
 	}
 	
 	private String execute(String prjName, String flowName, EngineType et){
@@ -441,7 +437,7 @@ public class FlowDeployer {
 			if (args.length>4){
 				jars = args[4].split(",");
 			}
-			fd.runDeploy(prjName, flowName, jars, null, false, EngineType.valueOf(engineType));
+			fd.runDeploy(prjName, flowName, jars, null, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runFlow.toString().equals(cmd)){
 			fd.runExecute(prjName, flowName, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runCoordinator.toString().equals(cmd)){
@@ -462,6 +458,11 @@ public class FlowDeployer {
 	public org.apache.hadoop.conf.Configuration getConf(){
 		return conf;
 	}
+	
+	public Configuration getPc() {
+		return pc;
+	}
+	
 	public String getPlatformLocalDist() {
 		return platformLocalDist;
 	}

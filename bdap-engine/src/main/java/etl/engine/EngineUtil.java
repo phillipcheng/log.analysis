@@ -13,9 +13,12 @@ import scala.Tuple2;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 import bdap.util.PropertiesUtil;
 import bdap.util.SftpInfo;
+import etl.engine.types.MRMode;
+import etl.engine.types.ProcessMode;
 import etl.log.ETLLog;
 import etl.log.LogType;
 
@@ -223,22 +226,48 @@ public class EngineUtil {
 		try {
 			List<String[]> rets = cmd.reduceProcess(key, values, context, mos);
 			if (rets!=null){
-				for (String[] ret: rets){
-					if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
-						if (ret[1]!=null){
-							if (!"".equals(ret[0].trim())){
-								context.write(new Text(ret[0]), new Text(ret[1]));
+				if (ParquetOutputFormat.class.isAssignableFrom(context.getOutputFormatClass())) {
+					/* In case of parquet output format, the output key should be null */
+					String sep = context.getConfiguration().get("mapreduce.output.textoutputformat.separator", ",");
+					
+					for (String[] ret: rets){
+						if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
+							if (ret[1]!=null){
+								if (!"".equals(ret[0].trim())){
+									context.write(null, new Text(ret[0] + sep + ret[1]));
+								}else{
+									context.write(null, new Text(ret[1]));
+								}
 							}else{
-								context.write(new Text(ret[1]), null);
+								context.write(null, new Text(ret[0]));
 							}
 						}else{
-							context.write(new Text(ret[0]), null);
+							if (ret[1]!=null){
+								mos.write((Text)null, new Text(ret[0] + sep + ret[1]), ret[2]);
+							}else{
+								mos.write((Text)null, new Text(ret[0]), ret[2]);
+							}
 						}
-					}else{
-						if (ret[1]!=null){
-							mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
+					}
+					
+				} else {
+					for (String[] ret: rets){
+						if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
+							if (ret[1]!=null){
+								if (!"".equals(ret[0].trim())){
+									context.write(new Text(ret[0]), new Text(ret[1]));
+								}else{
+									context.write(new Text(ret[1]), null);
+								}
+							}else{
+								context.write(new Text(ret[0]), null);
+							}
 						}else{
-							mos.write(new Text(ret[0]), null, ret[2]);
+							if (ret[1]!=null){
+								mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
+							}else{
+								mos.write(new Text(ret[0]), null, ret[2]);
+							}
 						}
 					}
 				}
