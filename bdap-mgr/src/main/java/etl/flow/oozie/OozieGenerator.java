@@ -13,9 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
-import etl.engine.DataType;
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.CallSubFlowNode;
 import etl.flow.CoordConf;
@@ -70,11 +70,11 @@ public class OozieGenerator {
 	public static final String prop_inputdirs="mapreduce.input.fileinputformat.inputdir";
 	public static final String prop_outputformat="mapreduce.job.outputformat.class";
 		public static final String prop_outputformat_null="org.apache.hadoop.mapreduce.lib.output.NullOutputFormat";
-		public static final String prop_outputformat_textfile="org.apache.hadoop.mapreduce.lib.output.TextOutputFormat";
 	public static final String prop_outputdirs="mapreduce.output.fileoutputformat.outputdir";
 	public static final String prop_output_keyclass="mapreduce.job.output.key.class";
 	public static final String prop_output_valueclass="mapreduce.job.output.value.class";
 		public static final String prop_text_type="org.apache.hadoop.io.Text";
+		public static final String prop_void_type="java.lang.Void";
 	public static final String prop_input_pathfilter="mapreduce.input.pathFilter.class";
 		public static final String prop_input_path_globexpfilter="etl.util.GlobExpPathFilter";
 	//command parameter are defined in the InvokerMapper
@@ -214,7 +214,7 @@ public class OozieGenerator {
 		//input properties
 		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
 		inputFormatTypeCp.setName(prop_inputformat);
-		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift));
+		inputFormatTypeCp.setValue(ETLCmd.getInputFormat(ift).getName());
 		pl.add(inputFormatTypeCp);
 		if (dt == DataType.KeyPath || dt == DataType.KeyValue){
 			CONFIGURATION.Property useKeyValueCp = new CONFIGURATION.Property();
@@ -247,7 +247,7 @@ public class OozieGenerator {
 				}else{
 					outputDataDir = d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow());
 				}
-				outputFormatCp.setValue(prop_outputformat_textfile);
+				outputFormatCp.setValue(FlowDeployer.getOutputFormat(an));
 				outputDirCp.setValue(outputDataDir);
 				pl.add(outputDirCp);
 				{

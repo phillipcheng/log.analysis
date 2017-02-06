@@ -31,7 +31,7 @@ import bdap.util.JsonUtil;
 import bdap.util.Util;
 import bdap.util.XmlUtil;
 import dv.util.RequestUtil;
-import etl.engine.InputFormatType;
+import etl.engine.types.InputFormatType;
 import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.Flow;

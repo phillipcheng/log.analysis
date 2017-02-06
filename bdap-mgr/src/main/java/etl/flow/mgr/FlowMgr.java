@@ -149,6 +149,9 @@ public abstract class FlowMgr {
 		}{
 			bdap.xml.config.Configuration.Property prop = new bdap.xml.config.Configuration.Property();
 			prop.setName(OozieConf.key_prjFolder);
+			if (!prjFolder.endsWith("/")){
+				prjFolder +="/";
+			}
 			prop.setValue(prjFolder);
 			bodyConf.getProperty().add(prop);
 		} if (oc.getOozieWfNtfUrl() != null && oc.getOozieWfNtfUrl().length() > 0) {

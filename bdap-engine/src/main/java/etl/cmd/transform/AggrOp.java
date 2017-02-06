@@ -3,7 +3,7 @@ package etl.cmd.transform;
 import java.io.Serializable;
 import java.util.List;
 
-import etl.engine.AggrOperator;
+import etl.engine.types.AggrOperator;
 import etl.util.IdxRange;
 
 public class AggrOp implements Serializable{

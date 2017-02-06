@@ -1,5 +1,7 @@
 package etl.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -182,4 +184,12 @@ public class StringUtil {
         }
         return commonPath;
     }
+	
+	public static List<String> getColumn(List<String> rows, int col){
+		List<String> ret = new ArrayList<String>();
+		for (String or:rows){
+			ret.add(or.split(",",-1)[col]);
+		}
+		return ret;
+	}
 }

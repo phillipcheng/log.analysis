@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.SchemaETLCmd;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.DBUtil;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
@@ -200,7 +200,8 @@ public class StatSchemaGenerateCmd extends SchemaETLCmd {
 					logicSchema.updateTableAttrs(tn, newTableObjNamesAdded.get(tn));
 					logicSchema.updateTableAttrTypes(tn, newTableObjTypesAdded.get(tn));
 					//gen update sql
-					createTableSqls.add(DBUtil.genCreateTableSql(newTableObjNamesAdded.get(tn), newTableObjTypesAdded.get(tn), tn, 	dbPrefix, super.getDbtype()));
+					createTableSqls.add(DBUtil.genCreateTableSql(newTableObjNamesAdded.get(tn), newTableObjTypesAdded.get(tn), 
+							tn, 	dbPrefix, super.getDbtype(), super.getStoreFormat()));
 				}
 				
 				

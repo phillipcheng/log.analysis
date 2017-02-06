@@ -6,7 +6,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 
 //log4j2
@@ -16,9 +15,10 @@ import org.junit.Test;
 
 import bdap.util.HdfsUtil;
 import etl.cmd.LoadDataCmd;
+import etl.engine.types.DBType;
+import etl.engine.types.InputFormatType;
 import etl.input.CombineFileNameInputFormat;
 import etl.input.FilenameInputFormat;
-import etl.util.DBType;
 import etl.util.DBUtil;
 import scala.Tuple2;
 
@@ -34,7 +34,6 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 
 		String staticCfgName = "loadcsvds1.properties";
 		String wfid="wfid1";
-		String prefix = "sgsiwf";
 		String localSchemaFileName = "test1_schemas.txt";
 		String csvFileName = "MyCore_.csv";
 
@@ -243,12 +242,44 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		
 		//copy schema file
 		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
-		Tuple2<List<String>, List<String>> output = super.sparkTestKV(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, 
-				FilenameInputFormat.class);
+		List<String> keys = super.sparkTestKVKeys(inputFolder, csvFileNames, staticCfgName, etl.cmd.LoadDataCmd.class, 
+				InputFormatType.FileName);
 		//check hdfs
-		List<String> keys = output._1;
 		logger.info(String.format("output keys:\n %s", String.join("\n", keys)));
 		assertTrue(keys.contains("MyCore_"));
+		
+	}
+	
+	@Test
+	public void testLoadDataWithPipeLineDelimiter() throws Exception{
+		String staticCfgName = "loadcsvmrPipelineDelimiter.properties";
+		String remoteCsvInputFolder = "/test/loadcsv/input/";
+		String remoteCsvOutputFolder = "/test/loadcsv/output/";
+		String schemaFolder="/test/loadcsv/schema/";
+		String localSchemaFileName = "multipleTableSchemas2.txt";
+		String[] csvFileNames = new String[]{"MyCore_Pipeline.csv"};
+		
+		//generate all the data files
+		getFs().delete(new Path(remoteCsvInputFolder), true);
+		getFs().delete(new Path(remoteCsvOutputFolder), true);
+		//
+		//copy schema file
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		//copy csv file
+		for (String csvFileName: csvFileNames){
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+		}
+		
+		LoadDataCmd cmd = new LoadDataCmd("wf1", "wfid1", this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(remoteCsvInputFolder, csvFileNames));
+		
+		List<String> output = super.mrTest(rfifs, remoteCsvOutputFolder, staticCfgName, testCmdClass, CombineFileNameInputFormat.class, 5);
+		logger.info("Output is:"+output);
+		assertTrue(output.size()>0);
 		
 	}
 }

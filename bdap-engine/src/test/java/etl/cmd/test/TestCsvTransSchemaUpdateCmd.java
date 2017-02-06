@@ -15,7 +15,7 @@ import org.junit.Test;
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvTransformCmd;
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.DBUtil;
 
 public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
@@ -70,7 +70,8 @@ public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {
 		if (getDefaultFS().contains("127.0.0.1")){
 			test1Fun();
 		}else{
-			UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
+			String hdfsUser = this.getPc().getString("hdfs.user", "dbadmin");
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
 			ugi.doAs(new PrivilegedExceptionAction<Void>() {
 				public Void run() throws Exception {
 					test1Fun();

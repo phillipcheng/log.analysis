@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import etl.engine.types.InputFormatType;
 import scala.Tuple2;
 
 public class TestCsvTransposeCmd extends TestETLCmd {
@@ -85,9 +86,8 @@ public class TestCsvTransposeCmd extends TestETLCmd {
 		//copy schema file
 		getFs().copyFromLocalFile(new Path(getLocalFolder() + schemaFileName), new Path(cfgFolder + schemaFileName));
 		
-		Tuple2<List<String>,List<String>> ret = super.sparkTestKV(inputFolder, csvFiles, csvtransProp, 
-				etl.cmd.CsvTransposeCmd.class, TextInputFormat.class);
-		List<String> output = ret._2;
+		List<String> output = super.sparkTestKV(inputFolder, csvFiles, csvtransProp, 
+				etl.cmd.CsvTransposeCmd.class, InputFormatType.Text);
 		logger.info("Output is:\n" + String.join("\n", output));
 		
 		assertEquals(25,output.size());

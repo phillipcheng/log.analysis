@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
+import etl.engine.types.ProcessMode;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;

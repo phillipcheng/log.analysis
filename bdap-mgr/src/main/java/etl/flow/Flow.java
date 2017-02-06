@@ -151,10 +151,13 @@ public class Flow extends Node{
 			List<Integer> li = dg.getOrder();
 			List<Node> ret = new ArrayList<Node>();
 			for (int i:li){
-				ret.add(idxNodeArray[i]);
+				Node n = idxNodeArray[i];
+				Set<Link> sl = this.getInLinks(n.getName());
+				if (sl!=null && sl.size()>0){//filter out the standalone nodes, including start
+					ret.add(n);
+				}
 			}
-			//remove start and end
-			ret.remove(0);
+			//remove end
 			ret.remove(ret.size()-1);
 			return ret;
 		}else{

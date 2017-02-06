@@ -21,12 +21,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.SparkSession;
 
 import bdap.util.HdfsUtil;
-import etl.engine.ProcessMode;
 import etl.engine.ETLCmd;
+import etl.engine.types.DBType;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
-import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
@@ -42,6 +44,8 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public static final @ConfigKey String cfgkey_load_sql = "load.sql";
 	public static final @ConfigKey(type=String[].class) String cfgkey_table_names="table.names";
 	public static final @ConfigKey String cfgkey_dbfile_path="dbfile.path";//for spark to generate dbinput files
+	public static final @ConfigKey String cfgkey_delimiter_exp="delimiter.exp";//for spark to generate dbinput files
+	
 	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
 	public static final String VAR_USERNAME="userName";
@@ -56,6 +60,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	//
 	private String loadSql;
 	private transient CompiledScript csLoadSql;
+	private transient CompiledScript delimiterCS;
 
 	private String[] tableNames;
 	
@@ -98,6 +103,11 @@ public class LoadDataCmd extends SchemaETLCmd{
 		if (this.loadSql!=null){
 			csLoadSql = ScriptEngineUtil.compileScript(loadSql);
 		}
+		
+		String delimiterExp=super.getCfgString(cfgkey_delimiter_exp, null);
+		if(delimiterExp!=null){
+			delimiterCS=ScriptEngineUtil.compileScript(delimiterExp);
+		}
 	}
 	
 	private List<String> prepareTableCopySQLs(String tableName, String[] files) {
@@ -114,8 +124,15 @@ public class LoadDataCmd extends SchemaETLCmd{
 					if (csLoadSql!=null){
 						sql = ScriptEngineUtil.eval(csLoadSql, this.getSystemVariables());
 					}else{
+						String delimiter=",";
+						if(delimiterCS!=null){
+							delimiter=ScriptEngineUtil.eval(delimiterCS, this.getSystemVariables());
+						}
+						
+						logger.info("Table:{}, Delimiter:{}, Files:\n{}, ",new Object[]{tableName, delimiter, files==null?"":String.join("\n", files)});
+						
 						sql = DBUtil.genCopyHdfsSql(null, logicSchema.getAttrNames(tableName), tableName, 
-								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype());
+								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype(),delimiter, "\"");
 					}
 					newCopysqls.add(sql);
 
@@ -238,7 +255,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	 */
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass){
+			InputFormatType ift, SparkSession spark){
 		return input.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
@@ -246,7 +263,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 				init();
 				String[] files = StringItToFiles(t._2);
 				String tfName = null;
-				if (inputFormatClass!=null){
+				if (ift!=null){
 					tfName = getTableNameSetPathFileName(t._1.toString());
 				}else{//processed
 					tfName = t._1.toString();

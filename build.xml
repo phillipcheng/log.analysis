@@ -38,12 +38,14 @@
 				<include name="jsch*.jar"/>
 				<include name="kafka-clients*.jar"/>
 				<include name="log4j-1.2.16.jar"/>
-				<include name="spark-core_*.jar"/>
-				<include name="spark-streaming-kafka*.jar"/>
-				<include name="scala-library-*.jar"/>
 				<include name="log4j-core-*.jar"/>
 				<include name="log4j-api-*.jar"/>
 				<include name="bdap.*.jar"/>
+				<include name="spark-core*.jar"/>
+				<include name="spark-sql*.jar"/>
+				<include name="spark-catalyst*.jar"/>
+				<include name="scala-library*.jar"/>
+				<include name="parquet-hadoop-bundle*.jar"/>
 			</fileset>
 			<fileset dir="${engine.src}/lib/">
 				<include name="*.jar"/>
