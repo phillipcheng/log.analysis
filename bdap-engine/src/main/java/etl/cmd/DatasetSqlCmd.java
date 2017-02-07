@@ -2,16 +2,19 @@ package etl.cmd;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.StructType;
 
 import etl.cmd.transform.TableIdx;
 import etl.engine.ETLCmd;
@@ -77,18 +80,26 @@ public class DatasetSqlCmd extends SchemaETLCmd {
 	}
 	
 	@Override
-	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, Map<String, Dataset<Row>> dfMap){
+	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, JavaPairRDD<String, Row> rowRDD){
 		for (String vn: idxMap.keySet()){
 			TableIdx ti = idxMap.get(vn);
 			if (ETLCmd.SINGLE_TABLE.equals(ti.getTableName())){
-				Dataset<Row> ds = dfMap.get(ETLCmd.SINGLE_TABLE);
-				if (ds!=null){
-					ti.setColNum(ds.columns().length);
-				}else{
-					logger.error(String.format("dataset %s not found.", ETLCmd.SINGLE_TABLE));
-				}
+				ti.setColNum(rowRDD.take(1).get(0)._2.size());
 			}else{
 				ti.setColNum(getLogicSchema().getAttrNames(ti.getTableName()).size());
+			}
+		}
+		List<String> keys = rowRDD.keys().distinct().collect();
+		for (String key: keys){
+			JavaRDD<Row> frdd = filterPairRDDRow(rowRDD, key);
+			int num = frdd.take(1).get(0).size();
+			StructType st = getSparkSqlSchema(key, num);
+			if (st!=null){
+				Dataset<Row> dfr = spark.createDataFrame(frdd, st);
+				dfr.createOrReplaceTempView(key);
+			}else{
+				logger.error(String.format("schema not found for %s", key));
+				return null;
 			}
 		}
 		JavaPairRDD<String,String> ret = JavaPairRDD.fromJavaRDD(jsc.emptyRDD());

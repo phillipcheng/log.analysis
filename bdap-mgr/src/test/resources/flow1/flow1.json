@@ -118,7 +118,8 @@
     }],
     "exe.type" : "mr",
     "log.tmp.dir": "'/flow1/csvmerge/'+WFID+'/'",
-    "cmd.class" : "etl.cmd.SaveDataCmd"
+    "cmd.class" : "etl.cmd.SaveDataCmd",
+    "schema.file":"/flow1/schema/flow1.schema"
   },{
     "@class" : "action",
     "name" : "loadcsv",

@@ -58,6 +58,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 	@Override
 	public boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception{
 		boolean global=false;//all generate flow treated as one project, for understanding how the platform is used, should be false in production
+		boolean keepSource=false;
 		String flowName = flow.getName();
 		SparkServerConf ssc = fd.getSparkServerConf();
 		
@@ -67,7 +68,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 		String prjFolder = String.format("%s/%s", ssc.getTmpFolder(), globalPrjName);
 		Files.createDirectories(Paths.get(prjFolder));
 		//clean up the prjFolder
-		if (!global){
+		if (!global && !keepSource){
 			Files.walk(Paths.get(prjFolder), FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
 		}
 		
@@ -76,7 +77,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 		//generate the driver java file
 		String srcRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getSrcFolder());
 		if (!Files.exists(Paths.get(srcRootDir))) Files.createDirectories(Paths.get(srcRootDir));
-		SparkGenerator.genDriverJava(prjName, flow, srcRootDir, ssc);
+		if (!keepSource) SparkGenerator.genDriverJava(prjName, flow, srcRootDir, ssc);
 		//compile the file
 		String classesRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getClassesFolder());
 		if (!Files.exists(Paths.get(classesRootDir))) Files.createDirectories(Paths.get(classesRootDir));
@@ -231,5 +232,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 		}else{
 			return null;
 		}
+		//TODO submit directly to yarn without using oozie
+		
 	}
 }

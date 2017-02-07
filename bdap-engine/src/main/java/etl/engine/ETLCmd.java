@@ -16,9 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,7 +27,6 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -39,23 +35,18 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructType;
-
 import etl.cmd.SchemaETLCmd;
 import etl.engine.types.DataType;
 import etl.engine.types.InputFormatType;
 import etl.engine.types.MRMode;
 import etl.engine.types.ProcessMode;
-import etl.input.FilenameInputFormat;
+import etl.input.CombineWithFileNameTextInputFormat;
 import etl.util.ConfigKey;
 import etl.util.SchemaUtils;
 import etl.util.ScriptEngineUtil;
-import etl.util.SparkUtil;
 import etl.util.StringUtil;
 import etl.util.VarDef;
 import etl.util.VarType;
@@ -249,7 +240,7 @@ public abstract class ETLCmd implements Serializable{
 		return false;
 	}
 	
-	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, Map<String, Dataset<Row>> dfmap){
+	public JavaPairRDD<String,String> dataSetProcess(JavaSparkContext jsc, SparkSession spark, JavaPairRDD<String, Row> rowRDD){
 		logger.error(String.format("Empty dataSetProcess impl!!! %s", this));
 		return null;
 	}
@@ -281,6 +272,20 @@ public abstract class ETLCmd implements Serializable{
 		return sparkProcessKeyValue(pairs, jsc, ift, spark);
 	}
 	
+	public static JavaPairRDD<String, Row> filterPairRDDRowNot(JavaPairRDD<String,Row> input, String key){
+		return input.filter(new Function<Tuple2<String,Row>, Boolean>(){
+			private static final long serialVersionUID = 1L;
+			@Override
+			public Boolean call(Tuple2<String, Row> v1) throws Exception {
+				if (key.equals(v1._1)){
+					return false;
+				}else{
+					return true;
+				}
+			}
+		});
+	}
+	
 	public static JavaRDD<Row> filterPairRDDRow(JavaPairRDD<String,Row> input, String key){
 		return input.filter(new Function<Tuple2<String,Row>, Boolean>(){
 			private static final long serialVersionUID = 1L;
@@ -301,6 +306,91 @@ public abstract class ETLCmd implements Serializable{
 		});
 	}
 	
+	public static Class<? extends InputFormat<LongWritable, Text>> getInputFormat(InputFormatType ift){
+		if (InputFormatType.Line == ift){
+			return org.apache.hadoop.mapreduce.lib.input.NLineInputFormat.class;
+		}else if (InputFormatType.Text == ift){
+			return org.apache.hadoop.mapreduce.lib.input.TextInputFormat.class;
+		}else if (InputFormatType.SequenceFile == ift){
+			return etl.input.LTSequenceFileInputFormat.class;
+		}else if (InputFormatType.XML == ift){
+			return etl.input.XmlInputFormat.class;
+		}else if (InputFormatType.CombineXML == ift){
+			return etl.input.CombineXmlInputFormat.class;
+		}else if (InputFormatType.CombineWithFileNameText == ift){
+			return etl.input.CombineWithFileNameTextInputFormat.class;
+		}else if (InputFormatType.FileName == ift){
+			return etl.input.FilenameInputFormat.class;
+		}else if (InputFormatType.CombineFileName == ift){
+			return etl.input.CombineFileNameInputFormat.class;
+		}else{
+			logger.error(String.format("inputformat:%s not supported", ift));
+			return null;
+		}
+	}
+	
+	private List<Tuple2<String,String>> preprocess(Tuple2<String, String> kv, InputFormatType ift){
+		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
+		if (InputFormatType.SequenceFile == ift){
+			ret.addAll(processSequenceFile(null, kv._2.toString()));
+		}else if (ift == InputFormatType.CombineWithFileNameText){
+			String[] newkv = kv._2.split(CombineWithFileNameTextInputFormat.filename_value_sep, 2);
+			String key = newkv[0];
+			if (key!=null) key = mapKey(key);
+			ret.add(new Tuple2<String,String>(key, newkv[1]));
+		}else if (ift==InputFormatType.FileName){
+			String key = mapKey(kv._2.toString());
+			ret.add(new Tuple2<String,String>(key, kv._2));
+		}else{
+			String key = kv._1;
+			if (key!=null) key = mapKey(key);
+			ret.add(new Tuple2<String,String>(key, kv._2));
+		}
+		return ret;
+	}
+	
+	//Files to KV
+	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, InputFormatType ift, SparkSession spark){
+		Class<? extends InputFormat<LongWritable, Text>> inputFormatClass = getInputFormat(ift);
+		final InputFormatType realIft = (ift==InputFormatType.Text?InputFormatType.CombineWithFileNameText:ift);
+		if (ift==InputFormatType.Text){
+			inputFormatClass = CombineWithFileNameTextInputFormat.class;
+		}
+		copyConf();
+		JobConf jobConf = new JobConf(this.getHadoopConf());
+		for (String file:inputfiles.collect()){
+			logger.info(String.format("process path:%s", file));
+			FileInputFormat.addInputPath(jobConf, new Path(file));
+		}
+		JavaPairRDD<LongWritable, Text> content = jsc.newAPIHadoopRDD(jobConf, inputFormatClass, LongWritable.class, Text.class);
+		JavaPairRDD<String, String> tprdd = null;
+		if (ift==InputFormatType.XML || ift==InputFormatType.CombineXML){
+			tprdd = content.mapToPair(new PairFunction<Tuple2<LongWritable, Text>, String, String>(){
+				private static final long serialVersionUID = 1L;
+				@Override
+				public Tuple2<String, String> call(Tuple2<LongWritable, Text> t) throws Exception {
+					return new Tuple2<String,String>(null, t._2.toString());
+				}
+				
+			});
+		}else{
+			tprdd = content.flatMapToPair(new PairFlatMapFunction<Tuple2<LongWritable, Text>, String, String>(){
+				private static final long serialVersionUID = 1L;
+				@Override
+				public Iterator<Tuple2<String, String>> call(Tuple2<LongWritable, Text> t) throws Exception {
+					init();
+					List<Tuple2<String,String>> ret = new ArrayList<Tuple2<String,String>>();
+					if (skipHeader && t._1.get()==0){
+						return ret.iterator();
+					}else{
+						return preprocess(new Tuple2<String,String>(null, t._2.toString()), realIft).iterator();
+					}
+				}
+			});
+		}
+		return sparkProcessKeyValue(tprdd, jsc, null, spark);
+	}
+	
 	//KV to KV
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			InputFormatType ift, SparkSession spark){
@@ -308,6 +398,7 @@ public abstract class ETLCmd implements Serializable{
 		logger.info("pathFilter:" + pathFilters);
 		if (pathFilters!=null && pathFilters.length>0){
 			processedInput = input.filter(new Function<Tuple2<String,String>, Boolean>(){
+				private static final long serialVersionUID = 1L;
 				@Override
 				public Boolean call(Tuple2<String, String> v1) throws Exception {
 					init();
@@ -326,86 +417,30 @@ public abstract class ETLCmd implements Serializable{
 				@Override
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
 					init();
-					List<Tuple2<String, String>> linesInput = new ArrayList<Tuple2<String,String>>();
-					if (InputFormatType.SequenceFile == ift){
-						linesInput.addAll(processSequenceFile(t._1, t._2));
-					}else{
-						linesInput.add(t);
-					}
-					List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
-					for (Tuple2<String, String> lineInput:linesInput){
-						String key = lineInput._1;
-						if (key!=null && ift!=null){
-							//called directly from data, need map, otherwise called from sparkProcessFilesToKV, do not need to mapkey again
-							key = mapKey(key);
-						}
-						ret.add(new Tuple2<String,String>(key, lineInput._2));
-					}
-					return ret.iterator();
+					return preprocess(t, ift).iterator();
 				}
 			});
 		}
 		if (this.useSparkSql()){
 			if (this instanceof SchemaETLCmd){
-				int singleTableColNum=0;
 				SchemaETLCmd scmd = (SchemaETLCmd) this;
-				Map<String, Dataset<Row>> dfMap = new HashMap<String, Dataset<Row>>();
-				if (scmd.getLogicSchema()==null){//schema less, each field is treated as string typed
-					StructType st = new StructType();
-					singleTableColNum = processedInput.take(1).get(0)._2.split(csvValueSep,-1).length;
-					for (int i=0; i<singleTableColNum; i++){
-						st = st.add(DataTypes.createStructField(COLUMN_PREFIX+i, DataTypes.StringType, true));
-					}
-					char delimiter = csvValueSep.charAt(0);
-					//no schema, then all input goes to 1 table SINGLE_TABLE
-					JavaRDD<Row> rowRDD = processedInput.values().map(new Function<String, Row>() {
-						private static final long serialVersionUID = 1L;
-						@Override
-						  public Row call(String record) throws Exception {
-							//String[] fvs = record.split(csvValueSep, -1);
-							CSVParser csvParser=CSVParser.parse(record, CSVFormat.DEFAULT.withTrim().
-									withDelimiter(delimiter).withTrailingDelimiter(inputEndwithDelimiter).
-									withSkipHeaderRecord(skipHeader));
-							CSVRecord csvRecord = csvParser.getRecords().get(0);
-							String[] fvs = new String[csvRecord.size()];
-							for (int i=0; i<fvs.length; i++){
-								fvs[i]=csvRecord.get(i);
-							}
-						    return RowFactory.create(fvs);
-						  }
-						});
-					Dataset<Row> dfr = spark.createDataFrame(rowRDD, st);
-					dfr.createOrReplaceTempView(SINGLE_TABLE);
-					dfMap.put(SINGLE_TABLE, dfr);
-				}else{
-					JavaPairRDD<String, Row> srrdd = processedInput.mapToPair(new PairFunction<Tuple2<String,String>, String, Row>(){
-						private static final long serialVersionUID = 1L;
-						@Override
-						  public Tuple2<String, Row> call(Tuple2<String, String> t) throws Exception {
-							Object[] attributes = SchemaUtils.convertFromStringValues(
-									scmd.getLogicSchema(), t._1, t._2, csvValueSep, 
-									inputEndwithDelimiter, skipHeader);
-						    return new Tuple2<String, Row>(t._1, RowFactory.create(attributes));
-						  }
-						});
-					List<String> keys = srrdd.keys().distinct().collect();
-					logger.info(String.format("%d keys:%s", keys.size(), keys));
-					for (String key: keys){
-						JavaRDD<Row> frdd = filterPairRDDRow(srrdd, key);
-						StructType st = scmd.getSparkSqlSchema(key);
-						if (st!=null){
-							Dataset<Row> dfr = spark.createDataFrame(frdd, st);
-							dfr.createOrReplaceTempView(key);
-							dfMap.put(key, dfr);
-						}else{
-							logger.error(String.format("schema not found for %s", key));
-							return null;
+				JavaPairRDD<String, Row> rowRDD = processedInput.mapToPair(new PairFunction<Tuple2<String,String>, String, Row>(){
+					private static final long serialVersionUID = 1L;
+					@Override
+					  public Tuple2<String, Row> call(Tuple2<String, String> t) throws Exception {
+						String tn = t._1;
+						if (scmd.getLogicSchema()==null){
+							tn = ETLCmd.SINGLE_TABLE;
 						}
-					}
-				}
-				return dataSetProcess(jsc, spark, dfMap);
+						Object[] attributes = SchemaUtils.convertFromStringValues(
+								scmd.getLogicSchema(), tn, t._2, csvValueSep, 
+								inputEndwithDelimiter, skipHeader);
+					    return new Tuple2<String, Row>(tn, RowFactory.create(attributes));
+					  }
+				});
+				return dataSetProcess(jsc, spark, rowRDD);
 			}else{
-				logger.error(String.format("expected SchemaETLCmd subclasses. %s", this.getClass().getName()));
+				logger.error(String.format("for spark sql usage must be subclass of SchemaCmd"));
 				return null;
 			}
 		}else{
@@ -445,74 +480,10 @@ public abstract class ETLCmd implements Serializable{
 		}
 	}
 	
-	public static Class<? extends InputFormat<LongWritable, Text>> getInputFormat(InputFormatType ift){
-		if (InputFormatType.Line == ift){
-			return org.apache.hadoop.mapreduce.lib.input.NLineInputFormat.class;
-		}else if (InputFormatType.Text == ift){
-			return org.apache.hadoop.mapreduce.lib.input.TextInputFormat.class;
-		}else if (InputFormatType.SequenceFile == ift){
-			return etl.input.LTSequenceFileInputFormat.class;
-		}else if (InputFormatType.XML == ift){
-			return etl.input.XmlInputFormat.class;
-		}else if (InputFormatType.CombineXML == ift){
-			return etl.input.CombineXmlInputFormat.class;
-		}else if (InputFormatType.CombineWithFileNameText == ift){
-			return etl.input.CombineWithFileNameTextInputFormat.class;
-		}else if (InputFormatType.FileName == ift){
-			return etl.input.FilenameInputFormat.class;
-		}else if (InputFormatType.CombineFileName == ift){
-			return etl.input.CombineFileNameInputFormat.class;
-		}else{
-			logger.error(String.format("inputformat:%s not supported", ift));
-			return null;
-		}
-	}
-	
-	//Files to KV
-	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, InputFormatType ift, SparkSession spark){
-		JavaPairRDD<String, String> prdd = null;
-		Class<? extends InputFormat<LongWritable, Text>> inputFormatClass = getInputFormat(ift);
-		for (String file:inputfiles.collect()){
-			copyConf();
-			JobConf jobConf = new JobConf(this.getHadoopConf());
-			logger.info(String.format("process path:%s", file));
-			FileInputFormat.addInputPath(jobConf, new Path(file));
-			JavaPairRDD<LongWritable, Text> content = jsc.newAPIHadoopRDD(jobConf, inputFormatClass, LongWritable.class, Text.class);
-			JavaPairRDD<String, String> tprdd = content.flatMapToPair(new PairFlatMapFunction<Tuple2<LongWritable, Text>, String, String>(){
-				private static final long serialVersionUID = 1L;
-				@Override
-				public Iterator<Tuple2<String, String>> call(Tuple2<LongWritable, Text> t) throws Exception {
-					init();
-					List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
-					if (SequenceFileInputFormat.class.isAssignableFrom(inputFormatClass)){
-						ret.addAll(processSequenceFile(null, t._2.toString()));
-					}else{
-						String key = null;
-						if (inputFormatClass.isAssignableFrom(FilenameInputFormat.class)){
-							key = mapKey(t._2.toString());
-						}else{
-							key = mapKey(file);
-						}
-						if (!(skipHeader && t._1.get()==0)){
-							ret.add(new Tuple2<String, String>(key, t._2.toString()));
-						};
-					}
-					return ret.iterator();
-				}
-				
-			});
-			if (prdd==null){
-				prdd = tprdd;
-			}else{
-				prdd = prdd.union(tprdd);
-			}
-		}
-		return sparkProcessKeyValue(prdd, jsc, null, spark);
-	}
-	
 	//V to V
 	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, InputFormatType ift, SparkSession spark){
 		return input.flatMap(new FlatMapFunction<String,String>(){
+			private static final long serialVersionUID = 1L;
 			@Override
 			public Iterator<String> call(String t) throws Exception {
 				List<Tuple2<String,String>> retlist = flatMapToPair(null, t, null);
