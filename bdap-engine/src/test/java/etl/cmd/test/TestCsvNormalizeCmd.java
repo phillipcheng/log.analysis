@@ -53,13 +53,13 @@ public class TestCsvNormalizeCmd extends TestETLCmd {
 		
 		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
 		rfifs.add(new Tuple2<String, String[]>(remoteCsvFolder, csvFiles));
-		getConf().set("logic.schema", "/etltest/csvnorm/schema");
+		getConf().set("schema.file", "/etltest/csvnorm/schema");
 		List<String> output = mrTest(rfifs, remoteCsvOutputFolder, csvsplitProp, testCmdClass, TextInputFormat.class, ParquetOutputFormat.class);
 		logger.info("Output is: {}", output);
 		
 		// assertion
 		assertTrue(output.size() > 0);
-		assertTrue(output.contains("2016-03-28 11:05:00,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,1,b69231ce-8926-4e88-87cc-93fbb46d70e9,57364,57364,0,0"));
+		assertTrue(output.contains("2016-03-28 11:05:00.000,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,1,b69231ce-8926-4e88-87cc-93fbb46d70e9,57364,57364,0,0"));
 		
 		List<String> files = HdfsUtil.listDfsFile(getFs(), remoteCsvOutputFolder);
 		logger.info("Output files: {}", files);
@@ -106,7 +106,7 @@ public class TestCsvNormalizeCmd extends TestETLCmd {
 				cfgProperties = this.getResourceSubFolder() + cfgProperties;
 			}
 			SaveDataCmd saveDataCmd = new SaveDataCmd("wfName", "wfId", cfgProperties, this.getDefaultFS(), null);
-			saveDataCmd.getPc().addProperty("logic.schema", "/etltest/csvnorm/schema");
+			saveDataCmd.getPc().addProperty("schema.file", "/etltest/csvnorm/schema");
 			result = saveDataCmd.sparkProcessKeyValue(result, jsc, InputFormatType.ParquetFile, null);
 			List<String> keys = result.keys().collect();
 			List<String> values = result.values().collect();
@@ -118,7 +118,7 @@ public class TestCsvNormalizeCmd extends TestETLCmd {
 			
 			output = readParquetFile(output.get(0));
 			assertTrue(output.size() > 0);
-			assertTrue(output.contains("2016-03-28 11:05:00,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,1,b69231ce-8926-4e88-87cc-93fbb46d70e9,57364,57364,0,0"));
+			assertTrue(output.contains("2016-03-28 11:05:00.000,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,1,b69231ce-8926-4e88-87cc-93fbb46d70e9,57364,57364,0,0"));
 
 		} finally {
 			if (jsc != null)

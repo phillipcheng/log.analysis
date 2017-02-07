@@ -56,7 +56,7 @@ public class SparkGenerator {
 		sb.append("import java.util.*;\n");
 		sb.append("import org.apache.log4j.Logger;\n");
 		sb.append("import org.apache.spark.SparkConf;\n");
-		sb.append("import org.apache.spark.SparkContext;;\n");
+		sb.append("import org.apache.spark.SparkContext;\n");
 		sb.append("import org.apache.spark.api.java.JavaPairRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaSparkContext;\n");

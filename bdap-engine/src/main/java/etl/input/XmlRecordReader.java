@@ -2,9 +2,11 @@ package etl.input;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -76,26 +78,34 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		end = start + fileSplit.getLength();
 		Path file = fileSplit.getPath();
 		FileSystem fs = file.getFileSystem(conf);
-		fsin = new XmlInputStream(fs.open(fileSplit.getPath()), start, end);
-		fsin.seek(start);
+		InputStream in = fs.open(fileSplit.getPath());
 		
 		buffer = new DataOutputBuffer();
+
+		FileStatus[] st = fs.listStatus(fileSplit.getPath());
+		long fileSize;
+		if (st != null && st.length > 0)
+			fileSize = st[0].getLen();
+		else
+			fileSize = 0;
 		
-		if (readUntilMatch(fsin, startTag, true))
+		XmlInputStream tmpIn = new XmlInputStream(in, 0, fileSize);
+		if (readUntilMatch(tmpIn, startTag, true))
 			header = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 		else
 			header = "";
-		
-		while (fsin.getPos() < end) {
+
+		while (tmpIn.getPos() < fileSize) {
 			/* Seek to the last record to get the footer */
 			buffer.reset();
-			readUntilMatch(fsin, endTag, true);
+			readUntilMatch(tmpIn, endTag, true);
 		}
 		
 		footer = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 		
 		buffer.reset();
-		
+
+		fsin = new XmlInputStream(in, start, end);
 		/* Seek to the beginning again */
 		fsin.seek(start);
 		

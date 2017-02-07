@@ -166,6 +166,10 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 		List<FieldType> types = new ArrayList<FieldType>();
 		types.addAll(fileLvlSystemFieldTypes);
 		types.addAll(tableLvlSystemFieldTypes);
+
+		doc = XmlUtil.getDocument(input);
+		table = (Node) xpathExpTable.evaluate(doc, XPathConstants.NODE);
+
 		return new DynamicTableSchema(tableName, tableAttrNamesList, vs, types);
 	}
 

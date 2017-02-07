@@ -195,10 +195,10 @@ public class DBUtil {
 	
 	public static String genCopyHdfsSql(String prefix, List<String> fieldNameList, String tn, String dbschema, 
 			String rootWebHdfs, String csvFileName, String username, DBType dbType, String delimiter, String enclosedBy){
-		StringBuffer copysql = new StringBuffer();
 		if (DBType.HIVE == dbType){
 			return String.format("load data inpath '%s%s' into table %s.%s", rootWebHdfs, csvFileName, dbschema, tn);
 		}else{
+			StringBuilder copysql = new StringBuilder();
 			List<String> fnl = normalizeDBFieldNames(fieldNameList);
 			//gen table sql
 			if (prefix==null){

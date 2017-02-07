@@ -294,9 +294,10 @@ public class SaveDataCmd extends SchemaETLCmd {
 			
 			OutputFormat<Void, Text> outputFormat = outputFormatClass.newInstance();
 			OutputCommitter committer = outputFormat.getOutputCommitter(hadoopContext);
-			RecordWriter<Void, Text> recordWriter = outputFormat.getRecordWriter(hadoopContext);
 					
 			committer.setupTask(hadoopContext);
+			
+			RecordWriter<Void, Text> recordWriter = outputFormat.getRecordWriter(hadoopContext);
 					 
 			ReduceContextImpl<Text, Text, Void, Text> taskInputOutputContext = new ReduceContextImpl<Text, Text, Void, Text>(getConf(), attemptId, new SimpleIterator(iter), new GenericCounter(), new GenericCounter(),
 					recordWriter, committer, new ReduceContextImpl.DummyReporter(), null, Text.class, Text.class);
@@ -309,9 +310,9 @@ public class SaveDataCmd extends SchemaETLCmd {
 		        }
 		    } finally {
 		        writer.close();
+				
+				recordWriter.close(taskInputOutputContext);
 		    }
-			
-			recordWriter.close(taskInputOutputContext);
 			
 			committer.commitTask(hadoopContext);
 			

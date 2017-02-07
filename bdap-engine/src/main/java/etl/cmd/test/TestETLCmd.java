@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Map;
 
 //log4j2
+import etl.util.DateUtil;
+import etl.util.NanoTimeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.example.data.Group;
+import org.apache.parquet.example.data.simple.NanoTime;
 import org.apache.parquet.example.data.simple.convert.GroupRecordConverter;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
@@ -282,14 +285,16 @@ public abstract class TestETLCmd implements Serializable{
 						if (PrimitiveTypeName.BINARY.equals(c.getPrimitiveTypeName())) {
 							buffer.append(g.getString(fieldIndex, 0));
 						} else if (PrimitiveTypeName.INT32.equals(c.getPrimitiveTypeName())) {
-							buffer.append(g.getInteger(fieldIndex, 0));
+							if (OriginalType.DATE.equals(c.getOriginalType())) {
+								buffer.append(FieldType.sdateFormat.format(new Date(DateUtil.daysToMillis(g.getInteger(fieldIndex, 0)))));
+							} else
+								buffer.append(g.getInteger(fieldIndex, 0));
 						} else if (PrimitiveTypeName.INT64.equals(c.getPrimitiveTypeName())) {
-							if (OriginalType.TIMESTAMP_MILLIS.equals(c.getOriginalType())) {
-								buffer.append(FieldType.sdatetimeRoughFormat.format(new Date(g.getLong(fieldIndex, 0))));
-							} else if (OriginalType.DATE.equals(c.getOriginalType())) {
-								buffer.append(FieldType.sdateFormat.format(new Date(g.getLong(fieldIndex, 0))));
-							} else {
-								buffer.append(g.getLong(fieldIndex, 0));
+							buffer.append(g.getLong(fieldIndex, 0));
+						} else if (PrimitiveTypeName.INT96.equals(c.getPrimitiveTypeName())) {
+							if (c.getOriginalType() == null) {
+								NanoTime nt = NanoTime.fromBinary(g.getInt96(fieldIndex, 0));
+								buffer.append(FieldType.sdatetimeFormat.format(new Date(NanoTimeUtils.getTimestamp(nt, false))));
 							}
 						} else if (PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY.equals(c.getPrimitiveTypeName())) {
 							b = g.getBinary(fieldIndex, 0);
