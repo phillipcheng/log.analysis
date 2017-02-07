@@ -36,6 +36,7 @@ import etl.engine.LogicSchema;
 public class CSVWriteSupport extends WriteSupport<Text> {
 	public static final Logger logger = LogManager.getLogger(CSVWriteSupport.class);
 	private static final String DEFAULT_FS = "fs.defaultFS";
+	private static final byte[] EMPTY_INT96 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	private RecordConsumer recordConsumer;
 	private MessageType rootSchema;
 	private LogicSchema rootLogicSchema;
@@ -136,38 +137,43 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 					fieldType = rootSchema.getType(index);
 					fieldName = fieldType.getName();
 			        recordConsumer.startField(fieldName, index);
-					if (PrimitiveTypeName.INT32.equals(fieldType.asPrimitiveType().getPrimitiveTypeName()))
-						recordConsumer.addInteger(Integer.parseInt(fieldValue));
-					else if (PrimitiveTypeName.INT64.equals(fieldType.asPrimitiveType().getPrimitiveTypeName())) {
+					if (PrimitiveTypeName.INT32.equals(fieldType.asPrimitiveType().getPrimitiveTypeName())) {
 						pt = fieldType.asPrimitiveType();
-						if (OriginalType.TIMESTAMP_MILLIS.equals(pt.getOriginalType())) {
-							try {
-								t = FieldType.sdatetimeRoughFormat.parse(fieldValue);
-								if (t != null)
-									recordConsumer.addLong(t.getTime());
-								else {
-									logger.error("{} Parse to timestamp failed", fieldValue);
-									recordConsumer.addLong(0);
-								}
-							} catch (ParseException e) {
-								logger.error(e.getMessage(), e);
-								recordConsumer.addLong(0);
-							}
-						} else if (OriginalType.DATE.equals(pt.getOriginalType())) {
+						if (OriginalType.DATE.equals(pt.getOriginalType())) {
 							try {
 								t = FieldType.sdateFormat.parse(fieldValue);
 								if (t != null)
-									recordConsumer.addLong(t.getTime());
+									recordConsumer.addInteger(DateUtil.dateToDays(t));
 								else {
 									logger.error("{} Parse to timestamp failed", fieldValue);
-									recordConsumer.addLong(0);
+									recordConsumer.addInteger(0);
 								}
 							} catch (ParseException e) {
 								logger.error(e.getMessage(), e);
 								recordConsumer.addLong(0);
 							}
 						} else
-							recordConsumer.addLong(Long.parseLong(fieldValue));
+							recordConsumer.addInteger(Integer.parseInt(fieldValue));
+					} else if (PrimitiveTypeName.INT64.equals(fieldType.asPrimitiveType().getPrimitiveTypeName())) {
+						recordConsumer.addLong(Long.parseLong(fieldValue));
+					} else if (PrimitiveTypeName.INT96.equals(fieldType.asPrimitiveType().getPrimitiveTypeName())) {
+						pt = fieldType.asPrimitiveType();
+						if (pt.getOriginalType() == null) { /* Default is timestamp */
+							try {
+								t = FieldType.sdatetimeFormat.parse(fieldValue);
+								if (t != null)
+									recordConsumer.addBinary(NanoTimeUtils.getNanoTime(t.getTime(), false).toBinary());
+								else {
+									logger.error("{} Parse to timestamp failed", fieldValue);
+									recordConsumer.addBinary(Binary.fromConstantByteArray(EMPTY_INT96));
+								}
+							} catch (ParseException e) {
+								logger.error(e.getMessage(), e);
+								recordConsumer.addBinary(Binary.fromConstantByteArray(EMPTY_INT96));
+							}
+						} else {
+							logger.error("Unsupported parquet field type: {} for primitive type INT96", pt.getOriginalType());
+						}
 					} else if (PrimitiveTypeName.FLOAT.equals(fieldType.asPrimitiveType().getPrimitiveTypeName()))
 						recordConsumer.addFloat(Float.parseFloat(fieldValue));
 					else if (PrimitiveTypeName.DOUBLE.equals(fieldType.asPrimitiveType().getPrimitiveTypeName()))

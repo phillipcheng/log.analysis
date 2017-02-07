@@ -62,7 +62,12 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 
 	public abstract DynamicTableSchema getDynamicTable(String input, LogicSchema ls) throws Exception;
+	@Deprecated
 	public abstract List<String[]> getValues() throws Exception;
+	public List<String[]> getValues(DynamicTableSchema dts) throws Exception {
+		/* For compatibility, to be improved later */
+		return getValues();
+	}
 
 	//the added field names and types
 	class UpdatedTable{
@@ -178,7 +183,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 							return null;
 						}
 					}
-					List<String[]> vslist = getValues();
+					List<String[]> vslist = getValues(dt);
 					for (int k=0; k<vslist.size(); k++){
 						String[] fieldValues = vslist.get(k);
 						String[] vs = new String[orgAttrs.size()];
