@@ -1,14 +1,19 @@
 package etl.flow.spark;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.PrivilegedExceptionAction;
 import java.util.*;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,6 +37,9 @@ import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
 import etl.flow.oozie.OozieConf;
 import etl.flow.oozie.OozieFlowMgr;
+import org.apache.spark.SparkConf;
+import org.apache.spark.deploy.yarn.Client;
+import org.apache.spark.deploy.yarn.ClientArguments;
 
 public class SparkFlowMgr extends OozieFlowMgr {
 	public static final Logger logger = LogManager.getLogger(FlowMgr.class);
@@ -238,7 +246,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 				return null;
 			}
 			
-		} else {
+		} else if ("ssh".equals(sparkServerConf.getSparkLaunchMode())) {
 			String appResource = String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), "bdap.engine-VVERSIONN.jar");
 			logger.info(appResource);
 			
@@ -298,9 +306,9 @@ public class SparkFlowMgr extends OozieFlowMgr {
 					"--deploy-mode",
 					"cluster",
 					"--executor-memory",
-					"2G",
+					fd.getPc().getString("spark.executor.memory", "2G"),
 					"--executor-cores",
-					"4",
+					fd.getPc().getString("spark.executor.cores", "4"),
 					"--conf",
 					"spark.yarn.historyServer.address=" + sparkServerConf.getSparkHistoryServer(),
 					"--conf",
@@ -325,6 +333,112 @@ public class SparkFlowMgr extends OozieFlowMgr {
 			logger.info(result);
 			session.disconnect();
 			
+			return wfId;
+
+		} else {
+			String hdfsUser = fd.getHdfsUser();
+			String sparkHome = fd.getPc().getString("spark.home", "/data/spark-2.1.0-bin-hadoop2.7/");
+			String fqClassCmdName = SparkGenerator.getFQClassName(prjName, flowName);
+			String wfId = flowName + Long.toString(System.currentTimeMillis());
+			String bdapLibPath = String.format("%s%s/lib", fd.getDefaultFS(), fd.getPlatformRemoteDist());
+			String appResource = String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), "bdap.engine-VVERSIONN.jar");
+			logger.info(appResource);
+
+			List<String> libfiles = fd.listFiles(bdapLibPath);
+			StringBuilder engineJarsSb = new StringBuilder();
+			if (libfiles != null) {
+				int i = 0;
+				for (String f: libfiles) {
+					if (f.endsWith(".jar") && (!f.startsWith("bdap.engine-"))) {
+						String strJar=String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), f);
+						if (i == 0)
+							engineJarsSb.append(strJar);
+						else
+							engineJarsSb.append(",").append(strJar);
+						i ++;
+					}
+				}
+			}
+
+			String projectDir = fd.getProjectHdfsDir(prjName);
+			if (!projectDir.endsWith(org.apache.hadoop.fs.Path.SEPARATOR))
+				projectDir += org.apache.hadoop.fs.Path.SEPARATOR;
+
+			StringBuffer thirdPartyJarsSb = new StringBuffer();
+			if (fd.existsDir(String.format("%s%s%s/lib", fd.getDefaultFS(), projectDir, flowName))) {
+				/* Add 3rd party jars if the lib directory exists */
+				libfiles = fd.listFiles(String.format("%s%s%s/lib", fd.getDefaultFS(), projectDir, flowName));
+				if (libfiles != null) {
+					for (String f: libfiles) {
+						if (f.endsWith(".jar") && (!f.startsWith(flowName))) {
+							String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), projectDir, flowName, f);
+							if (thirdPartyJarsSb.indexOf(strJar) == -1)
+								thirdPartyJarsSb.append(",").append(strJar);
+						}
+					}
+				}
+			}
+
+			String flowJar = String.format("%s%s%s/lib/%s.jar", fd.getDefaultFS(), projectDir, flowName, flowName);
+
+			String[] args = new String[] {
+					"--class",
+					"etl.engine.ETLCmdMain",
+					"--jar",
+					appResource,
+					"--arg",
+					fqClassCmdName,
+					"--arg",
+					flowName,
+					"--arg",
+					wfId,
+					"--arg",
+					"action.spark.properties",
+					"--arg",
+					fd.getDefaultFS()
+			};
+
+			// create a Hadoop Configuration object
+			Configuration config = fd.getConf();
+
+			// create an instance of SparkConf object
+			SparkConf sparkConf = new SparkConf();
+			sparkConf.set("spark.app.name", fqClassCmdName);
+			sparkConf.set("spark.yarn.stagingDir", fd.getDefaultFS() + "/user/" + hdfsUser);
+			sparkConf.set("spark.yarn.archive", "file://" + sparkHome + "jars");
+			sparkConf.set("spark.master", "yarn");
+			sparkConf.set("spark.submit.deployMode", "cluster");
+			if (fd.getPc().containsKey("spark.driver.memory"))
+				sparkConf.set("spark.driver.memory", fd.getPc().getString("spark.driver.memory", "2G"));
+			if (fd.getPc().containsKey("spark.executor.memory"))
+				sparkConf.set("spark.executor.memory", fd.getPc().getString("spark.executor.memory", "2G"));
+			if (fd.getPc().containsKey("spark.executor.cores"))
+				sparkConf.set("spark.executor.cores", fd.getPc().getString("spark.executor.cores", "4"));
+			sparkConf.set("spark.yarn.historyServer.address", sparkServerConf.getSparkHistoryServer());
+			sparkConf.set("spark.eventLog.dir", fd.getDefaultFS() + "/spark/logs");
+			sparkConf.set("spark.eventLog.enabled", "true");
+			sparkConf.set("spark.driver.userClassPathFirst", "true");
+			sparkConf.set("spark.executor.userClassPathFirst", "true");
+			sparkConf.set("spark.yarn.dist.jars", engineJarsSb.toString() + "," + flowJar + thirdPartyJarsSb.toString());
+
+			// create ClientArguments, which will be passed to Client
+			ClientArguments cArgs = new ClientArguments(args);
+
+			// create an instance of yarn Client client
+			Client client = new Client(cArgs, config, sparkConf);
+
+			// submit Spark job to YARN
+			try {
+				UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
+				ApplicationId appId = ugi.doAs(new PrivilegedExceptionAction<ApplicationId>() {
+                    public ApplicationId run() throws Exception {
+                        return client.submitApplication();
+                    }
+                });
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+
 			return wfId;
 		}
 	}
