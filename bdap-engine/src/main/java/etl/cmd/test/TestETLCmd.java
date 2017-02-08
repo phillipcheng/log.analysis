@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Map;
 
 //log4j2
+import etl.util.DateUtil;
+import etl.util.NanoTimeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.example.data.Group;
+import org.apache.parquet.example.data.simple.NanoTime;
 import org.apache.parquet.example.data.simple.convert.GroupRecordConverter;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
@@ -29,9 +32,10 @@ import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
-import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,6 +58,7 @@ import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
 import etl.engine.ETLCmd;
 import etl.engine.InvokeMapper;
+import etl.engine.types.InputFormatType;
 import etl.input.FilenameInputFormat;
 import etl.util.FieldType;
 import etl.util.GlobExpPathFilter;
@@ -235,78 +240,86 @@ public abstract class TestETLCmd implements Serializable{
 		List<String> output;
 		if (ParquetOutputFormat.class.isAssignableFrom(outputFormatClass)) {
 			List<String> paths = HdfsUtil.listDfsFilePath(getFs(), remoteOutputFolder, true);
-			MessageType schema;
-			ParquetMetadata m;
-			ParquetFileReader r;
-			PageReadStore rowGroup;
-			MessageColumnIO columnIO;
-			RecordReader<Group> recordReader;
-			List<Type> fields;
-			int fieldIndex;
-			StringBuilder buffer;
-			PrimitiveType c;
-			Binary b;
 			
 			output = new ArrayList<String>();
 			for (String p: paths) {
 				if (p.endsWith(".parquet")) {
-					m = ParquetFileReader.readFooter(getConf(), new Path(p), ParquetMetadataConverter.NO_FILTER);
-					schema = m.getFileMetaData().getSchema();
-					r = null;
-					try {
-						r = new ParquetFileReader(getConf(), m.getFileMetaData(), new Path(p), m.getBlocks(), schema.getColumns());
-						rowGroup = r.readNextRowGroup();
-						if (rowGroup != null) {
-							columnIO = new ColumnIOFactory().getColumnIO(m.getFileMetaData().getSchema());
-							recordReader = columnIO.getRecordReader(rowGroup, new GroupRecordConverter(schema));
-							fields = schema.getFields();
-							for (int i = 0; i < rowGroup.getRowCount(); i++) {
-								final Group g = recordReader.read();
-								fieldIndex = 0;
-								buffer = new StringBuilder();
-								for (Type f: fields) {
-									c = f.asPrimitiveType();
-									if (PrimitiveTypeName.BINARY.equals(c.getPrimitiveTypeName())) {
-										buffer.append(g.getString(fieldIndex, 0));
-									} else if (PrimitiveTypeName.INT32.equals(c.getPrimitiveTypeName())) {
-										buffer.append(g.getInteger(fieldIndex, 0));
-									} else if (PrimitiveTypeName.INT64.equals(c.getPrimitiveTypeName())) {
-										if (OriginalType.TIMESTAMP_MILLIS.equals(c.getOriginalType())) {
-											buffer.append(FieldType.sdatetimeRoughFormat.format(new Date(g.getLong(fieldIndex, 0))));
-										} else if (OriginalType.DATE.equals(c.getOriginalType())) {
-											buffer.append(FieldType.sdateFormat.format(new Date(g.getLong(fieldIndex, 0))));
-										} else {
-											buffer.append(g.getLong(fieldIndex, 0));
-										}
-									} else if (PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY.equals(c.getPrimitiveTypeName())) {
-										b = g.getBinary(fieldIndex, 0);
-										if (OriginalType.DECIMAL.equals(c.getOriginalType())) {
-											buffer.append(new HiveDecimalWritable(b.getBytes(), c.getDecimalMetadata().getScale()).getHiveDecimal().toString());
-										} else {
-											buffer.append(b.toString());
-										}
-									} else if (PrimitiveTypeName.FLOAT.equals(c.getPrimitiveTypeName())) {
-										buffer.append(g.getFloat(fieldIndex, 0));
-									} else if (PrimitiveTypeName.DOUBLE.equals(c.getPrimitiveTypeName())) {
-										buffer.append(g.getDouble(fieldIndex, 0));
-									}
-									fieldIndex ++;
-									if (fieldIndex < fields.size())
-										buffer.append(",");
-								}
-								output.add(buffer.toString());
-							}
-						}
-					} finally {
-						if (r != null)
-							r.close();
-					}
+					output.addAll(readParquetFile(p));
 				}
 			}
 		} else
 			output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
 		return output;
 		
+	}
+
+	public List<String> readParquetFile(String p) throws Exception {
+		ArrayList<String> output = new ArrayList<String>();
+		MessageType schema;
+		ParquetMetadata m;
+		ParquetFileReader r;
+		PageReadStore rowGroup;
+		MessageColumnIO columnIO;
+		RecordReader<Group> recordReader;
+		List<Type> fields;
+		int fieldIndex;
+		StringBuilder buffer;
+		PrimitiveType c;
+		Binary b;
+		m = ParquetFileReader.readFooter(getConf(), new Path(p), ParquetMetadataConverter.NO_FILTER);
+		schema = m.getFileMetaData().getSchema();
+		r = null;
+		try {
+			r = new ParquetFileReader(getConf(), m.getFileMetaData(), new Path(p), m.getBlocks(), schema.getColumns());
+			rowGroup = r.readNextRowGroup();
+			if (rowGroup != null) {
+				columnIO = new ColumnIOFactory().getColumnIO(m.getFileMetaData().getSchema());
+				recordReader = columnIO.getRecordReader(rowGroup, new GroupRecordConverter(schema));
+				fields = schema.getFields();
+				for (int i = 0; i < rowGroup.getRowCount(); i++) {
+					final Group g = recordReader.read();
+					fieldIndex = 0;
+					buffer = new StringBuilder();
+					for (Type f: fields) {
+						c = f.asPrimitiveType();
+						if (PrimitiveTypeName.BINARY.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getString(fieldIndex, 0));
+						} else if (PrimitiveTypeName.INT32.equals(c.getPrimitiveTypeName())) {
+							if (OriginalType.DATE.equals(c.getOriginalType())) {
+								buffer.append(FieldType.sdateFormat.format(new Date(DateUtil.daysToMillis(g.getInteger(fieldIndex, 0)))));
+							} else
+								buffer.append(g.getInteger(fieldIndex, 0));
+						} else if (PrimitiveTypeName.INT64.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getLong(fieldIndex, 0));
+						} else if (PrimitiveTypeName.INT96.equals(c.getPrimitiveTypeName())) {
+							if (c.getOriginalType() == null) {
+								NanoTime nt = NanoTime.fromBinary(g.getInt96(fieldIndex, 0));
+								buffer.append(FieldType.sdatetimeFormat.format(new Date(NanoTimeUtils.getTimestamp(nt, false))));
+							}
+						} else if (PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY.equals(c.getPrimitiveTypeName())) {
+							b = g.getBinary(fieldIndex, 0);
+							if (OriginalType.DECIMAL.equals(c.getOriginalType())) {
+								buffer.append(new HiveDecimalWritable(b.getBytes(), c.getDecimalMetadata().getScale()).getHiveDecimal().toString());
+							} else {
+								buffer.append(b.toString());
+							}
+						} else if (PrimitiveTypeName.FLOAT.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getFloat(fieldIndex, 0));
+						} else if (PrimitiveTypeName.DOUBLE.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getDouble(fieldIndex, 0));
+						}
+						fieldIndex ++;
+						if (fieldIndex < fields.size())
+							buffer.append(",");
+					}
+					output.add(buffer.toString());
+				}
+			}
+		} finally {
+			if (r != null)
+				r.close();
+		}
+		return output;
 	}
 
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
@@ -345,17 +358,21 @@ public abstract class TestETLCmd implements Serializable{
 	}
 	
 	//spark test for cmd
-	//spark test for cmd
-	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
-		String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass) throws Exception{
-		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, inputFormatClass, null);
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, ift, null, false);
+	}
+	public List<String> sparkTestKVKeys(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, ift, null, true);
 	}
 	
-	public Tuple2<List<String>, List<String>> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
-			String cmdProperties, Class<? extends ETLCmd> cmdClass, Class<? extends InputFormat> inputFormatClass, 
-			Map<String, String> addConf) throws Exception{
-		SparkConf conf = new SparkConf().setAppName("wfName").setMaster("local[5]");
-		JavaSparkContext jsc = new JavaSparkContext(conf);
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+			String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift, 
+			Map<String, String> addConf, boolean key) throws Exception{
+		SparkSession spark = SparkSession.builder().appName("wfName").master("local[5]").getOrCreate();
+		SparkContext sc = spark.sparkContext();
+		JavaSparkContext jsc = new JavaSparkContext(sc);
 		try {
 			getFs().delete(new Path(remoteInputFolder), true);
 			List<String> inputPaths = new ArrayList<String>();
@@ -363,7 +380,7 @@ public abstract class TestETLCmd implements Serializable{
 				getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + inputFile), new Path(remoteInputFolder + inputFile));
 				inputPaths.add(remoteInputFolder + inputFile);
 			}
-			if (inputFormatClass == FilenameInputFormat.class){
+			if (InputFormatType.FileName == ift){
 				inputPaths.clear();
 				inputPaths.add(remoteInputFolder);
 			}
@@ -377,13 +394,49 @@ public abstract class TestETLCmd implements Serializable{
 			if (addConf!=null){
 				cmd.copyConf(addConf);
 			}
-			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, inputFormatClass);
-			List<String> keys = result.keys().collect();
-			List<String> values = result.values().collect();
-			return new Tuple2<List<String>, List<String>>(keys, values);
+			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, ift, spark);
+			//List<String> keys = result.keys().collect();
+			
+			List<String> ret = new ArrayList<String>();
+			if (key){
+				List<String> keys = result.keys().collect();
+				ret.addAll(keys);
+			}else{
+				List<String> values = result.values().collect();
+				ret.addAll(values);
+			}
+			return ret;
 		}finally{
 			jsc.close();
 		}
+	}
+	
+
+	
+	public JavaPairRDD<String, String> sparkTestKVRDD(JavaSparkContext jsc, String remoteInputFolder, String[] inputDataFiles, 
+			String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift, 
+			Map<String, String> addConf) throws Exception{
+		getFs().delete(new Path(remoteInputFolder), true);
+		List<String> inputPaths = new ArrayList<String>();
+		for (String inputFile : inputDataFiles) {
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + inputFile), new Path(remoteInputFolder + inputFile));
+			inputPaths.add(remoteInputFolder + inputFile);
+		}
+		if (InputFormatType.FileName == ift){
+			inputPaths.clear();
+			inputPaths.add(remoteInputFolder);
+		}
+		Constructor<? extends ETLCmd> constr = cmdClass.getConstructor(String.class, String.class, String.class, String.class, String[].class);
+		String cfgProperties = cmdProperties;
+		if (this.getResourceSubFolder()!=null){
+			cfgProperties = this.getResourceSubFolder() + cmdProperties;
+		}
+		String wfName = "wfName";
+		ETLCmd cmd = constr.newInstance(wfName, "wfId", cfgProperties, this.getDefaultFS(), null);
+		if (addConf!=null){
+			cmd.copyConf(addConf);
+		}
+		return cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, ift, null);
 	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 

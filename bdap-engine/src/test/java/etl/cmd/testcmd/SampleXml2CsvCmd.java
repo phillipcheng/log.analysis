@@ -23,7 +23,7 @@ import bdap.util.XmlUtil;
 import etl.cmd.dynschema.DynamicSchemaCmd;
 import etl.cmd.dynschema.DynamicTableSchema;
 import etl.engine.LogicSchema;
-import etl.engine.ProcessMode;
+import etl.engine.types.ProcessMode;
 import etl.util.FieldType;
 import etl.util.VarType;
 
@@ -166,6 +166,10 @@ public class SampleXml2CsvCmd extends DynamicSchemaCmd{
 		List<FieldType> types = new ArrayList<FieldType>();
 		types.addAll(fileLvlSystemFieldTypes);
 		types.addAll(tableLvlSystemFieldTypes);
+
+		doc = XmlUtil.getDocument(input);
+		table = (Node) xpathExpTable.evaluate(doc, XPathConstants.NODE);
+
 		return new DynamicTableSchema(tableName, tableAttrNamesList, vs, types);
 	}
 

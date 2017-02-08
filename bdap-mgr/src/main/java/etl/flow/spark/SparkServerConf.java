@@ -4,6 +4,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 
 import bdap.util.PropertiesUtil;
 import etl.flow.mgr.FlowServerConf;
+import etl.flow.oozie.OozieConf;
 
 public class SparkServerConf implements FlowServerConf {
 	
@@ -11,6 +12,7 @@ public class SparkServerConf implements FlowServerConf {
 	private static final String key_jdk_bin="jdk.bin";
 	private static final String key_spark_home="spark.home";
 	private static final String key_history_server="spark.history.server";
+	private static final String key_launch_mode="spark.launch.mode";
 	
 	private String tmpFolder;
 	private String srcFolder="src";
@@ -19,6 +21,8 @@ public class SparkServerConf implements FlowServerConf {
 	private String jdkBin;
 	private String sparkHome;
 	private String sparkHistoryServer;
+	private String sparkLaunchMode;
+	private FlowServerConf oozieServerConf;
 	
 	public SparkServerConf(String confFile){
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(confFile);
@@ -26,6 +30,8 @@ public class SparkServerConf implements FlowServerConf {
 		jdkBin = pc.getString(key_jdk_bin);
 		sparkHome = pc.getString(key_spark_home);
 		sparkHistoryServer = pc.getString(key_history_server);
+		sparkLaunchMode = pc.getString(key_launch_mode, "oozie");
+		oozieServerConf = new OozieConf(confFile);
 	}
 	
 	public String getTmpFolder() {
@@ -81,5 +87,21 @@ public class SparkServerConf implements FlowServerConf {
 
 	public void setSparkHistoryServer(String sparkHistoryServer) {
 		this.sparkHistoryServer = sparkHistoryServer;
+	}
+
+	public String getSparkLaunchMode() {
+		return sparkLaunchMode;
+	}
+
+	public void setSparkLaunchMode(String sparkLaunchMode) {
+		this.sparkLaunchMode = sparkLaunchMode;
+	}
+
+	public FlowServerConf getOozieServerConf() {
+		return oozieServerConf;
+	}
+
+	public void setOozieServerConf(FlowServerConf oozieServerConf) {
+		this.oozieServerConf = oozieServerConf;
 	}
 }

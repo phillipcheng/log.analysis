@@ -6,18 +6,18 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.jcraft.jsch.Session;
+
 import bdap.util.FileType;
 import bdap.util.JsonUtil;
+import bdap.util.SftpInfo;
+import bdap.util.SftpUtil;
 import bdap.util.SystemUtil;
 import bdap.util.XmlUtil;
 import bdap.util.ZipUtil;
@@ -26,7 +26,9 @@ import etl.flow.Flow;
 import etl.flow.deploy.DeployMethod;
 import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
+import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
+import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
 import etl.flow.oozie.OozieConf;
 import etl.flow.oozie.OozieFlowMgr;
@@ -40,6 +42,8 @@ public class SparkFlowMgr extends OozieFlowMgr {
 	public static final String replace_sparkhome="[[sparkhome]]";
 	public static final String replace_defaultfs="[[defaultfs]]";
 	public static final String replace_sparkhistoryserver="[[sparkhistoryserver]]";
+
+	private static final String key_engineJars = "engineJars";
 	
 	public SparkFlowMgr() {
 		super();
@@ -55,27 +59,34 @@ public class SparkFlowMgr extends OozieFlowMgr {
 
 	@Override
 	public boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception{
-		boolean manual=false;
+		boolean global=false;//all generate flow treated as one project, for understanding how the platform is used, should be false in production
+		boolean keepSource=false;
 		String flowName = flow.getName();
 		SparkServerConf ssc = fd.getSparkServerConf();
-		String prjFolder = String.format("%s/%s", ssc.getTmpFolder(), prjName);
+		
+		String globalPrjName=prjName;
+		if (global) globalPrjName="global";
+		
+		String prjFolder = String.format("%s/%s", ssc.getTmpFolder(), globalPrjName);
 		Files.createDirectories(Paths.get(prjFolder));
 		//clean up the prjFolder
-		if (!manual){
+		if (!global && !keepSource){
 			Files.walk(Paths.get(prjFolder), FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
 		}
-		String targetDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getTargetFolder());
+		
+		String targetDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getTargetFolder());
 		Files.createDirectories(Paths.get(targetDir));
 		//generate the driver java file
-		String srcRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getSrcFolder());
+		String srcRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getSrcFolder());
 		if (!Files.exists(Paths.get(srcRootDir))) Files.createDirectories(Paths.get(srcRootDir));
-		if (!manual){
-			SparkGenerator.genDriverJava(prjName, flow, srcRootDir, ssc);
-		}
+		if (!keepSource) SparkGenerator.genDriverJava(prjName, flow, srcRootDir, ssc);
 		//compile the file
-		String classesRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), prjName, ssc.getClassesFolder());
+		String classesRootDir = String.format("%s/%s/%s", ssc.getTmpFolder(), globalPrjName, ssc.getClassesFolder());
 		if (!Files.exists(Paths.get(classesRootDir))) Files.createDirectories(Paths.get(classesRootDir));
 		String cpPath = String.format("%s/buildlib/*", fd.getPlatformLocalDist());
+		if (jars != null)
+			for (String jar: jars)
+				cpPath = cpPath + File.pathSeparator + jar;
 		String javacmd = String.format("%s/javac -cp \"%s\" -d %s %s/%s/%s.java", ssc.getJdkBin(), cpPath, 
 				classesRootDir, srcRootDir, prjName, flowName);
 		logger.info(javacmd);
@@ -123,16 +134,21 @@ public class SparkFlowMgr extends OozieFlowMgr {
 			String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), hdfsPrjFolder, flowName, jar.getFileName());
 			thirdPartyJarsSb.append(",").append(strJar);
 		}
-		List<String> libfiles = fd.listFiles(String.format("%s%s%s/lib", fd.getDefaultFS(), hdfsPrjFolder, flowName));
-		if (libfiles != null) {
-			for (String f: libfiles) {
-				if (f.endsWith(".jar")) {
-					String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), hdfsPrjFolder, flowName, f);
-					if (thirdPartyJarsSb.indexOf(strJar) == -1)
-						thirdPartyJarsSb.append(",").append(strJar);
+		
+		if (fd.existsDir(String.format("%s%s%s/lib", fd.getDefaultFS(), hdfsPrjFolder, flowName))) {
+			/* Add 3rd party jars if the lib directory exists */
+			List<String> libfiles = fd.listFiles(String.format("%s%s%s/lib", fd.getDefaultFS(), hdfsPrjFolder, flowName));
+			if (libfiles != null) {
+				for (String f: libfiles) {
+					if (f.endsWith(".jar") && (!f.startsWith(flowName))) {
+						String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), hdfsPrjFolder, flowName, f);
+						if (thirdPartyJarsSb.indexOf(strJar) == -1)
+							thirdPartyJarsSb.append(",").append(strJar);
+					}
 				}
 			}
 		}
+		
 		String sparkWf = sparkWfTemplate.replace(replace_wfname, wfName).replace(replace_thirdpartyjars, thirdPartyJarsSb.toString())
 				.replace(replace_defaultfs, fd.getDefaultFS()).replace(replace_sparkhome, ssc.getSparkHome()).replace(replace_sparkhistoryserver, ssc.getSparkHistoryServer());
 		remoteImFiles.add(new InMemFile(FileType.oozieWfXml, String.format("%s_workflow.xml", flowName), sparkWf.getBytes(StandardCharsets.UTF_8)));
@@ -176,27 +192,154 @@ public class SparkFlowMgr extends OozieFlowMgr {
 			property.setName(OozieConf.key_cmdClassName);
 			property.setValue(fqClassCmdName);
 			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName(key_engineJars);
+			List<String> libfiles = fd.listFiles(String.format("%s%s/lib", fd.getDefaultFS(), fd.getPlatformRemoteDist()));
+			StringBuilder engineJarsSb = new StringBuilder();
+			if (libfiles != null) {
+				int i = 0;
+				for (String f: libfiles) {
+					if (f.endsWith(".jar") && (!f.startsWith("bdap.engine-"))) {
+						String strJar=String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), f);
+						if (i == 0)
+							engineJarsSb.append(strJar);
+						else
+							engineJarsSb.append(",").append(strJar);
+						i ++;
+					}
+				}
+			}
+			property.setValue(engineJarsSb.toString());
+			bodyConf.getProperty().add(property);
 		}
 		return bodyConf;
 	}
 	
 	@Override
 	public String executeFlow(String prjName, String flowName, FlowDeployer fd) {
-		OozieConf oozieServerConf = fd.getOozieServerConf();
-		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oozieServerConf.getOozieServerIp(), oozieServerConf.getOozieServerPort());
-		Map<String, String> queryParamMap = new HashMap<String, String>();
-		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration commonConf = getCommonConf(fd, prjName, flowName);
-		bdap.xml.config.Configuration wfConf = getWfConf(oozieServerConf, prjName, flowName, fd);
-		commonConf.getProperty().addAll(wfConf.getProperty());
-		String body = XmlUtil.marshalToString(commonConf, "configuration");
-		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
-		logger.info(String.format("post result:%s", result));
-		Map<String, String> vm = JsonUtil.fromJsonString(result, HashMap.class);
-		if (vm!=null){
-			return vm.get("id");
-		}else{
-			return null;
+		SparkServerConf sparkServerConf = fd.getSparkServerConf();
+		
+		if ("oozie".equals(sparkServerConf.getSparkLaunchMode())) {
+			OozieConf oozieServerConf = fd.getOozieServerConf();
+			String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oozieServerConf.getOozieServerIp(), oozieServerConf.getOozieServerPort());
+			Map<String, String> queryParamMap = new HashMap<String, String>();
+			queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
+			bdap.xml.config.Configuration commonConf = getCommonConf(fd, prjName, flowName);
+			bdap.xml.config.Configuration wfConf = getWfConf(oozieServerConf, prjName, flowName, fd);
+			commonConf.getProperty().addAll(wfConf.getProperty());
+			String body = XmlUtil.marshalToString(commonConf, "configuration");
+			String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
+			logger.info(String.format("post result:%s", result));
+			Map<String, String> vm = JsonUtil.fromJsonString(result, HashMap.class);
+			if (vm!=null){
+				return vm.get("id");
+			}else{
+				return null;
+			}
+			
+		} else {
+			String appResource = String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), "bdap.engine-VVERSIONN.jar");
+			logger.info(appResource);
+			
+			String user = fd.getPc().getString("ssh.server.user", "dbadmin");
+			String passwd = fd.getPc().getString("ssh.server.passwd", "password");
+			String hostip = fd.getPc().getString("ssh.server.ip", "127.0.0.1");
+			int hostport = fd.getPc().getInt("ssh.server.port", 22);
+			SftpInfo sftpInfo = new SftpInfo(user, passwd, hostip, hostport);
+			Session session = SftpUtil.getSession(sftpInfo);
+			String sparkHome = fd.getPc().getString("spark.home", "/data/spark-2.1.0-bin-hadoop2.7/");
+			String fqClassCmdName = SparkGenerator.getFQClassName(prjName, flowName);
+			String wfId = flowName + Long.toString(System.currentTimeMillis());
+			String bdapLibPath = String.format("%s%s/lib", fd.getDefaultFS(), fd.getPlatformRemoteDist());
+	
+			List<String> libfiles = fd.listFiles(bdapLibPath);
+			StringBuilder engineJarsSb = new StringBuilder();
+			if (libfiles != null) {
+				int i = 0;
+				for (String f: libfiles) {
+					if (f.endsWith(".jar") && (!f.startsWith("bdap.engine-"))) {
+						String strJar=String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), f);
+						if (i == 0)
+							engineJarsSb.append(strJar);
+						else
+							engineJarsSb.append(",").append(strJar);
+						i ++;
+					}
+				}
+			}
+	
+			String projectDir = fd.getProjectHdfsDir(prjName);
+			if (!projectDir.endsWith(org.apache.hadoop.fs.Path.SEPARATOR))
+				projectDir += org.apache.hadoop.fs.Path.SEPARATOR;
+			
+			StringBuffer thirdPartyJarsSb = new StringBuffer();
+			if (fd.existsDir(String.format("%s%s%s/lib", fd.getDefaultFS(), projectDir, flowName))) {
+				/* Add 3rd party jars if the lib directory exists */
+				libfiles = fd.listFiles(String.format("%s%s%s/lib", fd.getDefaultFS(), projectDir, flowName));
+				if (libfiles != null) {
+					for (String f: libfiles) {
+						if (f.endsWith(".jar") && (!f.startsWith(flowName))) {
+							String strJar=String.format("%s%s%s/lib/%s", fd.getDefaultFS(), projectDir, flowName, f);
+							if (thirdPartyJarsSb.indexOf(strJar) == -1)
+								thirdPartyJarsSb.append(",").append(strJar);
+						}
+					}
+				}
+			}
+			
+			String flowJar = String.format("%s%s%s/lib/%s.jar", fd.getDefaultFS(), projectDir, flowName, flowName);
+			String cmd = String.join(" ",
+					sparkHome + "bin/spark-submit",
+					"--class",
+					"etl.engine.ETLCmdMain",
+					"--master",
+					"yarn",
+					"--deploy-mode",
+					"cluster",
+					"--executor-memory",
+					"2G",
+					"--executor-cores",
+					"4",
+					"--conf",
+					"spark.yarn.historyServer.address=" + sparkServerConf.getSparkHistoryServer(),
+					"--conf",
+					"spark.eventLog.dir=" + fd.getDefaultFS() + "/spark/logs",
+					"--conf",
+					"spark.eventLog.enabled=true",
+					"--conf",
+					"spark.driver.userClassPathFirst=true",
+					"--conf",
+					"spark.executor.userClassPathFirst=true",
+					"--jars",
+					engineJarsSb.toString() + "," + flowJar + thirdPartyJarsSb.toString(),
+					appResource,
+					fqClassCmdName,
+					flowName,
+					wfId,
+					"action.spark.properties",
+					fd.getDefaultFS()
+			);
+			logger.info(cmd);
+			String result = SftpUtil.sendCommand(cmd, session);
+			logger.info(result);
+			session.disconnect();
+			
+			return wfId;
 		}
 	}
+
+	@Override
+	public FlowInfo getFlowInfo(String projectName, FlowServerConf fsconf, String instanceId) {
+		if (fsconf instanceof SparkServerConf && "oozie".equals(((SparkServerConf)fsconf).getSparkLaunchMode()))
+			return super.getFlowInfo(projectName, ((SparkServerConf)fsconf).getOozieServerConf(), instanceId);
+		else {
+			FlowInfo info = new FlowInfo();
+			info.setId(instanceId);
+			info.setStatus("SUCCEEDED");
+			info.setLastModifiedTime(new Date().toString());
+			return info;
+		}
+	}
+	
 }

@@ -7,19 +7,34 @@ import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.Types;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Types;
+import org.apache.parquet.schema.Types.MessageTypeBuilder;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.types.DataType;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -29,7 +44,9 @@ import com.google.common.cache.RemovalNotification;
 
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
+import etl.engine.ETLCmd;
 import etl.engine.LogicSchema;
+import etl.engine.types.DBType;
 
 public class SchemaUtils {
 	public static final Logger logger = LogManager.getLogger(SchemaUtils.class);
@@ -37,17 +54,17 @@ public class SchemaUtils {
 	public static final String SCHEMA_INDEX_FILENAME = "schema-index." + SCHEMA_FILENAME_EXTENSION;
 	
 	public static FieldType getFieldType(int type, int size, int digits){
-		if (Types.TIMESTAMP == type){
+		if (java.sql.Types.TIMESTAMP == type){
 			return new FieldType(VarType.TIMESTAMP);
-		}else if (Types.VARCHAR == type){
+		}else if (java.sql.Types.VARCHAR == type){
 			return new FieldType(VarType.STRING, size);
-		}else if (Types.NUMERIC == type){
+		}else if (java.sql.Types.NUMERIC == type){
 			return new FieldType(VarType.NUMERIC, size, digits);
-		}else if (Types.DECIMAL == type){
+		}else if (java.sql.Types.DECIMAL == type){
 			return new FieldType(VarType.NUMERIC, size, digits);
-		}else if (Types.BIGINT == type){
+		}else if (java.sql.Types.BIGINT == type){
 			return new FieldType(VarType.INT);
-		}else if (Types.DATE == type){
+		}else if (java.sql.Types.DATE == type){
 			return new FieldType(VarType.DATE);
 		}else{
 			logger.error(String.format("not supported:%d", type));
@@ -383,19 +400,26 @@ public class SchemaUtils {
 	}
 	
 	public static List<String> genCreateSqlByLogicSchema(LogicSchema ls, String dbSchema, DBType dbtype){
+		return genCreateSqlByLogicSchema(ls, dbSchema, dbtype, StoreFormat.text);
+	}
+	
+	public static List<String> genCreateSqlByLogicSchema(LogicSchema ls, String dbSchema, DBType dbtype, StoreFormat sf){
 		List<String> sqls = new ArrayList<String>();
 		for (String tn: ls.getTableNames()){
 			List<String> attrNames = ls.getAttrNames(tn);
 			List<FieldType> attrTypes = ls.getAttrTypes(tn);
-			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbSchema, dbtype);
+			String sql = DBUtil.genCreateTableSql(attrNames, attrTypes, tn, dbSchema, dbtype, sf);
 			sqls.add(sql);
 		}
 		return sqls;
 	}
 	
 	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype) throws Exception {
+		genCreateSqls(schemaFile, outputSql, dbSchema, dbtype, StoreFormat.text);
+	}
+	public static void genCreateSqls(String schemaFile, String outputSql, String dbSchema, DBType dbtype, StoreFormat sf) throws Exception {
 		LogicSchema ls = fromLocalJsonPath(schemaFile, LogicSchema.class);
-		List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype);
+		List<String> sqls = genCreateSqlByLogicSchema(ls, dbSchema, dbtype, sf);
 		StringBuffer sb = new StringBuffer();
 		for (String sql:sqls){
 			sb.append(sql).append(";").append("\n");
@@ -450,5 +474,231 @@ public class SchemaUtils {
 			}
 		}
 		return true;
+	}
+	
+//convert to parquet schema
+	private static final int MAX_DECIMAL_BYTES = 16;
+	public static long maxPrecision(int numBytes) {
+		return Math.round( // convert double to long
+				Math.floor(Math.log10( // number of base-10 digits
+						Math.pow(2, 8 * numBytes - 1) - 1) // max value stored
+														   // in numBytes
+				));
+	}
+	
+	public static int minBytes(int precision) {
+		int bytes;
+		for (bytes = 1; bytes < MAX_DECIMAL_BYTES; bytes ++)
+			if (precision < maxPrecision(bytes))
+				return bytes;
+		return bytes;
+	}
+	
+	public static MessageType convertToParquetSchema(LogicSchema logicSchema, String tableName) {
+		MessageTypeBuilder m = Types.buildMessage();
+		if (logicSchema.hasTable(tableName)) {
+			List<String> attrs = logicSchema.getAttrNames(tableName);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(tableName);
+			int i;
+			if (attrs != null && attrTypes != null && attrs.size() > 0 && attrs.size() == attrTypes.size()) {
+				FieldType type;
+				String name;
+				for (i = 0; i < attrs.size(); i ++) {
+					type = attrTypes.get(i);
+					name = attrs.get(i);
+					switch (type.getType()) {
+					case STRING:
+					case JAVASCRIPT:
+					case REGEXP:
+					case GLOBEXP:
+					case STRINGLIST:
+						m.addField(Types.required(PrimitiveTypeName.BINARY) /* Hive doesn't support .length(type.getSize()) */ .as(OriginalType.UTF8).named(name));
+						break;
+					case TIMESTAMP:
+						m.addField(Types.required(PrimitiveTypeName.INT96) /* Hive NanoTime not Parquet timestamp .as(OriginalType.TIMESTAMP_MILLIS) */ .named(name));
+						break;
+					case DATE:
+						m.addField(Types.required(PrimitiveTypeName.INT32).as(OriginalType.DATE).named(name));
+						break;
+					case NUMERIC:
+						m.addField(Types.required(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(minBytes(type.getPrecision()))
+								.as(OriginalType.DECIMAL).precision(type.getPrecision()).scale(type.getScale()).named(name));
+						break;
+					case INT:
+						m.addField(Types.required(PrimitiveTypeName.INT32).as(OriginalType.INT_32).named(name));
+						break;
+					case FLOAT:
+						m.addField(Types.required(PrimitiveTypeName.FLOAT).named(name));
+						break;
+					case BOOLEAN:
+						m.addField(Types.required(PrimitiveTypeName.BOOLEAN).named(name));
+						break;
+					case ARRAY:
+					case LIST:
+					case OBJECT:
+						m.addField(Types.required(PrimitiveTypeName.BINARY).named(name));
+						break;
+					default:
+						logger.error("Unknown type: {}, set as binary", type);
+						m.addField(Types.required(PrimitiveTypeName.BINARY).named(name));
+						break;
+					}
+				}
+			} else {
+				/* Empty schema only has id */
+				m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.INT_64).named("id"));
+			}
+		} else {
+			/* Empty schema only has id */
+			m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.INT_64).named("id"));
+		}
+		return m.named(tableName);
+	}
+//convert to spark sql struct type
+	public static StructType convertToSparkSqlSchema(LogicSchema logicSchema, String tableName) {
+		if (logicSchema.hasTable(tableName)){
+			StructType st = new StructType();
+			List<String> attrs = logicSchema.getAttrNames(tableName);
+			List<FieldType> attrTypes = logicSchema.getAttrTypes(tableName);
+			FieldType type;
+			String name;
+			for (int i = 0; i < attrs.size(); i ++) {
+				name = attrs.get(i);
+				type = attrTypes.get(i);
+				DataType dt = null;
+				switch (type.getType()) {
+					case STRING:
+						dt = DataTypes.StringType;
+						break;
+					case TIMESTAMP:
+						dt = DataTypes.TimestampType;
+						break;
+					case DATE:
+						dt = DataTypes.DateType;
+						break;
+					case NUMERIC:
+						dt = DataTypes.createDecimalType(type.getPrecision(), type.getScale());
+						break;
+					case INT:
+						dt = DataTypes.IntegerType;
+						break;
+					case FLOAT:
+						dt = DataTypes.FloatType;
+						break;
+					case BOOLEAN:
+						dt = DataTypes.BooleanType;
+						break;
+					default:
+						logger.error("Unknown type: {}, set as binary", type);
+						dt = DataTypes.BinaryType;
+						break;
+				}
+				st = st.add(DataTypes.createStructField(name, dt, true));
+			}
+			return st;
+		}else{
+			logger.error(String.format("table %s not found in logicSchema:%s.", tableName, logicSchema.getTableNames()));
+			return null;
+		}
+	}
+	
+	public static Object[] convertFromStringValues(LogicSchema logicSchema, String tableName, 
+			String row, String csvValueSep, boolean inputEndwithDelimiter, boolean skipHeader) throws Exception {
+		CSVParser csvParser=CSVParser.parse(row, 
+				CSVFormat.DEFAULT.withTrim().withDelimiter(csvValueSep.charAt(0)).
+				withTrailingDelimiter(inputEndwithDelimiter).withSkipHeaderRecord(skipHeader));
+	    CSVRecord csvr = csvParser.getRecords().get(0);
+	    List<FieldType> ftl = null;
+		if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+			ftl = Collections.nCopies(csvr.size(), new FieldType(VarType.STRING));
+		}else{
+			ftl = logicSchema.getAttrTypes(tableName);
+		}
+		
+	    if (ETLCmd.SINGLE_TABLE.equals(tableName) || logicSchema.hasTable(tableName)){
+			if (ftl.size()!=csvr.size()){
+				logger.error(String.format("input %s not match with schema %s", row, ftl));
+				return null;
+			}
+			Object[] ret = new Object[csvr.size()];
+			for (int i=0; i<ftl.size(); i++){
+				FieldType ft = ftl.get(i);
+				String fv = csvr.get(i).trim();
+				if ("".equals(fv)){
+					ret[i]=null;
+				}else{
+					if (VarType.TIMESTAMP==ft.getType()){
+						Timestamp ts = null;
+						String sdtformat = ft.getDtformat();
+						if (sdtformat!=null){
+							Date dt = GroupFun.getStandardizeDt(fv, sdtformat);
+							if (dt!=null){
+								ts = new Timestamp(dt.getTime());
+							}else{
+								logger.error(String.format("can't standardize %s with format:%s", fv, sdtformat));
+							}
+						}else{
+							try {
+								ts = Timestamp.valueOf(fv);
+							}catch(Exception e){
+								logger.error(String.format("can't parse timestamp field %s", fv));
+							}
+						}
+						ret[i]=ts;
+					}else if (VarType.NUMERIC==ft.getType()){
+						java.math.BigDecimal d = null;
+						try {
+							d=  java.math.BigDecimal.valueOf(Double.valueOf(fv));
+						}catch(Exception e){
+							logger.warn(String.format("can't parse %s as double", fv));
+						}
+						ret[i]=d;
+					}else if (VarType.INT==ft.getType()){
+						Integer d = null;
+						try {
+							d= Integer.valueOf(fv);
+						}catch(Exception e){
+							logger.warn(String.format("can't parse %s as integer", fv));
+						}
+						ret[i]=d;
+					}else{
+						ret[i]=fv;
+					}
+				}
+			}
+			return ret;
+		}else{
+			logger.error(String.format("table not found: %s in logicSchema: %s.", tableName, logicSchema.getTableNames()));
+			return null;
+		}
+	}
+	
+	public static boolean isNumericType(StructField sf){
+		if (sf.dataType()==DataTypes.DoubleType||sf.dataType()==DataTypes.FloatType
+				||sf.dataType()==DataTypes.IntegerType||sf.dataType()==DataTypes.LongType){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	public static String convertToString(Row row, String csvValueSep) {
+		StringBuffer sb = new StringBuffer();
+		StructType st = row.schema();
+		for (int i=0; i<row.length(); i++){
+			StructField sf = st.fields()[i];
+			if (row.isNullAt(i)){
+				if (isNumericType(sf)){//set numeric null to 0
+					sb.append("0");
+				}else{
+					sb.append("");
+				}
+			}else{
+				sb.append(row.get(i).toString());
+			}
+			if (i<row.length()-1){
+				sb.append(csvValueSep);
+			}
+		}
+		return sb.toString();
 	}
 }

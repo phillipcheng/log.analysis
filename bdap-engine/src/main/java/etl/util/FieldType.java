@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import etl.engine.SafeSimpleDateFormat;
+import etl.engine.types.AggregationType;
+import etl.engine.types.DBType;
 
 
 public class FieldType implements Serializable{
@@ -37,6 +39,7 @@ public class FieldType implements Serializable{
 	private int precision;//numeric(precision,scale)
 	private int scale;
 	private AggregationType aggrType;
+	private String dtformat;//date time format
 	
 	public FieldType(){
 		this.aggrType = AggregationType.NONE;
@@ -214,5 +217,13 @@ public class FieldType implements Serializable{
 		}else{
 			return this.type.value();
 		}
+	}
+
+	public String getDtformat() {
+		return dtformat;
+	}
+
+	public void setDtformat(String dtformat) {
+		this.dtformat = dtformat;
 	}
 }

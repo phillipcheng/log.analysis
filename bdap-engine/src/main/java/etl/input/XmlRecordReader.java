@@ -2,9 +2,11 @@ package etl.input;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -75,28 +77,35 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 		start = fileSplit.getStart();
 		end = start + fileSplit.getLength();
 		Path file = fileSplit.getPath();
-		logger.debug(String.format("file split, start:%d, end:%d, file:%s", start, end, file.toString()));
 		FileSystem fs = file.getFileSystem(conf);
-		fsin = new XmlInputStream(fs.open(fileSplit.getPath()), start, end);
-		fsin.seek(start);
+		InputStream in = fs.open(fileSplit.getPath());
 		
 		buffer = new DataOutputBuffer();
+
+		FileStatus[] st = fs.listStatus(fileSplit.getPath());
+		long fileSize;
+		if (st != null && st.length > 0)
+			fileSize = st[0].getLen();
+		else
+			fileSize = 0;
 		
-		if (readUntilMatch(fsin, startTag, true))
+		XmlInputStream tmpIn = new XmlInputStream(in, 0, fileSize);
+		if (readUntilMatch(tmpIn, startTag, true))
 			header = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 		else
 			header = "";
-		
-		while (fsin.getPos() < end) {
+
+		while (tmpIn.getPos() < fileSize) {
 			/* Seek to the last record to get the footer */
 			buffer.reset();
-			readUntilMatch(fsin, endTag, true);
+			readUntilMatch(tmpIn, endTag, true);
 		}
 		
 		footer = new String(buffer.getData(), 0, buffer.getLength(), StandardCharsets.UTF_8);
 		
 		buffer.reset();
-		
+
+		fsin = new XmlInputStream(in, start, end);
 		/* Seek to the beginning again */
 		fsin.seek(start);
 		
@@ -117,10 +126,10 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 						value.append(buffer.getData(), 0, buffer.getLength());
 						i = i + 1;
 					}else{
-						logger.debug(String.format("not match the endTag:%s at %d, end at %d", new String(endTag), dataIn.getPos(), dataIn.getEnd()));
+						//logger.debug(String.format("not match the endTag:%s at %d, end at %d", new String(endTag), dataIn.getPos(), dataIn.getEnd()));
 					}
 				}else{
-					logger.debug(String.format("not match the startTag:%s at %d, end at %d", new String(startTag), dataIn.getPos(), dataIn.getEnd()));
+					//logger.debug(String.format("not match the startTag:%s at %d, end at %d", new String(startTag), dataIn.getPos(), dataIn.getEnd()));
 				}
 			} finally {
 				buffer.reset();
@@ -207,7 +216,7 @@ public class XmlRecordReader extends RecordReader<LongWritable, Text> {
 			value.clear();
 			hasNext = nextKeyValue(fsin, startTag, endTag, header, footer, 1);
 		}
-		logger.debug(String.format("nextKeyValue, key:%s, value:%s, hasNext:%b", key, value, hasNext));
+		//logger.debug(String.format("nextKeyValue, key:%s, value:%s, hasNext:%b", key, value, hasNext));
 		return hasNext;
 	}
 

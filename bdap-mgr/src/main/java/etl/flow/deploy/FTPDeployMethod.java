@@ -328,4 +328,34 @@ public class FTPDeployMethod implements DeployMethod {
 		return Collections.emptyList();
 	}
 
+	public boolean exists(String remotePath) {
+		FTPClient f = null;
+		try {
+			f = new FTPClient();
+			FTPClientConfig config = new FTPClientConfig();
+			f.configure(config);
+			f.connect(serverIp, port);
+		    f.setReportActiveExternalIPAddress("10.0.2.2");
+		    f.enterLocalActiveMode();
+		    f.login(userName, passwd);
+		    
+			/* Try to get the root path from it if it's a URL */
+			remotePath = HdfsUtil.getRootPath(remotePath);
+			
+			return f.changeWorkingDirectory(remotePath);
+		    
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			return false;
+			
+		} finally {
+			if (f != null)
+				try {
+					f.disconnect();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+		}
+	}
+
 }

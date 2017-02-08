@@ -46,13 +46,22 @@ public class GroupFun {
 	}
 	
 	public static String dtStandardize(String input, String inputFormat){
+		Date d = getStandardizeDt(input, inputFormat);
+		if (d!=null){
+			return FieldType.sdatetimeFormat.format(d);
+		}else{
+			return "";
+		}
+	}
+	
+	public static Date getStandardizeDt(String input, String inputFormat){
 		SafeSimpleDateFormat sdf = null;
 		
 		if (input != null)
 			input = input.trim();
 		
 		if (input == null || input.length() == 0)
-			return input;
+			return null;
 		else {
 			if (dtMap.containsKey(inputFormat)){
 				sdf = dtMap.get(inputFormat);
@@ -62,7 +71,7 @@ public class GroupFun {
 			}
 			try {
 				Date d = sdf.parse(input);
-				return FieldType.sdatetimeFormat.format(d);
+				return d;
 			}catch(Exception e){
 				logger.error("", e);
 				return null;

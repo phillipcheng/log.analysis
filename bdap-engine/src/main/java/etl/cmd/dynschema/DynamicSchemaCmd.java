@@ -14,6 +14,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.SparkSession;
 
 import com.google.common.collect.Lists;
 
@@ -32,7 +33,8 @@ import bdap.util.HdfsUtil;
 import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
 import etl.engine.LogicSchema;
-import etl.engine.ProcessMode;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.DBUtil;
 import etl.util.FieldType;
@@ -60,7 +62,12 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 
 	public abstract DynamicTableSchema getDynamicTable(String input, LogicSchema ls) throws Exception;
+	@Deprecated
 	public abstract List<String[]> getValues() throws Exception;
+	public List<String[]> getValues(DynamicTableSchema dts) throws Exception {
+		/* For compatibility, to be improved later */
+		return getValues();
+	}
 
 	//the added field names and types
 	class UpdatedTable{
@@ -122,6 +129,11 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		}
 	}
 	
+	@Override
+	public boolean hasReduce(){
+		return false;
+	}
+	
 	//tableName to csv
 	@Override
 	public List<Tuple2<String, String>> flatMapToPair(String key, String text, Mapper<LongWritable, Text, Text, Text>.Context context){
@@ -171,7 +183,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 							return null;
 						}
 					}
-					List<String[]> vslist = getValues();
+					List<String[]> vslist = getValues(dt);
 					for (int k=0; k<vslist.size(); k++){
 						String[] fieldValues = vslist.get(k);
 						String[] vs = new String[orgAttrs.size()];
@@ -201,9 +213,10 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 		return null;
 	}
 	
+	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc,
-			Class<? extends InputFormat> inputFormatClass) {
-		JavaPairRDD<String, String> result = super.sparkProcessKeyValue(input, jsc, inputFormatClass);
+			InputFormatType ift, SparkSession spark) {
+		JavaPairRDD<String, String> result = super.sparkProcessKeyValue(input, jsc, ift, spark);
 		
 		if (processType == DynSchemaProcessType.checkSchema || processType == DynSchemaProcessType.both) {
 			input = result.filter(new Function<Tuple2<String, String>, Boolean>(){
@@ -274,7 +287,6 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 					sql = sql.substring(sql.lastIndexOf(":") + 1);
 					HdfsUtil.appendDfsFile(currentFs, this.createTablesSqlFileName, Arrays.asList(sql));
 				}
-
 			} else {
 				for (String v: values) {
 					/* For spark */

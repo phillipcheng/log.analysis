@@ -21,12 +21,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.SparkSession;
 
 import bdap.util.HdfsUtil;
-import etl.engine.ProcessMode;
 import etl.engine.ETLCmd;
+import etl.engine.types.DBType;
+import etl.engine.types.InputFormatType;
+import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
-import etl.util.DBType;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
@@ -253,7 +255,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 	 */
 	@Override
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
-			Class<? extends InputFormat> inputFormatClass){
+			InputFormatType ift, SparkSession spark){
 		return input.groupByKey().mapToPair(new PairFunction<Tuple2<String, Iterable<String>>, String, String>(){
 			private static final long serialVersionUID = 1L;
 			@Override
@@ -261,7 +263,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 				init();
 				String[] files = StringItToFiles(t._2);
 				String tfName = null;
-				if (inputFormatClass!=null){
+				if (ift!=null){
 					tfName = getTableNameSetPathFileName(t._1.toString());
 				}else{//processed
 					tfName = t._1.toString();

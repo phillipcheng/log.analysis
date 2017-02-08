@@ -15,7 +15,7 @@ import org.junit.Test;
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvTransformCmd;
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.DBUtil;
 
 public class TestCsvTransSchemaUpdateCmd extends TestETLCmd {

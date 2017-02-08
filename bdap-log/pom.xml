@@ -37,19 +37,16 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
-			<version>2.7.3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-annotations</artifactId>
-			<version>2.7.3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-hdfs</artifactId>
-			<version>2.7.3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -61,13 +58,11 @@
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-mapreduce-client-app</artifactId>
 			<scope>provided</scope>
-			<version>2.7.3</version>
-		 </dependency>
+			</dependency>
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
-			<version>0.10.0.1</version>
-		</dependency>
+			</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-exec</artifactId>
@@ -108,26 +103,27 @@
 		<dependency>
 		    <groupId>org.apache.hive</groupId>
 		    <artifactId>hive-jdbc</artifactId>
-		    <version>1.2.1</version>
 		    <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_2.11</artifactId>
-			<version>2.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 		  <groupId>org.apache.spark</groupId>
 		  <artifactId>spark-streaming_2.11</artifactId>
-		  <version>2.0.0</version>
 		  <scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_2.11</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.spark</groupId>
 		    <artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
-		    <version>2.0.0</version>
-		</dependency>
+		    </dependency>
 		<dependency>
 		    <groupId>org.apache.oozie</groupId>
 		    <artifactId>oozie-core</artifactId>

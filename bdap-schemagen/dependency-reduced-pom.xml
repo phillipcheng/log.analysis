@@ -6,7 +6,7 @@
     <version>VVERSIONN</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>schema.gen</artifactId>
+  <artifactId>bdap.schemagen</artifactId>
   <build>
     <resources>
       <resource>
@@ -109,8 +109,20 @@
           <groupId>com.sun.jersey</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>jets3t</artifactId>
           <groupId>net.java.dev.jets3t</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
         </exclusion>
         <exclusion>
           <artifactId>jackson-core-asl</artifactId>
@@ -201,6 +213,10 @@
           <groupId>commons-codec</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>protobuf-java</artifactId>
           <groupId>com.google.protobuf</groupId>
         </exclusion>
@@ -229,7 +245,7 @@
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.11</artifactId>
-      <version>2.0.0</version>
+      <version>2.1.0</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -289,8 +305,20 @@
           <groupId>com.ning</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>snappy-java</artifactId>
+          <groupId>org.xerial.snappy</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>lz4</artifactId>
+          <groupId>net.jpountz.lz4</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>RoaringBitmap</artifactId>
           <groupId>org.roaringbitmap</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>scala-library</artifactId>
+          <groupId>org.scala-lang</groupId>
         </exclusion>
         <exclusion>
           <artifactId>json4s-jackson_2.11</artifactId>
@@ -315,10 +343,6 @@
         <exclusion>
           <artifactId>jersey-container-servlet-core</artifactId>
           <groupId>org.glassfish.jersey.containers</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>mesos</artifactId>
-          <groupId>org.apache.mesos</groupId>
         </exclusion>
         <exclusion>
           <artifactId>stream</artifactId>
@@ -361,6 +385,18 @@
           <groupId>net.sf.py4j</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>spark-tags_2.11</artifactId>
+          <groupId>org.apache.spark</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-crypto</artifactId>
+          <groupId>org.apache.commons</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>unused</artifactId>
+          <groupId>org.spark-project.spark</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>jets3t</artifactId>
           <groupId>net.java.dev.jets3t</groupId>
         </exclusion>
@@ -373,6 +409,14 @@
           <groupId>org.apache.commons</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>commons-net</artifactId>
           <groupId>commons-net</groupId>
         </exclusion>
@@ -383,6 +427,10 @@
         <exclusion>
           <artifactId>netty</artifactId>
           <groupId>io.netty</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
         </exclusion>
       </exclusions>
     </dependency>

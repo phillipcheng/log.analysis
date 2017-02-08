@@ -13,9 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
-import etl.engine.DataType;
 import etl.engine.ETLCmd;
-import etl.engine.InputFormatType;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
 import etl.flow.ActionNode;
 import etl.flow.CallSubFlowNode;
 import etl.flow.CoordConf;
@@ -214,7 +214,7 @@ public class OozieGenerator {
 		//input properties
 		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
 		inputFormatTypeCp.setName(prop_inputformat);
-		inputFormatTypeCp.setValue(FlowDeployer.getInputFormat(ift));
+		inputFormatTypeCp.setValue(ETLCmd.getInputFormat(ift).getName());
 		pl.add(inputFormatTypeCp);
 		if (dt == DataType.KeyPath || dt == DataType.KeyValue){
 			CONFIGURATION.Property useKeyValueCp = new CONFIGURATION.Property();
@@ -247,7 +247,7 @@ public class OozieGenerator {
 				}else{
 					outputDataDir = d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow());
 				}
-				outputFormatCp.setValue(FlowDeployer.getOutputFormat(d.getDataFormat()));
+				outputFormatCp.setValue(FlowDeployer.getOutputFormat(an));
 				outputDirCp.setValue(outputDataDir);
 				pl.add(outputDirCp);
 				{

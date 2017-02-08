@@ -23,7 +23,7 @@ import bdap.schemagen.config.Config;
 import bdap.schemagen.datamodel.GenLogicSchema;
 import bdap.util.JsonUtil;
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.SchemaUtils;
 
 public class Main {
