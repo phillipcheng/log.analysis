@@ -306,7 +306,7 @@ public class NanoTimeUtils {
     public static NanoTime getNanoTime(long timestamp, boolean skipConversion) {
         Timestamp ts = new Timestamp(timestamp);
         Calendar calendar = getCalendar(skipConversion);
-        calendar.setTime(ts);
+        calendar.setTimeInMillis(timestamp);
         int year = calendar.get(Calendar.YEAR);
         if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
             year = 1 - year;

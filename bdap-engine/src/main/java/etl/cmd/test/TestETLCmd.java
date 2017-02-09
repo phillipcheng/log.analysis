@@ -13,6 +13,7 @@ import java.util.Map;
 //log4j2
 import etl.util.DateUtil;
 import etl.util.NanoTimeUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.parquet.column.page.PageReadStore;
@@ -294,7 +295,7 @@ public abstract class TestETLCmd implements Serializable{
 						} else if (PrimitiveTypeName.INT96.equals(c.getPrimitiveTypeName())) {
 							if (c.getOriginalType() == null) {
 								NanoTime nt = NanoTime.fromBinary(g.getInt96(fieldIndex, 0));
-								buffer.append(FieldType.sdatetimeFormat.format(new Date(NanoTimeUtils.getTimestamp(nt, false))));
+								buffer.append(FieldType.sdatetimeFormat.format(new Date(NanoTimeUtils.getTimestamp(nt, getConf().getBoolean(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname, true)))));
 							}
 						} else if (PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY.equals(c.getPrimitiveTypeName())) {
 							b = g.getBinary(fieldIndex, 0);
