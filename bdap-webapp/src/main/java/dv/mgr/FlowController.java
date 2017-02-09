@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -389,6 +392,10 @@ public class FlowController {
 		FlowInstanceEntity entity = new FlowInstanceEntity();
 		entity.setFlowName(flowId);
 		entity.setInstanceID(instanceid);
+		//SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date datetime=new java.util.Date();
+		java.sql.Timestamp time=new java.sql.Timestamp(datetime.getTime());
+		entity.setUpdateTime(time);
 		this.flowInstanceRepository.save(entity);
 	}
 	
