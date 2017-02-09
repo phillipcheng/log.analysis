@@ -15,6 +15,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,12 +42,14 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 	private MessageType rootSchema;
 	private LogicSchema rootLogicSchema;
 	private String tableName;
+	private boolean skipConversion;
 
 	public WriteSupport.WriteContext init(Configuration configuration) {
 		Map<String, String> extraMetaData = new HashMap<String, String>();
 		// extraMetaData.put(AvroReadSupport.AVRO_SCHEMA_METADATA_KEY, rootAvroSchema.toString());
 		rootLogicSchema = parse(configuration.get(DEFAULT_FS), configuration.get(SchemaETLCmd.cfgkey_schema_file));
 		rootSchema = SchemaUtils.convertToParquetSchema(rootLogicSchema, tableName);
+		skipConversion = configuration.getBoolean(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname, true);
 		return new WriteSupport.WriteContext(rootSchema, extraMetaData);
 	}
 
@@ -162,7 +165,7 @@ public class CSVWriteSupport extends WriteSupport<Text> {
 							try {
 								t = FieldType.sdatetimeFormat.parse(fieldValue);
 								if (t != null)
-									recordConsumer.addBinary(NanoTimeUtils.getNanoTime(t.getTime(), false).toBinary());
+									recordConsumer.addBinary(NanoTimeUtils.getNanoTime(t.getTime(), skipConversion).toBinary());
 								else {
 									logger.error("{} Parse to timestamp failed", fieldValue);
 									recordConsumer.addBinary(Binary.fromConstantByteArray(EMPTY_INT96));
