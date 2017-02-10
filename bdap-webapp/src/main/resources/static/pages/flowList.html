@@ -112,6 +112,21 @@ body {
 		//var url = "/dashview/dataFlow/app.html?action=add&type=flow";
 		//window.location.href = url;
 	}
+	function exportFlow() {
+		$('#exportFlowname').textbox('textbox').attr('readonly',true); 
+		var name = getSelectedRowName();
+		if(name == undefined || name == ''){
+			return;
+		}
+		var flowObj = interact.getFlow(name);
+		var jsoncontent = flowObj.jsonContent;
+		$("#exportFlowname").textbox("setValue", name);
+		$("#exportFlowcontext").textbox("setValue", jsoncontent);
+		$('#exportWind').window('open');
+		return;
+		//var url = "/dashview/dataFlow/app.html?action=add&type=flow";
+		//window.location.href = url;
+	}
 	function add() {
 		//initPage();
 		$('#addWind').window('open');
@@ -283,6 +298,7 @@ body {
 		<input id="HdId" type="hidden" /> <input id="HdUserId" type="hidden" />
 		<div class="btabs">
 			<span class="icon icon-import">&nbsp;</span><a href="javascript:void(0)" onclick="importFlow()">Import</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="exportFlow()"><span class="icon icon-export">&nbsp;</span>Export</a>
 			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="view()"><span class="icon icon-Browse">&nbsp;</span>view</a>
 			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a>
 			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a> 
@@ -310,6 +326,15 @@ body {
 			<a href="javascript:void(0)" onclick="importSave()" class="easyui-linkbutton c8" style="width:80px;">Save</a>
 		</div>
 		</center>
+	</div>
+	
+	<div id="exportWind" class="easyui-window" title="Export Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:60%;height:550px;padding:10px;">
+		<div style="margin-bottom:10px">
+            <input class="easyui-textbox" label="Flow Name:" labelPosition="top" id="exportFlowname" style="width:50%;height:52px;">
+        </div>
+        <div style="margin-bottom:10px">
+			<input class="easyui-textbox" label="Flow Context:" labelPosition="top" id="exportFlowcontext" name="message" data-options="multiline:true, readonly:true" style="width:98%;height:330px"></input>
+		</div>
 	</div>
 	
 	<div id="addWind" class="easyui-window" title="Add Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:300px;height:250px;padding:10px;">
