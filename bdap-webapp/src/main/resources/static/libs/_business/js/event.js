@@ -520,6 +520,22 @@ var _event = {
 	},
 	logClick: function(args) {
 		console.log("----------logClick-----------");
-		run.getFlowNodeLog(args);
+		console.log(arguments);
+	},
+	propertySpanClick : function(){
+		var e = window.event || arguments.callee.caller.arguments[0];
+		e.stopPropagation();
+		var o = getEventSources(e);
+		if(o.innerText.localeCompare("+")==0){
+			//放大
+			document.getElementById("divbackdrop").style.display = "block";
+			o.parentNode.parentNode.parentNode.className = "rightupcss rightupcssMax";
+			o.innerText = "-";
+		}else {
+			//缩小
+			document.getElementById("divbackdrop").style.display = "none";
+			o.parentNode.parentNode.parentNode.className = "rightupcss";
+			o.innerText = "+";
+		}
 	}
 }
