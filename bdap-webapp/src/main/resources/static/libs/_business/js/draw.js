@@ -1043,7 +1043,10 @@ var addAndSubInput = function(direction, gId, propertyName) {
 							_draw._drawProperty(gId, this);
 						} else {
 							console.log("this[propertyName]", this[propertyName]);
-							this[propertyName].splice(this[propertyName].length - 1, 1);
+							//this[propertyName].splice(this[propertyName].length - 1, 1);
+							if(o.parentNode.childNodes.length - 3 < this[propertyName].length) {
+								this[propertyName].splice(this[propertyName].length - 1, 1);
+							}
 							if(this[propertyName].length==0&&selfPropertyInfor[gId+"_"+propertyName]){
 								delete this[propertyName];
 								_draw._drawPropertyLeftDiv(gId,this);
