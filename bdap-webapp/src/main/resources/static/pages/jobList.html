@@ -128,7 +128,9 @@ body {
 			return;
 		}
 		var url = "/dashview/dataFlow/app.html?action=view&type=job&name="+name+"&flowname="+flowname;
-		window.location.href = url;
+		var temp = name.substring(0,name.indexOf("-"));
+		window.parent.addTab(temp,url,"");
+		//window.location.href = url;
 	}
 	function edit() {
 		var map = getSelectedRowName();
