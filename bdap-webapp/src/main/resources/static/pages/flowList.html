@@ -51,7 +51,7 @@ body {
 			rownumbers:true,
 			//treeField: 'name',
 			method : 'get',
-			url : '/dashview/george/flow/list',
+			url : '/dashview/'+ USER_NAME +'/flow/list/page?page=1&size=10',
 			columns : [ [{
 				field : 'name',
 				title : 'Flow Name',
@@ -77,6 +77,37 @@ body {
 			pagination : true
 		});
 		
+	 	function QueryList(pageNumber, pageSize) {
+	 		var page;
+	 		var pageSize;
+	 		if( pageNumber == null || pageSize == null){
+	 			var opts = $('#tt').datagrid('options');
+	            page = opts.pageNumber;
+	            pageSize = opts.pageSize;
+	 		}else {
+	 			page = pageNumber;
+	 			pageSize = pageSize;
+	 		}
+            
+            var handler = '/dashview/'+ USER_NAME +'/flow/list/page?page=' + escape(page)+ "&size=" + escape(pageSize);
+
+            $('#tt').datagrid('options').url = handler; 
+            $('#tt').datagrid('reload'); 
+        }
+		 
+		function InitPagenation() {
+            //…Ë÷√∑÷“≥øÿº˛ 
+            var p = $('#tt').datagrid('getPager');
+            $(p).pagination({
+                pageSize: 10, 
+                pageList: [10, 20, 30], 
+                onSelectPage: function (pageNumber, pageSize) {
+                	QueryList(pageNumber, pageSize);
+                }
+            });
+        }
+		InitPagenation();
+		//var pageopt = $('#tt').datagrid('getPager').data("pagination").options;
 		
 		
 	});
