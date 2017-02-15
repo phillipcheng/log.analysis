@@ -756,6 +756,30 @@ public class FlowController {
 		}
 		return f;
 	}
+	
+	@RequestMapping(value = "/dfs/pageData/**", method = RequestMethod.GET)
+	InMemFile getDFSFileByPage(@PathVariable String userName,@RequestParam(value = "startLine") int startLine, 
+			@RequestParam(value = "endLine") int endLine, HttpServletRequest request) {
+		this.validateUser(userName);
+		if(startLine < 0) {
+			startLine = 0;
+		}
+		if(endLine < 0) {
+			endLine = 20;
+		}
+		String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+		EngineConf ec = flowDeployer.getEngineConfig();
+		if (filePath != null && filePath.contains("/flow/dfs/pageData/"))
+			filePath = filePath.substring(filePath.indexOf("/flow/dfs/pageData/") + 18);
+		InMemFile f = this.flowMgr.getDFSFile(ec, filePath, startLine, endLine);
+		if (f != null && f.getContent() != null) {
+			/* Always return text data now */
+			f.setTextContent(new String(f.getContent(), StandardCharsets.UTF_8));
+			f.setContent(null);
+			f.setFileType(FileType.textData);
+		}
+		return f;
+	}
 
 	@RequestMapping(value = "/dfs/**", method = { RequestMethod.PUT, RequestMethod.POST })
 	boolean putDFSFile(@PathVariable String userName, HttpServletRequest request, @RequestBody String content) {
