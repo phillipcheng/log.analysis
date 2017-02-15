@@ -23,6 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -386,6 +390,40 @@ public class FlowController {
 		return flows;
 	}
 	
+	@RequestMapping(value = "/list/page", method = RequestMethod.GET)
+	Map<String, Object> getPageFlow(@PathVariable String userName, @RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
+		this.validateUser(userName);
+		page = page -1;
+		if( page < 0){
+			page = 0;
+		}
+		if( size < 0){
+			size = 10;
+		}
+		Pageable pageable = new PageRequest(page, size, new Sort("name"));  
+//		Pageable pageable = new PageRequest(page, size, null);  
+		Page<FlowEntity> flowEntities = this.flowRepository.findAll(pageable);
+		long total = flowEntities.getTotalElements();
+		Map json = new HashMap();
+		List<Map<String, String>> flows = new ArrayList<Map<String, String>>();
+		if (flowEntities != null) {
+			Map<String, String> info;
+			ProjectEntity p;
+			for (FlowEntity f: flowEntities) {
+				info = new HashMap<String, String>();
+				p = projectRepository.getOne(f.getProjectId());
+				info.put("name", f.getName());
+				info.put("projectName", p != null ? p.getProjectName() : "");
+				info.put("owner", f.getOwner());
+				info.put("deployed", Boolean.toString(f.isDeployed()));
+				flows.add(info);
+			}
+		}
+		json.put("total", total);
+		json.put("rows", flows);
+		return json;
+	}
+	
 	@RequestMapping(value = "/{flowId}/instance/{instanceid}/add", method = RequestMethod.GET)
 	void add(@PathVariable String userName, @PathVariable String flowId, @PathVariable String instanceid) {
 		this.validateUser(userName);
@@ -404,6 +442,30 @@ public class FlowController {
 		this.validateUser(userName);
 		String sql = "SELECT instanceid, flowname, owner, updatetime FROM T_FLOWINSTANCE inner join t_flow on flowname = name where owner = '"+userName+"'";
 		return this.commonDao.getNativeMapBySQL(sql);
+	}
+	
+	@RequestMapping(value = "/instance/list/page", method = RequestMethod.GET)
+	Map<String, Object> getPageInstance(@PathVariable String userName, @RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
+		this.validateUser(userName);
+		page = page -1;
+		if( page < 0){
+			page = 0;
+		}
+		if( size < 0){
+			size = 10;
+		}
+		String sql = "SELECT instanceid, flowname, owner, updatetime FROM T_FLOWINSTANCE inner join t_flow on flowname = name where owner = '"+userName+"'";
+		List list = this.commonDao.getNativeMapBySQL(sql);
+		int total = list.size();
+		
+		sql = "select  * from ( SELECT instanceid, flowname, owner, updatetime FROM T_FLOWINSTANCE inner join t_flow on flowname = name where owner = '" + userName
+				+ "'  order by updatetime desc )"
+				+" limit " + page * size + "," + size ;
+		List pageList = this.commonDao.getNativeMapBySQL(sql);
+		Map json = new HashMap();
+		json.put("total", total);
+		json.put("rows", pageList);
+		return json;
 	}
 	
 	@RequestMapping(value = "/allFlow/allInstance", method = RequestMethod.GET)

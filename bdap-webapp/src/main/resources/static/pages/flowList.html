@@ -7,7 +7,6 @@ body {
 	font-size: 12px;
 	width: 98%;
 }
-
 .btabs {
 	border: 1px solid #8DB2E3;
 	font-size: 12px;
@@ -18,7 +17,6 @@ body {
 	width: 100%;
 	background-color: #E0ECFF;
 }
-
 </style>
 <link href="../libs/_pagelib/css/default.css" rel="stylesheet"	type="text/css" />
 <link rel="stylesheet" type="text/css"	href="../libs/easyui/themes/bootstrap/easyui.css" />
@@ -53,7 +51,7 @@ body {
 			rownumbers:true,
 			//treeField: 'name',
 			method : 'get',
-			url : '/dashview/george/flow/list',
+			url : '/dashview/'+ USER_NAME +'/flow/list/page?page=1&size=10',
 			columns : [ [{
 				field : 'name',
 				title : 'Flow Name',
@@ -79,6 +77,37 @@ body {
 			pagination : true
 		});
 		
+	 	function QueryList(pageNumber, pageSize) {
+	 		var page;
+	 		var pageSize;
+	 		if( pageNumber == null || pageSize == null){
+	 			var opts = $('#tt').datagrid('options');
+	            page = opts.pageNumber;
+	            pageSize = opts.pageSize;
+	 		}else {
+	 			page = pageNumber;
+	 			pageSize = pageSize;
+	 		}
+            
+            var handler = '/dashview/'+ USER_NAME +'/flow/list/page?page=' + escape(page)+ "&size=" + escape(pageSize);
+
+            $('#tt').datagrid('options').url = handler; 
+            $('#tt').datagrid('reload'); 
+        }
+		 
+		function InitPagenation() {
+            //…Ë÷√∑÷“≥øÿº˛ 
+            var p = $('#tt').datagrid('getPager');
+            $(p).pagination({
+                pageSize: 10, 
+                pageList: [10, 20, 30], 
+                onSelectPage: function (pageNumber, pageSize) {
+                	QueryList(pageNumber, pageSize);
+                }
+            });
+        }
+		InitPagenation();
+		//var pageopt = $('#tt').datagrid('getPager').data("pagination").options;
 		
 		
 	});
@@ -108,6 +137,21 @@ body {
 		$("#importFlowcontext").textbox("setValue", "");
 		$('#importProjectid').combobox('setValue', -10000);
 		$('#importWind').window('open');
+		return;
+		//var url = "/dashview/dataFlow/app.html?action=add&type=flow";
+		//window.location.href = url;
+	}
+	function exportFlow() {
+		$('#exportFlowname').textbox('textbox').attr('readonly',true); 
+		var name = getSelectedRowName();
+		if(name == undefined || name == ''){
+			return;
+		}
+		var flowObj = interact.getFlow(name);
+		var jsoncontent = flowObj.jsonContent;
+		$("#exportFlowname").textbox("setValue", name);
+		$("#exportFlowcontext").textbox("setValue", jsoncontent);
+		$('#exportWind').window('open');
 		return;
 		//var url = "/dashview/dataFlow/app.html?action=add&type=flow";
 		//window.location.href = url;
@@ -171,7 +215,6 @@ body {
 							});
 				}
 			})
-
 		} else {
 			msgShow('Info', 'please selected one row.', 'Info');
 		}
@@ -219,13 +262,12 @@ body {
 		saveResult.name = name;
 		saveAsJson(saveResult, projectid);
 	}
-
-			function importSave() {
+	function importSave() {
 				var dataParam = {};
 				var name = $("#importFlowname").val();
 				$.ajax({
 					type: "get",
-					url: '/dashview/dbadmin/flow/'+name,
+					url: '/dashview/' + USER_NAME + '/flow/'+name,
 					contentType: 'application/json',
 					data:dataParam,
 					//dataType: "json",
@@ -243,67 +285,128 @@ body {
 						}
 					},
 					error: function(e) {
-
-					}
-				});
-
-			}
-
-			function saveAsJson(saveResult) {
-				$.ajax({
-					type: "post",
-					url: getAjaxAbsolutePath(_HTTP_SAVE_JSON),
-					contentType: 'application/json',
-					data: JSON.stringify(saveResult),
-					//dataType: "json",
-					success: function(data, textStatus) {
-						$('#importWind').window('close');
-						msgShow('Info', 'save successfully.', 'Info');
-						$('#tt').datagrid('reload');
-					},
-					error: function(e) {
-						console.info(e);
-						msgShow('Info', 'save fail.', 'Info');
 					}
 				});
 			}
-		</script>
-	</head>
+	function saveAsJson(saveResult, projectId) {
+		$.ajax({
+			type: "post",
+			url: getAjaxAbsolutePath(_HTTP_SAVE_JSON) + "?projectId="+projectId ,
+			contentType: 'application/json',
+			data: JSON.stringify(saveResult),
+			//dataType: "json",
+			success: function(data, textStatus) {
+				$('#importWind').window('close');
+				msgShow('Info', 'save successfully.', 'Info');
+				$('#tt').datagrid('reload');
+			},
+			error: function(e) {
+				console.info(e);
+				msgShow('Info', 'save fail.', 'Info');
+			}
+		});
+	}
+	
+	var initPage = function (){
+		//var listPro = interact.listProjects();
+		var requestURL = "/dashview/{userName}/project/";
+		$.ajax({
+			type: "get",
+			dataType : "json",
+			url: getAjaxAbsolutePath(requestURL),
+			contentType: 'application/json',
+			data: "",
+			success: function(data, textStatus) {
+				var jsonArray = [];
+				var firstSelectObj = {"id":"-10000","projectName":"please select one"};
+				jsonArray.push(firstSelectObj);
+				//var dataOptions = $.extend([], jsonArray, data);
+				var dataOptions = jsonArray.concat(data);
+				$('#importProjectid').combobox({
+				      data : dataOptions,
+				      valueField:'id',
+				      textField:'projectName'
+				     });
+				$('#addProjectid').combobox({
+				      data : dataOptions,
+				      valueField:'id',
+				      textField:'projectName'
+				     });
+				$('#importProjectid').combobox('setValue','-10000');
+				$('#addProjectid').combobox('setValue','-10000');
+				//get value
+				//$('#importProjectid').combobox('getValue');
+			},
+			error: function(e) {
+				console.info(e);
+				msgShow('Info', 'Load project fail.', 'Info');
+			}
+		});
+	}
 
-	<body style="background: white">
-		<form id="form1" runat="server">
-			<input id="HdId" type="hidden" /> <input id="HdUserId" type="hidden" />
-			<div class="btabs">
-				<span class="icon icon-import">&nbsp;</span>
-				<a href="javascript:void(0)" onclick="importFlow()">Import</a>
-				&nbsp;&nbsp;
-				<a href="javascript:void(0)" onclick="view()"><span class="icon icon-Browse">&nbsp;</span>view</a>
-				&nbsp;&nbsp;
-				<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a>
-				&nbsp;&nbsp;
-				<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a>
-				&nbsp;&nbsp;
-				<a href="javascript:void(0)" onclick="del()"><span class="icon icon-delete">&nbsp;</span>Delete</a>
-			</div>
-			<div style="height: 2px"></div>
-			<div id="div1" style="width: 100.5%">
-				<table id="tt"></table>
-			</div>
-
-		</form>
-		<div id="importWind" class="easyui-window" title="Import Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:60%;height:500px;padding:10px;">
-			<div style="margin-bottom:10px">
-				<input class="easyui-textbox" label="Flow Name:" labelPosition="top" id="importFlowname" style="width:50%;height:52px">
-			</div>
-			<div style="margin-bottom:10px">
-				<input class="easyui-textbox" label="Flow Context:" labelPosition="top" id="importFlowcontext" name="message" data-options="multiline:true" style="width:98%;height:330px"></input>
-			</div>
-			<center>
-				<div style="margin-bottom:10px;">
-					<a href="javascript:void(0)" onclick="importSave()" class="easyui-linkbutton c8" style="width:80px;">Save</a>
-				</div>
-			</center>
+</script>
+</head>
+<body style="background: white" onload="initPage()">
+	<form id="form1" runat="server">
+		<input id="HdId" type="hidden" /> <input id="HdUserId" type="hidden" />
+		<div class="btabs">
+			<span class="icon icon-import">&nbsp;</span><a href="javascript:void(0)" onclick="importFlow()">Import</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="exportFlow()"><span class="icon icon-export">&nbsp;</span>Export</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="view()"><span class="icon icon-Browse">&nbsp;</span>view</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="add()"><span class="icon icon-add">&nbsp;</span>Add</a>
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="edit()"><span class="icon icon-edit">&nbsp;</span>Edit</a> 
+			&nbsp;&nbsp;<a href="javascript:void(0)" onclick="del()"><span class="icon icon-delete">&nbsp;</span>Delete</a>
 		</div>
-	</body>
-
+		<div style="height: 2px"></div>
+		<div id="div1" style="width: 100.5%">
+			<table id="tt" ></table>
+		</div>
+		
+	</form>
+	<div id="importWind" class="easyui-window" title="Import Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:60%;height:550px;padding:10px;">
+		<div style="margin-bottom:10px">
+            <input class="easyui-textbox" label="Flow Name:" labelPosition="top" id="importFlowname" style="width:50%;height:52px">
+        </div>
+        
+            <select id="importProjectid" class="easyui-combobox"  name="importProjectid" 
+             data-options="valueField: 'id', textField: 'projectName',  label: 'Project Name:', labelPosition: 'top' "  style="width:50%;">
+           </select>
+        <div style="margin-bottom:10px">
+			<input class="easyui-textbox" label="Flow Context:" labelPosition="top" id="importFlowcontext" name="message" data-options="multiline:true" style="width:98%;height:330px"></input>
+		</div>
+		<center>
+		<div style="margin-bottom:10px;">
+			<a href="javascript:void(0)" onclick="importSave()" class="easyui-linkbutton c8" style="width:80px;">Save</a>
+		</div>
+		</center>
+	</div>
+	
+	<div id="exportWind" class="easyui-window" title="Export Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:60%;height:550px;padding:10px;">
+		<div style="margin-bottom:10px">
+            <input class="easyui-textbox" label="Flow Name:" labelPosition="top" id="exportFlowname" style="width:50%;height:52px;">
+        </div>
+        <div style="margin-bottom:10px">
+			<input class="easyui-textbox" label="Flow Context:" labelPosition="top" id="exportFlowcontext" name="message" data-options="multiline:true, readonly:true" style="width:98%;height:330px"></input>
+		</div>
+	</div>
+	
+	<div id="addWind" class="easyui-window" title="Add Flow" data-options="modal:true,closed:true,iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false" style="width:300px;height:250px;padding:10px;">
+		<div style="margin-bottom:10px">
+            <input class="easyui-textbox" label="Flow Name:" labelPosition="top" id="addFlowname" style="width:90%;height:52px">
+        </div>
+        <div style="margin-bottom:10px">
+            <select id="addProjectid" class="easyui-combobox"  name="addProjectid" 
+             data-options="valueField: 'id', textField: 'projectName',  label: 'Project Name:', labelPosition: 'top' "  style="width:90%;">
+           </select>
+        </div>
+		<center>
+		</br>
+		</br>
+		<div style="margin-bottom:10px;">
+			<a href="javascript:void(0)" onclick="addWinSave()" class="easyui-linkbutton c8" style="width:80px;">Next</a>
+		</div>
+		</center>
+	</div>
+	
+</body>
 </html>
