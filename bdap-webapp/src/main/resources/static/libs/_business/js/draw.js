@@ -409,6 +409,20 @@ var _draw = {
 		divobj.append("button").text("save").attr("onclick", "saveSelfArrayProperty('" + gId + "')");
 
 		this._drawProperty(gId, obj);
+		
+		//控制状态的内容修改权限
+		var ary_inputs = document.getElementById("rightupcssbody").getElementsByTagName("input");
+		for(var i=0;i<ary_inputs.length;i++){
+			ary_inputs[i].setAttribute("disabled","disabled");
+		}
+		var ary_btns = document.getElementById("rightupcssbody").getElementsByTagName("button");
+		for(var i=0;i<ary_btns.length;i++){
+			ary_btns[i].setAttribute("disabled","disabled");
+		}
+		var ary_select = document.getElementById("rightupcssbody").getElementsByTagName("select");
+		for(var i=0;i<ary_select.length;i++){
+			ary_select[i].setAttribute("disabled","disabled");
+		}		
 	},
 	_drawProperty: function(gId, obj) {
 		//画 property 哈哈哈哈
@@ -838,16 +852,28 @@ var display = function() {
 	$("#accordion").html("");
 	each(dataSetList, function(i, o) {
 		var txt = "<div class='panel panel-default'>";
-		txt += "<div class='panel-heading' onclick='changeDisplay(\"" + o.k + "\")'><table style='width:100%'><tr><td style='text-align:left;width:90%'><a id='datasetheader_" + o.k + "' data-parent='#accordion' href='javascript:;'>" + o.v.name + "</a></td><td style='text-align:right;'><a href='javascript: ;' class='imgclose' onclick='deleteLeftDiv(\"" + o.k + "\")'>&nbsp;&nbsp;&nbsp;&nbsp;</a></td></tr></table></div>";
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			txt += "<div class='panel-heading' onclick='changeDisplay(\"" + o.k + "\")'><table style='width:100%'><tr><td style='text-align:left;width:90%'><a id='datasetheader_" + o.k + "' data-parent='#accordion' href='javascript:;'>" + o.v.name + "</a></td><td style='text-align:right;'><a href='javascript: ;' class='imgclose' onclick='deleteLeftDiv(\"" + o.k + "\")'>&nbsp;&nbsp;&nbsp;&nbsp;</a></td></tr></table></div>";
+		}else{
+			txt += "<div class='panel-heading' onclick='changeDisplay(\"" + o.k + "\")'><table style='width:100%'><tr><td style='text-align:left;width:90%'><a id='datasetheader_" + o.k + "' data-parent='#accordion' href='javascript:;'>" + o.v.name + "</a></td><td style='text-align:right;'></td></tr></table></div>";
+		}
 		if(o.show) {
 			txt += "<div id='collapse_" + o.k + "' class='panel-collapse collapse in'>";
 		} else {
 			txt += "<div id='collapse_" + o.k + "' class='panel-collapse collapse'>";
 		}
-		txt += "<div class='panel-body'>";
-		txt += "<strong>name:</strong><input args='name' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.name + "'>";
-		txt += "<strong>location:</strong><input args='location' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.location + "'>";
-		txt += "<strong>dataFormat:</strong><select args='dataFormat' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			txt += "<div class='panel-body'>";
+			txt += "<strong>name:</strong><input args='name' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.name + "'>";
+			txt += "<strong>location:</strong><input args='location' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.location + "'>";
+			txt += "<strong>dataFormat:</strong><select args='dataFormat' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";			
+		}else{
+			txt += "<div class='panel-body'>";
+			txt += "<strong>name:</strong><input disabled='disabled' args='name' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.name + "'>";
+			txt += "<strong>location:</strong><input disabled='disabled' args='location' style='width: 100%;' type='text'  placeholder='...' onkeyup='changeDataSetProeroty(\"" + o.k + "\")' value='" + o.v.location + "'>";
+			txt += "<strong>dataFormat:</strong><select disabled='disabled' args='dataFormat' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";						
+		}
+
 		each(selfDataInfor["dataFormat"].v, function() {
 			if(this.localeCompare(o.v.dataFormat)==0){
 				txt += "<option selected='selected' value='" + this + "'>" + this + "</option>";
@@ -861,7 +887,11 @@ var display = function() {
 		//		txt += "<option value='Line'>Line</option><option value='XML'>XML</option><option value='Text'>Text</option><option value='Binary'>Binary</option>";
 		//		txt += "<option value='Section'>Section</option><option value='Mixed'>Mixed</option><option value='FileName'>FileName</option></select>";
 
-		txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			txt += "<strong>recordType:</strong><select args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+		}else{
+			txt += "<strong>recordType:</strong><select disabled='disabled' args='recordType' style='width: 100%;' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+		}
 		each(selfDataInfor["recordType"].v, function() {
 			if(this.localeCompare(o.v.recordType)==0){
 				txt += "<option selected='selected' value='" + this + "'>" + this + "</option>";
@@ -876,10 +906,18 @@ var display = function() {
 		//		txt += "<option value='Path'>Path</option><option value='KeyPath'>KeyPath</option><option value='Value'>Value</option><option value='KeyValue'>KeyValue</option></select>";
 		//		
 		txt += "<strong>instance:</strong>";
-		if(o.v.instance){
-			txt += "<input args='instance' checked='checked' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";	
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			if(o.v.instance){
+				txt += "<input args='instance' checked='checked' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";	
+			}else{
+				txt += "<input args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+			}			
 		}else{
-			txt += "<input args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+			if(o.v.instance){
+				txt += "<input disabled='disabled' args='instance' checked='checked' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";	
+			}else{
+				txt += "<input disabled='disabled' args='instance' type='checkbox' onchange='changeDataSetProeroty(\"" + o.k + "\")'>";
+			}			
 		}
 		txt += "</div></div></div>";
 		var content = $("#accordion").html();
@@ -1043,7 +1081,10 @@ var addAndSubInput = function(direction, gId, propertyName) {
 							_draw._drawProperty(gId, this);
 						} else {
 							console.log("this[propertyName]", this[propertyName]);
-							this[propertyName].splice(this[propertyName].length - 1, 1);
+							//this[propertyName].splice(this[propertyName].length - 1, 1);
+							if(o.parentNode.childNodes.length - 3 < this[propertyName].length) {
+								this[propertyName].splice(this[propertyName].length - 1, 1);
+							}
 							if(this[propertyName].length==0&&selfPropertyInfor[gId+"_"+propertyName]){
 								delete this[propertyName];
 								_draw._drawPropertyLeftDiv(gId,this);
