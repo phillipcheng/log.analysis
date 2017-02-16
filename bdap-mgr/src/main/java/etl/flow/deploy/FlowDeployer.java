@@ -40,17 +40,18 @@ public class FlowDeployer {
 	public static final String prop_outputformat_textfile="org.apache.hadoop.mapreduce.lib.output.TextOutputFormat";
 	public static final String prop_outputformat_parquetfile="etl.output.ParquetOutputFormat";
 	
-	public static String coordinator_xml="coordinator.xml";
-	public static String spark_wfxml="sparkcmd_workflow.xml";
-	public static String submitspark_shell="submitspark.sh";
+	public static final String coordinator_xml="coordinator.xml";
+	public static final String spark_wfxml="sparkcmd_workflow.xml";
+	public static final String submitspark_shell="submitspark.sh";
 	
-	private static String key_platform_local_dist="platform.local.dist";
-	private static String key_platform_remote_dist="platform.remote.dist";
-	private static String key_projects="projects";
+	private static final String key_platform_local_dist="platform.local.dist";
+	private static final String key_platform_remote_dist="platform.remote.dist";
+	private static final String key_projects="projects";
 	
-	private static String key_hdfs_user="hdfs.user";
-	private static String key_defaultFs="defaultFs";
-	private static String key_deploy_method="deploy.method";
+	private static final String key_hdfs_user="hdfs.user";
+	private static final String key_defaultFs="defaultFs";
+	private static final String key_jobTracker="jobTracker";
+	private static final String key_deploy_method="deploy.method";
 	
 	private String cfgProperties=null;
 	private Configuration pc;
@@ -64,6 +65,7 @@ public class FlowDeployer {
 	private DeployMethod deployMethod;
 	private String defaultFS;
 	private String hdfsUser;
+
 	private transient org.apache.hadoop.conf.Configuration conf;
 	
 	public FlowDeployer(){
@@ -89,6 +91,13 @@ public class FlowDeployer {
 		conf = new org.apache.hadoop.conf.Configuration();
 		defaultFS = pc.getString(key_defaultFs);
 		conf.set("fs.defaultFS", defaultFS);
+		if (pc.containsKey(key_jobTracker)) {
+			String jobTracker = pc.getString(key_jobTracker,"127.0.0.1:8032");
+			String[] t = jobTracker.split(":");
+			if (t != null && t.length > 0)
+				conf.set("yarn.resourcemanager.hostname", t[0]);
+			conf.set("yarn.resourcemanager.address", jobTracker);
+		}
 		platformLocalDist = pc.getString(key_platform_local_dist);
 		platformRemoteDist = pc.getString(key_platform_remote_dist);
 		hdfsUser = pc.getString(key_hdfs_user);
@@ -453,6 +462,10 @@ public class FlowDeployer {
 	
 	public String getDefaultFS() {
 		return defaultFS;
+	}
+
+	public String getHdfsUser() {
+		return hdfsUser;
 	}
 	
 	public org.apache.hadoop.conf.Configuration getConf(){

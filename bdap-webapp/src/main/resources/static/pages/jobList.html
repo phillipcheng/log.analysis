@@ -29,11 +29,28 @@ body {
 
 <script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../libs/_business/js/const.js"></script>
 <script type="text/javascript">
 	// title msgString msgType: [error,info,question,warning]
 	function msgShow(title, msgString, msgType) {
 		$.messager.alert(title, msgString, msgType);
 	}
+	function format(usedDay,fmt) {  
+	       var usedDate = new Date(usedDay);  
+	       var o = {  
+	           "M+": usedDate.getMonth() + 1, //$)ATB7]   
+	           "d+": usedDate.getDate(), //$)AHU   
+	           "h+": usedDate.getHours(), //$)AP!J1   
+	           "m+": usedDate.getMinutes(), //$)A7V   
+	           "s+": usedDate.getSeconds(), //$)ACk   
+	           "q+": Math.floor((usedDate.getMonth() + 3) / 3), //$)A<>6H   
+	           "S": usedDate.getMilliseconds() //$)A:ACk   
+	       };  
+	       if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (usedDate.getFullYear() + "").substr(4 - RegExp.$1.length));  
+	       for (var k in o)  
+	       if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));  
+	       return fmt;  
+	}  
 	var type = '';
 	$(function() {
 		$('#tt').datagrid({
@@ -42,16 +59,16 @@ body {
 			nowrap : false,
 			//striped : true,
 			collapsible : true,
-			//remoteSort : false,
-			//sortName : 'flowname',
-			//sortOrder : 'desc',
+			remoteSort : false,
+			sortName : 'updatetime',
+			sortOrder : 'desc',
 			idField : 'name',
 			checkbox : false,
 			singleSelect: true,
 			rownumbers:true,
 			//treeField: 'name',
 			method : 'get',
-			url : '/dashview/george/flow/instance/list',
+			url : '/dashview/' + USER_NAME + '/flow/instance/list/page?page=1&size=10',
 			columns : [ [{
 				field : 'instanceid',
 				title : 'Job Id',
@@ -60,17 +77,58 @@ body {
 			{	field : 'flowname',
 				title : 'Flow Name',
 				sortable: true,
-				width : $(this).width() * 0.3},
+				width : $(this).width() * 0.2},
 			{
 				field : 'owner',
 				title : 'Owner',
 				sortable: true,
-				width : $(this).width() * 0.2
-			} ] ],
+				width : $(this).width() * 0.1
+			},
+			{
+				field : 'updatetime',
+				title : 'updatetime',
+				sortable: true,
+				width : $(this).width() * 0.2,
+				formatter:function(value){
+                    if(value){
+                    	var pattern = "yyyy-MM-dd hh:mm:ss";  
+                    	return format(value,pattern);  
+                    }
+                 }
+			}] ],
 			pagination : true
 		});
 		
-		
+		function QueryList(pageNumber, pageSize) {
+	 		var page;
+	 		var pageSize;
+	 		if( pageNumber == null || pageSize == null){
+	 			var opts = $('#tt').datagrid('options');
+	            page = opts.pageNumber;
+	            pageSize = opts.pageSize;
+	 		}else {
+	 			page = pageNumber;
+	 			pageSize = pageSize;
+	 		}
+            
+            var handler = '/dashview/' + USER_NAME + '/flow/instance/list/page?page=' + escape(page)+ "&size=" + escape(pageSize);
+
+            $('#tt').datagrid('options').url = handler; 
+            $('#tt').datagrid('reload'); 
+        }
+		 
+		function InitPagenation() {
+            //$)AIhVC7VR3?X<~ 
+            var p = $('#tt').datagrid('getPager');
+            $(p).pagination({
+                pageSize: 10, 
+                pageList: [10, 20, 30],
+                onSelectPage: function (pageNumber, pageSize) {
+                	QueryList(pageNumber, pageSize);
+                }
+            });
+        }
+		InitPagenation();
 		
 	});
 	function closedd() {
@@ -100,7 +158,9 @@ body {
 			return;
 		}
 		var url = "/dashview/dataFlow/app.html?action=view&type=job&name="+name+"&flowname="+flowname;
-		window.location.href = url;
+		var temp = name.substring(0,name.indexOf("-"));
+		window.parent.addTab(temp,url,"");
+		//window.location.href = url;
 	}
 	function edit() {
 		var map = getSelectedRowName();

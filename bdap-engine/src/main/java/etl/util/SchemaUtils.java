@@ -515,10 +515,10 @@ public class SchemaUtils {
 						m.addField(Types.required(PrimitiveTypeName.BINARY) /* Hive doesn't support .length(type.getSize()) */ .as(OriginalType.UTF8).named(name));
 						break;
 					case TIMESTAMP:
-						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(name));
+						m.addField(Types.required(PrimitiveTypeName.INT96) /* Hive NanoTime not Parquet timestamp .as(OriginalType.TIMESTAMP_MILLIS) */ .named(name));
 						break;
 					case DATE:
-						m.addField(Types.required(PrimitiveTypeName.INT64).as(OriginalType.DATE).named(name));
+						m.addField(Types.required(PrimitiveTypeName.INT32).as(OriginalType.DATE).named(name));
 						break;
 					case NUMERIC:
 						m.addField(Types.required(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(minBytes(type.getPrecision()))

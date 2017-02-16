@@ -7,7 +7,7 @@ import org.junit.Test;
 import bdap.util.HdfsUtil;
 
 public class TestHdfsUtil {
-	public static final Logger logger = LogManager.getLogger(TestShowIps.class);
+	public static final Logger logger = LogManager.getLogger(TestHdfsUtil.class);
 	@Test
 	public void testGetContentsFromDfsFiles() throws Exception{
 		String str = HdfsUtil.getContentsFromDfsFiles("hdfs://127.0.0.1:19000", "/abcd/");
