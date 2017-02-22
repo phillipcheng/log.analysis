@@ -18,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import bdap.util.DiGraph;
+import scala.Tuple2;
+import scala.Tuple3;
 
 public class Flow extends Node{
 	public static final Logger logger = LogManager.getLogger(Flow.class);
@@ -33,19 +35,32 @@ public class Flow extends Node{
 	private List<Data> data;
 	
 	//cached structure
-	private transient Map<String, Node> nodeMap;
-	private transient Map<String, Data> dataMap;
-	private transient Map<String, Set<Link>> nodeOutLinkMap;
-	private transient Map<String, Set<Link>> nodeInLinkMap;
-	private transient Map<String, Set<Node>> linkNodeMap;
+	private transient Map<String, Node> nodeMap; //node name to definition
+	private transient Map<String, Data> dataMap; //data name to definition
+	private transient Map<String, Set<Link>> nodeOutLinkMap;//node name to out link set 
+	private transient Map<String, Set<Link>> nodeInLinkMap;//node name to in link set
+	private transient Map<String, Set<Node>> linkToNodesMap;//link name to (to-nodes)
+	private transient Map<String, List<Tuple2<String,String>>> dataToInletMap;//dataset name to inlet map; i.e. data1-> (node2, inlet1)
 	
 	public Flow(){
 	}
 	
 	public void init(){
 		nodeMap = new HashMap<String, Node>();
+		dataToInletMap = new HashMap<String, List<Tuple2<String,String>>>();
 		for (Node n: nodes){
 			nodeMap.put(n.getName(), n);
+			for (NodeLet nl:n.getInLets()){
+				String dn = nl.getDataName();
+				List<Tuple2<String,String>> list = null;
+				if (dataToInletMap.containsKey(dn)){
+					list = dataToInletMap.get(dn);
+				}else{
+					list = new ArrayList<Tuple2<String,String>>();
+					dataToInletMap.put(dn, list);
+				}
+				list.add(new Tuple2<String,String>(n.getName(), nl.getName()));
+			}
 		}
 		if (data!=null){
 			dataMap = new HashMap<String, Data>();
@@ -71,13 +86,13 @@ public class Flow extends Node{
 			}
 			ll.add(lnk);
 		}
-		linkNodeMap = new HashMap<String, Set<Node>>();
+		linkToNodesMap = new HashMap<String, Set<Node>>();
 		for (Link lnk: links){
 			String lnkName = lnk.toString();
-			Set<Node> nl = linkNodeMap.get(lnkName);
+			Set<Node> nl = linkToNodesMap.get(lnkName);
 			if (nl == null){
 				nl = new TreeSet<Node>();
-				linkNodeMap.put(lnkName, nl);
+				linkToNodesMap.put(lnkName, nl);
 			}
 			if (nodeMap.containsKey(lnk.getToNodeName())){
 				nl.add(nodeMap.get(lnk.getToNodeName()));
@@ -166,6 +181,16 @@ public class Flow extends Node{
 		}
 	}
 	
+	@JsonIgnore
+	public int getUsingDatasetNum(String dn){
+		List<Tuple2<String,String>> l = dataToInletMap.get(dn);
+		if (l!=null){
+			return l.size();
+		}else{
+			return 0;
+		}
+	}
+	
 	public Set<Link> getInLinks(String nodeName){
 		return nodeInLinkMap.get(nodeName);
 	}
@@ -175,7 +200,7 @@ public class Flow extends Node{
 	}
 	
 	public Set<Node> getNextNodes(Link lnk){
-		return linkNodeMap.get(lnk.toString());
+		return linkToNodesMap.get(lnk.toString());
 	}
 	
 	public Node getNode(String name){
