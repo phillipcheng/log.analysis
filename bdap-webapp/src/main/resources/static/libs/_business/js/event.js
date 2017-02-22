@@ -530,6 +530,20 @@ var _event = {
 			});
 
 		}
+		
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else {
+			var ary = document.getElementById("divrightup").getElementsByTagName("input");
+			for(var i=0;i<ary.length;i++){
+				ary[i].setAttribute("disabled","disabled");
+			}
+			
+			ary = document.getElementById("divrightup").getElementsByTagName("select");
+			for(var i=0;i<ary.length;i++){
+				ary[i].setAttribute("disabled","disabled");
+			}			
+		}			
 
 	},
 	selectedProperty: function() {
