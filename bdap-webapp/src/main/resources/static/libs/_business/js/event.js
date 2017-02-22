@@ -96,12 +96,7 @@ var _event = {
 	},
 	addIn_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
-		e.stopPropagation();
-		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
-			
-		}else{
-			return ;
-		}		
+		e.stopPropagation();		
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		var objId = o.getAttribute("arge");
@@ -150,12 +145,7 @@ var _event = {
 	},
 	addOut_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
-		e.stopPropagation();
-		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
-			
-		}else{
-			return ;
-		}		
+		e.stopPropagation();		
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		var objId = o.getAttribute("arge");
@@ -568,6 +558,7 @@ var _event = {
 	},
 	logClick: function(args) {
 		console.log("----------logClick-----------");
+		run.getFlowNodeLog(args); 
 		console.log(arguments);
 	},
 	propertySpanClick : function(){
