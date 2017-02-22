@@ -1,0 +1,33 @@
+{
+  "attrNameMap" : {
+    "SPC_TOKENS" : [ "SPC_MDN", "SPC_SUBSTOKEN", "SPC_TOKENSTATUS", "SPC_DATE", "SPC_TIME" ]
+  },
+  "attrTypeMap" : {
+    "SPC_TOKENS" : [ {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 50,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 30,
+      "scale" : 2
+    }, {
+      "type" : "DATE",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }]
+  }
+}
