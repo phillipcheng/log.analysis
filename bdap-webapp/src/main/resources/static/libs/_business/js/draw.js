@@ -411,17 +411,21 @@ var _draw = {
 		this._drawProperty(gId, obj);
 		
 		//控制状态的内容修改权限
-		var ary_inputs = document.getElementById("rightupcssbody").getElementsByTagName("input");
-		for(var i=0;i<ary_inputs.length;i++){
-			ary_inputs[i].setAttribute("disabled","disabled");
-		}
-		var ary_btns = document.getElementById("rightupcssbody").getElementsByTagName("button");
-		for(var i=0;i<ary_btns.length;i++){
-			ary_btns[i].setAttribute("disabled","disabled");
-		}
-		var ary_select = document.getElementById("rightupcssbody").getElementsByTagName("select");
-		for(var i=0;i<ary_select.length;i++){
-			ary_select[i].setAttribute("disabled","disabled");
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			var ary_inputs = document.getElementById("rightupcssbody").getElementsByTagName("input");
+			for(var i=0;i<ary_inputs.length;i++){
+				ary_inputs[i].setAttribute("disabled","disabled");
+			}
+			var ary_btns = document.getElementById("rightupcssbody").getElementsByTagName("button");
+			for(var i=0;i<ary_btns.length;i++){
+				ary_btns[i].setAttribute("disabled","disabled");
+			}
+			var ary_select = document.getElementById("rightupcssbody").getElementsByTagName("select");
+			for(var i=0;i<ary_select.length;i++){
+				ary_select[i].setAttribute("disabled","disabled");
+			}	
 		}		
 	},
 	_drawProperty: function(gId, obj) {

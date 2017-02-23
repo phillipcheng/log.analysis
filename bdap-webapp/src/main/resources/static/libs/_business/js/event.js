@@ -381,12 +381,7 @@ var _event = {
 	selectedData: function(txtId, gId) {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
-		e.stopPropagation();
-		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
-			
-		}else{
-			return ;
-		}		
+		e.stopPropagation();	
 		if(e.button == 2) {
 			d3.select("#d3contextmenu").selectAll("ul").remove();
 			d3.select("#d3contextmenu").selectAll("input").remove();
@@ -535,6 +530,20 @@ var _event = {
 			});
 
 		}
+		
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else {
+			var ary = document.getElementById("divrightup").getElementsByTagName("input");
+			for(var i=0;i<ary.length;i++){
+				ary[i].setAttribute("disabled","disabled");
+			}
+			
+			ary = document.getElementById("divrightup").getElementsByTagName("select");
+			for(var i=0;i<ary.length;i++){
+				ary[i].setAttribute("disabled","disabled");
+			}			
+		}			
 
 	},
 	selectedProperty: function() {
