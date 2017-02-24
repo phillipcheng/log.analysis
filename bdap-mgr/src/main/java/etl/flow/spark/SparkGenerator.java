@@ -56,7 +56,7 @@ public class SparkGenerator {
 		sb.append("import java.util.*;\n");
 		sb.append("import org.apache.log4j.Logger;\n");
 		sb.append("import org.apache.spark.SparkConf;\n");
-		sb.append("import org.apache.spark.SparkContext;;\n");
+		sb.append("import org.apache.spark.SparkContext;\n");
 		sb.append("import org.apache.spark.api.java.JavaPairRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaRDD;\n");
 		sb.append("import org.apache.spark.api.java.JavaSparkContext;\n");
@@ -128,7 +128,7 @@ public class SparkGenerator {
 					Data outData = flow.getDataDef(outlet.getDataName());
 					outputVarName = JavaCodeGenUtil.getVarName(outlet.getDataName());
 					outputDataType = outData.getRecordType();
-				}else{//no output
+				}else{//multiple output, the type can only be KeyValue
 					outputDataType = DataType.KeyValue;//default
 				}
 				//cmd execution line
@@ -156,6 +156,7 @@ public class SparkGenerator {
 				}else{
 					sb.append(String.format("%s.%s(%s,jsc,%s,spark);\n", cmdVarName, methodName, inputVarName, inputFormatName));
 				}
+				
 				if (multiOutput){
 					//call cache
 					sb.append(String.format("%s.cache();\n", outputVarName));
@@ -169,6 +170,13 @@ public class SparkGenerator {
 						}else{
 							logger.error(String.format("for split, the outlet name must same as the dataset name. now:%s!=%s", outletName, dataVarName));
 						}
+					}
+				}else{//for single output
+					String dn = node.getOutlets().get(0).getDataName();
+					int nusing = flow.getUsingDatasetNum(dn);
+					if (nusing>1){
+						//call cache
+						//sb.append(String.format("%s.cache();\n", outputVarName));
 					}
 				}
 			}

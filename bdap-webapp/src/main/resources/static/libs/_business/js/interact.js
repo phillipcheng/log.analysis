@@ -156,6 +156,16 @@ var interact = {
 			return "";
 		},
 		
+		getDFSFileByPage : function(pathName, startLine, endLine){
+			var requestURL = "/dashview/{userName}/flow/dfs/pageData/";
+			if(!isEmpty(pathName)){
+				requestURL += pathName;
+				requestURL = requestURL + "?startLine=" + startLine + "&endLine=" + endLine;
+				return interact.ajaxGet(requestURL);
+			}
+			return "";
+		},
+		
 		listProjects : function(){
 			var requestURL = "/dashview/{userName}/project/";
 			return interact.ajaxGet(requestURL);

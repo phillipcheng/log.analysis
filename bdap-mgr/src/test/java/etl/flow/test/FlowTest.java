@@ -17,7 +17,10 @@ import etl.flow.deploy.DefaultDeployMethod;
 import etl.flow.deploy.EngineType;
 import etl.flow.deploy.FlowDeployer;
 import etl.flow.mgr.FlowInfo;
+import etl.flow.mgr.FlowMgr;
+import etl.flow.mgr.FlowServerConf;
 import etl.flow.oozie.OozieFlowMgr;
+import etl.flow.spark.SparkFlowMgr;
 import etl.util.SchemaUtils;
 
 public class FlowTest {
@@ -37,7 +40,7 @@ public class FlowTest {
 	public static void initData(FlowDeployer deployer, String prjName, String flowName, SftpInfo ftpInfo){
 		String hdfsFolder = deployer.getProjectHdfsDir(prjName);
 		SftpUtil.sftpFromLocal(ftpInfo, String.format("%sdata", getRelativeResourceFolder()), 
-				String.format(deployer.getPc().getString("sftp.server.data.dir", "") + "/data/flow1/"));
+				String.format(deployer.getPc().getString("ssh.server.data.dir", "") + "/data/flow1/"));
 		deployer.delete(String.format("%s%s", hdfsFolder, flowName), true);
 		deployer.copyFromLocalFile(false, true, String.format("%sdata/sftpcfg/test1.sftp.map.properties", getRelativeResourceFolder()), 
 				"/flow1/sftpcfg/test1.sftp.map.properties");
@@ -49,23 +52,27 @@ public class FlowTest {
 		return "src/test/resources/";
 	}
 	
-	public void testFlow1(EngineType et) throws Exception{
+	public void testFlow1(EngineType et, FlowMgr flowMgr) throws Exception{
 		apacheDeployer.installEngine(false);
 		String prjName = "project1";
 		String flowName="flow1";
-		SftpInfo ftpInfo = new SftpInfo(apacheDeployer.getPc().getString("sftp.server.user", "dbadmin"), apacheDeployer.getPc().getString("sftp.server.passwd", "password"),
-				apacheDeployer.getPc().getString("sftp.server.ip", "192.85.247.104"), apacheDeployer.getPc().getInt("sftp.server.port", 22));
+		SftpInfo ftpInfo = new SftpInfo(apacheDeployer.getPc().getString("ssh.server.user", "dbadmin"), apacheDeployer.getPc().getString("ssh.server.passwd", "password"),
+				apacheDeployer.getPc().getString("ssh.server.ip", "192.85.247.104"), apacheDeployer.getPc().getInt("ssh.server.port", 22));
 		initData(apacheDeployer, prjName, flowName, ftpInfo);
 		apacheDeployer.runDeploy(prjName, flowName, jars, null, et);
 		String wfId = apacheDeployer.runExecute(prjName, flowName, et);
-		OozieFlowMgr ofm = new OozieFlowMgr();
 		FlowInfo fi=null;
 		while (true){
 			try {
-				fi = ofm.getFlowInfo(prjName, apacheDeployer.getOozieServerConf(), wfId);
+				FlowServerConf serverConf;
+				if (EngineType.oozie.equals(et))
+					serverConf = apacheDeployer.getOozieServerConf();
+				else
+					serverConf = apacheDeployer.getSparkServerConf();
+				fi = flowMgr.getFlowInfo(prjName, serverConf, wfId);
 				logger.info(String.format("flow info for instance:%s:%s", wfId, fi));
 				Thread.sleep(5000);
-				if (!fi.getStatus().equals("RUNNING")){
+				if (!"RUNNING".equals(fi.getStatus())){
 					break;
 				}
 			}catch(Exception e){
@@ -83,13 +90,13 @@ public class FlowTest {
 	
 	//179
 	@Test
-	public void testFlow1Oozie() throws Exception{
-		testFlow1(EngineType.oozie);
+	public void testFlow1OozieFromJson() throws Exception{
+		testFlow1(EngineType.oozie, new OozieFlowMgr());
 	}
 	//70
 	@Test
-	public void testFlow1Spark() throws Exception{
-		testFlow1(EngineType.spark);
+	public void testFlow1SparkFromJson() throws Exception{
+		testFlow1(EngineType.spark, new SparkFlowMgr());
 	}
 	
 	public void testFlow2(EngineType et) throws Exception{

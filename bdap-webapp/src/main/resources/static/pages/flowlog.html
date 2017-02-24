@@ -34,6 +34,9 @@ body {
 <script type="text/javascript" src="../libs/_business/js/interact.js"></script>
 
 <script type="text/javascript">
+	function msgShow(title, msgString, msgType) {
+		$.messager.alert(title, msgString, msgType);
+	}
  	function getRequestUrlParamString(name)
 	{
 	    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
@@ -41,12 +44,42 @@ body {
 	    if(r!=null)return  unescape(r[2]); return null;
 	}
  	
- 	function openData(pathname){
+ 	var dataPathName = "";
+ 	function openData(pathname, isSearchButton){
+ 		//$("#dataInformation").hide();
+		//$("#dataConsole").hide();
+		$("#dataInformation").html("");
+ 		if(isSearchButton) {
+ 			pathname = dataPathName;
+ 		}else {
+ 			dataPathName = pathname;
+ 		}
  		if(isEmpty(pathname)){
- 			$("#dataInformation").html("No data to show.");
+ 			msgShow('Info', 'please select one path.', 'Info');
  			return;
  		}
- 		var data = interact.getDFSFile(pathname);
+ 		$("#dataInformation").show();
+		$("#dataConsole").show();
+ 		var startLine;
+ 		var endLine;
+ 		if(isSearchButton){
+ 			startLine = $("#startLine").val();
+ 	 		endLine = $("#endLine").val();
+ 	 		if(isEmpty(startLine) || isEmpty(endLine) || parseInt(startLine) >= parseInt(endLine)){
+ 	 			msgShow('Info', 'please input startLine and endLine, and endLine should be greater than startLine.', 'Info');
+ 	 		}
+ 	 		if((parseInt(endLine) - parseInt(startLine)) > 1000){
+ 	 			endLine = startLine + 1000;
+ 	 		}
+ 		}else {
+ 			startLine = 0;
+ 	 		endLine = 20;
+ 	 		$("#startLine").textbox("setValue", 0);
+ 	 		$("#endLine").textbox("setValue", 20);
+ 		}
+ 		
+ 		//var data = interact.getDFSFile(pathname);
+ 		var data = interact.getDFSFileByPage(pathname, startLine, endLine);
  		var content = data.textContent;
  		if(isEmpty(content)){
  			content = "No data to show.";
@@ -91,12 +124,12 @@ body {
  				$("#contextInformation").html(data);
  			}
  		}else if(type == 'flownodedata'){
- 			$("#dataInformation").show();
- 			$("#dataConsole").show();
- 			
+
  			var dataname = getRequestUrlParamString("dataname");
  			data = interact.getFlowInstanceData(instanceid, dataname);
  			if(!isEmpty(data)){
+ 				$("#dataInformation").hide();
+				$("#dataConsole").hide();
  				var type = data.fileType;
  				if(type=="directoryList"){
  					var htmlStr = '<div class="list-group">';
@@ -112,12 +145,19 @@ body {
  					console.info(r);
  					$("#contextInformation").html(htmlStr);
  				}else{
+ 					$("#dataInformation").show();
+ 					$("#dataConsole").show();
+ 					$("#startLine").hide();
+ 					$("#endLine").hide();
+ 					$("#showSearch").hide();
  					$("#contextInformation").html(data);
  				}
  			}
  	 		
  		}
  		if(isEmpty(data)){
+ 			$("#dataInformation").hide();
+ 			$("#dataConsole").hide();
  			$("#contextInformation").html("No data to show.");
  		}
  		
@@ -133,7 +173,12 @@ body {
 </head>
 <body onload="load()">
 <div id="contextInformation" width="100%" style="height:auto"></div>
-<div id="dataConsole" width="103%" style="height:30px;background-color:#D2DDE1;padding-left:5px"><b>Data Console</b></div>
-<div id="dataInformation" width="103%" style="height:670px;background-color:#D2DDE1;padding:10px;word-wrap: break-word;overflow-y:auto;"></div>
+<div id="dataConsole" width="103%" style="height:30px;background-color:#D2DDE1;padding-left:5px">
+	<b style="padding-right:30%">Data Console</b>
+	<input class="easyui-textbox" label="startLine:" labelPosition="left" id="startLine" style="width:20%;height:22px">
+	<input class="easyui-textbox" label="endLine:" labelPosition="left" id="endLine" style="width:20%;height:22px">
+	<a href="javascript:void(0)" onclick="openData('', true)" class="easyui-linkbutton c8" id="showSearch" style="width:80px;">Show</a>
+</div>
+<div id="dataInformation" width="103%" style="height:auto;background-color:#D2DDE1;padding:10px;word-wrap: break-word;overflow-y:auto;"></div>
 </body>
 </html>

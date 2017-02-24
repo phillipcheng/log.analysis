@@ -1,11 +1,14 @@
 package dv.db.entity;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name="t_flowInstance")
@@ -15,7 +18,9 @@ public class FlowInstanceEntity {
 	private String instanceID;
 	
 	private String flowName;
-	private Date updateTime;
+	@Column(columnDefinition="TIMESTAMP")  
+    //@Temporal(TemporalType.TIMESTAMP)  
+	private Timestamp  updateTime;
 	public String getInstanceID() {
 		return instanceID;
 	}
@@ -28,10 +33,10 @@ public class FlowInstanceEntity {
 	public void setFlowName(String flowName) {
 		this.flowName = flowName;
 	}
-	public Date getUpdateTime() {
+	public Timestamp getUpdateTime() {
 		return updateTime;
 	}
-	public void setUpdateTime(Date updateTime) {
+	public void setUpdateTime(Timestamp updateTime) {
 		this.updateTime = updateTime;
 	}
 }

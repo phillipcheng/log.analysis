@@ -47,6 +47,11 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			return ;
+		}		
 		g_mouse_down = "";
 		g_mouse_up = "";
 
@@ -62,6 +67,11 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			return ;
+		}		
 		g_mouse_up = o.getAttribute("G");
 		if(g_mouse_down.localeCompare(g_mouse_up) == 0) {
 			this.clickedRect();
@@ -86,7 +96,7 @@ var _event = {
 	},
 	addIn_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
-		e.stopPropagation();
+		e.stopPropagation();		
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		var objId = o.getAttribute("arge");
@@ -135,7 +145,7 @@ var _event = {
 	},
 	addOut_click: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
-		e.stopPropagation();
+		e.stopPropagation();		
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		var objId = o.getAttribute("arge");
@@ -216,7 +226,11 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
-
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			return ;
+		}
 		var gId = o.getAttribute("G");
 		each(result.nodes, function(i, o) {
 			if(o.id.toString().localeCompare(gId) == 0) {
@@ -239,7 +253,11 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
-
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			return ;
+		}
 		var gId = o.getAttribute("G");
 		each(result.nodes, function(i, o) {
 			if(o.id.toString().localeCompare(gId) == 0) {
@@ -260,6 +278,11 @@ var _event = {
 	clickedRect: function() {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		e.stopPropagation();
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			return ;
+		}		
 		var o = getEventSources(e);
 		var gId = o.getAttribute("G");
 		each(result.nodes, function() {
@@ -320,6 +343,11 @@ var _event = {
 		console.log("-----------clickPath-------------");
 		var e = window.event || arguments.callee.caller.arguments[0];
 		e.stopPropagation();
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			return ;
+		}		
 		if(e.button == 0){
 			return ;
 		}
@@ -353,7 +381,7 @@ var _event = {
 	selectedData: function(txtId, gId) {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
-		e.stopPropagation();
+		e.stopPropagation();	
 		if(e.button == 2) {
 			d3.select("#d3contextmenu").selectAll("ul").remove();
 			d3.select("#d3contextmenu").selectAll("input").remove();
@@ -502,6 +530,20 @@ var _event = {
 			});
 
 		}
+		
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else {
+			var ary = document.getElementById("divrightup").getElementsByTagName("input");
+			for(var i=0;i<ary.length;i++){
+				ary[i].setAttribute("disabled","disabled");
+			}
+			
+			ary = document.getElementById("divrightup").getElementsByTagName("select");
+			for(var i=0;i<ary.length;i++){
+				ary[i].setAttribute("disabled","disabled");
+			}			
+		}			
 
 	},
 	selectedProperty: function() {
@@ -509,6 +551,11 @@ var _event = {
 		var e = window.event || arguments.callee.caller.arguments[0];
 		var o = getEventSources(e);
 		e.stopPropagation();
+		if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+			
+		}else{
+			return ;
+		}		
 		var gId = o.getAttribute("G");
 		each(result.nodes, function() {
 			if(this.id.localeCompare(gId) == 0) {
@@ -520,6 +567,23 @@ var _event = {
 	},
 	logClick: function(args) {
 		console.log("----------logClick-----------");
-		run.getFlowNodeLog(args);
+		run.getFlowNodeLog(args); 
+		console.log(arguments);
+	},
+	propertySpanClick : function(){
+		var e = window.event || arguments.callee.caller.arguments[0];
+		e.stopPropagation();
+		var o = getEventSources(e);
+		if(o.innerText.localeCompare("+")==0){
+			//放大
+			document.getElementById("divbackdrop").style.display = "block";
+			o.parentNode.parentNode.parentNode.className = "rightupcss rightupcssMax";
+			o.innerText = "-";
+		}else {
+			//缩小
+			document.getElementById("divbackdrop").style.display = "none";
+			o.parentNode.parentNode.parentNode.className = "rightupcss";
+			o.innerText = "+";
+		}
 	}
 }

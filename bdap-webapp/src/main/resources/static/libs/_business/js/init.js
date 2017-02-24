@@ -145,6 +145,17 @@ var init = function() {
 	d3.select("#a_title").text(WHOLE_FLOW_NAME );
 	result.name = WHOLE_FLOW_NAME;
 	result.wfName = WHOLE_FLOW_NAME;
+	
+	//控制权制
+	if(FLOW_CURRENT_STAGE.localeCompare("DESIGN")==0){
+		
+	}else{
+		setTimeout(function () {
+			document.getElementById("a_title").removeAttribute("onclick");
+			document.getElementById("navbar").innerHTML = "";		
+			document.getElementById("actionList").innerHTML = "";	
+		},1000);
+	}
 }
 
 /**
