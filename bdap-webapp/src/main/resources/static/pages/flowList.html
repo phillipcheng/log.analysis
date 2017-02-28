@@ -185,7 +185,9 @@ body {
 			return;
 		}
 		var url = "/dashview/dataFlow/app.html?action=view&type=flow&name="+name;
-		window.location.href = url;
+		//window.location.href = url;
+		var temp = "flowView_"+name;
+		window.parent.addTab(temp,url,"");
 	}
 	function edit() {
 		var name = getSelectedRowName();
@@ -193,7 +195,9 @@ body {
 			return;
 		}
 		var url = "/dashview/dataFlow/app.html?action=edit&type=flow&name="+name;
-		window.location.href = url;
+		//window.location.href = url;
+		var temp = "flowEdit_"+name;
+		window.parent.addTab(temp,url,"");
 	}
 	function del() {
 		//$('#tt').treegrid('getChecked');

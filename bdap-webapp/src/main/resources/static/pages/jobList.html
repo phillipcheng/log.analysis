@@ -159,6 +159,7 @@ body {
 		}
 		var url = "/dashview/dataFlow/app.html?action=view&type=job&name="+name+"&flowname="+flowname;
 		var temp = name.substring(0,name.indexOf("-"));
+		temp = temp + "-" + flowname;
 		window.parent.addTab(temp,url,"");
 		//window.location.href = url;
 	}
