@@ -143,9 +143,13 @@ var load = {
 					if(this.dataName.indexOf("dataset_") > -1) {
 						this.dataName = this.dataName.substring(this.dataName.indexOf("dataset_"));
 					}
-					result.nodes[result.nodes.length - 1].outlets[i].dataName = this.dataName;
-					result.nodes[result.nodes.length - 1].outlets[i].name = this.name;
-					result.nodes[result.nodes.length - 1].outlets[i].show = true;
+					try{
+						result.nodes[result.nodes.length - 1].outlets[i].dataName = this.dataName;
+						result.nodes[result.nodes.length - 1].outlets[i].name = this.name;
+						result.nodes[result.nodes.length - 1].outlets[i].show = true;
+					}catch(e){
+						console.info(e.message);
+					}
 					return true;
 				});
 			}
@@ -159,9 +163,11 @@ var load = {
 			var tempto = this.toNodeName;
 			if(tempfrom.indexOf("g_")>-1){
 				tempfrom= tempfrom.substring(tempfrom.indexOf("g_"));
+				tempfrom = "g_" + tempfrom.replace(/g_/g, '');
 			}
 			if(tempto.indexOf("g_")>-1){
 				tempto = tempto.substring(tempto.indexOf("g_"));
+				tempto = "g_" + tempto.replace(/g_/g, '');
 			}
 			g.setEdge(tempfrom, tempto);
 //			result.links.push(obj);

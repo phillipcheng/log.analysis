@@ -1,7 +1,7 @@
 var clientwidth, clientheight, current_zoom_x, current_zoom_y,
 	display_off_left, display_off_top, init_zoom_x, init_zoom_y, booleaniszoom;
 
-var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
+var _HTTP_LOAD_ACTION_INFOR = "/dashview/"+USER_NAME+"/flow/node/types/action/commands";
 //var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
 
 /**

@@ -220,11 +220,16 @@ var enter = function(theSelf, d, nodeData) {
 
 var smallNodeEnter = function(theSelf, d, nodeData) {
 	var theSelfObj = d3.select(theSelf);
-	theSelfObj.attr("class", "nodeSmallG")
+	try{
+		theSelfObj.attr("class", "nodeSmallG")
 		.attr("id", "small" + d)
 		.attr("r", 2)
 		.attr("cx", ((nodeData.x / 20) - 1))
 		.attr("cy", ((nodeData.y / 20) - 1));
+	}catch(e){
+		console.info(e.message);
+	}
+	
 }
 
 var childNodeEnter = function(theSelf, d, nodeData) {
