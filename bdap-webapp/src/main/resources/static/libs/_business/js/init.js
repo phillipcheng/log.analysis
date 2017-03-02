@@ -122,6 +122,20 @@ var init = function() {
 	});
 	remotePropertyObj = interact.getFlowSchema();
 	console.info("remotePropertyObj: " + remotePropertyObj);
+	schemaProperty = new Schema(remotePropertyObj).findPath("properties/nodes/items/jsonSchemas");
+	var _result = {};
+	for(var i = 0; i < schemaProperty.length; i++) {
+		var o = schemaProperty[i];
+		if(o.extends) {
+			copyExtends(o.properties, _result[o.extends[0].id]);
+		}
+		if(o.id) {
+			_result[o.id] = o.properties;
+		} else {
+			_result[o.properties["cmd.class"].default] = o.properties;
+		}
+	}
+	schemaProperty = _result;		
 	each(remotePropertyObj.properties.nodes.items.jsonSchemas,function(){
 			if(this.properties["cmd.class"]){
 				propertyInfor.push(this.properties);

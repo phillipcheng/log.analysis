@@ -191,7 +191,7 @@ var app = {
 			_build._build(gId, g_child_Instance);	
 		}
 	},
-	action: function(jsonObj, mainkey) {
+	action: function(jsonObj, mainkey,nodeObj) {
 		nodeIndex++;
 		var gId = "";
 		var tempcla = jsonObj.cla;
@@ -206,8 +206,8 @@ var app = {
 				propertyObj["id"] = gId.toString();
 				propertyObj['@class'] = 'action';
 				propertyObj['cmd.class'] = jsonObj.cla;
-				propertyObj['exe.type'] = 'mr';
 				propertyObj['name'] = jsonObj.label;
+				propertyObj['exe.type'] = 'java';
 				propertyObj['inLets'] = [{
 					id: gId + '_InData_0',
 					name: '',
@@ -260,7 +260,19 @@ var app = {
 				}];
 				propertyObj['input.format'] = '';
 				each(v, function(i, o) {
-					propertyObj[o.toString()] = getDefaultValue(jsonObj.cla, o.toString());
+					if(nodeObj){
+						if(nodeObj[o.toString()]){
+							propertyObj[o.toString()] = nodeObj[o.toString()];
+						}else{
+							if(schemaProperty[jsonObj.cla][o.toString()]&&schemaProperty[jsonObj.cla][o.toString()]["default"]){
+								propertyObj[o.toString()] = schemaProperty[jsonObj.cla][o.toString()].default;
+							}else{
+								propertyObj[o.toString()] = "";
+							}
+						}
+					}else{
+						propertyObj[o.toString()] = getDefaultValue(jsonObj.cla, o.toString());
+					}
 					return true;
 				});
 				result.nodes.push(propertyObj);
