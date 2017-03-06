@@ -1,7 +1,7 @@
 var clientwidth, clientheight, current_zoom_x, current_zoom_y,
 	display_off_left, display_off_top, init_zoom_x, init_zoom_y, booleaniszoom;
 
-var _HTTP_LOAD_ACTION_INFOR = "/dashview/george/flow/node/types/action/commands";
+var _HTTP_LOAD_ACTION_INFOR = "/dashview/"+USER_NAME+"/flow/node/types/action/commands";
 //var _HTTP_LOAD_ACTION_INFOR = "http://localhost:8020/flow/actionInfor";
 
 /**
@@ -122,6 +122,20 @@ var init = function() {
 	});
 	remotePropertyObj = interact.getFlowSchema();
 	console.info("remotePropertyObj: " + remotePropertyObj);
+	schemaProperty = new Schema(remotePropertyObj).findPath("properties/nodes/items/jsonSchemas");
+	var _result = {};
+	for(var i = 0; i < schemaProperty.length; i++) {
+		var o = schemaProperty[i];
+		if(o.extends) {
+			copyExtends(o.properties, _result[o.extends[0].id]);
+		}
+		if(o.id) {
+			_result[o.id] = o.properties;
+		} else {
+			_result[o.properties["cmd.class"].default] = o.properties;
+		}
+	}
+	schemaProperty = _result;		
 	each(remotePropertyObj.properties.nodes.items.jsonSchemas,function(){
 			if(this.properties["cmd.class"]){
 				propertyInfor.push(this.properties);

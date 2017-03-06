@@ -159,6 +159,7 @@ body {
 		}
 		var url = "/dashview/dataFlow/app.html?action=view&type=job&name="+name+"&flowname="+flowname;
 		var temp = name.substring(0,name.indexOf("-"));
+		temp = temp + "-" + flowname;
 		window.parent.addTab(temp,url,"");
 		//window.location.href = url;
 	}
@@ -177,7 +178,7 @@ body {
 		var nodes = $('#tt').datagrid('getSelections');
 		if (nodes != null && nodes.length >0) {
 			var instanceid = nodes[0].instanceid;
-			var delURL = "/dashview/george/flow/instance/"+instanceid+"/del";
+			var delURL = "/dashview/"+USER_NAME+"/flow/instance/"+instanceid+"/del";
 			
 			$.messager.confirm('Info', 'will you delete them ?', function(i) {
 				if (i) {
