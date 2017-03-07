@@ -539,24 +539,6 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	/**
-	 * reduce function in map-reduce mode
-	 * return List of [newkey, newValue, baseOutputPath]
-	 * return null, means done in the subclass
-	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
-	 * set newValue to null, if output line results
-	 * @return list of newKey, newValue, baseOutputPath
-	 */
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<Tuple3<String, String, String>> retList = this.reduceByKey(key.toString(), values, context, mos);
-		List<String[]> retStringlist = new ArrayList<String[]>();
-		for(Tuple3<String, String, String> ret:retList){
-			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
-		}	
-		return retStringlist;
-	}
-	
-	/**
 	 * single thread process
 	 * @return list of String user defined log info
 	 */
