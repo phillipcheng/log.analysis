@@ -381,7 +381,7 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 	}
 	
 	@Override
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values,
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){		
 		/*
 		 * According eventTimeStamp sort record(values)
@@ -393,7 +393,8 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		
 		//Parse record
 		List<Map<String,String>> records = new ArrayList<Map<String,String>>();
-		for(String value:values){
+		for(Object obj:values){
+			String value = obj.toString();
 			try {
 				records.add(parseLog(value));
 			} catch (Exception e) {

@@ -257,7 +257,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	}
 
 	@Override
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String,String,String>> out = new ArrayList<Tuple3<String,String,String>>();
 		if (CREATE_TABLES_SQL_KEY.equals(key)) {
@@ -279,7 +279,11 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 				} else {
 					currentFs = fs;
 				}
-				List<String> createSqls = Lists.newArrayList(values);
+				List<String> createSqls = new ArrayList<String>();
+				for (Object v: values){
+					createSqls.add(v.toString());
+				}
+				
 				Collections.sort(createSqls, CREATE_TABLES_SQL_COMPARATOR);
 				logger.debug("Append {} sqls to file: {}", createSqls.size(), this.createTablesSqlFileName);
 				
@@ -288,15 +292,15 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 					HdfsUtil.appendDfsFile(currentFs, this.createTablesSqlFileName, Arrays.asList(sql));
 				}
 			} else {
-				for (String v: values) {
+				for (Object v: values) {
 					/* For spark */
-					out.add(new Tuple3<String,String,String>(v, null, key));
+					out.add(new Tuple3<String,String,String>(v.toString(), null, key));
 				}
 			}
 			
 		} else {
-			for (String v: values)
-				out.add(new Tuple3<String,String,String>(v, null, key));
+			for (Object v: values)
+				out.add(new Tuple3<String,String,String>(v.toString(), null, key));
 		}
 		return out;
 	}
