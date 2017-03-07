@@ -52,7 +52,7 @@ public class CsvNormalizeCmd extends SchemaETLCmd {
 		return vl;
 	}
 	
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values,
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
 		List<Tuple3<String,String,String>> ret = new ArrayList<Tuple3<String,String,String>>();
 		String tableName = key;
@@ -61,9 +61,9 @@ public class CsvNormalizeCmd extends SchemaETLCmd {
 		CSVParser parser = null;
 		CSVRecord csv;
 		
-		Iterator<String> it = values.iterator();
+		Iterator<? extends Object> it = values.iterator();
 		while (it.hasNext()) {
-			String v = it.next();
+			String v = it.next().toString();
 			
 			try {
 				parser = CSVParser.parse(v, CSVFormat.DEFAULT.withTrim());

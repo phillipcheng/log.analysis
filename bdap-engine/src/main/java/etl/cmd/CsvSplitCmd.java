@@ -182,10 +182,10 @@ public class CsvSplitCmd extends ETLCmd {
 	}
 	
 	@Override
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
-		Iterator<String> it = values.iterator();
+		Iterator<? extends Object> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();
 			ret.add(new Tuple3<String, String, String>(v, null, reduceKey(key.toString(), v)));

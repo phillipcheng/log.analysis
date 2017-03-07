@@ -365,7 +365,7 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	}
 	
 	@Override
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String,String,String>>();
 		
@@ -385,7 +385,8 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		}
 		List<String> recordFields=new ArrayList<String>(size);
 		for(int idx=0;idx<size;idx++) recordFields.add("");
-		for(String text:values){
+		for(Object obj:values){
+			String text = obj.toString();
 			int index=text.indexOf(',');
 			int position=Integer.parseInt(text.substring(0,index));
 			String value="";

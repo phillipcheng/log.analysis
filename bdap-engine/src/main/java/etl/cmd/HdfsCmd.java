@@ -174,11 +174,11 @@ public class HdfsCmd extends ETLCmd{
 		return mapRet;
 	}
 	
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		init();
 		List<Tuple3<String, String, String>> redRet = new ArrayList<Tuple3<String, String, String>>();
-		Iterator<String> it = values.iterator();
+		Iterator<? extends Object> it = values.iterator();
 		int cnt=0;
 		while (it.hasNext()){
 			it.next();
