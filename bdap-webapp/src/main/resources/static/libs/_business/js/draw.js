@@ -405,8 +405,10 @@ var _draw = {
 									objdiv.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + k + "')");
 									objdiv.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + k + "')");
 									if(typeof obj[k] == 'string') {
-										objdiv.append("input").attr("type", "text").attr("value", obj[k]).on("keyup", function() {
+										objdiv.append("input").attr("k",k).attr("type", "text").attr("value", obj[k])
+										.on("keyup", function(k) {
 											var ary = [];
+											var propertyName = this.getAttribute("k");
 											each(this.parentNode.childNodes, function() {
 												if(this.tagName.localeCompare("INPUT") == 0) {
 													ary.push(this.value);
@@ -415,7 +417,7 @@ var _draw = {
 											});
 											each(result.nodes, function() {
 												if(this.id.localeCompare(gId) == 0) {
-													this[k] = ary;
+													this[propertyName] = ary;
 													_draw._drawProperty(gId, this);
 													return false;
 												}
@@ -425,8 +427,10 @@ var _draw = {
 									} else {
 										if(obj[k]) {
 											each(obj[k], function() {
-												objdiv.append("input").attr("type", "text").attr("value", this).on("keyup", function() {
+												objdiv.append("input").attr("k",k).attr("type", "text").attr("value", this)
+												.on("keyup", function() {
 													var ary = [];
+													var propertyName = this.getAttribute("k");
 													each(this.parentNode.childNodes, function() {
 														if(this.tagName.localeCompare("INPUT") == 0) {
 															ary.push(this.value);
@@ -435,7 +439,7 @@ var _draw = {
 													});
 													each(result.nodes, function() {
 														if(this.id.localeCompare(gId) == 0) {
-															this[k] = ary;
+															this[propertyName] = ary;
 															_draw._drawProperty(gId, this);
 															return false;
 														}
@@ -445,8 +449,10 @@ var _draw = {
 												return true;
 											});
 										} else {
-											objdiv.append("input").attr("type", "text").attr("value", "").on("keyup", function() {
+											objdiv.append("input").attr("k",k).attr("type", "text").attr("value", "")
+											.on("keyup", function() {
 												var ary = [];
+												var propertyName = this.getAttribute("k");
 												each(this.parentNode.childNodes, function() {
 													if(this.tagName.localeCompare("INPUT") == 0) {
 														ary.push(this.value);
@@ -455,7 +461,7 @@ var _draw = {
 												});
 												each(result.nodes, function() {
 													if(this.id.localeCompare(gId) == 0) {
-														this[k] = ary;
+														this[propertyName] = ary;
 														_draw._drawProperty(gId, this);
 														return false;
 													}
@@ -483,8 +489,10 @@ var _draw = {
 							objdiv.append("button").text("add +").attr("onclick", "addAndSubInput(1,'" + gId + "','" + k + "')");
 							objdiv.append("button").text("sub -").attr("onclick", "addAndSubInput(-1,'" + gId + "','" + k + "')");								
 								each(obj[k], function() {
-										objdiv.append("input").attr("type", "text").attr("value", this).on("keyup", function() {
+										objdiv.append("input").attr("k",k).attr("type", "text").attr("value", this)
+										.on("keyup", function() {
 											var ary = [];
+											var propertyName = this.getAttribute("k");
 											each(this.parentNode.childNodes, function() {
 												if(this.tagName.localeCompare("INPUT") == 0) {
 													ary.push(this.value);
@@ -493,7 +501,7 @@ var _draw = {
 											});
 											each(result.nodes, function() {
 												if(this.id.localeCompare(gId) == 0) {
-													this[k] = ary;
+													this[propertyName] = ary;
 													_draw._drawProperty(gId, this);
 													return false;
 												}
@@ -534,11 +542,12 @@ var _draw = {
 					var tempValue = this.value;
 					if(tempValue) {
 						if(tempValue.indexOf(":") > -1) {
-							tempValue = tempValue.split(":");
+							var tempK = tempValue.substring(0,tempValue.indexOf(":")).trim();
+							var tempV = tempValue.substring(tempValue.indexOf(":")+1).trim();
 							each(result.nodes, function(i, o) {
 								if(this.id.localeCompare(gId) == 0) {
-									this[tempValue[0].trim()] = tempValue[1].trim();
-									selfPropertyInfor[gId + "_" + tempValue[0].trim()] = {
+									this[tempK] = tempV;
+									selfPropertyInfor[gId + "_" + tempK] = {
 										type: 'string'
 									};
 									_draw._drawPropertyLeftDiv(gId, obj);

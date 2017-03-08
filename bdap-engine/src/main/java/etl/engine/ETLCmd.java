@@ -253,7 +253,7 @@ public abstract class ETLCmd implements Serializable{
 	
 	//base reduce method sub class needs to implement, for both mapreduce and spark
 	//k,v,baseoutput
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> it, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		logger.error(String.format("Empty reduceByKey impl!!! %s", this));
 		return null;
@@ -539,25 +539,6 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	/**
-	 * reduce function in map-reduce mode
-	 * return List of [newkey, newValue, baseOutputPath]
-	 * return null, means done in the subclass
-	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
-	 * set newValue to null, if output line results
-	 * @return list of newKey, newValue, baseOutputPath
-	 */
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		Iterable<String> strValues = itTois(values);
-		List<Tuple3<String, String, String>> retList = this.reduceByKey(key.toString(), strValues, context, mos);
-		List<String[]> retStringlist = new ArrayList<String[]>();
-		for(Tuple3<String, String, String> ret:retList){
-			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
-		}	
-		return retStringlist;
-	}
-	
-	/**
 	 * single thread process
 	 * @return list of String user defined log info
 	 */
@@ -654,15 +635,6 @@ public abstract class ETLCmd implements Serializable{
 			ret.add(new Tuple2<String, String>(key, line));
 		}
 		return ret;
-	}
-
-	public static Iterable<String> itTois(Iterable<Text> values){
-		List<String> svalues = new ArrayList<String>();
-		Iterator<Text> vit = values.iterator();
-		while (vit.hasNext()){
-			svalues.add(vit.next().toString());
-		}
-		return svalues;
 	}
 
 /*********
