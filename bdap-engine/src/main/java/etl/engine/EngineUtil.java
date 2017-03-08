@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import scala.Tuple2;
+import scala.Tuple3;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -221,55 +222,59 @@ public class EngineUtil {
 		return cmd;
 	}
 	
+	public static void processReduceKeyValue(String k, String value, String tableName, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		String sep = context.getConfiguration().get("mapreduce.output.textoutputformat.separator", ",");
+		if (ParquetOutputFormat.class.isAssignableFrom(context.getOutputFormatClass())) {
+			/* In case of parquet output format, the output key should be null */
+			if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+				if (value!=null){
+					if (!"".equals(k.trim())){
+						context.write(null, new Text(k + sep + value));
+					}else{
+						context.write(null, new Text(value));
+					}
+				}else{
+					context.write(null, new Text(k));
+				}
+			}else{
+				if (value!=null){
+					mos.write((Text)null, new Text(k + sep + value), tableName);
+				}else{
+					mos.write((Text)null, new Text(k), tableName);
+				}
+			}
+		} else {
+			if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+				if (value!=null){
+					if (!"".equals(k.trim())){
+						context.write(new Text(k), new Text(value));
+					}else{
+						context.write(new Text(value), null);
+					}
+				}else{
+					context.write(new Text(k), null);
+				}
+			}else{
+				if (value!=null){
+					mos.write(new Text(k), new Text(value), tableName);
+				}else{
+					mos.write(new Text(k), null, tableName);
+				}
+			}
+		}
+	}
+	
 	public void processReduceCmd(ETLCmd cmd, Text key, Iterable<Text> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		try {
-			List<String[]> rets = cmd.reduceProcess(key, values, context, mos);
+			List<Tuple3<String,String,String>> rets = cmd.reduceByKey(key.toString(), values, context, mos);
 			if (rets!=null){
-				if (ParquetOutputFormat.class.isAssignableFrom(context.getOutputFormatClass())) {
-					/* In case of parquet output format, the output key should be null */
-					String sep = context.getConfiguration().get("mapreduce.output.textoutputformat.separator", ",");
-					
-					for (String[] ret: rets){
-						if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
-							if (ret[1]!=null){
-								if (!"".equals(ret[0].trim())){
-									context.write(null, new Text(ret[0] + sep + ret[1]));
-								}else{
-									context.write(null, new Text(ret[1]));
-								}
-							}else{
-								context.write(null, new Text(ret[0]));
-							}
-						}else{
-							if (ret[1]!=null){
-								mos.write((Text)null, new Text(ret[0] + sep + ret[1]), ret[2]);
-							}else{
-								mos.write((Text)null, new Text(ret[0]), ret[2]);
-							}
-						}
-					}
-					
-				} else {
-					for (String[] ret: rets){
-						if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
-							if (ret[1]!=null){
-								if (!"".equals(ret[0].trim())){
-									context.write(new Text(ret[0]), new Text(ret[1]));
-								}else{
-									context.write(new Text(ret[1]), null);
-								}
-							}else{
-								context.write(new Text(ret[0]), null);
-							}
-						}else{
-							if (ret[1]!=null){
-								mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
-							}else{
-								mos.write(new Text(ret[0]), null, ret[2]);
-							}
-						}
-					}
+				for (Tuple3<String,String,String> ret: rets){
+					String tableName=ret._3();
+					String value = ret._2();
+					String k = ret._1();
+					processReduceKeyValue(k, value, tableName, context, mos);
 				}
 			}
 		}catch(Throwable t){

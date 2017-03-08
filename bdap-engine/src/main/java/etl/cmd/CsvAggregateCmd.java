@@ -626,7 +626,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 	}
 	
 	@Override
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> it, 
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> it, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
 		super.init();
 		/*
@@ -643,9 +643,9 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 		
 		if (!mergeTable){
 			List<CSVRecord> rl = new ArrayList<CSVRecord>();
-			Iterator<String> its = it.iterator();
+			Iterator<? extends Object> its = it.iterator();
 			while (its.hasNext()){
-				String v = its.next();
+				String v = its.next().toString();
 				logger.debug(String.format("reduce: key:%s, one value:%s", key, v));
 				try {
 					CSVParser parser = CSVParser.parse(v.toString(), CSVFormat.DEFAULT);
@@ -678,7 +678,7 @@ public class CsvAggregateCmd extends SchemaETLCmd implements Serializable{
 				logger.error(String.format("%s not found in new tables %s", tableName, Arrays.asList(newTables)));
 			}
 			Map<String, List<CSVRecord>> oldTableRecordsMap = new HashMap<String, List<CSVRecord>>();
-			Iterator<String> its = it.iterator();
+			Iterator<? extends Object> its = it.iterator();
 			while (its.hasNext()){
 				/*
 				 * Store the record from each old table

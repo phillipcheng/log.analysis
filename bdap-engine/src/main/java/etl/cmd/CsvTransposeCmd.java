@@ -365,7 +365,7 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 	}
 	
 	@Override
-	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<String> values, 
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String,String,String>>();
 		
@@ -385,7 +385,8 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		}
 		List<String> recordFields=new ArrayList<String>(size);
 		for(int idx=0;idx<size;idx++) recordFields.add("");
-		for(String text:values){
+		for(Object obj:values){
+			String text = obj.toString();
 			int index=text.indexOf(',');
 			int position=Integer.parseInt(text.substring(0,index));
 			String value="";
@@ -404,23 +405,6 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 			ret.add(new Tuple3<String, String, String>(groupKeys,mergedRecord, outputFileName));
 		} else {
 			ret.add(new Tuple3<String, String, String>(groupKeys,mergedRecord, ETLCmd.SINGLE_TABLE));
-		}
-		
-		return ret;
-	}
-	
-	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String> svalues = new ArrayList<String>();
-		Iterator<Text> vit = values.iterator();
-		while (vit.hasNext()){
-			svalues.add(vit.next().toString());
-		}
-		List<String[]> ret = new ArrayList<String[]>();	
-		List<Tuple3<String, String, String>> output = reduceByKey(key.toString(), svalues, context, mos);
-		for (Tuple3<String, String, String> t: output){
-			ret.add(new String[]{t._1(), t._2(), t._3()});
 		}
 		return ret;
 	}
