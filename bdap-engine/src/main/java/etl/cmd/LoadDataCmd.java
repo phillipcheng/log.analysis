@@ -32,6 +32,7 @@ import etl.util.ConfigKey;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class LoadDataCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -220,7 +221,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 		return vl;
 	}
 	
-	private int reduceByKey(String key, String[] files) throws Exception{
+	private int executeSqls(String key, String[] files) throws Exception{
 		super.init();
 		if (this.tableNames==null ||tableNames.length==0||Arrays.asList(this.tableNames).contains(key)){
 			List<String> copysqls = new ArrayList<String>();
@@ -239,12 +240,12 @@ public class LoadDataCmd extends SchemaETLCmd{
 	}
 	
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
+	public List<Tuple3<String,String,String>> reduceByKey(String key, Iterable<? extends Object> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
-		String[] files = TextItToFiles(values);
-		int rows = reduceByKey(key.toString(), files);
-		List<String[]> ret = new ArrayList<String[]>();
-		ret.add(new String[]{key.toString(), Integer.toString(rows), ETLCmd.SINGLE_TABLE});
+		String[] files = itToSet(values);
+		int rows = executeSqls(key.toString(), files);
+		List<Tuple3<String,String,String>> ret = new ArrayList<Tuple3<String,String,String>>();
+		ret.add(new Tuple3<String,String,String>(key.toString(), Integer.toString(rows), ETLCmd.SINGLE_TABLE));
 		return ret;
 	}
 	
@@ -269,7 +270,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 					tfName = t._1.toString();
 				}
 				if (tfName!=null && !"".equals(tfName)){
-					int rows = reduceByKey(tfName, files);
+					int rows = executeSqls(tfName, files);
 					return new Tuple2<String, String>(tfName, Integer.toString(rows));
 				}else{
 					logger.warn(String.format("get tfname is null: key:%s, exp:%s", t._1.toString(), strFileTableMap));
@@ -279,9 +280,9 @@ public class LoadDataCmd extends SchemaETLCmd{
 		});
 	}
 
-	private String[] TextItToFiles(Iterable<Text> values) {
+	private String[] itToSet(Iterable<? extends Object> values) {
 		Set<String> files = new HashSet<String>();
-		Iterator<Text> it = values.iterator();
+		Iterator<? extends Object> it = values.iterator();
 		while (it.hasNext()) {
 			String v = it.next().toString();
 			files.add(v);

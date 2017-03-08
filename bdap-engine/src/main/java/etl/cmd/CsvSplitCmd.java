@@ -192,18 +192,4 @@ public class CsvSplitCmd extends ETLCmd {
 		}
 		return ret;
 	}
-	
-	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String[]> ret = new ArrayList<String[]>();
-
-		Iterator<Text> it = values.iterator();
-		while (it.hasNext()) {
-			String v = it.next().toString();
-			ret.add(new String[]{v, null, reduceKey(key.toString(), v)});
-		}
-		
-		return ret;
-	}
 }
