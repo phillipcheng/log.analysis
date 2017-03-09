@@ -1,4 +1,4 @@
-<form id="ff" action="/dashview/player/project" method="post">
+<form id="ff" action="" method="post">
 			<input type="hidden" name="id" value="">
             <div style="margin-bottom:20px">
                 <input class="easyui-textbox" name="projectName" style="width:100%;" data-options="label:'projectName:',required:true">
@@ -20,7 +20,7 @@
 <script>
  function submitForm(){
  	$.ajax({
-         url : $('#ff').attr('action'),
+         url : '/dashview/'+USER_NAME+'/project',
          type: $('#ff').attr('method'),
          dataType : 'text',
          contentType : 'application/json',
