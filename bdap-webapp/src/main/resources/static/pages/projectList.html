@@ -27,6 +27,7 @@ body {
 <link rel="stylesheet" type="text/css"
 	href="../libs/easyui/themes/icon.css" />
 
+<script type="text/javascript" src="../libs/_business/js/const.js"></script>
 <script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../libs/jquery/jquery.serializejson.min.js"></script>
 <script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
@@ -46,7 +47,7 @@ body {
 			singleSelect: true,
 			rownumbers: true,
 			method: 'get',
-			url: '/dashview/player/project/',
+			url: '/dashview/'+USER_NAME+'/project/',
 			columns : [ [{
 				field : 'id',
 				title : 'Id',
@@ -145,7 +146,7 @@ body {
 		updatedRow.projectName = row.projectName;
 		updatedRow.type = row.type;
 	 	$.ajax({
-	         url : '/dashview/player/project/',
+	         url : '/dashview/'+USER_NAME+'/project/',
 	         type: 'post',
 	         dataType : 'text',
 	         contentType : 'application/json',
@@ -165,7 +166,7 @@ body {
 			content: '{}'
 		};
 	 	$.ajax({
-	         url : '/dashview/player/project/',
+	         url : '/dashview/'+USER_NAME+'/project/',
 	         type: 'post',
 	         dataType : 'text',
 	         contentType : 'application/json',
@@ -191,7 +192,7 @@ body {
 		if (row != null) {
 			var delURL;
 			var name = row.projectName;
-			delURL = "/dashview/player/project/"+name;
+			delURL = "/dashview/"+USER_NAME+"/project/"+name;
 			
 			$.messager.confirm('Info', 'will you delete them ?', function(i) {
 				if (i) {
