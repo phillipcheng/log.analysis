@@ -144,8 +144,12 @@ public class HdfsCmd extends ETLCmd{
 		if (HdfsOp.rm == hdfsOp){
 			if (rmParent){
 				int lastIdx = filePath.lastIndexOf("/");
-				String parentPath = filePath.substring(0, lastIdx);
-				mapRet.add(new Tuple2<String, String>(parentPath, "1"));
+				if (lastIdx!=-1){
+					String parentPath = filePath.substring(0, lastIdx);
+					mapRet.add(new Tuple2<String, String>(parentPath, "1"));
+				}else{
+					logger.info(String.format("file path:%s has not /", filePath));
+				}
 			}else{
 				boolean ret = getFs().delete(new Path(filePath), true);
 				logger.info(String.format("delete path:%s, ret:%b", filePath, ret));
