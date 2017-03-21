@@ -8,6 +8,7 @@
 <link rel="stylesheet" type="text/css"
 	href="../libs/easyui/themes/icon.css">
 <link rel="stylesheet" type="text/css" href="../css/common.css">
+<script type="text/javascript" src="../libs/_business/js/const.js"></script>
 <script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
 </head>
@@ -40,7 +41,7 @@
 		</div>
 		<div style="text-align: left; padding: 5px 0">
 			<div class="easyui-panel" title="Upload File" style="width:80%;padding:30px 60px;">
-				<form id="upload" action="/dashview/player/project/" method="post">
+				<form id="upload" action="" method="post">
 		        <div style="margin-bottom:20px">
 					<input class="easyui-textbox" name="targetFilePath" style="width: 20%" value="/"
 						data-options="label:'targetFilePath:',required:true">
@@ -70,7 +71,7 @@
 								rownumbers : true,
 								pagination : true,
 								method : 'get',
-								url : '/dashview/player/project/' + get('projectName') + '/dir',
+								url : '/dashview/'+USER_NAME+'/project/' + get('projectName') + '/dir',
 								columns : [ [ {
 									field : 'fileType',
 									title : 'File Type',
@@ -92,7 +93,8 @@
 			if (!targetPath.startsWith("/"))
 				targetPath = "/" + targetPath;
 			$.ajax({
-				url : $('#upload').attr('action') + get('projectName') + '/dir' + targetPath,
+				//url : $('#upload').attr('action') + get('projectName') + '/dir' + targetPath,
+				url : '/dashview/' + USER_NAME + '/project/'+get('projectName') + '/dir' + targetPath,
 				type : $('#upload').attr('method'),
 				dataType : 'text',
 				data : new FormData($('#upload')[0]),
@@ -127,7 +129,7 @@
 		});
 
 		$.ajax({
-			url : '/dashview/player/project/' + get('projectName'),
+			url : '/dashview/'+USER_NAME+'/project/' + get('projectName'),
 			type : 'get',
 			dataType : 'json',
 			contentType : 'application/json',

@@ -77,11 +77,11 @@
 }
 
 .rightupcssMax{
-	width: 1200px;
-	height: 650px;
+	width: 80vw;
+	height: 85vh;
 	z-index: 999;
 }
 
 .rightupcssMax .rightupcssheader{
-	width: 1198px;
+	width: 80vw;
 }

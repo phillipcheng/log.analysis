@@ -542,11 +542,12 @@ var _draw = {
 					var tempValue = this.value;
 					if(tempValue) {
 						if(tempValue.indexOf(":") > -1) {
-							tempValue = tempValue.split(":");
+							var tempK = tempValue.substring(0,tempValue.indexOf(":")).trim();
+							var tempV = tempValue.substring(tempValue.indexOf(":")+1).trim();
 							each(result.nodes, function(i, o) {
 								if(this.id.localeCompare(gId) == 0) {
-									this[tempValue[0].trim()] = tempValue[1].trim();
-									selfPropertyInfor[gId + "_" + tempValue[0].trim()] = {
+									this[tempK] = tempV;
+									selfPropertyInfor[gId + "_" + tempK] = {
 										type: 'string'
 									};
 									_draw._drawPropertyLeftDiv(gId, obj);
