@@ -2,8 +2,8 @@ package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -17,16 +17,15 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//import com.mchange.v2.c3p0.ComboPooledDataSource;
-
+import bdap.util.Util;
 import etl.engine.ETLCmd;
+
 import etl.engine.LogicSchema;
 import etl.engine.types.MRMode;
+import etl.engine.types.OutputType;
 import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
-import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
-import etl.util.VarType;
 import scala.Tuple2;
 import scala.Tuple3;
 
@@ -35,35 +34,20 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 
 	public static final Logger logger = LogManager.getLogger(IncrementalLoadCmd.class);
 	
-//	private static volatile ComboPooledDataSource ds = null;
-	
 	//cfgkey
 	public static final @ConfigKey String cfgkey_tables="tables";
-	public static final @ConfigKey(type=String[].class) String cfgkey_primary_keys="primary.keys";
 	public static final @ConfigKey String cfgkey_table_key="table.key";
-	public static final @ConfigKey String cfgkey_operation_key="operation.key";
-	public static final @ConfigKey String cfgkey_event_timestamp_key="event.timestamp.key";
 	public static final @ConfigKey String cfgkey_table_set="set"; //table field set operation
 	public static final @ConfigKey String cfgkey_table_set_when_exist="setWhenExist";//table field set operation if condition meet.
+	public static final @ConfigKey String cfgkey_default_value="default.value"; 
+	public static final @ConfigKey String cfgkey_table_mapping="tablename.mapping.exp";
 	
-//	public static final @ConfigKey String cfgkey_updateDB="updateDB";
-//	public static final @ConfigKey String cfgkey_throttle="throttle";
-//	
-//	public static final @ConfigKey String cfgkey_driver_class="driver.class";
-//	public static final @ConfigKey String cfgkey_jdbc_url="jdbc.url";
-//	public static final @ConfigKey String cfgkey_user="user";
-//	public static final @ConfigKey String cfgkey_password="password";
-//	public static final @ConfigKey String cfgkey_acquireIncrement="acquireIncrement";
-//	public static final @ConfigKey String cfgkey_initialPoolSize="initialPoolSize";
-//	public static final @ConfigKey String cfgkey_minPoolSize="minPoolSize";
-//	public static final @ConfigKey String cfgkey_maxPoolSize="maxPoolSize";
+	public static final String VAR_NAME_ORIGIN_TABLE_NAME="originTableName";
 	
-//	private boolean updateDB;
-//	private int maxThrottle;
 	private String tableKey;
-	private String operationKey;
-	private String eventTimestampKey;
 	private String[] tables;
+	private String defaultValue;
+	private transient CompiledScript tableMappingCS=null;
 	private Map<String,TableOpConfig> tableOpConfigMap=new HashMap<String,TableOpConfig>();
 	
 	public IncrementalLoadCmd(){
@@ -82,127 +66,6 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
-//	public static AtomicLong counter=new AtomicLong(0);
-//	public static ThreadLocal<Connection> connTL=new ThreadLocal<Connection>();
-//	public static void main(String[] args){
-//		ds = new ComboPooledDataSource();
-//		try {
-//			ds.setDriverClass("com.vertica.jdbc.Driver");
-//			ds.setJdbcUrl("jdbc:vertica://192.85.247.104:5433/cmslab");
-//			ds.setUser("dbadmin");
-//			ds.setPassword("password");
-//			ds.setAcquireIncrement(1);
-//			ds.setInitialPoolSize(10);
-//			ds.setMinPoolSize(10);
-//			ds.setMaxPoolSize(10);
-////			ds.setAutoCommitOnClose(false);
-//		} catch (PropertyVetoException e) {
-//			logger.error("Initial datasource failed", e);
-//		}
-//			
-//		ExecutorService es=Executors.newFixedThreadPool(10);
-//	    long start=System.currentTimeMillis();
-//	    System.out.println("start time2:"+start);
-//		long c=1000l;
-//		for(long i=0;i<c;i++){
-//			es.submit(new Runnable(){
-//				public void run(){
-//					Connection conn=connTL.get();
-//				    try {
-//				    	if(conn==null){
-//				    		conn=ds.getConnection();
-//				    		connTL.set(conn);
-//				    	}
-//						
-//						Statement stat=conn.createStatement();
-//						for(int j=0;j<10;j++){
-//							stat.addBatch("Insert into spc.test values('sv','2012-10-10 10:10:00', '2012-10-10', 1000,30 )");
-//						}						
-//						stat.executeBatch();
-//						long cval=counter.incrementAndGet();
-//						if(cval%100==0){
-//							System.out.println(String.format("%s:executed %s", System.currentTimeMillis()-start, cval));
-//						}
-////						conn.commit();
-////						conn.close();
-//					} catch (SQLException e) {
-//						e.printStackTrace();
-//						if(conn!=null){
-//							try {
-//								conn.close();
-//								connTL.remove();
-//							} catch (SQLException e1) {
-//								// TODO Auto-generated catch block
-//								e1.printStackTrace();
-//							}
-//						}
-//					}			    
-//				}
-//				
-//			});
-//		}
-//		long end=System.currentTimeMillis();
-//		
-//		System.out.println(end-start);
-//	}
-//	public static void main2(String[] args){
-//		ds = new ComboPooledDataSource();
-//		try {
-//			ds.setDriverClass("com.vertica.jdbc.Driver");
-//			ds.setJdbcUrl("jdbc:vertica://192.85.247.104:5433/cmslab");
-//			ds.setUser("dbadmin");
-//			ds.setPassword("password");
-//			ds.setAcquireIncrement(1);
-//			ds.setInitialPoolSize(10);
-//			ds.setMinPoolSize(10);
-//			ds.setMaxPoolSize(10);
-////			ds.setAutoCommitOnClose(false);
-//		} catch (PropertyVetoException e) {
-//			logger.error("Initial datasource failed", e);
-//		}
-//			
-//		ExecutorService es=Executors.newFixedThreadPool(10);
-//	    long start=System.currentTimeMillis();
-//	    System.out.println("start time:"+start);
-//		long c=1000l;
-//		for(long i=0;i<c;i++){
-//			es.submit(new Runnable(){
-//				public void run(){
-//					Connection conn=null;
-//				    try {
-//						conn=ds.getConnection();
-//						conn.setAutoCommit(false);
-//						Statement stat=conn.createStatement();
-//						for(int j=0;j<10;j++){
-//							stat.addBatch("Insert into spc.test values('sv','2012-10-10 10:10:00', '2012-10-10', 1000,30 )");
-//						}						
-//						stat.executeBatch();
-//						long cval=counter.incrementAndGet();
-//						if(cval%100==0){
-//							System.out.println(String.format("%s:executed %s", System.currentTimeMillis()-start, cval));
-//						}
-////						conn.commit();
-//						conn.close();
-//					} catch (SQLException e) {
-//						e.printStackTrace();
-//						if(conn!=null){
-//							try {
-//								conn.close();
-//							} catch (SQLException e1) {
-//								// TODO Auto-generated catch block
-//								e1.printStackTrace();
-//							}
-//						}
-//					}			    
-//				}
-//				
-//			});
-//		}
-//		long end=System.currentTimeMillis();
-//		
-//		System.out.println(end-start);
-//	}
-	
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		logger.info("--------------------------------------------Start initial--------------------------------------------");		
@@ -210,43 +73,15 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		this.setMrMode(MRMode.line);
 		
 		tableKey=super.getCfgString(cfgkey_table_key, null);
-		operationKey=super.getCfgString(cfgkey_operation_key, null);
-		eventTimestampKey=super.getCfgString(cfgkey_event_timestamp_key, null);
 		tables=super.getCfgStringArray(cfgkey_tables);
 		if(tables==null) tables=new String[0];
 		tableOpConfigMap=initTableOpConfig();
-		
-//		updateDB=super.getCfgBoolean(cfgkey_updateDB, false);
-//		maxThrottle=super.getCfgInt(cfgkey_throttle, 10);
-//		
-//		String driverClass=super.getCfgString(cfgkey_driver_class, null);
-//		String jdbcUrl=super.getCfgString(cfgkey_jdbc_url, null);
-//		String user=super.getCfgString(cfgkey_user, null);
-//		String password=super.getCfgString(cfgkey_password, null);
-//		int acquireIncrement=super.getCfgInt(cfgkey_acquireIncrement, 1);
-//		int initialPoolSize=super.getCfgInt(cfgkey_initialPoolSize, 10);
-//		int minPoolSize=super.getCfgInt(cfgkey_minPoolSize, 10);
-//		int maxPoolSize=super.getCfgInt(cfgkey_maxPoolSize, 10);
-//		
-//		if(updateDB==true){
-//			synchronized(this.getClass()){
-//				if (ds==null){
-//					ds=new ComboPooledDataSource();
-//					try {
-//						ds.setDriverClass(driverClass);
-//						ds.setJdbcUrl(jdbcUrl);
-//						ds.setUser(user);
-//						ds.setPassword(password);
-//						ds.setAcquireIncrement(acquireIncrement);
-//						ds.setInitialPoolSize(initialPoolSize);
-//						ds.setMinPoolSize(minPoolSize);
-//						ds.setMaxPoolSize(maxPoolSize);
-//					} catch (PropertyVetoException e) {
-//						logger.error("Initial datasource failed",e);
-//					}
-//				}
-//			}
-//		}		
+		defaultValue = super.getCfgString(cfgkey_default_value, null);
+		//Read table name mapping expression
+		String tableNameMappingExp=this.getCfgString(cfgkey_table_mapping, null);
+		if(tableNameMappingExp!=null){
+			tableMappingCS=ScriptEngineUtil.compileScript(tableNameMappingExp);
+		}
 	}
 	
 	public static Map<String, String> parseLog(String log) throws Exception{
@@ -330,6 +165,10 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		}
 		
 		String table=record.get(tableKey);
+		getSystemVariables().put(VAR_NAME_ORIGIN_TABLE_NAME, table);
+		if(tableMappingCS!=null){
+			table=ScriptEngineUtil.eval(tableMappingCS, super.getSystemVariables());
+		}
 		
 		TableOpConfig tableOpConfig=tableOpConfigMap.get(table);
 		//check table whether correct
@@ -340,202 +179,47 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		
 		//execute field op
 		List<FieldOp> fieldOps=tableOpConfig.getFieldOps();
-		for(FieldOp fieldOp:fieldOps){			
+		for(FieldOp fieldOp:fieldOps){
 			fieldOp.execute(record, this.getSystemVariables());
 		}
 		
-		//get primary keys value
-		String[] primaryKeys=tableOpConfig.getPrimaryKeys();
-		if(primaryKeys==null || primaryKeys.length==0){
-			logger.warn("Drop the record as primaryKeys are not defined:{}", value);
-			return result;
+		// get AttrNames list
+		LogicSchema ls=getLogicSchema();
+		List<String> attrtNames=ls.getAttrNames(table);
+		if(defaultValue == null || defaultValue.isEmpty()){
+			defaultValue = "";
 		}
 		
-		List<String> primaryKeyValues=new ArrayList<String>();
-		for(String primaryKey:primaryKeys){
-			String keyValue=record.get(primaryKey);
-			if(keyValue==null){
-				logger.warn("Drop the record:{} as missing primary key:{}", value, primaryKey);
-				return result;
+		List<String> listValues = new ArrayList<String>();
+		for (String attrtName : attrtNames) {
+			if(record.containsKey(attrtName)){
+				listValues.add(record.get(attrtName));
 			}else{
-				primaryKeyValues.add(keyValue);
-			}				
+				listValues.add(defaultValue);
+			}
 		}
-		
-		//rebuild result
-		StringBuilder sb=new StringBuilder();
-		for(String key:record.keySet()){
-			String keyValue=record.get(key);
-			keyValue=keyValue.replace("\\", "\\\\").replace("=", "\\=").replace(",", "\\,");
-			sb.append(key).append("=").append(keyValue).append(",");
-		}
-		sb.setLength(sb.length()-1);
-		
-		result.add(new Tuple2<String, String>(table+","+String.join(",", primaryKeyValues), sb.toString()));
-
-		
-		//Output:
-		//Key: tableName, keys
-		//Value: records		
-		return result;
+		logger.info(listValues);
+		String output = Util.getCsv(listValues, ",", true, false);
+		return Arrays.asList(new Tuple2<String, String>(tfName, output));
 	}
 	
 	@Override
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){		
-		/*
-		 * According eventTimeStamp sort record(values)
-		 * execute each record operation to get final result
-		 * according to final operation type and final value to generate sql and execute it
-		 */
-		
-		List<Tuple3<String, String, String>> ret =new ArrayList<Tuple3<String, String, String>>();
-		
-		//Parse record
-		List<Map<String,String>> records = new ArrayList<Map<String,String>>();
-		for(Object obj:values){
-			String value = obj.toString();
-			try {
-				records.add(parseLog(value));
-			} catch (Exception e) {
-				logger.warn("Invalid record found, cancel all operation for same key",e);
-				return ret;
+		String pathName = key.toString();
+		int lastSep = pathName.lastIndexOf("/");
+		String fileName = pathName.substring(lastSep + 1);
+		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
+		Iterator<? extends Object> it = values.iterator();
+		while (it.hasNext()) {
+			String v = it.next().toString();
+			if (super.getOutputType() == OutputType.multiple) {
+				ret.add(new Tuple3<String, String, String>(v, null, fileName.toString()));
+			} else {
+				ret.add(new Tuple3<String, String, String>(v, null, ETLCmd.SINGLE_TABLE));
 			}
 		}
-		
-		String table=key.substring(0, key.indexOf(','));
-		
-		//Sort record
-		records.sort(new Comparator<Map<String,String>>(){
-			@Override
-			public int compare(Map<String, String> o1, Map<String, String> o2) {
-				long eventTimeStamp1=Long.parseLong(o1.get(eventTimestampKey));
-				long eventTimeStamp2=Long.parseLong(o2.get(eventTimestampKey));
-				long result=eventTimeStamp1-eventTimeStamp2;
-				if(result==0) return 0;
-				if(result>0) return 1;
-				return -1;
-			}
-		});
-		
-		//Generate SQL
-		for(Map<String, String> record: records){
-			String operation=record.get(operationKey);
-			operation=operation.toUpperCase();
-			String sql=generateSQL(table,operation, record);
-			ret.add(new Tuple3<String,String,String>(sql,null, ETLCmd.SINGLE_TABLE));
-		}
-		
-//		//Execute SQL
-//		if(updateDB){			
-//			for(Tuple3<String,String,String> item:ret){
-//				String sql=item._1();
-//				Connection conn=null;
-//				try {
-//					conn=ds.getConnection();
-//					conn.setAutoCommit(true);
-//					Statement stat=conn.createStatement();
-//					stat.execute(sql);
-//					conn.close();
-//				} catch (SQLException e) {
-//					logger.warn(String.format("Failed to execute SQL:%s",sql), e);
-//					if(conn!=null){
-//						try {
-//							conn.close();
-//						} catch (SQLException e1) {
-//							logger.warn("", e1);
-//						}
-//					}
-//					break;						
-//				}
-//			}
-//		}
-		
 		return ret;
-	}
-	
-	private String generateSQL(String table, String operation, Map<String,String> record){
-		LogicSchema ls=getLogicSchema();
-		List<String> attrtNames=ls.getAttrNames(table);
-		List<FieldType> attrTypes=ls.getAttrTypes(table);
-		TableOpConfig tableOpConfig=getTableOpConfig(table);
-		List<String> configPrimaryKeys=Arrays.asList(tableOpConfig.getPrimaryKeys());
-			
-		operation=operation.toUpperCase();
-		List<String> nonPrimaryKeys=new ArrayList<String>();
-		List<String> nonPrimaryKeyValues=new ArrayList<String>();
-		List<String> primaryKeys=new ArrayList<String>();
-		List<String> primaryKeyValues=new ArrayList<String>();
-		List<String> allKeys=new ArrayList<String>();
-		List<String> allKeyValues=new ArrayList<String>();
-		
-		for(String key:record.keySet()){
-			int idx=attrtNames.indexOf(key);
-			if(idx==-1) continue;
-			String value=record.get(key);
-			FieldType fieldType=attrTypes.get(idx);
-			
-			List<String> keys;
-			List<String> keyValues;
-			if(configPrimaryKeys.contains(key)){
-				keys=primaryKeys;
-				keyValues=primaryKeyValues;
-			}else{
-				keys=nonPrimaryKeys;
-				keyValues=nonPrimaryKeyValues;
-			}
-			
-			keys.add(key);
-			
-			VarType varType=fieldType.getType();
-			if(VarType.NUMERIC==varType || VarType.INT==varType || VarType.FLOAT==varType){
-				keyValues.add(value);				
-			}else{
-				keyValues.add(String.format("'%s'", value.replaceAll("'", "''")));
-			}			
-		}
-		
-		allKeys.addAll(primaryKeys);
-		allKeys.addAll(nonPrimaryKeys);
-		
-		allKeyValues.addAll(primaryKeyValues);
-		allKeyValues.addAll(nonPrimaryKeyValues);
-		
-		
-		if("INSERT".equals(operation)){
-			StringBuilder sqlSB=new StringBuilder();			
-			
-			String colsStr=String.join(",", allKeys);
-			String valuesStr=String.join(",", allKeyValues);			
-			
-			sqlSB.append("INSERT INTO ").append(dbPrefix).append(".").append(table).append(" (").append(colsStr).append(" ) VALUES ( ").append(valuesStr).append( ");");
-			return sqlSB.toString();
-		}else if("UPDATE".equals(operation)){
-			StringBuilder sqlSB=new StringBuilder();
-			sqlSB.append("UPDATE ").append(dbPrefix).append(".").append(table).append(" SET ");
-			for(int i=0;i<nonPrimaryKeys.size();i++){
-				sqlSB.append(nonPrimaryKeys.get(i)).append("=").append(nonPrimaryKeyValues.get(i)).append(",");
-			}
-			sqlSB.setLength(sqlSB.length()-1);
-			sqlSB.append(" WHERE ");
-			for(int i=0;i<primaryKeys.size();i++){
-				sqlSB.append(primaryKeys.get(i)).append("=").append(primaryKeyValues.get(i)).append(" AND ");
-			}
-			sqlSB.setLength(sqlSB.length()-5);
-			sqlSB.append(";");
-			return sqlSB.toString();
-		}else if("DELETE".equals(operation)){
-			StringBuilder sqlSB=new StringBuilder();
-			sqlSB.append("DELETE FROM ").append(dbPrefix).append(".").append(table).append(" WHERE ");
-			for(int i=0;i<allKeys.size();i++){
-				sqlSB.append(allKeys.get(i)).append("=").append(allKeyValues.get(i)).append(" AND ");
-			}
-			sqlSB.setLength(sqlSB.length()-5);
-			sqlSB.append(";");
-			return sqlSB.toString();
-		}
-		
-		return null;
 	}
 	
 	public Map<String,TableOpConfig> initTableOpConfig(){
@@ -552,11 +236,10 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		if(tableOpConfig!=null) return tableOpConfig;
 		
 		//Read TableOpConfig
-		String[] primaryKeys=super.getCfgStringArray(tablename+"."+cfgkey_primary_keys);
-		String operationKey=super.getCfgString(tablename+"."+cfgkey_operation_key, this.operationKey);
-		String eventTimestampKey=super.getCfgString(tablename+"."+cfgkey_event_timestamp_key, this.eventTimestampKey);
 		String[] opSet=super.getCfgStringArray(tablename+"."+cfgkey_table_set);
 		String[] opSetWhenExist=super.getCfgStringArray(tablename+"."+cfgkey_table_set_when_exist);
+		String[] commonOpSetWhenExist=super.getCfgStringArray("table.common."+cfgkey_table_set_when_exist);
+		
 		List<FieldOp> fieldOps=new ArrayList<FieldOp>();
 		if(opSet!=null && opSet.length>0){
 			for(String op:opSet){
@@ -569,41 +252,23 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 			}
 		}
 		
-		tableOpConfig=new TableOpConfig(operationKey,eventTimestampKey,primaryKeys, fieldOps);
+		if(commonOpSetWhenExist!=null && commonOpSetWhenExist.length>0){
+			for(String op:commonOpSetWhenExist){
+				fieldOps.add(new FieldOp(FieldOp.OP_TYPE_SET_WHEN_EXIST,op));
+			}
+		}
+		
+		tableOpConfig=new TableOpConfig(fieldOps);
 		return tableOpConfig;
 	}
 	
 	
 	public class TableOpConfig{
-		private String operationKey;
-		private String eventTimestampKey;
-		private String[] primaryKeys;
 		private List<FieldOp> fieldOps;
 		
-		public TableOpConfig(String operationKey, String eventTimestampKey, String[] primaryKeys, List<FieldOp> fieldOps) {
+		public TableOpConfig(List<FieldOp> fieldOps) {
 			super();
-			this.operationKey = operationKey;
-			this.eventTimestampKey = eventTimestampKey;
-			this.primaryKeys = primaryKeys;
 			this.fieldOps=fieldOps;
-		}
-		public String getOperationKey() {
-			return operationKey;
-		}
-		public void setOperationKey(String operationKey) {
-			this.operationKey = operationKey;
-		}
-		public String getEventTimestampKey() {
-			return eventTimestampKey;
-		}
-		public void setEventTimestampKey(String eventTimestampKey) {
-			this.eventTimestampKey = eventTimestampKey;
-		}
-		public String[] getPrimaryKeys() {
-			return primaryKeys;
-		}
-		public void setPrimaryKeys(String[] primaryKeys) {
-			this.primaryKeys = primaryKeys;
 		}
 		public List<FieldOp> getFieldOps() {
 			return fieldOps;
