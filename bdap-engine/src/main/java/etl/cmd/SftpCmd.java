@@ -423,38 +423,14 @@ public class SftpCmd extends ETLCmd {
 		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
 		for (String file:fileList){
 			if (output_default_key.equals(outputKey)){
-				ret.add(new Tuple2<String,String>(file, null));
+				ret.add(new Tuple2<String,String>(file, file));
 			}else{
 				ret.add(new Tuple2<String,String>(outputKey, file));
 			}
-			
 		}
 		return ret;
 	}
-	/*
-	 * called from sparkProcessFileToKV, key: file Name, v: line value
-	 */
-	@Override
-	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, 
-			InputFormatType ift, SparkSession spark){
-		return input.flatMapToPair(new PairFlatMapFunction<String, String, String>(){
-			@Override
-			public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-				List<String> fileList = process(t);
-				List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String, String>>();
-				for (String file:fileList){
-					if (output_default_key.equals(outputKey)){
-						ret.add(new Tuple2<String,String>(file, null));
-					}else{
-						ret.add(new Tuple2<String,String>(outputKey, file));
-					}
-				}
-				return ret.iterator();
-			}
-		});
-	}
 	
-
 	public String[] getFromDirs() {
 		return fromDirs;
 	}

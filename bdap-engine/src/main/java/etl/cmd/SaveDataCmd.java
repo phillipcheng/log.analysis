@@ -221,8 +221,11 @@ public class SaveDataCmd extends SchemaETLCmd {
 			copyConf();
 			if (outputFormat==etl.engine.types.OutputFormat.parquet){
 				saveAsNewAPIHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), getHadoopConf(), input, ParquetOutputFormat.class);
-			} else
-				input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, RDDMultipleTextOutputFormat.class);
+			}else{
+				logger.info(String.format("save as hadoop file: defaultFs:%s, dir:%s", super.getDefaultFs(), logTmpDir));
+				input.saveAsHadoopFile(String.format("%s%s", super.getDefaultFs(), logTmpDir), Text.class, Text.class, 
+						RDDMultipleTextOutputFormat.class);
+			}
 			return getFiles(input.keys().distinct(), true);
 		}
 	}

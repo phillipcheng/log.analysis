@@ -226,7 +226,11 @@ public class FileNameUpdateCmd extends ETLCmd {
 		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
 		Path path=new Path(value);
 		String fileName = updateFileName(path);
-		ret.add(new Tuple2<String,String>(fileName, null));
+		if (context==null){//spark
+			ret.add(new Tuple2<String,String>(fileName, fileName));
+		}else{//mapreduce
+			ret.add(new Tuple2<String,String>(fileName, null));
+		}
 		return ret;
 	}
 	
