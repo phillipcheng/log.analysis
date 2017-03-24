@@ -23,6 +23,7 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import bdap.util.Util;
 import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
+import etl.engine.EngineUtil;
 import etl.engine.types.MRMode;
 import etl.engine.types.OutputType;
 import etl.engine.types.ProcessMode;
@@ -275,19 +276,23 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	
 	@Override
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values,
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
 		//write output using the lastpart of the path name.
 		String pathName = key.toString();
 		int lastSep = pathName.lastIndexOf("/");
 		String fileName = pathName.substring(lastSep+1);
-		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();	
 		Iterator<? extends Object> it = values.iterator();
+		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
 		while (it.hasNext()){
 			String v = it.next().toString();
+			String tableName = ETLCmd.SINGLE_TABLE;
 			if (super.getOutputType()==OutputType.multiple){
-				ret.add(new Tuple3<String, String, String>(v, null, fileName.toString()));
+				tableName = fileName.toString();
+			}
+			if (context!=null){//map reduce
+				EngineUtil.processReduceKeyValue(v, null, tableName, context, mos);
 			}else{
-				ret.add(new Tuple3<String, String, String>(v, null, ETLCmd.SINGLE_TABLE));
+				ret.add(new Tuple3<String, String, String>(v, null, tableName));
 			}
 		}
 		return ret;

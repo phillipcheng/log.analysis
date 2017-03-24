@@ -406,23 +406,6 @@ public class CsvTransposeCmd extends SchemaETLCmd {
 		} else {
 			ret.add(new Tuple3<String, String, String>(groupKeys,mergedRecord, ETLCmd.SINGLE_TABLE));
 		}
-		
-		return ret;
-	}
-	
-	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String> svalues = new ArrayList<String>();
-		Iterator<Text> vit = values.iterator();
-		while (vit.hasNext()){
-			svalues.add(vit.next().toString());
-		}
-		List<String[]> ret = new ArrayList<String[]>();	
-		List<Tuple3<String, String, String>> output = reduceByKey(key.toString(), svalues, context, mos);
-		for (Tuple3<String, String, String> t: output){
-			ret.add(new String[]{t._1(), t._2(), t._3()});
-		}
 		return ret;
 	}
 }

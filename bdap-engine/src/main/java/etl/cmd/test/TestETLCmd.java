@@ -36,6 +36,7 @@ import org.apache.parquet.schema.Type;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.SparkSession;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
@@ -368,6 +369,14 @@ public abstract class TestETLCmd implements Serializable{
 		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, ift, null, true);
 	}
 	
+	private JavaPairRDD<String, String> toPairRDD(List<String> input, JavaSparkContext jsc){
+		return jsc.parallelize(input).mapToPair(new PairFunction<String,String,String>(){
+			@Override
+			public Tuple2<String, String> call(String t) throws Exception {
+				return new Tuple2<String,String>(t, t);
+			}
+		});
+	}
 	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
 			String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift, 
 			Map<String, String> addConf, boolean key) throws Exception{
@@ -395,8 +404,7 @@ public abstract class TestETLCmd implements Serializable{
 			if (addConf!=null){
 				cmd.copyConf(addConf);
 			}
-			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, ift, spark);
-			//List<String> keys = result.keys().collect();
+			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(toPairRDD(inputPaths, jsc), jsc, ift, spark);
 			
 			List<String> ret = new ArrayList<String>();
 			if (key){
@@ -437,7 +445,7 @@ public abstract class TestETLCmd implements Serializable{
 		if (addConf!=null){
 			cmd.copyConf(addConf);
 		}
-		return cmd.sparkProcessFilesToKV(jsc.parallelize(inputPaths), jsc, ift, null);
+		return cmd.sparkProcessFilesToKV(toPairRDD(inputPaths,jsc), jsc, ift, null);
 	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 

@@ -192,141 +192,240 @@ var app = {
 		}
 	},
 	action: function(jsonObj, mainkey,nodeObj) {
-		nodeIndex++;
-		var gId = "";
-		var tempcla = jsonObj.cla;
-		if(!isEmpty(mainkey)) {
-			gId = mainkey;
-		} else {
-			gId = "g_" + (new Date().getTime() + nodeIndex);
-		}
-		$.each(remoteActionObj, function(k, v) {
-			if(k.localeCompare(jsonObj.cla) == 0) {
-				var propertyObj = {};
-				propertyObj["id"] = gId.toString();
-				propertyObj['@class'] = 'action';
-				propertyObj['cmd.class'] = jsonObj.cla;
-				propertyObj['name'] = jsonObj.label;
-				propertyObj['exe.type'] = 'java';
-				propertyObj['inLets'] = [{
-					id: gId + '_InData_0',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}, {
-					id: gId + '_InData_1',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}, {
-					id: gId + '_InData_2',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}, {
-					id: gId + '_InData_3',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}];
-				propertyObj['outlets'] = [{
-					id: gId + '_OutData_0',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}, {
-					id: gId + '_OutData_1',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}, {
-					id: gId + '_OutData_2',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}, {
-					id: gId + '_OutData_3',
-					name: '',
-					dataName: '',
-					show: false,
-					state: 'show'
-				}];
-				propertyObj['input.format'] = '';
-				each(v, function(i, o) {
-					if(nodeObj){
-						if(nodeObj[o.toString()]){
-							propertyObj[o.toString()] = nodeObj[o.toString()];
-						}else{
-							if(schemaProperty[jsonObj.cla][o.toString()]&&schemaProperty[jsonObj.cla][o.toString()]["default"]){
-								propertyObj[o.toString()] = schemaProperty[jsonObj.cla][o.toString()].default;
-							}else{
-								propertyObj[o.toString()] = "";
-							}
-						}
-					}else{
-						propertyObj[o.toString()] = getDefaultValue(jsonObj.cla, o.toString());
-					}
-					return true;
-				});
-				result.nodes.push(propertyObj);
-				var obj = _action_node(gId, jsonObj.label);
-				g.setNode(gId, obj);
-				if(!mainkey){
-					_build._build();
+		if(nodeObj){
+			nodeIndex++;
+			var gId = nodeObj["id"];
+			var propertyObj = {};
+			for(var k in nodeObj){
+				if(k.localeCompare("inLets")!=0&&k.localeCompare("outlets")!=0){
+					propertyObj[k] = nodeObj[k];
 				}
-				var g_child_Instance = childsvg.find(gId);
-				if(g_child_Instance == null) {
-					g_child_Instance = childsvg.initNewInstance(gId);
-				}
-
-				var In_data_instance_0 = _In_data_node(gId + "_InData_0", gId);
-				g_child_Instance.setNode(gId + "_InData_0", In_data_instance_0);
-
-				var In_data_instance_1 = _In_data_node(gId + "_InData_1", gId);
-				g_child_Instance.setNode(gId + "_InData_1", In_data_instance_1);
-
-				var In_data_instance_2 = _In_data_node(gId + "_InData_2", gId);
-				g_child_Instance.setNode(gId + "_InData_2", In_data_instance_2);
-
-				var In_data_instance_3 = _In_data_node(gId + "_InData_3", gId);
-				g_child_Instance.setNode(gId + "_InData_3", In_data_instance_3);
-
-				g_child_Instance.setEdge(gId + "_InData_0", gId + "_InData_1");
-				g_child_Instance.setEdge(gId + "_InData_1", gId + "_InData_2");
-				g_child_Instance.setEdge(gId + "_InData_2", gId + "_InData_3");
-
-				var property_node_instance = _Property_node(gId + "_property", gId);
-				g_child_Instance.setNode(gId + "_property", property_node_instance);
-
-				var Out_data_instance_0 = _Out_data_node(gId + "_OutData_0", gId);
-				g_child_Instance.setNode(gId + "_OutData_0", Out_data_instance_0);
-
-				var Out_data_instance_1 = _Out_data_node(gId + "_OutData_1", gId);
-				g_child_Instance.setNode(gId + "_OutData_1", Out_data_instance_1);
-
-				var Out_data_instance_2 = _Out_data_node(gId + "_OutData_2", gId);
-				g_child_Instance.setNode(gId + "_OutData_2", Out_data_instance_2);
-
-				var Out_data_instance_3 = _Out_data_node(gId + "_OutData_3", gId);
-				g_child_Instance.setNode(gId + "_OutData_3", Out_data_instance_3);
-
-				g_child_Instance.setEdge(gId + "_OutData_0", gId + "_OutData_1");
-				g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
-				g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
-
-				if(!mainkey){
-					_build._build(gId, g_child_Instance);	
-				}
-				return false;
 			}
-		});
+			propertyObj['inLets'] = [];
+			propertyObj['outlets'] = [];
+			for(var i=0;i<4;i++){
+				if(nodeObj["inLets"].length>=(i+1)){
+					propertyObj['inLets'].push({
+						id: nodeObj["inLets"][i]["id"]||(gId + '_InData_'+i),
+						name: nodeObj["inLets"][i]["name"],
+						dataName: nodeObj["inLets"][i]["dataName"],
+						show: false,
+						state: 'show'							
+					});
+				}else{
+					propertyObj['inLets'].push({
+						id: gId + '_InData_'+i,
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'						
+					});
+				}
+				
+				if(nodeObj["outlets"].length>=(i+1)){
+					propertyObj['outlets'].push({
+						id: nodeObj["outlets"][i]["id"]||(gId + '_OutData_'+i),
+						name: nodeObj["outlets"][i]["name"],
+						dataName: nodeObj["outlets"][i]["dataName"],
+						show: false,
+						state: 'show'							
+					});
+				}else{
+					propertyObj['outlets'].push({
+						id: gId + '_OutData_'+i,
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'						
+					});
+				}				
+			}
+
+			result.nodes.push(propertyObj);
+			var labelTxt = propertyObj["cmd.class"];
+			var obj = _action_node(gId, propertyObj["cmd.class"].substring(propertyObj["cmd.class"].lastIndexOf(".")+1));
+			g.setNode(gId, obj);			
+			_build._build();
+			
+			var g_child_Instance = childsvg.find(gId);
+			if(g_child_Instance == null) {
+				g_child_Instance = childsvg.initNewInstance(gId);
+			}
+	
+			var In_data_instance_0 = _In_data_node(propertyObj["inLets"][0]["id"], gId);
+			g_child_Instance.setNode(propertyObj["inLets"][0]["id"], In_data_instance_0);
+
+			var In_data_instance_1 = _In_data_node(propertyObj["inLets"][1]["id"], gId);
+			g_child_Instance.setNode(propertyObj["inLets"][1]["id"], In_data_instance_1);
+
+			var In_data_instance_2 = _In_data_node(propertyObj["inLets"][2]["id"], gId);
+			g_child_Instance.setNode(propertyObj["inLets"][2]["id"], In_data_instance_2);
+
+			var In_data_instance_3 = _In_data_node(propertyObj["inLets"][3]["id"], gId);
+			g_child_Instance.setNode(propertyObj["inLets"][3]["id"], In_data_instance_3);
+
+			g_child_Instance.setEdge(propertyObj["inLets"][0]["id"], propertyObj["inLets"][1]["id"]);
+			g_child_Instance.setEdge(propertyObj["inLets"][1]["id"], propertyObj["inLets"][2]["id"]);
+			g_child_Instance.setEdge(propertyObj["inLets"][2]["id"], propertyObj["inLets"][3]["id"]);
+
+			var property_node_instance = _Property_node(gId + "_property", gId);
+			g_child_Instance.setNode(gId + "_property", property_node_instance);
+
+			var Out_data_instance_0 = _Out_data_node(propertyObj["outlets"][0]["id"], gId);
+			g_child_Instance.setNode(propertyObj["outlets"][0]["id"], Out_data_instance_0);
+
+			var Out_data_instance_1 = _Out_data_node(propertyObj["outlets"][1]["id"], gId);
+			g_child_Instance.setNode(propertyObj["outlets"][1]["id"], Out_data_instance_1);
+
+			var Out_data_instance_2 = _Out_data_node(propertyObj["outlets"][2]["id"], gId);
+			g_child_Instance.setNode(propertyObj["outlets"][2]["id"], Out_data_instance_2);
+
+			var Out_data_instance_3 = _Out_data_node(propertyObj["outlets"][3]["id"], gId);
+			g_child_Instance.setNode(propertyObj["outlets"][3]["id"], Out_data_instance_3);
+
+			g_child_Instance.setEdge(propertyObj["outlets"][0]["id"], propertyObj["outlets"][1]["id"]);
+			g_child_Instance.setEdge(propertyObj["outlets"][1]["id"], propertyObj["outlets"][2]["id"]);
+			g_child_Instance.setEdge(propertyObj["outlets"][2]["id"], propertyObj["outlets"][3]["id"]);
+
+			_build._build(gId, g_child_Instance);	
+			
+		}else{
+			nodeIndex++;
+			var gId = "";
+			var tempcla = jsonObj.cla;
+			if(!isEmpty(mainkey)) {
+				gId = mainkey;
+			} else {
+				gId = "g_" + (new Date().getTime() + nodeIndex);
+			}
+			$.each(remoteActionObj, function(k, v) {
+				if(k.localeCompare(jsonObj.cla) == 0) {
+					var propertyObj = {};
+					propertyObj["id"] = gId.toString();
+					propertyObj['@class'] = 'action';
+					propertyObj['cmd.class'] = jsonObj.cla;
+					propertyObj['name'] = jsonObj.label;
+					propertyObj['exe.type'] = 'java';
+					propertyObj['inLets'] = [{
+						id: gId + '_InData_0',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}, {
+						id: gId + '_InData_1',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}, {
+						id: gId + '_InData_2',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}, {
+						id: gId + '_InData_3',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}];
+					propertyObj['outlets'] = [{
+						id: gId + '_OutData_0',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}, {
+						id: gId + '_OutData_1',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}, {
+						id: gId + '_OutData_2',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}, {
+						id: gId + '_OutData_3',
+						name: '',
+						dataName: '',
+						show: false,
+						state: 'show'
+					}];
+					propertyObj['input.format'] = '';
+					each(v, function(i, o) {
+//						if(nodeObj){
+//							if(nodeObj[o.toString()]){
+//								propertyObj[o.toString()] = nodeObj[o.toString()];
+//							}else{
+//								if(schemaProperty[jsonObj.cla][o.toString()]&&schemaProperty[jsonObj.cla][o.toString()]["default"]){
+//									propertyObj[o.toString()] = schemaProperty[jsonObj.cla][o.toString()].default;
+//								}else{
+//									propertyObj[o.toString()] = "";
+//								}
+//							}
+//						}else{
+							propertyObj[o.toString()] = getDefaultValue(jsonObj.cla, o.toString());
+//						}
+						return true;
+					});
+					result.nodes.push(propertyObj);
+					var obj = _action_node(gId, jsonObj.label);
+					g.setNode(gId, obj);
+					if(!mainkey){
+						_build._build();
+					}
+					var g_child_Instance = childsvg.find(gId);
+					if(g_child_Instance == null) {
+						g_child_Instance = childsvg.initNewInstance(gId);
+					}
+	
+					var In_data_instance_0 = _In_data_node(gId + "_InData_0", gId);
+					g_child_Instance.setNode(gId + "_InData_0", In_data_instance_0);
+	
+					var In_data_instance_1 = _In_data_node(gId + "_InData_1", gId);
+					g_child_Instance.setNode(gId + "_InData_1", In_data_instance_1);
+	
+					var In_data_instance_2 = _In_data_node(gId + "_InData_2", gId);
+					g_child_Instance.setNode(gId + "_InData_2", In_data_instance_2);
+	
+					var In_data_instance_3 = _In_data_node(gId + "_InData_3", gId);
+					g_child_Instance.setNode(gId + "_InData_3", In_data_instance_3);
+	
+					g_child_Instance.setEdge(gId + "_InData_0", gId + "_InData_1");
+					g_child_Instance.setEdge(gId + "_InData_1", gId + "_InData_2");
+					g_child_Instance.setEdge(gId + "_InData_2", gId + "_InData_3");
+	
+					var property_node_instance = _Property_node(gId + "_property", gId);
+					g_child_Instance.setNode(gId + "_property", property_node_instance);
+	
+					var Out_data_instance_0 = _Out_data_node(gId + "_OutData_0", gId);
+					g_child_Instance.setNode(gId + "_OutData_0", Out_data_instance_0);
+	
+					var Out_data_instance_1 = _Out_data_node(gId + "_OutData_1", gId);
+					g_child_Instance.setNode(gId + "_OutData_1", Out_data_instance_1);
+	
+					var Out_data_instance_2 = _Out_data_node(gId + "_OutData_2", gId);
+					g_child_Instance.setNode(gId + "_OutData_2", Out_data_instance_2);
+	
+					var Out_data_instance_3 = _Out_data_node(gId + "_OutData_3", gId);
+					g_child_Instance.setNode(gId + "_OutData_3", Out_data_instance_3);
+	
+					g_child_Instance.setEdge(gId + "_OutData_0", gId + "_OutData_1");
+					g_child_Instance.setEdge(gId + "_OutData_1", gId + "_OutData_2");
+					g_child_Instance.setEdge(gId + "_OutData_2", gId + "_OutData_3");
+	
+					if(!mainkey){
+						_build._build(gId, g_child_Instance);	
+					}
+					return false;
+				}
+			});
+		}
 	},
 	dataSet: function() {
 		nodeIndex++;
@@ -336,7 +435,7 @@ var app = {
 	save: function() {
 		var thisObj = this;
 		var saveResult = {};
-		//deep copy
+		// deep copy
 		saveResult = $.extend(true, {}, result);
 		
                 console.info(saveResult);
@@ -366,7 +465,7 @@ var app = {
 				if(this.id.indexOf("g_")>-1){
 					this.name = this.name + "_" + this.id;
 				}
-				//删除多余的属性值
+				// 删除多余的属性值
 				for(var tempk in this){
 					if(tempk != 'inLets' && tempk != 'outlets'){
 						var tempv = this[tempk];
@@ -443,7 +542,7 @@ var app = {
 			url: getAjaxAbsolutePath(_HTTP_SAVE_JSON) + "?projectId=" + WHOLE_PROJECT_ID,
 			contentType: 'application/json',
 			data: JSON.stringify(saveResult),
-			//dataType: "json",
+			// dataType: "json",
 			success: function(data, textStatus) {
 				console.info(data);
 				msgShow('Info', 'save successfully.', 'info');

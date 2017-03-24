@@ -259,19 +259,6 @@ public abstract class ETLCmd implements Serializable{
 		return null;
 	}
 	
-	//K to KV
-	public JavaPairRDD<String, String> sparkProcessV2KV(JavaRDD<String> input, JavaSparkContext jsc, 
-			InputFormatType ift, SparkSession spark){
-		JavaPairRDD<String, String> pairs = input.mapToPair(new PairFunction<String, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Tuple2<String, String> call(String t) throws Exception {
-				return new Tuple2<String, String>(null, t);
-			}
-		});
-		return sparkProcessKeyValue(pairs, jsc, ift, spark);
-	}
-	
 	public static JavaPairRDD<String, Row> filterPairRDDRowNot(JavaPairRDD<String,Row> input, String key){
 		return input.filter(new Function<Tuple2<String,Row>, Boolean>(){
 			private static final long serialVersionUID = 1L;
@@ -346,11 +333,12 @@ public abstract class ETLCmd implements Serializable{
 			if (key!=null) key = mapKey(key);
 			ret.add(new Tuple2<String,String>(key, kv._2));
 		}
+		logger.debug(String.format("after preprocess:%s", ret));
 		return ret;
 	}
 	
 	//Files to KV
-	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaRDD<String> inputfiles, JavaSparkContext jsc, InputFormatType ift, SparkSession spark){
+	public JavaPairRDD<String, String> sparkProcessFilesToKV(JavaPairRDD<String, String> inputfiles, JavaSparkContext jsc, InputFormatType ift, SparkSession spark){
 		Class<? extends InputFormat<LongWritable, Text>> inputFormatClass = getInputFormat(ift);
 		final InputFormatType realIft = (ift==InputFormatType.Text?InputFormatType.CombineWithFileNameText:ift);
 		if (ift==InputFormatType.Text){
@@ -358,9 +346,9 @@ public abstract class ETLCmd implements Serializable{
 		}
 		copyConf();
 		JobConf jobConf = new JobConf(this.getHadoopConf());
-		for (String file:inputfiles.collect()){
+		for (Tuple2<String,String> file:inputfiles.collect()){
 			logger.info(String.format("process path:%s", file));
-			FileInputFormat.addInputPath(jobConf, new Path(file));
+			FileInputFormat.addInputPath(jobConf, new Path(file._2));
 		}
 		JavaPairRDD<LongWritable, Text> content = jsc.newAPIHadoopRDD(jobConf, inputFormatClass, LongWritable.class, Text.class);
 		JavaPairRDD<String, String> tprdd = null;
@@ -395,7 +383,9 @@ public abstract class ETLCmd implements Serializable{
 	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc, 
 			InputFormatType ift, SparkSession spark){
 		JavaPairRDD<String,String> processedInput = input;
-		logger.info("pathFilter:" + pathFilters);
+		/*
+		//file filter is not needed for spark
+		logger.info("pathFilter:" + Arrays.asList(pathFilters));
 		if (pathFilters!=null && pathFilters.length>0){
 			processedInput = input.filter(new Function<Tuple2<String,String>, Boolean>(){
 				private static final long serialVersionUID = 1L;
@@ -411,6 +401,11 @@ public abstract class ETLCmd implements Serializable{
 				}
 			});
 		}
+		//to be removed
+		if (processedInput.count()==0){
+			logger.error(String.format("no input after filter:%s", Arrays.asList(pathFilters)));
+		}
+		*/
 		if (ift!=null){
 			processedInput = processedInput.flatMapToPair(new PairFlatMapFunction<Tuple2<String, String>, String, String>(){
 				private static final long serialVersionUID = 1L;
@@ -450,6 +445,9 @@ public abstract class ETLCmd implements Serializable{
 				public Iterator<Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
 					init();
 					List<Tuple2<String, String>> ret1 = flatMapToPair(t._1, t._2, null);
+					//debug
+					logger.debug(String.format("flatMapToPair process: %s", t));
+					logger.debug(String.format("flatMapToPair return: %s", ret1));
 					if (ret1!=null) 
 						return ret1.iterator();
 					else 
@@ -478,24 +476,6 @@ public abstract class ETLCmd implements Serializable{
 				return csvgroup;
 			}
 		}
-	}
-	
-	//V to V
-	public JavaRDD<String> sparkProcess(JavaRDD<String> input, JavaSparkContext jsc, InputFormatType ift, SparkSession spark){
-		return input.flatMap(new FlatMapFunction<String,String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Iterator<String> call(String t) throws Exception {
-				List<Tuple2<String,String>> retlist = flatMapToPair(null, t, null);
-				List<String> keylist = new ArrayList<String>();
-				if (retlist!=null){
-					for (Tuple2<String,String> ret:retlist){
-						keylist.add(ret._1);
-					}
-				}
-				return keylist.iterator();
-			}
-		});
 	}
 	
 	/**
@@ -536,24 +516,6 @@ public abstract class ETLCmd implements Serializable{
 			}
 		}
 		return null;
-	}
-	
-	/**
-	 * reduce function in map-reduce mode
-	 * return List of [newkey, newValue, baseOutputPath]
-	 * return null, means done in the subclass
-	 * set baseOutputPath to ETLCmd.SINGLE_TABLE for single table
-	 * set newValue to null, if output line results
-	 * @return list of newKey, newValue, baseOutputPath
-	 */
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<Tuple3<String, String, String>> retList = this.reduceByKey(key.toString(), values, context, mos);
-		List<String[]> retStringlist = new ArrayList<String[]>();
-		for(Tuple3<String, String, String> ret:retList){
-			retStringlist.add(new String[]{ret._1(), ret._2(), ret._3()});
-		}	
-		return retStringlist;
 	}
 	
 	/**
