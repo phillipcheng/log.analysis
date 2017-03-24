@@ -1,5 +1,6 @@
 package etl.cmd;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import bdap.util.Util;
 import etl.engine.ETLCmd;
-
+import etl.engine.EngineUtil;
 import etl.engine.LogicSchema;
 import etl.engine.types.MRMode;
 import etl.engine.types.OutputType;
@@ -29,7 +30,7 @@ import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
 import scala.Tuple3;
 
-public class IncrementalLoadCmd extends SchemaETLCmd {
+public class IncrementalLoadCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(IncrementalLoadCmd.class);
@@ -48,7 +49,7 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 	private String[] tables;
 	private String defaultValue;
 	private transient CompiledScript tableMappingCS=null;
-	private Map<String,TableOpConfig> tableOpConfigMap=new HashMap<String,TableOpConfig>();
+	private transient Map<String,TableOpConfig> tableOpConfigMap=null;
 	
 	public IncrementalLoadCmd(){
 		super();
@@ -75,7 +76,7 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		tableKey=super.getCfgString(cfgkey_table_key, null);
 		tables=super.getCfgStringArray(cfgkey_tables);
 		if(tables==null) tables=new String[0];
-		tableOpConfigMap=initTableOpConfig();
+		initTableOpConfig();
 		defaultValue = super.getCfgString(cfgkey_default_value, null);
 		//Read table name mapping expression
 		String tableNameMappingExp=this.getCfgString(cfgkey_table_mapping, null);
@@ -205,25 +206,29 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 	
 	@Override
 	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values,
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos){		
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{		
 		String pathName = key.toString();
 		int lastSep = pathName.lastIndexOf("/");
-		String fileName = pathName.substring(lastSep + 1);
-		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
+		String fileName = pathName.substring(lastSep+1);
 		Iterator<? extends Object> it = values.iterator();
-		while (it.hasNext()) {
+		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
+		while (it.hasNext()){
 			String v = it.next().toString();
-			if (super.getOutputType() == OutputType.multiple) {
-				ret.add(new Tuple3<String, String, String>(v, null, fileName.toString()));
-			} else {
-				ret.add(new Tuple3<String, String, String>(v, null, ETLCmd.SINGLE_TABLE));
+			String tableName = ETLCmd.SINGLE_TABLE;
+			if (super.getOutputType()==OutputType.multiple){
+				tableName = fileName.toString();
+			}
+			if (context!=null){//map reduce
+				EngineUtil.processReduceKeyValue(v, null, tableName, context, mos);
+			}else{
+				ret.add(new Tuple3<String, String, String>(v, null, tableName));
 			}
 		}
 		return ret;
 	}
 	
 	public Map<String,TableOpConfig> initTableOpConfig(){
-		Map<String,TableOpConfig> tableOpConfigMap=new HashMap<String,TableOpConfig>();
+		tableOpConfigMap=new HashMap<String,TableOpConfig>();
 		for(String table:tables){
 			TableOpConfig tableOpConfig=getTableOpConfig(table);
 			tableOpConfigMap.put(table, tableOpConfig);
@@ -263,7 +268,11 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 	}
 	
 	
-	public class TableOpConfig{
+	public class TableOpConfig implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		private List<FieldOp> fieldOps;
 		
 		public TableOpConfig(List<FieldOp> fieldOps) {
@@ -279,7 +288,11 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 		
 	}
 	
-	public class FieldOp{
+	public class FieldOp implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		public static final int OP_TYPE_SET=1;
 		public static final int OP_TYPE_SET_WHEN_EXIST=2;
 		
@@ -293,14 +306,14 @@ public class IncrementalLoadCmd extends SchemaETLCmd {
 				Map<String, Object> allVars=new HashMap<String, Object>();
 				allVars.putAll(variables);
 				allVars.put("record", record);
-				String value=ScriptEngineUtil.eval(valCS, allVars);
+				String value=(String)ScriptEngineUtil.evalObject(valCS, allVars);
 				record.put(fieldName, value);
 			}else if(opType==OP_TYPE_SET_WHEN_EXIST){
 				if(record.containsKey(checkFieldName)){
 					Map<String, Object> allVars=new HashMap<String, Object>();
 					allVars.putAll(variables);
 					allVars.put("record", record);
-					String value=ScriptEngineUtil.eval(valCS, allVars);
+					String value=(String)ScriptEngineUtil.evalObject(valCS, allVars);
 					record.put(fieldName, value);
 				}
 			}
