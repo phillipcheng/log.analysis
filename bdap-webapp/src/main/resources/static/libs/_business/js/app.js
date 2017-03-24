@@ -206,7 +206,7 @@ var app = {
 			for(var i=0;i<4;i++){
 				if(nodeObj["inLets"].length>=(i+1)){
 					propertyObj['inLets'].push({
-						id: nodeObj["inLets"][i]["id"],
+						id: nodeObj["inLets"][i]["id"]||(gId + '_InData_'+i),
 						name: nodeObj["inLets"][i]["name"],
 						dataName: nodeObj["inLets"][i]["dataName"],
 						show: false,
@@ -224,7 +224,7 @@ var app = {
 				
 				if(nodeObj["outlets"].length>=(i+1)){
 					propertyObj['outlets'].push({
-						id: nodeObj["outlets"][i]["id"],
+						id: nodeObj["outlets"][i]["id"]||(gId + '_OutData_'+i),
 						name: nodeObj["outlets"][i]["name"],
 						dataName: nodeObj["outlets"][i]["dataName"],
 						show: false,

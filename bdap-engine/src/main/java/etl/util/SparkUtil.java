@@ -25,11 +25,6 @@ public class SparkUtil {
 		return jsc.parallelize(Arrays.asList(new String[]{str}));
 	}
 	
-	//
-	public static JavaRDD<String> fromFile(String paths, JavaSparkContext jsc){
-		return jsc.textFile(paths);
-	}
-	
 	//return the file path the key, line as value
 	public static JavaPairRDD<String, String> fromFileKeyValue(String paths, JavaSparkContext jsc, Configuration conf, String baseOutput){
 		return jsc.newAPIHadoopFile(paths, FilenameTextInputFormat.class, Text.class, Text.class, conf).mapToPair(
@@ -46,7 +41,7 @@ public class SparkUtil {
 	}
 	
 	//
-	public static JavaRDD<String> filterPairRDD(JavaPairRDD<String,String> input, String key){
+	public static JavaPairRDD<String, String> filterPairRDD(JavaPairRDD<String,String> input, String key){
 		return input.filter(new Function<Tuple2<String,String>, Boolean>(){
 			@Override
 			public Boolean call(Tuple2<String, String> v1) throws Exception {
@@ -56,11 +51,6 @@ public class SparkUtil {
 					return false;
 				}
 			}
-		}).map(new Function<Tuple2<String, String>, String>(){
-			@Override
-			public String call(Tuple2<String, String> v1) throws Exception {
-				return v1._2;
-			}
 		});
 	}
 	
@@ -69,15 +59,8 @@ public class SparkUtil {
 		if (inputDataType==DataType.Path && 
 				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
 			methodName = "sparkProcessFilesToKV";
-		}else if ((inputDataType==DataType.KeyValue || inputDataType==DataType.KeyPath) &&
-				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
+		}else{
 			methodName = "sparkProcessKeyValue";
-		}else if ((inputDataType==DataType.Value) &&
-				(outputDataType==DataType.Path || outputDataType==DataType.Value)){
-			methodName = "sparkProcess";
-		}else if ((inputDataType==DataType.Value) &&
-				(outputDataType==DataType.KeyPath || outputDataType==DataType.KeyValue)){
-			methodName = "sparkProcessV2KV";
 		}
 		return methodName;
 	}

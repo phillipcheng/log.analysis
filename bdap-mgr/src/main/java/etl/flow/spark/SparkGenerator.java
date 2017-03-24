@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -64,41 +63,36 @@ public class SparkGenerator {
 		//begin class
 		sb.append(String.format("public class %s extends %s implements %s {\n", className, ETLCmd.class.getName(), Serializable.class.getName()));
 		sb.append(String.format("public static final Logger logger = Logger.getLogger(%s.class);\n", className));
+		//declare two masterUrl and resFolder to be used in unit test
+		sb.append("private String masterUrl=null;\n");
+		sb.append("private String resFolder=\"\";\n");
+		sb.append("public void setResFolder(String resFolder) {this.resFolder = resFolder;}\n");
+		sb.append("public void setMasterUrl(String masterUrl) {this.masterUrl = masterUrl;}\n");
 		//gen constructor
 		sb.append(String.format("public %s(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, etl.engine.types.ProcessMode pm){\n", className));
 		sb.append("init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);}\n");
 		//gen sgProcess
 		sb.append("public List<String> sgProcess() {\n");
 		sb.append("List<String> retInfo = new ArrayList<String>();\n");
-		sb.append(String.format("SparkSession spark = SparkSession.builder().appName(getWfName()).getOrCreate();\n"));
+		//create spark context and set master url if not null
+		sb.append("SparkConf conf = new SparkConf().setAppName(getWfName());\n");
+		sb.append("if (masterUrl!=null) conf.setMaster(masterUrl);\n");
+		sb.append("SparkSession spark = SparkSession.builder().config(conf).getOrCreate();\n");
 		sb.append("JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());\n");
 		//gen cmds
 		List<Node> nodes = flow.getActionTopoOrder();
 		List<Data> datas = flow.getData();
 		for (Data data:datas){
 			String varName = JavaCodeGenUtil.getVarName(data.getName());
-			String varType;
-			if (data.getRecordType().equals(DataType.Path) ||data.getRecordType().equals(DataType.Value)){
-				varType = "JavaRDD<String>";
-			}else if (data.getRecordType().equals(DataType.KeyPath) ||data.getRecordType().equals(DataType.KeyValue)){
-				varType = "JavaPairRDD<String,String>";
-			}else{
-				logger.error(String.format("unsupported dataType for data %s", data));
-				return;
-			}
+			String varType = "JavaPairRDD<String,String>";
 			String initValue="null";
 			if (!data.isInstance()){
-				if (data.getRecordType().equals(DataType.Path) ||data.getRecordType().equals(DataType.Value)){
-					//JavaRDD<String> sftpMap= SparkUtil.fromFile(this.getDefaultFs() + "/flow1/sftpcfg/test1.sftp.map.properties", jsc);
-					initValue = String.format("etl.util.SparkUtil.fromFile(this.getDefaultFs() + \"%s\", jsc)", data.getLocation());
-				}else if (data.getRecordType().equals(DataType.KeyPath) ||data.getRecordType().equals(DataType.KeyValue)){
-					if (data.getBaseOutput()!=null){
-						initValue = String.format("etl.util.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), \"%s\")", 
-							data.getLocation(), data.getBaseOutput());
-					}else{
-						initValue = String.format("etl.util.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), null)", 
-								data.getLocation());
-					}
+				if (data.getBaseOutput()!=null){
+					initValue = String.format("etl.util.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), \"%s\")", 
+						data.getLocation(), data.getBaseOutput());
+				}else{
+					initValue = String.format("etl.util.SparkUtil.fromFileKeyValue(this.getDefaultFs() + \"%s\", jsc, getHadoopConf(), null)", 
+							data.getLocation());
 				}
 			}
 			//variable declaration line
@@ -112,7 +106,7 @@ public class SparkGenerator {
 				String cmdVarName = anode.getName() + "Cmd";
 				//cmd declaration line
 				//SftpCmd sftpCmd = new SftpCmd(getWfName(), getWfid(), resFolder + "action_sftp.properties", super.getDefaultFs(), null);
-				sb.append(String.format("%s %s=new %s(getWfName(), getWfid(), \"%s\", super.getDefaultFs(), null);\n", 
+				sb.append(String.format("%s %s=new %s(getWfName(), getWfid(), resFolder + \"%s\", super.getDefaultFs(), null);\n", 
 						cmdClass, cmdVarName, cmdClass, propertyFileName));
 				String outputVarName =null;
 				boolean multiOutput=false;
@@ -172,11 +166,15 @@ public class SparkGenerator {
 						}
 					}
 				}else{//for single output
-					String dn = node.getOutlets().get(0).getDataName();
-					int nusing = flow.getUsingDatasetNum(dn);
-					if (nusing>1){
-						//call cache
-						//sb.append(String.format("%s.cache();\n", outputVarName));
+					if (node.getOutlets().size()>0){
+						String dn = node.getOutlets().get(0).getDataName();
+						int nusing = flow.getUsingDatasetNum(dn);
+						if (nusing>1){
+							//call cache
+							//sb.append(String.format("%s.cache();\n", outputVarName));
+						}
+					}else{
+						logger.warn(String.format("no outlet for node %s", node.getName()));
 					}
 				}
 			}

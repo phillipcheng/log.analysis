@@ -131,7 +131,7 @@ public abstract class DynamicSchemaCmd extends SchemaETLCmd implements Serializa
 	
 	@Override
 	public boolean hasReduce(){
-		return false;
+		return true;
 	}
 	
 	//tableName to csv
