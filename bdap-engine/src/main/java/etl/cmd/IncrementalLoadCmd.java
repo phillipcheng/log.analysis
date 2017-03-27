@@ -199,7 +199,7 @@ public class IncrementalLoadCmd extends SchemaETLCmd implements Serializable{
 				listValues.add(defaultValue);
 			}
 		}
-		logger.info(listValues);
+		logger.debug(listValues);
 		String output = Util.getCsv(listValues, ",", true, false);
 		return Arrays.asList(new Tuple2<String, String>(tfName, output));
 	}
