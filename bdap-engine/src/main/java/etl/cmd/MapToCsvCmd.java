@@ -30,10 +30,10 @@ import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
 import scala.Tuple3;
 
-public class IncrementalLoadCmd extends SchemaETLCmd implements Serializable{
+public class MapToCsvCmd extends SchemaETLCmd implements Serializable{
 	private static final long serialVersionUID = 1L;
 
-	public static final Logger logger = LogManager.getLogger(IncrementalLoadCmd.class);
+	public static final Logger logger = LogManager.getLogger(MapToCsvCmd.class);
 	
 	//cfgkey
 	public static final @ConfigKey String cfgkey_tables="tables";
@@ -51,19 +51,19 @@ public class IncrementalLoadCmd extends SchemaETLCmd implements Serializable{
 	private transient CompiledScript tableMappingCS=null;
 	private transient Map<String,TableOpConfig> tableOpConfigMap=null;
 	
-	public IncrementalLoadCmd(){
+	public MapToCsvCmd(){
 		super();
 	}
 	
-	public IncrementalLoadCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+	public MapToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
-	public IncrementalLoadCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+	public MapToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
 		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
-	public IncrementalLoadCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
+	public MapToCsvCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
 		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	

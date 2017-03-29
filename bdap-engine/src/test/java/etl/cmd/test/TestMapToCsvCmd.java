@@ -9,16 +9,16 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestIncrementalLoadCmd extends TestETLCmd {
+public class TestMapToCsvCmd extends TestETLCmd {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 3432808041331849272L;
-	public static final Logger logger = LogManager.getLogger(TestIncrementalLoadCmd.class);
-	public static final String testCmdClass = "etl.cmd.IncrementalLoadCmd";
+	public static final Logger logger = LogManager.getLogger(TestMapToCsvCmd.class);
+	public static final String testCmdClass = "etl.cmd.MapToCsvCmd";
 
 	public String getResourceSubFolder(){
-		return "incrementalLoad/";
+		return "mapToCsv/";
 	}
 	
 	@Test
