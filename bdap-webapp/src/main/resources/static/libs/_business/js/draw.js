@@ -289,6 +289,13 @@ var _draw = {
 				console.log("typeof k:", k, typeof obj[k]);
 				if(k.localeCompare("name") == 0) {
 					document.getElementById("rightupcssheaderstring").innerText = obj[k];
+					if(obj["cmd.class"]){
+						var txt = obj["cmd.class"];
+						txt = txt.substring(txt.lastIndexOf(".")+1);
+						document.getElementById("rightupcssheaderstringofcmdtype").innerText = "("+txt+")";
+					}else{
+						document.getElementById("rightupcssheaderstringofcmdtype").innerText = "";
+					}
 				}
 				if(notShowProperty.indexOf(k) == -1) {
 					if(checkedSchemaProperty[k]) {
