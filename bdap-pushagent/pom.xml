@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>bdap</groupId>
 		<artifactId>bdap.parent</artifactId>
-		<version>VVERSIONN</version>
+		<version>r0.5.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 
