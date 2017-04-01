@@ -36,7 +36,7 @@ public class FlowTest {
 			apacheDeployer.getPc().getString("ssh.server.ip", "192.85.247.104"), 
 			apacheDeployer.getPc().getInt("ssh.server.port", 22));
 	
-	private String[] jars = new String[]{"target/bdap.mgr-VVERSIONN-tests.jar"};
+	private String[] jars = new String[]{"target/bdap.mgr-r0.5.0-tests.jar"};
 	
 	public void genSql() throws Exception{
 		String outputSql = "src/test/resources/sql/flow1.sql";
