@@ -113,7 +113,7 @@
             </fileset>
         </copy>
 		<tar destfile="${src}/bdap-r0.5.0.tar" basedir="${dist}"/>
-		<!--gzip destfile="${src}/bdap-r0.5.0.tar.gz" src="${src}/bdap-r0.5.0.tar"/>-->
+		<gzip destfile="${src}/bdap-r0.5.0.tar.gz" src="${src}/bdap-r0.5.0.tar"/>
 	</target>
 	
 	<target name="clean">
