@@ -389,9 +389,9 @@ public class FlowDeployer {
 	}
 	
 	private String startCoordinator(String projectName, String flowName, CoordConf cc){
-		String hdfsProjectFolder = projectService.getHdfsDir(projectName);
+		//String hdfsProjectFolder = projectService.getHdfsDir(projectName);
 		OozieFlowMgr ofm = new OozieFlowMgr(deployMethod);
-		return ofm.executeCoordinator(hdfsProjectFolder, flowName, this, cc);
+		return ofm.executeCoordinator(projectName, flowName, this, cc);
 	}
 	
 	public String runStartCoordinator(String projectName, String flowName, CoordConf cc) {
@@ -451,9 +451,9 @@ public class FlowDeployer {
 			fd.runExecute(prjName, flowName, EngineType.valueOf(engineType));
 		}else if (DeployCmd.runCoordinator.toString().equals(cmd)){
 			int startIdx=3;
-			String startTime=args[startIdx++];
-			String endTime=args[startIdx++];
-			String duration=args[startIdx++];
+			String startTime=args[++startIdx];
+			String endTime=args[++startIdx];
+			String duration=args[++startIdx];
 			CoordConf cc = new CoordConf(startTime, endTime, duration);
 			cc.setCoordPath(String.format("%s/cfg/%s",fd.getPlatformRemoteDist(),FlowDeployer.coordinator_xml));
 			fd.runStartCoordinator(prjName, flowName, cc);

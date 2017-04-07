@@ -12,10 +12,11 @@ do
 done
 
 #copy cfg files
-hdfs dfs -rm -r ${bdap_dir}/cfg
-hdfs dfs -mkdir -p ${bdap_dir}/cfg
+hdfs dfs -rm -r ${bdap_dir}/engine/cfg
+hdfs dfs -mkdir -p ${bdap_dir}/engine/cfg/lib
 
 for f in ../cfg/*
 do
-	hdfs dfs -copyFromLocal -f $f ${bdap_dir}/cfg/`basename $f`
+    hdfs dfs -copyFromLocal -f $f ${bdap_dir}/engine/cfg/`basename $f`
 done
+hdfs dfs -mv ${bdap_dir}/engine/cfg/submitspark.sh ${bdap_dir}/engine/cfg/lib/submitspark.sh
