@@ -2,6 +2,7 @@ package etl.cmd.test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.List;
@@ -24,11 +25,45 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	@Before
 	public void beforeMethod() {
-		org.junit.Assume.assumeTrue(super.isTestSftp());
+//		org.junit.Assume.assumeTrue(super.isTestSftp());
 	}
 	
 	public String getResourceSubFolder(){
 		return "sftp"+File.separator;
+	}
+	
+	@Test
+	public void concat() throws Exception {
+		String cfg = "sftp_concat.properties";
+		
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
+		String ftpFolder = cmd.getFromDirs()[0];
+		String incomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(incomingFolder), true);
+		getFs().mkdirs(new Path(incomingFolder));
+		
+		SftpInfo sftpInfo = EngineUtil.getInstance().getSftpInfo();
+		SftpUtil.sftpFromLocal(sftpInfo, super.getLocalFolder()+"/concatData", "/tmp/sftp2/");
+		
+		
+		cmd.setHost(EngineUtil.getInstance().getEngineProp().getString("sftp.host"));
+		cmd.setUser(EngineUtil.getInstance().getEngineProp().getString("sftp.user"));
+		cmd.setPass(EngineUtil.getInstance().getEngineProp().getString("sftp.pass"));
+		cmd.setPort(Integer.valueOf(EngineUtil.getInstance().getEngineProp().getString("sftp.port")));
+		
+		
+		List<String> result=SftpUtil.sftpList(sftpInfo, "/tmp/sftp2/");
+		System.out.println("Before execute:\n" + String.join("\n", result));
+				
+		cmd.sgProcess();
+
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
+		System.out.println("HDFS File:\n" + String.join("\n", fl));
+		assertTrue(fl.size()==1);
+		String content=HdfsUtil.getContentsFromDfsFiles(EngineUtil.getInstance().getEngineProp().getString("defaultFs"), incomingFolder+"/"+fl.get(0));
+		System.out.println("Concat content:\n" + content);
+		assertEquals(content, "1460678400,1460678400,1798,'0-0-1','SMPPQRA',0,0,0,0,1460678400,1460678400,1798,'0-0-1','SMPPQRB',0,0,0,0,1460727000,1460727000,1798,'0-0-1','FDDBRA',0,0,0,0,1460727000,1460727000,1798,'0-0-1','DR2RA',0,0,0,0,1460727000,1460727000,1798,'0-0-1','DR4RA',0,0,0,0");
+				
 	}
 	
 	@Test

@@ -22,7 +22,7 @@ var _node_max_width = 300;
 
 var _node_max_property_width = 280;
 
-var USER_NAME = "george";
+var USER_NAME = "dbadmin";
 var WEB_IP = "127.0.0.1";
 var WEB_PORT = "8080";
 if(window.location.hostname != null && window.location.port != null){
