@@ -11,38 +11,27 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-//log4j2
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.MapFunction;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.sql.SparkSession;
+
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+//log4j2
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
-
-import bdap.util.HdfsUtil;
-import bdap.util.ParamUtil;
-
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
+import bdap.util.ParamUtil;
 import etl.engine.ETLCmd;
-import etl.engine.types.InputFormatType;
 import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
@@ -73,6 +62,7 @@ public class SftpCmd extends ETLCmd {
 	public static final @ConfigKey(type=Boolean.class) String cfgkey_names_only="sftp.names.only";
 	public static final @ConfigKey(defaultValue="default") String cfgkey_output_key="output.key";
 	public static final @ConfigKey(defaultValue="false") String cfgkey_from_local="from.local";
+	public static final @ConfigKey(defaultValue="none") String cfgkey_merge_mode = "merge.mode";
 	
 	public static final String paramkey_src_file="src.file";
 
@@ -97,6 +87,7 @@ public class SftpCmd extends ETLCmd {
 	private boolean deleteOnly=false;//delete source files without tranfer them
 	private String outputKey; //the group name/output key of the files
 	private boolean fromLocal=false; //copy to hdfs from local folder, for windows based testing, hard to setup sftp server
+	private String mergeMode="none"; 
 	
 	public SftpCmd(){
 		super();
@@ -141,6 +132,8 @@ public class SftpCmd extends ETLCmd {
 		this.outputKey = super.getCfgString(cfgkey_output_key, output_default_key);
 		deleteOnly = super.getCfgBoolean(cfgkey_delete_only, false);
 		fromLocal = super.getCfgBoolean(cfgkey_from_local, false);
+		
+		this.mergeMode = super.getCfgString(cfgkey_merge_mode, mergeMode);
 	}
 
 	public List<String> process(String row) throws Exception {
@@ -247,13 +240,18 @@ public class SftpCmd extends ETLCmd {
 				}
 				channel.connect();
 				sftpChannel = (ChannelSftp) channel;
-				for (String fromDir:fromDirs){
-					files.addAll(
-						dirCopy(sftpChannel, fromDir, incomingFolder, 0)
-					);
-					
-					if (this.fileLimit>0 && files.size()>=this.fileLimit)
-						break;
+				
+				if("concat".equals(this.mergeMode)){ //MergeMode==concat file
+					files.addAll(sftpConcatCopy(sftpChannel, fromDirs, incomingFolder));
+				}else{ //MergeMode==None
+					for (String fromDir:fromDirs){
+						files.addAll(
+							dirCopy(sftpChannel, fromDir, incomingFolder, 0)
+						);
+						
+						if (this.fileLimit>0 && files.size()>=this.fileLimit)
+							break;
+					}
 				}
 			} catch (Exception e) {
 				logger.error("Exception while processing SFTP:", e);
@@ -274,9 +272,126 @@ public class SftpCmd extends ETLCmd {
 				}
 				return outputList;
 			}
+		}		
+		return files;
+	}
+	
+	/*
+	 * From same host same source dir files' content will concat into a single file with the name is <host>_<fromDir>. <fromDir> replace / as .
+	 * If source file is file read in middle, it won't rollback. 
+	 */
+	private List<String> sftpConcatCopy(ChannelSftp sftpChannel, String[] fromDirs, String toDir) throws SftpException{
+		List<String> files=new ArrayList<String>();
+		FSDataOutputStream fsos=null;
+		
+		if (!toDir.endsWith(separator)){
+			toDir += separator;
 		}
 		
-		return files;
+		for(String fromDir:fromDirs){
+			String destFile=toDir+this.host+"_"+fromDir.replaceAll(separator, ".");
+			Path pTarget=new Path(destFile);
+			try {
+				fsos=fs.create(pTarget, true);
+			} catch (IOException e) {
+				logger.error(String.format("Create merge file:%s failed", pTarget.getName()),e);
+				break;
+			}
+			files.add(destFile);
+			try{
+				sftpConcat(sftpChannel,fromDir, fsos,0);
+			} catch (SftpException e) {
+				throw e;
+			} finally{
+				if(fsos!=null){
+					try {
+						fsos.close();
+					} catch (IOException e) {
+						logger.error(String.format("Close merge file:%s failed", pTarget.getName()),e);
+					}
+				}
+			}			
+		}		
+		return files;		
+	}
+	
+	private int sftpConcat(ChannelSftp sftpChannel, String fromDir, OutputStream fsos, int numProcessed) throws SftpException {
+		InputStream  is=null;
+
+		if (!fromDir.endsWith(separator)) {
+			fromDir += separator;
+		}
+
+		logger.info(String.format("sftp folder:%s, filter:%s", fromDir, fileFilter));
+		sftpChannel.cd(fromDir);
+		Vector<LsEntry> v = sftpChannel.ls(fileFilter);
+
+		for (LsEntry entry : v) {
+			if (!entry.getAttrs().isDir()) {
+				String srcFile = fromDir + entry.getFilename();
+				logger.info(String.format("Merge file %s", srcFile));
+				int getRetryCntTemp = 1; // reset the count to 1 for every file
+				long transferedBytes = 0; //used to handle exception for re-transfer
+				boolean success=false;
+				while (getRetryCntTemp <= sftpGetRetryCount) {
+					try {
+						is= sftpChannel.get(srcFile);
+						if(transferedBytes!=0){
+							is.skip(transferedBytes); //if failed before, skip the transfered bytes
+						}
+						transferedBytes+=IOUtils.copy(is, fsos);
+						numProcessed++;
+						success=true;
+						break;
+					} catch (Exception e) {
+						logger.error("Exception during transferring the file.", e);
+						if (getRetryCntTemp == sftpGetRetryCount) {
+							logger.info("Copying" + srcFile + "failed Retried for maximum times");
+							break;
+						}
+						getRetryCntTemp++;
+						logger.info("Copying" + srcFile + "failed,Retrying..." + getRetryCntTemp);
+						try {
+							Thread.sleep(this.sftpGetRetryWait);
+						} catch (InterruptedException e1) {
+							logger.error(e.getMessage(), e);
+						}
+					} finally {	
+						if (is != null) {
+							try {
+								is.close();
+								is=null;
+							} catch (IOException e) {
+								logger.error(e.getMessage(), e);
+							}
+						}
+						if (success){
+							// deleting file one by one if sftp.clean is enabled
+							if (sftpClean) {
+								logger.info("Deleting file:" + srcFile);
+								try {
+									sftpChannel.rm(srcFile);
+								}catch(Exception e){
+									logger.error("", e);
+								}
+							}
+						}
+					}
+				}
+				
+				if (this.fileLimit > 0 && numProcessed >= this.fileLimit) {
+					logger.info(String.format("file limit %d reached, stop processing.", numProcessed));
+					break;
+				}
+			} else if (this.recursive) {
+				numProcessed = sftpConcat(sftpChannel, fromDir, fsos, numProcessed);
+				if (this.fileLimit > 0 && numProcessed >= this.fileLimit) {
+					logger.info(String.format("file limit %d reached, stop processing.", numProcessed));
+					break;
+				}
+			}
+		}
+		return numProcessed;
 	}
 	
 	private List<String> dirCopy(ChannelSftp sftpChannel, String fromDir, String toDir, int numProcessed) throws SftpException {
