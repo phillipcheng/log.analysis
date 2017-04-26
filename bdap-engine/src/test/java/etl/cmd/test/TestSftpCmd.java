@@ -60,7 +60,7 @@ public class TestSftpCmd extends TestETLCmd {
 		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
 		System.out.println("HDFS File:\n" + String.join("\n", fl));
 		assertTrue(fl.size()==1);
-		String content=HdfsUtil.getContentsFromDfsFiles(EngineUtil.getInstance().getEngineProp().getString("defaultFs"), incomingFolder+"/"+fl.get(0));
+		String content=HdfsUtil.getContentsFromDfsFiles(EngineUtil.getInstance().getEngineProp().getString("defaultFs"), incomingFolder+"/"+fl.get(0),"*");
 		System.out.println("Concat content:\n" + content);
 		assertEquals(content, "1460678400,1460678400,1798,'0-0-1','SMPPQRA',0,0,0,0,1460678400,1460678400,1798,'0-0-1','SMPPQRB',0,0,0,0,1460727000,1460727000,1798,'0-0-1','FDDBRA',0,0,0,0,1460727000,1460727000,1798,'0-0-1','DR2RA',0,0,0,0,1460727000,1460727000,1798,'0-0-1','DR4RA',0,0,0,0");
 				
