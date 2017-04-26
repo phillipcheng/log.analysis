@@ -18,7 +18,6 @@ public class ExpPathFilter {
 	
 	
 	public boolean accept(String path) {
-		logger.info("path" + path);
 		String[] pathGlobExps = orgPathFilter.split(",");
 		pathRegExps = new Pattern[pathGlobExps.length];
 		for (int i=0; i<pathGlobExps.length; i++){
@@ -38,7 +37,7 @@ public class ExpPathFilter {
 				Pattern pattern = pathRegExps[i];
 				Matcher m = pattern.matcher(path);
 				if (m.matches()){
-					logger.info(String.format("path %s matched with %s", path, orgPathFilter));
+					logger.debug(String.format("path %s matched with %s", path, orgPathFilter));
 					return true;
 				}
 			}
