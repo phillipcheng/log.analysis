@@ -111,10 +111,10 @@ public class OozieGenerator {
 					//the content of the input are path, we need to get the content of those paths
 					//${getContentsFromDfsFiles(nameNode, concat(concat('/femtocell/femto/filenameupdate_output/',wf:id()),'/'))}
 					if(pathFilter!=null && pathFilter.size()>0){
-						inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'),'%s')}", 
+						inputDir = String.format("${getContentsFromDfsFilesByPathFilter(nameNode, concat(concat('%s',%s),'/%s'),'%s')}", 
 								d.getLocation(), wfid_in_fun, baseoutput,String.join(",", pathFilter));
 					}else{
-						inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'),'*')}", 
+						inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'))}", 
 								d.getLocation(), wfid_in_fun, baseoutput);
 					}
 				}else{

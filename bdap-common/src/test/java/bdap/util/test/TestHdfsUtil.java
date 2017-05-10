@@ -11,7 +11,7 @@ public class TestHdfsUtil {
 	@Test
 	public void testGetContentsFromDfsFiles() throws Exception{
 //		/spc/dumpfile/rawinput/${wf:id()}/*
-		String str = HdfsUtil.getContentsFromDfsFiles("hdfs://192.85.247.104:19000", "/spc/dumpfile/ftpout/0002084-170104195305044-oozie-dbad-W/*","*spc_lic_limits_*");
+		String str = HdfsUtil.getContentsFromDfsFilesByPathFilter("hdfs://192.85.247.104:19000", "/spc/dumpfile/ftpout/0002084-170104195305044-oozie-dbad-W/*","*spc_lic_limits_*");
 		logger.info(String.format("contents:\n%s", str));
 	}
 }

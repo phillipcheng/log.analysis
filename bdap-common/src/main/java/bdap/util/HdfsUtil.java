@@ -237,7 +237,18 @@ public class HdfsUtil {
 	}
 	
 	//used in oozie expression
-	public static String getContentsFromDfsFiles(String defaultFs, String filePattern,String pathFilter) throws Exception{
+	public static String getContentsFromDfsFiles(String defaultFs, String filePattern) throws Exception{
+		String globFilePattern = filePattern+"*";
+		FileSystem fs = getHadoopFs(defaultFs);
+		FileStatus[] fstl = fs.globStatus(new Path(globFilePattern));
+		List<String> contents = new ArrayList<String>();
+		for (FileStatus fst:fstl){
+			contents.addAll(stringsFromDfsFile(fs, fst.getPath().toString()));
+		}
+		return String.join(",", contents);
+	}
+	
+	public static String getContentsFromDfsFilesByPathFilter(String defaultFs, String filePattern,String pathFilter) throws Exception{
 		String globFilePattern = filePattern+"*";
 		FileSystem fs = getHadoopFs(defaultFs);
 		FileStatus[] fstl = fs.globStatus(new Path(globFilePattern));
