@@ -10,7 +10,8 @@ public class TestHdfsUtil {
 	public static final Logger logger = LogManager.getLogger(TestHdfsUtil.class);
 	@Test
 	public void testGetContentsFromDfsFiles() throws Exception{
-		String str = HdfsUtil.getContentsFromDfsFiles("hdfs://127.0.0.1:19000", "/abcd/");
+//		/spc/dumpfile/rawinput/${wf:id()}/*
+		String str = HdfsUtil.getContentsFromDfsFilesByPathFilter("hdfs://192.85.247.104:19000", "/spc/dumpfile/ftpout/0002084-170104195305044-oozie-dbad-W/*","*spc_lic_limits_*");
 		logger.info(String.format("contents:\n%s", str));
 	}
 }
