@@ -3,7 +3,7 @@
   <parent>
     <artifactId>bdap.parent</artifactId>
     <groupId>bdap</groupId>
-    <version>VVERSIONN</version>
+    <version>r0.5.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>bdap.schemagen</artifactId>

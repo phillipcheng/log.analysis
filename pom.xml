@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>bdap</groupId>
 	<artifactId>bdap.parent</artifactId>
-	<version>VVERSIONN</version>
+	<version>r0.5.0</version>
 	<name>bdap.parent</name>
 	<packaging>pom</packaging>
 	
