@@ -97,7 +97,7 @@ public class OozieGenerator {
 		}
 	}
 	
-	private static String getInputDir(Data d, InputFormatType ift, DataType dt){
+	private static String getInputDir(Data d, InputFormatType ift, DataType dt,List<String> pathFilter){
 		String baseoutput = null;
 		if (d.getBaseOutput()==null){
 			baseoutput="*";
@@ -110,8 +110,13 @@ public class OozieGenerator {
 				if (ift!=InputFormatType.FileName && dt==DataType.Path){
 					//the content of the input are path, we need to get the content of those paths
 					//${getContentsFromDfsFiles(nameNode, concat(concat('/femtocell/femto/filenameupdate_output/',wf:id()),'/'))}
-					inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'))}", 
-							d.getLocation(), wfid_in_fun, baseoutput);
+					if(pathFilter!=null && pathFilter.size()>0){
+						inputDir = String.format("${getContentsFromDfsFilesByPathFilter(nameNode, concat(concat('%s',%s),'/%s'),'%s')}", 
+								d.getLocation(), wfid_in_fun, baseoutput,String.join(",", pathFilter));
+					}else{
+						inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'))}", 
+								d.getLocation(), wfid_in_fun, baseoutput);
+					}
 				}else{
 					inputDir = String.format("%s%s/%s",d.getLocation(),wfid,baseoutput);
 				}
@@ -174,6 +179,22 @@ public class OozieGenerator {
 		//input and output configuration
 		List<NodeLet> inlets = an.getInLets();
 		List<String> inputDataDirs = new ArrayList<String>();
+		//add system properties
+		Map<String, Object> sysProperties = an.getSysProperties();
+		List<String> pathFilter = new ArrayList<String>();
+		for (String key: sysProperties.keySet()){
+			if (key.equals(GlobExpPathFilter.cfgkey_path_filters)){
+				CONFIGURATION.Property add = new CONFIGURATION.Property();
+				add.setName(prop_input_pathfilter);
+				add.setValue(prop_input_path_globexpfilter);
+				pl.add(add);
+			}
+			CONFIGURATION.Property cp = new CONFIGURATION.Property();
+			cp.setName(key);
+			cp.setValue(String.valueOf(sysProperties.get(key)));
+			pl.add(cp);
+			pathFilter.add(String.valueOf(sysProperties.get(key)));
+		}
 		//all the input dataset to this action should have the same inputformattype, datatype/recordtype
 		InputFormatType ift = null;
 		DataType dt = null;
@@ -207,7 +228,7 @@ public class OozieGenerator {
 							return null;
 						}
 					}
-					inputDataDirs.add(getInputDir(d, ift, dt));
+					inputDataDirs.add(getInputDir(d, ift, dt,pathFilter));
 				}
 			}
 		}
@@ -295,20 +316,6 @@ public class OozieGenerator {
 		cfgPropertiesCp.setName(EngineConf.cfgkey_staticconfigfile);
 		cfgPropertiesCp.setValue(String.format("action_%s.properties", an.getName()));
 		pl.add(cfgPropertiesCp);
-		//add system properties
-		Map<String, Object> sysProperties = an.getSysProperties();
-		for (String key: sysProperties.keySet()){
-			if (key.equals(GlobExpPathFilter.cfgkey_path_filters)){
-				CONFIGURATION.Property add = new CONFIGURATION.Property();
-				add.setName(prop_input_pathfilter);
-				add.setValue(prop_input_path_globexpfilter);
-				pl.add(add);
-			}
-			CONFIGURATION.Property cp = new CONFIGURATION.Property();
-			cp.setName(key);
-			cp.setValue(String.valueOf(sysProperties.get(key)));
-			pl.add(cp);
-		}
 		return mr;
 	}
 	

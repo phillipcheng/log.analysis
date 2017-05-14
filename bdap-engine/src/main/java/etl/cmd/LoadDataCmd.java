@@ -2,16 +2,17 @@ package etl.cmd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.script.CompiledScript;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -46,12 +47,17 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public static final @ConfigKey(type=String[].class) String cfgkey_table_names="table.names";
 	public static final @ConfigKey String cfgkey_dbfile_path="dbfile.path";//for spark to generate dbinput files
 	public static final @ConfigKey String cfgkey_delimiter_exp="delimiter.exp";//for spark to generate dbinput files
+	//before execute load for each table, it allows user to specify what kind of other sql need to execute in advance. like clean table before load new data.
+	public static final @ConfigKey String cfgkey_before_load_table_sqls_exp="before.load.table.sqls.exp";
+	//before execute load for each table, it will clean table if specified in the paramater. -ALL- means all table will be cleaned. Only used has table name used.
+	public static final @ConfigKey String cfgkey_clean_tables="clean.tables";
 	
 	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
 	public static final String VAR_USERNAME="userName";
 	public static final String VAR_CSV_FILE="csvFileName";
 	public static final String VAR_TABLE_NAME="tableName";
+	public static final String VAR_CSV_FILES="csvFileNames";
 	
 	private String webhdfsRoot="";
 	private String userName;
@@ -64,6 +70,8 @@ public class LoadDataCmd extends SchemaETLCmd{
 	private transient CompiledScript delimiterCS;
 
 	private String[] tableNames;
+	private transient CompiledScript beforeLoadTableSqlsCS=null;
+	private List<String> cleanTableNames=new ArrayList<String>();
 	
 	
 	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
@@ -109,6 +117,17 @@ public class LoadDataCmd extends SchemaETLCmd{
 		if(delimiterExp!=null){
 			delimiterCS=ScriptEngineUtil.compileScript(delimiterExp);
 		}
+		
+		String beforeLoadTableSqlsExp=super.getCfgString(cfgkey_before_load_table_sqls_exp, null);
+		if(beforeLoadTableSqlsExp!=null){
+			beforeLoadTableSqlsCS=ScriptEngineUtil.compileScript(beforeLoadTableSqlsExp);
+		}
+		
+		String[] cleanTables=super.getCfgStringArray(cfgkey_clean_tables);
+		if(cleanTables!=null){
+			cleanTableNames=Arrays.asList(cleanTables);
+		}
+		
 	}
 	
 	private List<String> prepareTableCopySQLs(String tableName, String[] files) {
@@ -224,19 +243,49 @@ public class LoadDataCmd extends SchemaETLCmd{
 	private int executeSqls(String key, String[] files) throws Exception{
 		super.init();
 		if (this.tableNames==null ||tableNames.length==0||Arrays.asList(this.tableNames).contains(key)){
-			List<String> copysqls = new ArrayList<String>();
+			List<String> sqls = new ArrayList<String>();
 			logger.info(String.format("in reduce for key:%s, we need to load file:%s", key.toString(), Arrays.toString(files)));
-			if (NO_TABLE_CONFIGURED.equals(key.toString()))
-				copysqls.addAll(prepareTableCopySQLs(null, files));
-			else
-				copysqls.addAll(prepareTableCopySQLs(key.toString(), files));
+			
+			String beforeLoadTableSQL=generateBeforeLoadTableSQL(key,files);
+			
+			if(beforeLoadTableSQL!=null || beforeLoadTableSQL.isEmpty()){
+				sqls.add(beforeLoadTableSQL);
+			}
+			
+			if (NO_TABLE_CONFIGURED.equals(key.toString())){
+				sqls.addAll(prepareTableCopySQLs(null, files));
+			} else {
+				if(cleanTableNames.contains("-ALL-") || cleanTableNames.contains(key)){
+					sqls.add(generateCleanTableSQL(key));
+				}
+				sqls.addAll(prepareTableCopySQLs(key.toString(), files));
+			}			
+			
 			if (super.getDbtype()!=DBType.NONE){
-				return DBUtil.executeSqls(copysqls, super.getPc());
+				logger.info("Following SQLs would be executed:\n{}", String.join("\n", sqls));
+				return DBUtil.executeSqls(sqls, super.getPc());
 			}
 		}else{
 			logger.warn(String.format("skip loading table:%s, tableNames:%s", key, Arrays.asList(this.tableNames)));
 		}
 		return 0;
+	}
+	
+	private String generateCleanTableSQL(String tableName){
+		return String.format("truncate table %s.%s;", dbPrefix,tableName);
+	}
+	
+	private String generateBeforeLoadTableSQL(String key, String[] files){
+		String sql=null;		
+		if(beforeLoadTableSqlsCS!=null){
+			Map<String,Object> variables=new HashMap<String,Object>();
+			variables.putAll(this.getSystemVariables());
+			variables.put(VAR_TABLE_NAME, key);
+			variables.put(VAR_CSV_FILES, files);
+			sql=ScriptEngineUtil.eval(this.beforeLoadTableSqlsCS, variables);
+			logger.info("Generate before load table SQL:{}", sql);
+		}		
+		return sql;
 	}
 	
 	@Override
