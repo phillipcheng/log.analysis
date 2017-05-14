@@ -41,6 +41,6 @@ build.log
 
 #SHITTY output not in target directory
 build.log
-/bdap-VVERSIONN/
-/bdap-VVERSIONN.tar
-/bdap-VVERSIONN.tar.gz
+/bdap-r0.5.0/
+/bdap-r0.5.0.tar
+/bdap-r0.5.0.tar.gz

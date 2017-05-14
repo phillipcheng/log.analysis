@@ -1,18 +1,24 @@
 package etl.cmd.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.Reader;
+import org.apache.hadoop.io.Text;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+
 import bdap.util.HdfsUtil;
 import bdap.util.SftpInfo;
 import bdap.util.SftpUtil;
@@ -30,6 +36,58 @@ public class TestSftpCmd extends TestETLCmd {
 	
 	public String getResourceSubFolder(){
 		return "sftp"+File.separator;
+	}
+	
+	@Test
+	public void mergeAsSequence() throws Exception {
+		String cfg = "sftp_sequence.properties";
+		
+		SftpCmd cmd = new SftpCmd("wf1", null, this.getResourceSubFolder() + cfg, getDefaultFS(), null);
+		String ftpFolder = cmd.getFromDirs()[0];
+		String incomingFolder = cmd.getIncomingFolder();
+		getFs().delete(new Path(incomingFolder), true);
+		getFs().mkdirs(new Path(incomingFolder));
+		
+		SftpInfo sftpInfo = EngineUtil.getInstance().getSftpInfo();
+		SftpUtil.sftpFromLocal(sftpInfo, super.getLocalFolder()+"/concatData", "/tmp/sftp2/");
+		
+		
+		cmd.setHost(EngineUtil.getInstance().getEngineProp().getString("sftp.host"));
+		cmd.setUser(EngineUtil.getInstance().getEngineProp().getString("sftp.user"));
+		cmd.setPass(EngineUtil.getInstance().getEngineProp().getString("sftp.pass"));
+		cmd.setPort(Integer.valueOf(EngineUtil.getInstance().getEngineProp().getString("sftp.port")));
+		
+		
+		List<String> result=SftpUtil.sftpList(sftpInfo, "/tmp/sftp2/");
+		System.out.println("Before execute:\n" + String.join("\n", result));
+				
+		cmd.sgProcess();
+
+		List<String> fl = HdfsUtil.listDfsFile(getFs(), incomingFolder);
+		System.out.println("HDFS File:\n" + String.join("\n", fl));
+		assertTrue(fl.size()==1);
+		String content=HdfsUtil.getContentsFromDfsFiles(EngineUtil.getInstance().getEngineProp().getString("defaultFs"), incomingFolder+"/"+fl.get(0));
+		System.out.println("Sequence content:\n" + content);
+		
+		SequenceFile.Reader reader = new SequenceFile.Reader(this.getConf(), Reader.file(new Path(incomingFolder+"/"+fl.get(0))));  
+		LongWritable key = new LongWritable();
+		Text value = new Text();
+		reader.next(key, value);
+		System.out.println(key);
+		System.out.println(value);
+		assertEquals(0,key.get());
+		assertTrue(value.toString().contains("file1"));
+		assertTrue(value.toString().contains("1460678400,1460678400,1798,'0-0-1','SMPPQRA',0,0,0,0"));
+		assertTrue(value.toString().contains("1460678400,1460678400,1798,'0-0-1','SMPPQRB',0,0,0,0"));
+		reader.next(key, value);		
+		System.out.println(key);
+		System.out.println(value);
+		assertEquals(1,key.get());
+		assertTrue(value.toString().contains("file2"));
+		assertTrue(value.toString().contains("1460727000,1460727000,1798,'0-0-1','FDDBRA',0,0,0,0"));
+		assertTrue(value.toString().contains("1460727000,1460727000,1798,'0-0-1','DR2RA',0,0,0,0"));
+		assertTrue(value.toString().contains("1460727000,1460727000,1798,'0-0-1','DR4RA',0,0,0,0"));
+		IOUtils.closeStream(reader);
 	}
 	
 	@Test
