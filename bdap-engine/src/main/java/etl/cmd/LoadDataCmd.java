@@ -248,7 +248,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 			
 			String beforeLoadTableSQL=generateBeforeLoadTableSQL(key,files);
 			
-			if(beforeLoadTableSQL!=null || beforeLoadTableSQL.isEmpty()){
+			if(beforeLoadTableSQL!=null && !beforeLoadTableSQL.isEmpty()){
 				sqls.add(beforeLoadTableSQL);
 			}
 			
