@@ -42,12 +42,14 @@ public class MapToCsvCmd extends SchemaETLCmd implements Serializable{
 	public static final @ConfigKey String cfgkey_table_set_when_exist="setWhenExist";//table field set operation if condition meet.
 	public static final @ConfigKey String cfgkey_default_value="default.value"; 
 	public static final @ConfigKey String cfgkey_table_mapping="tablename.mapping.exp";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_setfilename_mapping = "tablename.setfilename";
 	
 	public static final String VAR_NAME_ORIGIN_TABLE_NAME="originTableName";
 	
 	private String tableKey;
 	private String[] tables;
 	private String defaultValue;
+	private Boolean tablenametoFilename;
 	private transient CompiledScript tableMappingCS=null;
 	private transient Map<String,TableOpConfig> tableOpConfigMap=null;
 	
@@ -83,6 +85,7 @@ public class MapToCsvCmd extends SchemaETLCmd implements Serializable{
 		if(tableNameMappingExp!=null){
 			tableMappingCS=ScriptEngineUtil.compileScript(tableNameMappingExp);
 		}
+		tablenametoFilename = super.getCfgBoolean(cfgkey_setfilename_mapping, false);
 	}
 	
 	public static Map<String, String> parseLog(String log) throws Exception{
@@ -216,7 +219,12 @@ public class MapToCsvCmd extends SchemaETLCmd implements Serializable{
 			String v = it.next().toString();
 			String tableName = ETLCmd.SINGLE_TABLE;
 			if (super.getOutputType()==OutputType.multiple){
-				tableName = fileName.toString();
+				if(tablenametoFilename && v!=null){
+					tableName = v.split(",")[0];
+				}else{
+					tableName = fileName.toString();
+				}
+				
 			}
 			if (context!=null){//map reduce
 				EngineUtil.processReduceKeyValue(v, null, tableName, context, mos);

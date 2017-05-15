@@ -282,4 +282,86 @@ public class TestLoadDatabaseCmd extends TestETLCmd {
 		assertTrue(output.size()>0);
 		
 	}
+	
+	@Test
+	public void testBeforeLoadTableSQLExecution() throws Exception{
+		String staticCfgName = "beforeLoadTableSqlExecution.properties";
+		String remoteCsvInputFolder = "/test/loadcsv/input/";
+		String remoteCsvOutputFolder = "/test/loadcsv/output/";
+		String schemaFolder="/test/loadcsv/schema/";
+		String localSchemaFileName = "multipleTableSchemas2.txt";
+		String[] csvFileNames = new String[]{"MyCore_Pipeline.csv"};
+		
+		//generate all the data files
+		getFs().delete(new Path(remoteCsvInputFolder), true);
+		getFs().delete(new Path(remoteCsvOutputFolder), true);
+		//
+		//copy schema file
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		//copy csv file
+		for (String csvFileName: csvFileNames){
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+		}
+		
+		LoadDataCmd cmd = new LoadDataCmd("wf1", "wfid1", this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		
+		List<String> sqls=new ArrayList<String>();
+		sqls.add("insert into sgsiwf.MyCore_ (Machine) values('111000')");
+		DBUtil.executeSqls(sqls, cmd.getPc());
+		
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(remoteCsvInputFolder, csvFileNames));
+		
+		List<String> output = super.mrTest(rfifs, remoteCsvOutputFolder, staticCfgName, testCmdClass, CombineFileNameInputFormat.class, 5);
+		logger.info("Output is:"+output);
+		assertTrue(output.size()>0);
+		
+		List<String> contents = DBUtil.checkCsv("select count(*) from sgsiwf.MyCore_ where Machine='111000';", this.getPc(), 1, 1, ",");
+		long size=Long.parseLong(contents.get(0));
+		assertTrue(size==0);
+		
+	}
+	
+	@Test
+	public void cleanTable() throws Exception{
+		String staticCfgName = "cleanTable.properties";
+		String remoteCsvInputFolder = "/test/loadcsv/input/";
+		String remoteCsvOutputFolder = "/test/loadcsv/output/";
+		String schemaFolder="/test/loadcsv/schema/";
+		String localSchemaFileName = "multipleTableSchemas2.txt";
+		String[] csvFileNames = new String[]{"MyCore_Pipeline.csv"};
+		
+		//generate all the data files
+		getFs().delete(new Path(remoteCsvInputFolder), true);
+		getFs().delete(new Path(remoteCsvOutputFolder), true);
+		//
+		//copy schema file
+		getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + localSchemaFileName), new Path(schemaFolder + localSchemaFileName));
+		//copy csv file
+		for (String csvFileName: csvFileNames){
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + csvFileName), new Path(remoteCsvInputFolder + csvFileName));//csv file must be csvfolder/wfid/tableName
+		}
+		
+		LoadDataCmd cmd = new LoadDataCmd("wf1", "wfid1", this.getResourceSubFolder() + staticCfgName, getDefaultFS(), null);
+		
+		DBUtil.executeSqls(cmd.getCreateSqls(), cmd.getPc());
+		
+		List<String> sqls=new ArrayList<String>();
+		sqls.add("insert into sgsiwf.MyCore_ (Machine) values('111000')");
+		DBUtil.executeSqls(sqls, cmd.getPc());
+		
+		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
+		rfifs.add(new Tuple2<String, String[]>(remoteCsvInputFolder, csvFileNames));
+		
+		List<String> output = super.mrTest(rfifs, remoteCsvOutputFolder, staticCfgName, testCmdClass, CombineFileNameInputFormat.class, 5);
+		logger.info("Output is:"+output);
+		assertTrue(output.size()>0);
+		
+		List<String> contents = DBUtil.checkCsv("select count(1) from sgsiwf.MyCore_ where Machine='111000'", this.getPc(), 1, 1, ",");
+		long size=Long.parseLong(contents.get(0));
+		assertTrue(size==0);
+		
+	}
 }

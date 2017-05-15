@@ -248,6 +248,17 @@ public class HdfsUtil {
 		return String.join(",", contents);
 	}
 	
+	public static String getContentsFromDfsFilesByPathFilter(String defaultFs, String filePattern,String pathFilter) throws Exception{
+		String globFilePattern = filePattern+"*";
+		FileSystem fs = getHadoopFs(defaultFs);
+		FileStatus[] fstl = fs.globStatus(new Path(globFilePattern));
+		List<String> contents = new ArrayList<String>();
+		for (FileStatus fst:fstl){
+			contents.addAll(stringsFromDfsFilePathFilter(fs, Arrays.asList(new String[]{fst.getPath().toString()}),pathFilter));
+		}
+		return String.join(",", contents);
+	}
+	
 	public static List<String> stringsFromDfsFile(FileSystem fs, String file){
 		return stringsFromDfsFile(fs, Arrays.asList(new String[]{file}));
 	}
@@ -261,6 +272,35 @@ public class HdfsUtil {
 				String s =null;
 				while ((s=in.readLine())!=null){
 					sl.add(s);
+				}
+			}catch(Exception e){
+				logger.error("", e);
+				return null;
+			}finally{
+				if (in!=null){
+					try{
+						in.close();
+					}catch(Exception e){
+						logger.error("", e);
+					}
+				}
+			}
+		}
+		return sl;
+	}
+	
+	public static List<String> stringsFromDfsFilePathFilter(FileSystem fs, List<String> files,String pathFilter){
+		BufferedReader in = null;
+		List<String> sl = new ArrayList<String>();
+		ExpPathFilter expPathFileter = new ExpPathFilter(pathFilter);
+		for (String file:files){
+			try {
+				in = new BufferedReader(new InputStreamReader(fs.open(new Path(file))));
+				String s =null;
+				while ((s=in.readLine())!=null){
+					if(expPathFileter.accept(s)){
+						sl.add(s);
+					}
 				}
 			}catch(Exception e){
 				logger.error("", e);
