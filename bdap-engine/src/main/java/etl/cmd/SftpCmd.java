@@ -100,8 +100,8 @@ public class SftpCmd extends ETLCmd {
 	
 	//These attributes used for merged as sequence file 
 	private byte[] buffer;
-	private LongWritable key=new LongWritable();
-	private Text value=new Text();
+	private transient LongWritable key=new LongWritable();
+	private transient Text value=new Text();
 	
 	
 	public SftpCmd(){
