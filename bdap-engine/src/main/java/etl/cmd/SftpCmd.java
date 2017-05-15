@@ -100,8 +100,8 @@ public class SftpCmd extends ETLCmd {
 	
 	//These attributes used for merged as sequence file 
 	private byte[] buffer;
-	private transient LongWritable key=new LongWritable();
-	private transient Text value=new Text();
+	private transient LongWritable key;
+	private transient Text value;
 	
 	
 	public SftpCmd(){
@@ -424,6 +424,8 @@ public class SftpCmd extends ETLCmd {
 				CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT);
 		
 		buffer = new byte[bufferSizeValue]; /* Read buffer size set to the same as hdfs io file buffer size */
+		key=new LongWritable();
+		value=new Text();
 		
 		String destFile=generateMergedFilename(toDir,mergeFilePrefix,"seq");
 		Path pTarget=new Path(destFile);
