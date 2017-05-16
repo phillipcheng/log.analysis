@@ -47,10 +47,9 @@ public class TestMapToCsvCmd extends TestETLCmd {
 		
 		List<String> output = super.mrTest(inputFolder, outputFolder, csvtransProp, csvFiles, testCmdClass, false);
 		logger.info("Output is:\n{}",String.join("\n", output));
-		Assert.assertEquals(3,output.size());
-		Assert.assertTrue(output.contains("SPC_TOKENS,2017-03-17 18:09:56,Update,2017-03-17,18:09:56,9728375612,1,AE,EAP,EAP,1,2017-03-17 18:09:56,1489774196220,blank,,grdev1,1,1489774196217,blank"));
-		Assert.assertTrue(output.contains("SPC_TOKENS,2017-03-17 18:09:56,Update,2017-03-17,18:09:56,9728375612,1,AE,EAP,EAP,1,2017-03-17 18:09:56,1489774196220,blank,1,grdev1,1,1489774196217,blank"));
-		Assert.assertTrue(output.contains("SPC_TOKENS,2017-03-17 18:09:56,Insert,2017-03-17,18:09:56,9728375612,1,AE,EAP,EAP,1,2017-03-17 18:09:56,1489774196212,blank,,grdev1,1,1489774196217,blank"));
+		Assert.assertEquals(11,output.size());
+		Assert.assertTrue(output.contains("SPC_IMS_PRIDS,2017-03-23 22:51:13,Update,2017-03-23,22:51:13,9999999123,blank,blank,blank,VCE,2000014,,,"));
+		Assert.assertTrue(output.contains("SPC_IMS_PRIDS,2017-03-23 22:51:10,Insert,2017-03-23,22:51:10,9999999123,blank,dev9123_s1,,V4B,2000014,,,"));
 		
 	}
 }
