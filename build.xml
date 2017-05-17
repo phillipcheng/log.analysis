@@ -1,5 +1,5 @@
 <project name="preload" default="dist" basedir=".">
-	<property name="dist"  location="bdap-r0.5.0"/>
+	<property name="dist"  location="bdap-VVERSIONN"/>
 	<property name="src"  location="."/>
 	<property name="common.target"  location="bdap-common/target"/>
 	<property name="engine.target"  location="bdap-engine/target"/>
@@ -112,8 +112,8 @@
             	<exclude name="flow1/expected/"/>
             </fileset>
         </copy>
-		<tar destfile="${src}/bdap-r0.5.0.tar" basedir="${dist}"/>
-		<gzip destfile="${src}/bdap-r0.5.0.tar.gz" src="${src}/bdap-r0.5.0.tar"/>
+		<tar destfile="${src}/bdap-VVERSIONN.tar" basedir="${dist}"/>
+		<gzip destfile="${src}/bdap-VVERSIONN.tar.gz" src="${src}/bdap-VVERSIONN.tar"/>
 	</target>
 	
 	<target name="clean">

@@ -21,6 +21,6 @@ defaultFs=hdfs://192.85.247.104:19000
 
 hdfs.user=dbadmin
 
-platform.remote.dist=/bdap-r0.5.0/engine
+platform.remote.dist=/bdap-VVERSIONN/engine
 
 action.node.cmds.search.packages=etl.cmd
