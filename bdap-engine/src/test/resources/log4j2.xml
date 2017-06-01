@@ -6,8 +6,8 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="etl" level="debug"/>
-    <Root level="debug">
+    <Logger name="etl" level="info"/>
+    <Root level="info">
       <AppenderRef ref="STDOUT"/>
     </Root>
   </Loggers>
