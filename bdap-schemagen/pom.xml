@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>schema.gen</artifactId>
+	<artifactId>bdap.schemagen</artifactId>
 	
 	<parent>
 		<groupId>bdap</groupId>
 		<artifactId>bdap.parent</artifactId>
-		<version>VERSION</version>
+		<version>VVERSIONN</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -27,17 +27,37 @@
 		<dependency>
 			<groupId>bdap</groupId>
 			<artifactId>bdap.common</artifactId>
-			<version>VERSION</version>
+			<version>VVERSIONN</version>
 		</dependency>
 		<dependency>
 			<groupId>bdap</groupId>
 			<artifactId>bdap.engine</artifactId>
-			<version>VERSION</version>
+			<version>VVERSIONN</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>11.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 		</dependency>
+		<dependency>
+	      <groupId>org.apache.hadoop</groupId>
+	      <artifactId>hadoop-common</artifactId>
+	      <scope>provided</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.apache.hadoop</groupId>
+	      <artifactId>hadoop-hdfs</artifactId>
+	      <scope>provided</scope>
+	    </dependency>
+	     <dependency>
+	       <groupId>org.apache.spark</groupId>
+	       <artifactId>spark-core_2.11</artifactId>
+	       <scope>provided</scope>
+	     </dependency>
 	</dependencies>
 
 	<build>
@@ -64,7 +84,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>bdap.schemagen.tools.SchemaGenerator</mainClass>
+									<mainClass>bdap.schemagen.Main</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

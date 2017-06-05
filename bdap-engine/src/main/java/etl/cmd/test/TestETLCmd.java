@@ -1,60 +1,96 @@
 package etl.cmd.test;
 
 import java.io.File;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 //log4j2
+import etl.util.DateUtil;
+import etl.util.NanoTimeUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.parquet.column.page.PageReadStore;
+import org.apache.parquet.example.data.Group;
+import org.apache.parquet.example.data.simple.NanoTime;
+import org.apache.parquet.example.data.simple.convert.GroupRecordConverter;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
+import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.io.ColumnIOFactory;
+import org.apache.parquet.io.MessageColumnIO;
+import org.apache.parquet.io.RecordReader;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Type;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.SparkSession;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
 
 import bdap.util.EngineConf;
 import bdap.util.HdfsUtil;
 import bdap.util.PropertiesUtil;
+import etl.engine.ETLCmd;
 import etl.engine.InvokeMapper;
-import etl.util.FilenameInputFormat;
+import etl.engine.types.InputFormatType;
+import etl.input.FilenameInputFormat;
+import etl.util.FieldType;
+import etl.util.GlobExpPathFilter;
 import scala.Tuple2;
 
-public abstract class TestETLCmd {
+public abstract class TestETLCmd implements Serializable{
+	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(TestETLCmd.class);
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-	
-	public static final String remoteUser = "dbadmin";
 	
 	private static String cfgProperties="testETLCmd.properties";
 	//private static String cfgProperties="testETLCmd_192.85.247.104.properties";
 	
-	private static String key_localFolder="localFolder";
-	private static String key_projectFolder="projectFolder";
-	private static String key_defaultFs="defaultFs";
-	private static String key_jobTracker="jobTracker";
-	private static String key_test_sftp="test.sftp";
-	private static String key_test_kafka="test.kafka";
-	private static String key_oozie_user="oozie.user";
+	private static final String key_localFolder="localFolder";
+	private static final String key_projectFolder="projectFolder";
+	private static final String key_defaultFs="defaultFs";
+	private static final String key_jobTracker="jobTracker";
+	private static final String key_test_sftp="test.sftp";
+	private static final String key_test_kafka="test.kafka";
+	private static final String key_oozie_user="oozie.user";
+	private static final String key_hdfs_user="hdfs.user";
 	
 	
-	private PropertiesConfiguration pc;
+	private transient PropertiesConfiguration pc;
 	
 	private String localFolder = "";
 	private String projectFolder = "";
-	private FileSystem fs;
+	private transient FileSystem fs;
 	private String defaultFS;
-	private Configuration conf;
+	private transient Configuration conf;//v2
 	private boolean testSftp=true;
 	private boolean testKafka=true;
 	private String oozieUser = "";
@@ -65,49 +101,64 @@ public abstract class TestETLCmd {
 	}
 	
 	@Before
-    public void setUp() {
-		try{
-			pc = PropertiesUtil.getPropertiesConfig(cfgProperties);
-			localFolder = pc.getString(key_localFolder);
-			projectFolder = pc.getString(key_projectFolder);
-			oozieUser = pc.getString(key_oozie_user);
-			setTestSftp(pc.getBoolean(key_test_sftp, true));
-			setTestKafka(pc.getBoolean(key_test_kafka, true));
-			conf = new Configuration();
-			String jobTracker=pc.getString(key_jobTracker);
-			if (jobTracker!=null){
-				String host = jobTracker.substring(0,jobTracker.indexOf(":"));
-				conf.set("mapreduce.jobtracker.address", jobTracker);
-				conf.set("yarn.resourcemanager.hostname", host);
-				conf.set("mapreduce.framework.name", "yarn");
-				conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
-			}
-			defaultFS = pc.getString(key_defaultFs);
-			conf.set("fs.defaultFS", defaultFS);
-			if (defaultFS.contains("127.0.0.1")){
-				fs = FileSystem.get(conf);
-			}else{
-				UserGroupInformation ugi = UserGroupInformation.createProxyUser("dbadmin", UserGroupInformation.getLoginUser());
-				ugi.doAs(new PrivilegedExceptionAction<Void>() {
-					public Void run() throws Exception {
-						fs = FileSystem.get(conf);
-						return null;
-					}
-				});
-			}
-		}catch(Exception e){
-			logger.error("", e);
+    public void setUp() throws Exception{
+		pc = PropertiesUtil.getPropertiesConfig(cfgProperties);
+		localFolder = pc.getString(key_localFolder);
+		projectFolder = pc.getString(key_projectFolder);
+		oozieUser = pc.getString(key_oozie_user);
+		setTestSftp(pc.getBoolean(key_test_sftp, true));
+		setTestKafka(pc.getBoolean(key_test_kafka, true));
+		conf = new Configuration();
+		String jobTracker=pc.getString(key_jobTracker);
+		if (jobTracker!=null){
+			String host = jobTracker.substring(0,jobTracker.indexOf(":"));
+			conf.set("mapreduce.jobtracker.address", jobTracker);
+			conf.set("yarn.resourcemanager.hostname", host);
+			conf.set("mapreduce.framework.name", "yarn");
+			conf.set("yarn.nodemanager.aux-services", "mapreduce_shuffle");
+		}
+		defaultFS = pc.getString(key_defaultFs);
+		conf.set("fs.defaultFS", defaultFS);
+		if (defaultFS.contains("127.0.0.1")){
+			fs = FileSystem.get(conf);
+		}else{
+			String hdfsUser = pc.getString(key_hdfs_user, "dbadmin");
+			UserGroupInformation ugi = UserGroupInformation.createProxyUser(hdfsUser, UserGroupInformation.getLoginUser());
+			ugi.doAs(new PrivilegedExceptionAction<Void>() {
+				public Void run() throws Exception {
+					fs = FileSystem.get(conf);
+					return null;
+				}
+			});
 		}
     }
 	
+	//map test for cmd
+	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName, Class<? extends InputFormat> inputFormatClass) throws Exception {
+		return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, inputFormatClass, null, false);
+	}
+	
 	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
 			String staticProperties, String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
+		if (useFileNames)
+			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, FilenameInputFormat.class);
+		else
+			return mapTest(remoteInputFolder, remoteOutputFolder, staticProperties, inputDataFiles, cmdClassName, NLineInputFormat.class);
+	}
+	
+	public List<String> mapTest(String remoteInputFolder, String remoteOutputFolder,
+			String staticProperties, String[] inputDataFiles, String cmdClassName, Class<? extends InputFormat> inputFormatClass, String inputFilter, boolean useIndividualFiles) throws Exception {
 		try {
-			getFs().delete(new Path(remoteInputFolder), true);
 			getFs().delete(new Path(remoteOutputFolder), true);
-			getFs().mkdirs(new Path(remoteInputFolder));
-			for (String csvFile : inputDataFiles) {
-				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
+			if (inputDataFiles != null && inputDataFiles.length > 0) {
+				getFs().delete(new Path(remoteInputFolder), true);
+				getFs().mkdirs(new Path(remoteInputFolder));
+				for (String csvFile : inputDataFiles) {
+					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(remoteInputFolder + csvFile));
+				}
+			} else if (!getFs().exists(new Path(remoteInputFolder))) {
+				getFs().mkdirs(new Path(remoteInputFolder));
 			}
 			// run job
 			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
@@ -117,18 +168,24 @@ public abstract class TestETLCmd {
 				cfgProperties = this.getResourceSubFolder() + staticProperties;
 			}
 			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
+			if (inputFilter!=null){
+				getConf().set(GlobExpPathFilter.cfgkey_path_filters, inputFilter);
+			}
 			Job job = Job.getInstance(getConf(), "testCmd");
 			job.setMapperClass(etl.engine.InvokeMapper.class);
 			job.setNumReduceTasks(0);// no reducer
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(NullWritable.class);
-			if (useFileNames){
-				job.setInputFormatClass(FilenameInputFormat.class);
-			}else{
-				FileInputFormat.setInputDirRecursive(job, true);
+			job.setInputFormatClass(inputFormatClass);
+			if (inputFilter!=null){
+				FileInputFormat.setInputPathFilter(job, GlobExpPathFilter.class);
 			}
 			FileInputFormat.setInputDirRecursive(job, true);
-			FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
+			if (!useIndividualFiles){
+				FileInputFormat.addInputPath(job, new Path(remoteInputFolder));
+			}else{
+				FileInputFormat.addInputPath(job, new Path(remoteInputFolder+"*"));
+			}
 			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
 			job.waitForCompletion(true);
 
@@ -137,79 +194,259 @@ public abstract class TestETLCmd {
 			return output;
 		} catch (Exception e) {
 			logger.error("", e);
+			return null;
 		}
-		return null;
+	}
+	
+	//map-reduce test for cmd
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass,
+			Class<? extends OutputFormat> outputFormatClass, int numReducer) throws Exception {
+		getFs().delete(new Path(remoteOutputFolder), true);
+		for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
+			if (rfifs._2.length > 0) {
+				getFs().delete(new Path(rfifs._1), true);
+				getFs().mkdirs(new Path(rfifs._1));
+			}
+			for (String csvFile : rfifs._2) {
+				getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
+			}
+		}
+		
+		//run job
+		getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
+		getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
+		String cfgProperties = staticProperties;
+		if (this.getResourceSubFolder()!=null){
+			cfgProperties = this.getResourceSubFolder() + staticProperties;
+		}
+		getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
+		getConf().set("mapreduce.output.textoutputformat.separator", ",");
+		getConf().set("mapreduce.job.reduces", String.valueOf(numReducer));
+		Job job = Job.getInstance(getConf(), "testCmd");
+		job.setMapperClass(InvokeMapper.class);
+		job.setReducerClass(etl.engine.InvokeReducer.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
+		job.setOutputFormatClass(outputFormatClass);
+		job.setInputFormatClass(inputFormatClass);
+		FileInputFormat.setInputDirRecursive(job, true);
+		
+		for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
+			FileInputFormat.addInputPath(job, new Path(rfifs._1));
+		}
+		
+		FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
+		job.waitForCompletion(true);
+		List<String> output;
+		if (ParquetOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+			List<String> paths = HdfsUtil.listDfsFilePath(getFs(), remoteOutputFolder, true);
+			
+			output = new ArrayList<String>();
+			for (String p: paths) {
+				if (p.endsWith(".parquet")) {
+					output.addAll(readParquetFile(p));
+				}
+			}
+		} else
+			output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
+		return output;
+		
+	}
+
+	public List<String> readParquetFile(String p) throws Exception {
+		ArrayList<String> output = new ArrayList<String>();
+		MessageType schema;
+		ParquetMetadata m;
+		ParquetFileReader r;
+		PageReadStore rowGroup;
+		MessageColumnIO columnIO;
+		RecordReader<Group> recordReader;
+		List<Type> fields;
+		int fieldIndex;
+		StringBuilder buffer;
+		PrimitiveType c;
+		Binary b;
+		m = ParquetFileReader.readFooter(getConf(), new Path(p), ParquetMetadataConverter.NO_FILTER);
+		schema = m.getFileMetaData().getSchema();
+		r = null;
+		try {
+			r = new ParquetFileReader(getConf(), m.getFileMetaData(), new Path(p), m.getBlocks(), schema.getColumns());
+			rowGroup = r.readNextRowGroup();
+			if (rowGroup != null) {
+				columnIO = new ColumnIOFactory().getColumnIO(m.getFileMetaData().getSchema());
+				recordReader = columnIO.getRecordReader(rowGroup, new GroupRecordConverter(schema));
+				fields = schema.getFields();
+				for (int i = 0; i < rowGroup.getRowCount(); i++) {
+					final Group g = recordReader.read();
+					fieldIndex = 0;
+					buffer = new StringBuilder();
+					for (Type f: fields) {
+						c = f.asPrimitiveType();
+						if (PrimitiveTypeName.BINARY.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getString(fieldIndex, 0));
+						} else if (PrimitiveTypeName.INT32.equals(c.getPrimitiveTypeName())) {
+							if (OriginalType.DATE.equals(c.getOriginalType())) {
+								buffer.append(FieldType.sdateFormat.format(new Date(DateUtil.daysToMillis(g.getInteger(fieldIndex, 0)))));
+							} else
+								buffer.append(g.getInteger(fieldIndex, 0));
+						} else if (PrimitiveTypeName.INT64.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getLong(fieldIndex, 0));
+						} else if (PrimitiveTypeName.INT96.equals(c.getPrimitiveTypeName())) {
+							if (c.getOriginalType() == null) {
+								NanoTime nt = NanoTime.fromBinary(g.getInt96(fieldIndex, 0));
+								buffer.append(FieldType.sdatetimeFormat.format(new Date(NanoTimeUtils.getTimestamp(nt, getConf().getBoolean(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname, true)))));
+							}
+						} else if (PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY.equals(c.getPrimitiveTypeName())) {
+							b = g.getBinary(fieldIndex, 0);
+							if (OriginalType.DECIMAL.equals(c.getOriginalType())) {
+								buffer.append(new HiveDecimalWritable(b.getBytes(), c.getDecimalMetadata().getScale()).getHiveDecimal().toString());
+							} else {
+								buffer.append(b.toString());
+							}
+						} else if (PrimitiveTypeName.FLOAT.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getFloat(fieldIndex, 0));
+						} else if (PrimitiveTypeName.DOUBLE.equals(c.getPrimitiveTypeName())) {
+							buffer.append(g.getDouble(fieldIndex, 0));
+						}
+						fieldIndex ++;
+						if (fieldIndex < fields.size())
+							buffer.append(",");
+					}
+					output.add(buffer.toString());
+				}
+			}
+		} finally {
+			if (r != null)
+				r.close();
+		}
+		return output;
+	}
+
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass,
+			Class<? extends OutputFormat> outputFormatClass) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, outputFormatClass, 1);
+	}
+	
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass, int numReducer) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, TextOutputFormat.class, numReducer);
+		
+	}
+	
+	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
+			String staticProperties, String cmdClassName, Class<? extends InputFormat> inputFormatClass) throws Exception {
+		return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, inputFormatClass, TextOutputFormat.class, 1);
 	}
 	
 	public List<String> mrTest(List<Tuple2<String, String[]>> remoteFolderInputFiles, String remoteOutputFolder,
 			String staticProperties, String cmdClassName, boolean useFileNames) throws Exception {
-		try {
-			getFs().delete(new Path(remoteOutputFolder), true);
-			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
-				if (rfifs._2.length > 0) {
-					getFs().delete(new Path(rfifs._1), true);
-					getFs().mkdirs(new Path(rfifs._1));
-				}
-				for (String csvFile : rfifs._2) {
-					getFs().copyFromLocalFile(new Path(getLocalFolder() + csvFile), new Path(rfifs._1 + csvFile));
-				}
-			}
-			
-			//run job
-			getConf().set(EngineConf.cfgkey_cmdclassname, cmdClassName);
-			getConf().set(EngineConf.cfgkey_wfid, sdf.format(new Date()));
-			String cfgProperties = staticProperties;
-			if (this.getResourceSubFolder()!=null){
-				cfgProperties = this.getResourceSubFolder() + staticProperties;
-			}
-			getConf().set(EngineConf.cfgkey_staticconfigfile, cfgProperties);
-			getConf().set("mapreduce.output.textoutputformat.separator", ",");
-			Job job = Job.getInstance(getConf(), "testCmd");
-			job.setMapperClass(InvokeMapper.class);
-			job.setReducerClass(etl.engine.InvokeReducer.class);
-			
-			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(Text.class);
-			if (useFileNames){
-				job.setInputFormatClass(FilenameInputFormat.class);
-			}else{
-				FileInputFormat.setInputDirRecursive(job, true);
-			}
-			for (Tuple2<String, String[]> rfifs: remoteFolderInputFiles){
-				FileInputFormat.addInputPath(job, new Path(rfifs._1));
-			}
-			
-			FileOutputFormat.setOutputPath(job, new Path(remoteOutputFolder));
-			job.waitForCompletion(true);
-
-			// assertion
-			List<String> output = HdfsUtil.stringsFromDfsFolder(getFs(), remoteOutputFolder);
-			return output;
-		} catch (Exception e) {
-			logger.error("", e);
-		}
-		return null;
+		if (useFileNames)
+			return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, FilenameInputFormat.class);
+		else
+			return mrTest(remoteFolderInputFiles, remoteOutputFolder, staticProperties, cmdClassName, NLineInputFormat.class);
 	}
 	
-	/**
-	 * 
-	 * @param remoteCfgFolder
-	 * @param remoteInputFolder
-	 * @param remoteOutputFolder
-	 * @param staticProperties
-	 * @param inputDataFiles
-	 * @param cmdClassName
-	 * @param useFileNames: 
-	 * @return
-	 * @throws Exception
-	 */
 	public List<String> mrTest(String remoteInputFolder, String remoteOutputFolder, String staticProperties, 
 			String[] inputDataFiles, String cmdClassName, boolean useFileNames) throws Exception {
 		List<Tuple2<String, String[]>> rfifs = new ArrayList<Tuple2<String, String[]>>();
 		rfifs.add(new Tuple2<String, String[]>(remoteInputFolder, inputDataFiles));
-		return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, useFileNames);
+		if (useFileNames)
+			return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, FilenameInputFormat.class);
+		else
+			return mrTest(rfifs, remoteOutputFolder, staticProperties, cmdClassName, NLineInputFormat.class);
 	}
 	
+	//spark test for cmd
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, ift, null, false);
+	}
+	public List<String> sparkTestKVKeys(String remoteInputFolder, String[] inputDataFiles, 
+		String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift) throws Exception{
+		return sparkTestKV(remoteInputFolder, inputDataFiles, cmdProperties, cmdClass, ift, null, true);
+	}
+	
+	private JavaPairRDD<String, String> toPairRDD(List<String> input, JavaSparkContext jsc){
+		return jsc.parallelize(input).mapToPair(new PairFunction<String,String,String>(){
+			@Override
+			public Tuple2<String, String> call(String t) throws Exception {
+				return new Tuple2<String,String>(t, t);
+			}
+		});
+	}
+	public List<String> sparkTestKV(String remoteInputFolder, String[] inputDataFiles, 
+			String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift, 
+			Map<String, String> addConf, boolean key) throws Exception{
+		SparkSession spark = SparkSession.builder().appName("wfName").master("local[5]").getOrCreate();
+		SparkContext sc = spark.sparkContext();
+		JavaSparkContext jsc = new JavaSparkContext(sc);
+		try {
+			getFs().delete(new Path(remoteInputFolder), true);
+			List<String> inputPaths = new ArrayList<String>();
+			for (String inputFile : inputDataFiles) {
+				getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + inputFile), new Path(remoteInputFolder + inputFile));
+				inputPaths.add(remoteInputFolder + inputFile);
+			}
+			if (InputFormatType.FileName == ift){
+				inputPaths.clear();
+				inputPaths.add(remoteInputFolder);
+			}
+			Constructor<? extends ETLCmd> constr = cmdClass.getConstructor(String.class, String.class, String.class, String.class, String[].class);
+			String cfgProperties = cmdProperties;
+			if (this.getResourceSubFolder()!=null){
+				cfgProperties = this.getResourceSubFolder() + cmdProperties;
+			}
+			String wfName = "wfName";
+			ETLCmd cmd = constr.newInstance(wfName, "wfId", cfgProperties, this.getDefaultFS(), null);
+			if (addConf!=null){
+				cmd.copyConf(addConf);
+			}
+			JavaPairRDD<String, String> result = cmd.sparkProcessFilesToKV(toPairRDD(inputPaths, jsc), jsc, ift, spark);
+			
+			List<String> ret = new ArrayList<String>();
+			if (key){
+				List<String> keys = result.keys().collect();
+				ret.addAll(keys);
+			}else{
+				List<String> values = result.values().collect();
+				ret.addAll(values);
+			}
+			return ret;
+		}finally{
+			jsc.close();
+		}
+	}
+	
+
+	
+	public JavaPairRDD<String, String> sparkTestKVRDD(JavaSparkContext jsc, String remoteInputFolder, String[] inputDataFiles, 
+			String cmdProperties, Class<? extends ETLCmd> cmdClass, InputFormatType ift, 
+			Map<String, String> addConf) throws Exception{
+		getFs().delete(new Path(remoteInputFolder), true);
+		List<String> inputPaths = new ArrayList<String>();
+		for (String inputFile : inputDataFiles) {
+			getFs().copyFromLocalFile(false, true, new Path(getLocalFolder() + inputFile), new Path(remoteInputFolder + inputFile));
+			inputPaths.add(remoteInputFolder + inputFile);
+		}
+		if (InputFormatType.FileName == ift){
+			inputPaths.clear();
+			inputPaths.add(remoteInputFolder);
+		}
+		Constructor<? extends ETLCmd> constr = cmdClass.getConstructor(String.class, String.class, String.class, String.class, String[].class);
+		String cfgProperties = cmdProperties;
+		if (this.getResourceSubFolder()!=null){
+			cfgProperties = this.getResourceSubFolder() + cmdProperties;
+		}
+		String wfName = "wfName";
+		ETLCmd cmd = constr.newInstance(wfName, "wfId", cfgProperties, this.getDefaultFS(), null);
+		if (addConf!=null){
+			cmd.copyConf(addConf);
+		}
+		return cmd.sparkProcessFilesToKV(toPairRDD(inputPaths,jsc), jsc, ift, null);
+	}
 	
 	public void setupWorkflow(String remoteLibFolder, String remoteCfgFolder, String localTargetFolder, String libName, 
 			String localLibFolder, String verticaLibName) throws Exception{

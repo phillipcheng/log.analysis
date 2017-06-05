@@ -21,7 +21,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 
 import etl.engine.ETLCmd;
+import etl.engine.types.ProcessMode;
 import etl.log.ETLLog;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
 
@@ -31,31 +33,34 @@ public class BackupCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(BackupCmd.class);
 
 	//cfgkey
-	public static final String cfgkey_data_history_folder="data-history-folder";
-	public static final String cfgkey_Folder_filter="file.folder";
-	public static final String cfgkey_file_filter="file.filter";
+	public static final @ConfigKey String cfgkey_data_history_folder="data-history-folder";
+	public static final @ConfigKey(type=String[].class) String cfgkey_Folder_filter="file.folder";
+	public static final @ConfigKey(type=String[].class) String cfgkey_file_filter="file.filter";
 
 	private String dataHistoryFolder;
 	private String[] fileFolders;
 	private String[] fileFilters;
 	private String destZipFile;
-	private ZipOutputStream zos;
 	
 	public BackupCmd(){
 		super();
 	}
 	
 	public BackupCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public BackupCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public BackupCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.dataHistoryFolder = super.getCfgString(cfgkey_data_history_folder, null);
 		String[] ffExps = super.getCfgStringArray(cfgkey_Folder_filter);
 		fileFolders = new String[ffExps.length];
@@ -71,12 +76,13 @@ public class BackupCmd extends ETLCmd{
 	public List<String> sgProcess(){
 		List<String> logInfo = new ArrayList<String>();
 		int totalFiles = 0;
+		ZipOutputStream zos = null;
 		try {
 			Path destpath=new Path(destZipFile);
 			FSDataOutputStream fos = fs.create(destpath);
 			zos = new ZipOutputStream(fos);	
 			for (int i = 0; i < fileFolders.length; i++) {
-				int n = zipFolder(fileFolders[i],fileFilters[i]);
+				int n = zipFolder(zos, fileFolders[i],fileFilters[i]);
 				logger.info(String.format("%d files found for fold %s", n, fileFolders[i]));
 				totalFiles +=n;
 			}
@@ -84,7 +90,9 @@ public class BackupCmd extends ETLCmd{
 			logger.error(new ETLLog(this, null, e), e);
 		}finally{
 			try {
-				zos.close();
+				if (zos!=null){
+					zos.close();
+				}
 			} catch(IOException e) {
 				logger.error("Exception closing IO streams ...! ", e);
 			}
@@ -99,7 +107,7 @@ public class BackupCmd extends ETLCmd{
 	 * @param fileFilter
 	 * @return number of files zipped
 	 */
-	public int zipFolder(String dirpath ,String fileFilter) {
+	public int zipFolder(ZipOutputStream zos, String dirpath ,String fileFilter) {
 		try {	
 			List<String> fileNames = new ArrayList<String>();
 			String exp=fileFilter;
@@ -107,18 +115,16 @@ public class BackupCmd extends ETLCmd{
 			if(output instanceof ArrayList){  
 				ArrayList<String> out=(ArrayList<String>)output;
 				fileNames.addAll(out); 
-				zipFiles(dirpath, fileNames);
 			}else if (output instanceof String[]) {
 				String[] out=(String[])output;
 				fileNames.addAll(Arrays.asList(out));
-				zipFiles(dirpath, fileNames);
 			}else if(output instanceof String){
 				String regexp=(String)output;
 				fileNames=filterFiles(regexp, dirpath);
-				zipFiles(dirpath, fileNames);
 			}else{
 				logger.error(String.format("type %s not supported for %s", output, exp));
 			}
+			zipFiles(zos, dirpath, fileNames);
 			return fileNames.size();
 		} catch (Exception e) {
 			logger.error(" ", e);
@@ -147,7 +153,7 @@ public class BackupCmd extends ETLCmd{
 	}
 	
 	//Zips the files followed by remove
-	public void zipFiles(String dirpath, List<String> fileNames){
+	public void zipFiles(ZipOutputStream zos, String dirpath, List<String> fileNames){
 		try {
 			List<String> directoryFiles=new ArrayList<String>();
 			for (String fileName:fileNames){
@@ -160,7 +166,7 @@ public class BackupCmd extends ETLCmd{
 					for (FileStatus stat: listStatus) {
 						directoryFiles.add(stat.getPath().getName());
 					}
-					zipFiles(dirLocation,directoryFiles);
+					zipFiles(zos, dirLocation,directoryFiles);
 					fs.delete(pathDir,false);
 					continue;
 				}   

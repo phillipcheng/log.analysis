@@ -1,13 +1,17 @@
 package etl.util;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spark_project.guava.base.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import etl.engine.SafeSimpleDateFormat;
+import etl.engine.types.AggregationType;
+import etl.engine.types.DBType;
 
 
 public class FieldType implements Serializable{
@@ -23,7 +27,9 @@ public class FieldType implements Serializable{
 	
 	public static final String dateFormat="yyyy-MM-dd";
 	public static final String datetimeFormat="yyyy-MM-dd HH:mm:ss.SSS";//standard timestamp format, please convert to this before loading
+	public static final String datetimeRoughFormat="yyyy-MM-dd HH:mm:ss";//standard timestamp format, please convert to this before loading
 	public static final SafeSimpleDateFormat sdatetimeFormat = new SafeSimpleDateFormat(datetimeFormat);
+	public static final SafeSimpleDateFormat sdatetimeRoughFormat = new SafeSimpleDateFormat(datetimeRoughFormat);
 	public static final SafeSimpleDateFormat sdateFormat = new SafeSimpleDateFormat(dateFormat);
 	
 	public static final String HIVE_TYPE_NUMERIC="decimal";
@@ -32,23 +38,41 @@ public class FieldType implements Serializable{
 	private int size;//varchar(size)
 	private int precision;//numeric(precision,scale)
 	private int scale;
+	private AggregationType aggrType;
+	private String dtformat;//date time format
 	
 	public FieldType(){
+		this.aggrType = AggregationType.NONE;
+	}
+	
+	public FieldType(VarType type, AggregationType aggrType){
+		this.type = type;
+		this.aggrType = aggrType;
 	}
 	
 	public FieldType(VarType type){
-		this.type = type;
+		this(type, AggregationType.NONE);
 	}
 	
-	public FieldType(VarType type, int size){
+	public FieldType(VarType type, int size, AggregationType aggrType){
 		this.type = type;
 		this.size = size;
+		this.aggrType = aggrType;
+	}
+
+	public FieldType(VarType type, int size){
+		this(type, size, AggregationType.NONE);
 	}
 	
-	public FieldType(VarType type, int precision, int scale){
+	public FieldType(VarType type, int precision, int scale, AggregationType aggrType){
 		this.type = type;
 		this.precision = precision;
 		this.scale = scale;
+		this.aggrType = aggrType;
+	}
+	
+	public FieldType(VarType type, int precision, int scale){
+		this(type, precision, scale, AggregationType.NONE);
 	}
 	
 	@Override
@@ -57,7 +81,7 @@ public class FieldType implements Serializable{
 			return false;
 		}
 		FieldType that = (FieldType)obj;
-		if (!Objects.equal(that.getType(), type)){
+		if (!Objects.equals(that.getType(), this.getType())){
 			return false;
 		}
 		if (size!=that.getSize()){
@@ -69,12 +93,16 @@ public class FieldType implements Serializable{
 		if (scale!=that.getScale()){
 			return false;
 		}
+		if (!Objects.equals(that.getAggrType(), this.getAggrType())){
+			return false;
+		}
 		return true;
 	}
 	
 	public FieldType(String str){
 		String[] eles = str.split("[\\(\\),]");
 		String t = eles[0].trim();
+		this.aggrType = AggregationType.NONE;
 		if (TYPE_NUMERIC.equals(t)){
 			if (eles.length==3){
 				this.type = VarType.NUMERIC;
@@ -147,6 +175,22 @@ public class FieldType implements Serializable{
 	public void setScale(int scale) {
 		this.scale = scale;
 	}
+	@JsonIgnore
+	public AggregationType getAggrTypeSafe() {
+		if (aggrType == null)
+			return AggregationType.NONE;
+		else
+			return aggrType;
+	}
+	public AggregationType getAggrType() {
+		if (aggrType != null && AggregationType.NONE.equals(aggrType))
+			return null;
+		else
+			return aggrType;
+	}
+	public void setAggrType(AggregationType aggrType) {
+		this.aggrType = aggrType;
+	}
 	
 	public String toString(){
 		if (VarType.NUMERIC == this.type){
@@ -173,5 +217,13 @@ public class FieldType implements Serializable{
 		}else{
 			return this.type.value();
 		}
+	}
+
+	public String getDtformat() {
+		return dtformat;
+	}
+
+	public void setDtformat(String dtformat) {
+		this.dtformat = dtformat;
 	}
 }

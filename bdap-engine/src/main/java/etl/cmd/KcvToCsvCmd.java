@@ -1,7 +1,7 @@
 package etl.cmd;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +14,15 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import etl.engine.ETLCmd;
-import etl.engine.MRMode;
+import etl.engine.types.MRMode;
+import etl.engine.types.ProcessMode;
+import etl.util.ConfigKey;
 
 //key colon value format to csv
 public class KcvToCsvCmd extends ETLCmd{
@@ -29,10 +31,10 @@ public class KcvToCsvCmd extends ETLCmd{
 	public static final Logger logger = LogManager.getLogger(KcvToCsvCmd.class);
 	
 	//record format overall specification
-	public static final String cfgkey_record_start="record.start";
+	public static final @ConfigKey String cfgkey_record_start="record.start";
 		public static final String RECORD_SINGLELINE="^"; //single line
-	public static final String cfgkey_record_vkexp="record.vkexp";
-	public static final String cfgkey_record_fieldnum="record.fieldnum";
+	public static final @ConfigKey String cfgkey_record_vkexp="record.vkexp";
+	public static final @ConfigKey(type=Integer.class) String cfgkey_record_fieldnum="record.fieldnum";
 		public static final int RECORD_FIELDNUM_DEFAULT=-1; //extract all fields recognized
 
 	//record format definition
@@ -46,12 +48,16 @@ public class KcvToCsvCmd extends ETLCmd{
 	}
 	
 	public KcvToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public KcvToCsvCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.file);
 		String strVal = super.getCfgString(cfgkey_record_start, null);
 		if (strVal!=null){
@@ -116,15 +122,15 @@ public class KcvToCsvCmd extends ETLCmd{
 	
 	//fix file name
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		super.init();
 		String filename = row;
 		List<String> outputList = new ArrayList<String>();
-		Path kcvFile = new Path(row);
 		BufferedReader br = null;
 		try {
 			String line;
-			br=new BufferedReader(new InputStreamReader(fs.open(kcvFile)));
+			br=new BufferedReader(new StringReader(row));
 			String record="";
 			String lastRecord="";
 			boolean found =false; //found a record

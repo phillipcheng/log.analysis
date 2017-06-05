@@ -1,5 +1,8 @@
 package etl.flow;
 
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -13,6 +16,10 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import bdap.util.DiGraph;
+import scala.Tuple2;
+import scala.Tuple3;
 
 public class Flow extends Node{
 	public static final Logger logger = LogManager.getLogger(Flow.class);
@@ -28,33 +35,44 @@ public class Flow extends Node{
 	private List<Data> data;
 	
 	//cached structure
-	private transient Map<String, Node> nodeMap;
-	private transient Map<String, Data> dataMap;
-	private transient Map<String, Set<Link>> nodeOutLinkMap;
-	private transient Map<String, Set<Link>> nodeInLinkMap;
-	private transient Map<String, Set<Node>> linkNodeMap;
+	private transient Map<String, Node> nodeMap; //node name to definition
+	private transient Map<String, Data> dataMap; //data name to definition
+	private transient Map<String, Set<Link>> nodeOutLinkMap;//node name to out link set 
+	private transient Map<String, Set<Link>> nodeInLinkMap;//node name to in link set
+	private transient Map<String, Set<Node>> linkToNodesMap;//link name to (to-nodes)
+	private transient Map<String, List<Tuple2<String,String>>> dataToInletMap;//dataset name to inlet map; i.e. data1-> (node2, inlet1)
 	
 	public Flow(){
 	}
 	
 	public void init(){
 		nodeMap = new HashMap<String, Node>();
+		dataToInletMap = new HashMap<String, List<Tuple2<String,String>>>();
 		for (Node n: nodes){
-			if (n instanceof ActionNode){
-				ActionNode an = (ActionNode)n;
-				an.setExeType(ExeType.valueOf(an.getProperty(ActionNode.key_exe_type)));
-			}
 			nodeMap.put(n.getName(), n);
+			for (NodeLet nl:n.getInLets()){
+				String dn = nl.getDataName();
+				List<Tuple2<String,String>> list = null;
+				if (dataToInletMap.containsKey(dn)){
+					list = dataToInletMap.get(dn);
+				}else{
+					list = new ArrayList<Tuple2<String,String>>();
+					dataToInletMap.put(dn, list);
+				}
+				list.add(new Tuple2<String,String>(n.getName(), nl.getName()));
+			}
 		}
-		dataMap = new HashMap<String, Data>();
-		for (Data d: data){
-			dataMap.put(d.getName(), d);
+		if (data!=null){
+			dataMap = new HashMap<String, Data>();
+			for (Data d: data){
+				dataMap.put(d.getName(), d);
+			}
 		}
 		nodeOutLinkMap = new HashMap<String, Set<Link>>();
 		for (Link lnk: links){
 			Set<Link> ll = nodeOutLinkMap.get(lnk.getFromNodeName());
 			if (ll == null){
-				ll = new HashSet<Link>();
+				ll = new TreeSet<Link>();
 				nodeOutLinkMap.put(lnk.getFromNodeName(), ll);
 			}
 			ll.add(lnk);
@@ -63,18 +81,18 @@ public class Flow extends Node{
 		for (Link lnk: links){
 			Set<Link> ll = nodeInLinkMap.get(lnk.getToNodeName());
 			if (ll == null){
-				ll = new HashSet<Link>();
+				ll = new TreeSet<Link>();
 				nodeInLinkMap.put(lnk.getToNodeName(), ll);
 			}
 			ll.add(lnk);
 		}
-		linkNodeMap = new HashMap<String, Set<Node>>();
+		linkToNodesMap = new HashMap<String, Set<Node>>();
 		for (Link lnk: links){
 			String lnkName = lnk.toString();
-			Set<Node> nl = linkNodeMap.get(lnkName);
+			Set<Node> nl = linkToNodesMap.get(lnkName);
 			if (nl == null){
-				nl = new HashSet<Node>();
-				linkNodeMap.put(lnkName, nl);
+				nl = new TreeSet<Node>();
+				linkToNodesMap.put(lnkName, nl);
 			}
 			if (nodeMap.containsKey(lnk.getToNodeName())){
 				nl.add(nodeMap.get(lnk.getToNodeName()));
@@ -104,6 +122,74 @@ public class Flow extends Node{
 		}
 		return true;
 	}
+	@JsonIgnore
+	public List<String> getLastDataSets(){
+		Set<String> inds = new HashSet<String>();
+		Set<String> outds = new HashSet<String>();
+		List<Node> nl = getActionTopoOrder();
+		//create inlet datasets
+		for (Node n:nl){
+			for (NodeLet nlet:n.getInLets()){
+				inds.add(nlet.getDataName());
+			}
+		}
+		List<String> lastds = new ArrayList<String>();
+		for (Node n:nl){//order by the topo
+			for (NodeLet outlet:n.getOutlets()){
+				if (!inds.contains(outlet.getDataName()) &&
+						!lastds.contains(outlet.getDataName())){
+					lastds.add(outlet.getDataName());
+				}
+			}
+		}
+		return lastds;
+	}
+	@JsonIgnore
+	public List<Node> getActionTopoOrder(){
+		List<Node> nl = this.getNodes();
+		Map<String, Integer> nameIdxMap = new HashMap<String, Integer>();
+		Node[] idxNodeArray = new Node[nl.size()];
+		for (int i=0; i<nl.size(); i++){
+			Node n = nl.get(i);
+			nameIdxMap.put(n.getName(), i);
+			idxNodeArray[i]=n;
+		}
+		int v = nl.size();
+		DiGraph dg = new DiGraph(v);
+		for (Link lnk:this.getLinks()){
+			int from = nameIdxMap.get(lnk.getFromNodeName());
+			int to = nameIdxMap.get(lnk.getToNodeName());
+			dg.addEdge(from, to);
+		}
+		dg.topologicalSort();
+		if (dg.isHasOrder()){
+			List<Integer> li = dg.getOrder();
+			List<Node> ret = new ArrayList<Node>();
+			for (int i:li){
+				Node n = idxNodeArray[i];
+				Set<Link> sl = this.getInLinks(n.getName());
+				if (sl!=null && sl.size()>0){//filter out the standalone nodes, including start
+					ret.add(n);
+				}
+			}
+			//remove end
+			ret.remove(ret.size()-1);
+			return ret;
+		}else{
+			logger.error(String.format("flow is not a dag"));
+			return null;
+		}
+	}
+	
+	@JsonIgnore
+	public int getUsingDatasetNum(String dn){
+		List<Tuple2<String,String>> l = dataToInletMap.get(dn);
+		if (l!=null){
+			return l.size();
+		}else{
+			return 0;
+		}
+	}
 	
 	public Set<Link> getInLinks(String nodeName){
 		return nodeInLinkMap.get(nodeName);
@@ -114,7 +200,7 @@ public class Flow extends Node{
 	}
 	
 	public Set<Node> getNextNodes(Link lnk){
-		return linkNodeMap.get(lnk.toString());
+		return linkToNodesMap.get(lnk.toString());
 	}
 	
 	public Node getNode(String name){
@@ -132,6 +218,11 @@ public class Flow extends Node{
 	@JsonIgnore
 	public StartNode getStart() {
 		return (StartNode) nodeMap.get(StartNode.start_node_name);
+	}
+	
+	@JsonIgnore
+	public EndNode getEnd() {
+		return (EndNode) nodeMap.get(EndNode.end_node_name);
 	}
 	
 	@JsonAnyGetter

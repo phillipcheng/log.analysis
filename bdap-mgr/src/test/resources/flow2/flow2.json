@@ -1,0 +1,72 @@
+{
+  "@class" : "flow",
+  "name" : "flow2",
+  "outlets" : [ ],
+  "nodes" : [ {
+    "@class" : "start",
+    "name" : "start",
+    "outlets" : [ ],
+    "duration" : 300,
+    "inLets" : [ ]
+  }, {
+    "@class" : "end",
+    "name" : "end",
+    "outlets" : [],
+    "inLets" : [ ]
+  }, {
+    "@class" : "callSubFlow",
+    "name" : "callFlow1",
+    "outlets" : [ ],
+    "inLets" : [],
+    "prjName" : "project1",
+    "subFlowName" : "flow1"
+  }, {
+    "@class" : "action",
+    "name" : "loadcsv",
+    "outlets" : [ {
+      "name" : "0",
+      "dataName" : "csvdbout"
+    }],
+    "addArgs" : [ ],
+    "inLets" : [ {
+      "name" : "0",
+      "dataName" : "csvmerge"
+    } ],
+    "exe.type" : "mr",
+    "cmd.class" : "etl.cmd.LoadDataCmd",
+	"sys.mapreduce.input.fileinputformat.input.dir.recursive" : "true",
+    "schema.file " : "/flow1/schema/flow1.schema",
+    "db.prefix" : "project1",
+    "file.table.map" : "filename.substring(0\\,filename.indexOf('-r-'))"
+  }],
+  "links" : [ {
+    "fromNodeName" : "start",
+    "toNodeName" : "callFlow1",
+    "linkType" : "success"
+  }, {
+    "fromNodeName" : "callFlow1",
+    "toNodeName" : "loadcsv",
+    "linkType" : "success"
+  }, {
+    "fromNodeName" : "loadcsv",
+    "toNodeName" : "end",
+    "linkType" : "success"
+  } ],
+  "data" : [ {
+    "name" : "csvmerge",
+    "location" : "/flow1/csvmerge/",
+    "dataFormat" : "FileName",
+    "recordType" : "Value",
+    "instance" : true,
+    "instanceFlow" : "callFlow1"
+  }, {
+    "name" : "csvdbout",
+    "location" : "/flow1/csvdbout/",
+    "dataFormat" : "Text",
+    "recordType" : "KeyValue",
+    "instance" : true,
+    "instanceFlow" : "callFlow1"
+  } ],
+  "inLets" : [ ],
+  "wfName" : "flow2"
+}

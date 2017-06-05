@@ -18,19 +18,23 @@ import org.apache.logging.log4j.Logger;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import etl.engine.ETLCmd;
-import etl.engine.MRMode;
+import etl.engine.types.MRMode;
+import etl.engine.types.ProcessMode;
+import etl.util.ConfigKey;
 
 public class EvtBasedMsgParseCmd extends ETLCmd{
+	private static final long serialVersionUID = 1L;
 	public static final Logger logger = LogManager.getLogger(EvtBasedMsgParseCmd.class);
 	//record type specification
-	public static final String cfgkey_evt_idx="event.idx";
-	public static final String cfgkey_evt_types="event.types";
+	public static final @ConfigKey(type=Integer.class,defaultValue="-1") String cfgkey_evt_idx="event.idx";
+	public static final @ConfigKey(type=String[].class) String cfgkey_evt_types="event.types";
 	
 	//main message specification
-	public static final String cfgkey_msg_idx="message.idx";
-	public static final String cfgkey_msg_fields="message.fields";
+	public static final @ConfigKey(type=Integer.class,defaultValue="-1") String cfgkey_msg_idx="message.idx";
+	public static final @ConfigKey(type=String[].class) String cfgkey_msg_fields="message.fields";
 	public static final String REGEXP_KEY="regexp";
 	public static final String ATTR_KEY="attr";
 	public static final String DEFAULT_EVENT_TYPE="default";
@@ -49,16 +53,20 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	}
 	
 	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public EvtBasedMsgParseCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.line);
 		eventIdx = super.getCfgInt(cfgkey_evt_idx, -1);
 		String[] evtTypes = super.getCfgStringArray(cfgkey_evt_types);
@@ -114,7 +122,8 @@ public class EvtBasedMsgParseCmd extends ETLCmd{
 	}
 
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		String output="";
 		String evtType="";
 		

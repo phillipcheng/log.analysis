@@ -1,6 +1,8 @@
-package etl.engine;
+ package etl.engine;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +22,22 @@ public class LogicSchema implements Serializable{
 
 	public static final Logger logger = LogManager.getLogger(LogicSchema.class);
 	
+	private Map<String, String> tableIdNameMap = null; //table-id to table-name mapping
+	private Map<String, String> attrIdNameMap = null; //attribute-id to attribute-name mapping
 	private Map<String, List<String>> attrNameMap = null; //table-name to list of attribute names mapping
 	private Map<String, List<FieldType>> attrTypeMap = null; //table-name to list of attribute types mapping
+	
+	/* To support logic schema with one table per schema file
+	 *   If index = true, this is only the index of schemas, will lazy-load the table schema
+	 */
+	private boolean index;
 
+	public String toString(){
+		return String.format("attrNameMap:%s", attrNameMap);
+	}
 	public LogicSchema(){
+		tableIdNameMap = new HashMap<String, String>();
+		attrIdNameMap = new HashMap<String, String>();
 		attrNameMap = new HashMap<String, List<String>>();
 		attrTypeMap = new HashMap<String, List<FieldType>>();
 	}
@@ -34,6 +48,12 @@ public class LogicSchema implements Serializable{
 			return false;
 		}
 		LogicSchema that = (LogicSchema) obj;
+		if (!Objects.equals(tableIdNameMap, that.getTableIdNameMap())){
+			return false;
+		}
+		if (!Objects.equals(attrIdNameMap, that.getAttrIdNameMap())){
+			return false;
+		}
 		if (!Objects.equals(attrNameMap, that.getAttrNameMap())){
 			return false;
 		}
@@ -44,7 +64,8 @@ public class LogicSchema implements Serializable{
 	}
 	
 	public boolean hasTable(String tableName){
-		return attrNameMap.containsKey(tableName);
+		return (tableIdNameMap != null && tableIdNameMap.containsValue(tableName)) ||
+				(attrNameMap != null && attrNameMap.containsKey(tableName));
 	}
 	
 	@JsonIgnore
@@ -99,5 +120,45 @@ public class LogicSchema implements Serializable{
 
 	public void setAttrTypeMap(Map<String, List<FieldType>> attrTypeMap) {
 		this.attrTypeMap = attrTypeMap;
+	}
+	
+	public Map<String, String> getTableIdNameMap() {
+		return tableIdNameMap;
+	}
+	public void setTableIdNameMap(Map<String, String> tableIdNameMap) {
+		this.tableIdNameMap = tableIdNameMap;
+	}
+	
+	@JsonIgnore
+	public Map<String, String> getAttrIdNameMap(String tableName) {
+		if (hasTable(tableName))
+			/* Only load table when the table exists */
+			attrNameMap.get(tableName);//load table
+		
+		return attrIdNameMap;
+	}
+	
+	public Map<String, String> getAttrIdNameMap() {
+		return attrIdNameMap;
+	}
+	public void setAttrIdNameMap(Map<String, String> attrIdNameMap) {
+		this.attrIdNameMap = attrIdNameMap;
+	}
+
+	@JsonIgnore
+	public Collection<String> getTableNames() {
+		if (tableIdNameMap != null && tableIdNameMap.size() > 0)
+			return tableIdNameMap.values();
+		else if (attrNameMap != null && attrNameMap.size() > 0)
+			return attrNameMap.keySet();
+		else
+			return Collections.emptyList();
+	}
+	
+	public boolean isIndex() {
+		return index;
+	}
+	public void setIndex(boolean index) {
+		this.index = index;
 	}
 }

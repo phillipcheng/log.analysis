@@ -1,10 +1,15 @@
 package etl.engine.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.script.Bindings;
+import javax.script.CompiledScript;
+import javax.script.SimpleBindings;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +25,7 @@ import etl.util.GroupFun;
 import etl.util.ScriptEngineUtil;
 import etl.util.StringUtil;
 import etl.util.VarType;
+import junit.framework.Assert;
 
 public class TestEngineUtil extends TestETLCmd{
 	public static final Logger logger = LogManager.getLogger(TestEngineUtil.class);
@@ -68,6 +74,34 @@ public class TestEngineUtil extends TestETLCmd{
 		String exp = "var telecomUtil = Java.type(\"etl.telecom.TelecomUtil\"); telecomUtil.processE164('1234');";
 		String output = (String) ScriptEngineUtil.eval(exp, VarType.STRING, vars);
 		logger.info(output);
+	}
+	
+	@Test
+	public void testJsEnginePerformance(){
+		String exp="'STAT_GROUP_'+originTableName";
+		String exp2="originTableName+'_'+filename.substring(filename.lastIndexOf('_')+1)";
+		CompiledScript cs=ScriptEngineUtil.compileScript(exp);
+		CompiledScript cs2=ScriptEngineUtil.compileScript(exp2);
+		
+		long startTime=System.currentTimeMillis();
+		long c=100000l;
+
+		for(long i=0;i<c;i++){
+			String value=String.valueOf((int)(Math.random()*100));
+			Map<String,Object> var=new HashMap<String,Object>();
+			var.put("originTableName", value);			
+			String ret=ScriptEngineUtil.eval(cs, var);
+			var.put("filename", value+"_BBG");
+			var.put("value", ret);
+			ret=ScriptEngineUtil.eval(cs2, var);
+			System.out.println(ret);
+//			assertEquals(value, ret);
+		}
+		long endTime=System.currentTimeMillis();
+		long duration=endTime-startTime;
+		double latency=((double)duration)/((double)c);
+		System.out.println(String.format("Duration:%s, Latency:%s", duration, latency));
+		
 	}
 	
 	@Test

@@ -1,0 +1,77 @@
+{
+  "tableIdNameMap" : { },
+  "attrIdNameMap" : { },
+  "attrNameMap" : {
+    "MyCore_" : [ "endTime", "duration", "SubNetwork", "ManagedElement", "Machine", "MyCore", "UUID", "VS.avePerCoreCpuUsage", "VS.peakPerCoreCpuUsage", "VS.xPerCoreCpuUsage", "VS.yPerCoreCpuUsage" ]
+  },
+  "attrTypeMap" : {
+    "MyCore_" : [ {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 10,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 70,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 70,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 54,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "STRING",
+      "size" : 72,
+      "precision" : 0,
+      "scale" : 0,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5,
+      "aggrType" : "NONE"
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 15,
+      "scale" : 5,
+      "aggrType" : "NONE"
+    } ]
+  },
+  "index" : false
+}

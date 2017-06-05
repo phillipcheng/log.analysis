@@ -2,29 +2,33 @@ package etl.flow.oozie;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import bdap.util.CmdDef;
-import bdap.util.CmdDefMgr;
 import bdap.util.EngineConf;
+import etl.engine.ETLCmd;
+import etl.engine.types.DataType;
+import etl.engine.types.InputFormatType;
 import etl.flow.ActionNode;
+import etl.flow.CallSubFlowNode;
+import etl.flow.CoordConf;
 import etl.flow.Data;
 import etl.flow.EndNode;
 import etl.flow.ExeType;
 import etl.flow.Flow;
-import etl.flow.InputFormatType;
 import etl.flow.Link;
 import etl.flow.Node;
 import etl.flow.NodeLet;
 import etl.flow.StartNode;
+import etl.flow.deploy.EngineType;
+import etl.flow.deploy.FlowDeployer;
 import etl.flow.oozie.coord.COORDINATORAPP;
 
 import etl.flow.oozie.wf.ACTION;
@@ -32,6 +36,7 @@ import etl.flow.oozie.wf.ACTIONTRANSITION;
 import etl.flow.oozie.wf.CONFIGURATION;
 import etl.flow.oozie.wf.DELETE;
 import etl.flow.oozie.wf.END;
+import etl.flow.oozie.wf.FLAG;
 import etl.flow.oozie.wf.FORK;
 import etl.flow.oozie.wf.FORKTRANSITION;
 import etl.flow.oozie.wf.JAVA;
@@ -41,7 +46,9 @@ import etl.flow.oozie.wf.MAPREDUCE;
 import etl.flow.oozie.wf.PARAMETERS;
 import etl.flow.oozie.wf.PREPARE;
 import etl.flow.oozie.wf.START;
+import etl.flow.oozie.wf.SUBWORKFLOW;
 import etl.flow.oozie.wf.WORKFLOWAPP;
+import etl.util.GlobExpPathFilter;
 
 public class OozieGenerator {
 	public static final Logger logger = LogManager.getLogger(OozieGenerator.class);
@@ -59,43 +66,73 @@ public class OozieGenerator {
 	public static final String prop_reduce_num ="mapreduce.job.reduces";//set this to 0 when there is no reducer
 	//input output
 	public static final String prop_inputformat="mapreduce.job.inputformat.class";
-		public static final String prop_inputformat_line="org.apache.hadoop.mapreduce.lib.input.NLineInputFormat";
-		public static final String prop_inputformat_filename="etl.util.FilenameInputFormat";
-		public static final String prop_inputformat_textfile="org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
+		
 	public static final String prop_inputdirs="mapreduce.input.fileinputformat.inputdir";
 	public static final String prop_outputformat="mapreduce.job.outputformat.class";
 		public static final String prop_outputformat_null="org.apache.hadoop.mapreduce.lib.output.NullOutputFormat";
-		public static final String prop_outputformat_textfile="org.apache.hadoop.mapreduce.lib.output.TextOutputFormat";
 	public static final String prop_outputdirs="mapreduce.output.fileoutputformat.outputdir";
 	public static final String prop_output_keyclass="mapreduce.job.output.key.class";
 	public static final String prop_output_valueclass="mapreduce.job.output.value.class";
 		public static final String prop_text_type="org.apache.hadoop.io.Text";
-	
+		public static final String prop_void_type="java.lang.Void";
+	public static final String prop_input_pathfilter="mapreduce.input.pathFilter.class";
+		public static final String prop_input_path_globexpfilter="etl.util.GlobExpPathFilter";
 	//command parameter are defined in the InvokerMapper
 	
 	private static String killName = "fail";
 	private static String killMessage = "failed, error message[${wf:errorMessage(wf:lastErrorNode())}]";
 	private static ACTIONTRANSITION errorTransition = new ACTIONTRANSITION();
 	public static final String wfid = "${wf:id()}";
+	public static final String wfid_in_fun = "wf:id()";
 	public static final String wfid_param_name="wfid";
 	public static final String wfid_param_exp= "${wfid}";
 	
-	private static String getInputFormat(InputFormatType ift){
-		if (InputFormatType.Line == ift){
-			return prop_inputformat_line;
-		}else if (InputFormatType.FileName == ift){
-			return prop_inputformat_filename;
-		}else if (InputFormatType.File == ift){
-			return prop_inputformat_textfile;
-		}else{
-			logger.error(String.format("inputformat:%s not supported", ift));
+	private static ETLCmd getCmd(ActionNode an) {
+		try{
+			String cmdClazz = (String) an.getProperties().get(ActionNode.key_cmd_class);
+			return (ETLCmd) Thread.currentThread().getContextClassLoader().loadClass(cmdClazz).newInstance();
+		}catch(Exception e){
+			logger.error("", e);
 			return null;
 		}
 	}
 	
-	private static CmdDef getCmd(ActionNode an){
-		String cmdClazz = an.getProperties().get(ActionNode.key_cmd_class);
-		return CmdDefMgr.getInstance().getCmdDef(cmdClazz);
+	private static String getInputDir(Data d, InputFormatType ift, DataType dt,List<String> pathFilter){
+		String baseoutput = null;
+		if (d.getBaseOutput()==null){
+			baseoutput="*";
+		}else{
+			baseoutput=d.getBaseOutput()+"-*";
+		}
+		String inputDir=null;
+		if (d.isInstance()){
+			if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
+				if (ift!=InputFormatType.FileName && dt==DataType.Path){
+					//the content of the input are path, we need to get the content of those paths
+					//${getContentsFromDfsFiles(nameNode, concat(concat('/femtocell/femto/filenameupdate_output/',wf:id()),'/'))}
+					if(pathFilter!=null && pathFilter.size()>0){
+						inputDir = String.format("${getContentsFromDfsFilesByPathFilter(nameNode, concat(concat('%s',%s),'/%s'),'%s')}", 
+								d.getLocation(), wfid_in_fun, baseoutput,String.join(",", pathFilter));
+					}else{
+						inputDir = String.format("${getContentsFromDfsFiles(nameNode, concat(concat('%s',%s),'/%s'))}", 
+								d.getLocation(), wfid_in_fun, baseoutput);
+					}
+				}else{
+					inputDir = String.format("%s%s/%s",d.getLocation(),wfid,baseoutput);
+				}
+			}else{
+				if (ift!=InputFormatType.FileName && dt==DataType.Path){
+					//TODO
+					throw new UnsupportedOperationException();
+				}else{
+					///flow1/csvmerge/${wf:actionExternalId('call_flow1')}
+					inputDir = d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow())+"/*";
+				}
+			}
+		}else{
+			inputDir = d.getLocation();
+		}
+		return inputDir;
 	}
 	
 	private static MAPREDUCE genMRAction(Flow flow, ActionNode an, boolean hasInstanceId){
@@ -123,12 +160,12 @@ public class OozieGenerator {
 		mapperClassCp.setName(prop_map_class);
 		mapperClassCp.setValue(EngineConf.mapper_class);
 		pl.add(mapperClassCp);
-		CmdDef cmd = getCmd(an);
+		ETLCmd cmd = getCmd(an);
 		if (cmd==null){
 			logger.error(String.format("%s is not supported.\n%s", an.getName(), an.getProperties()));
 			return null;
 		}
-		if (cmd.isHasReduce()){
+		if (cmd.hasReduce()){
 			CONFIGURATION.Property reducerClassCp = new CONFIGURATION.Property();
 			reducerClassCp.setName(prop_reduce_class);
 			reducerClassCp.setValue(EngineConf.reducer_class);
@@ -142,6 +179,27 @@ public class OozieGenerator {
 		//input and output configuration
 		List<NodeLet> inlets = an.getInLets();
 		List<String> inputDataDirs = new ArrayList<String>();
+		//add system properties
+		Map<String, Object> sysProperties = an.getSysProperties();
+		List<String> pathFilter = new ArrayList<String>();
+		for (String key: sysProperties.keySet()){
+			if (key.equals(GlobExpPathFilter.cfgkey_path_filters)){
+				CONFIGURATION.Property add = new CONFIGURATION.Property();
+				add.setName(prop_input_pathfilter);
+				add.setValue(prop_input_path_globexpfilter);
+				pl.add(add);
+			}
+			CONFIGURATION.Property cp = new CONFIGURATION.Property();
+			cp.setName(key);
+			cp.setValue(String.valueOf(sysProperties.get(key)));
+			pl.add(cp);
+			pathFilter.add(String.valueOf(sysProperties.get(key)));
+		}
+		//all the input dataset to this action should have the same inputformattype, datatype/recordtype
+		InputFormatType ift = null;
+		DataType dt = null;
+		String aift = (String) an.getProperty(ETLCmd.cfgkey_input_format, EngineType.oozie);
+		String adt = (String) an.getProperty(ETLCmd.cfgkey_record_type, EngineType.oozie);
 		for (NodeLet ln: inlets){
 			if (ln.getDataName()!=null){
 				Data d = flow.getDataDef(ln.getDataName());
@@ -149,31 +207,55 @@ public class OozieGenerator {
 					logger.error(String.format("data %s not found.", ln.getDataName()));
 					return null;
 				}else{
-					if (d.isInstance()){
-						inputDataDirs.add(d.getLocation()+wfid);
+					if (ift==null){
+						ift = d.getDataFormat();
+						dt = d.getRecordType();
+						if (aift!=null){
+							ift = InputFormatType.valueOf(aift);
+						}
+						if (adt!=null){
+							dt = DataType.valueOf(adt);
+						}
 					}else{
-						inputDataDirs.add(d.getLocation());
+						if (aift==null && !ift.equals(d.getDataFormat())){
+							logger.error(String.format("all input data should have the same inputformattype, %s differ with %s in action %s", 
+									d, ift, an.getName()));
+							return null;
+						}
+						if (adt==null && !dt.equals(d.getRecordType())){
+							logger.error(String.format("all input data should have the same datatype, %s differ with %s in action %s", 
+									d, dt, an.getName()));
+							return null;
+						}
 					}
+					inputDataDirs.add(getInputDir(d, ift, dt,pathFilter));
 				}
 			}
 		}
-			//input properties
-		CONFIGURATION.Property inputFormatCp = new CONFIGURATION.Property();
-		inputFormatCp.setName(prop_inputformat);
-		inputFormatCp.setValue(getInputFormat(InputFormatType.valueOf(an.getProperty(ActionNode.key_input_format))));
-		pl.add(inputFormatCp);
+		//input properties
+		CONFIGURATION.Property inputFormatTypeCp = new CONFIGURATION.Property();
+		inputFormatTypeCp.setName(prop_inputformat);
+		inputFormatTypeCp.setValue(ETLCmd.getInputFormat(ift).getName());
+		pl.add(inputFormatTypeCp);
+		if (dt == DataType.KeyPath || dt == DataType.KeyValue){
+			CONFIGURATION.Property useKeyValueCp = new CONFIGURATION.Property();
+			useKeyValueCp.setName(ETLCmd.sys_cfgkey_use_keyvalue);
+			useKeyValueCp.setValue("true");
+			pl.add(useKeyValueCp);
+		}
+		//
 		CONFIGURATION.Property inputDirsCp = new CONFIGURATION.Property();
 		inputDirsCp.setName(prop_inputdirs);
 		inputDirsCp.setValue(String.join(",", inputDataDirs));
 		pl.add(inputDirsCp);
-			//output properties
+		//output properties
 		CONFIGURATION.Property outputFormatCp = new CONFIGURATION.Property();
 		outputFormatCp.setName(prop_outputformat);
 		CONFIGURATION.Property outputDirCp = new CONFIGURATION.Property();
 		outputDirCp.setName(prop_outputdirs);
 		List<NodeLet> outlets = an.getOutlets();
 		String outputDataDir=null;
-		if (outlets!=null && outlets.size()==1){//for multiple output, the location should be the same, only differ baseoutput
+		if (outlets!=null && outlets.size()>0){//for multiple output, the location should be the same, only differ baseoutput
 			String dataName = outlets.iterator().next().getDataName();
 			if (dataName!=null){
 				Data d = flow.getDataDef(dataName);
@@ -181,8 +263,12 @@ public class OozieGenerator {
 					logger.error(String.format("data not found:%s", dataName));
 					return null;
 				}
-				outputDataDir = d.getLocation()+wfid;
-				outputFormatCp.setValue(prop_outputformat_textfile);
+				if (Data.INTANCE_FLOW_ME.equals(d.getInstanceFlow())){
+					outputDataDir = d.getLocation()+wfid;
+				}else{
+					outputDataDir = d.getLocation()+String.format("${wf:actionExternalId('%s')}", d.getInstanceFlow());
+				}
+				outputFormatCp.setValue(FlowDeployer.getOutputFormat(an));
 				outputDirCp.setValue(outputDataDir);
 				pl.add(outputDirCp);
 				{
@@ -212,7 +298,7 @@ public class OozieGenerator {
 		//cmd configuration
 		CONFIGURATION.Property cmdClassNameCp = new CONFIGURATION.Property();
 		cmdClassNameCp.setName(EngineConf.cfgkey_cmdclassname);
-		cmdClassNameCp.setValue(cmd.getClassName());
+		cmdClassNameCp.setValue(cmd.getClass().getName());
 		pl.add(cmdClassNameCp);
 		CONFIGURATION.Property wfNameCp = new CONFIGURATION.Property();
 		wfNameCp.setName(EngineConf.cfgkey_wfName);
@@ -230,7 +316,6 @@ public class OozieGenerator {
 		cfgPropertiesCp.setName(EngineConf.cfgkey_staticconfigfile);
 		cfgPropertiesCp.setValue(String.format("action_%s.properties", an.getName()));
 		pl.add(cfgPropertiesCp);
-		
 		return mr;
 	}
 	
@@ -239,7 +324,7 @@ public class OozieGenerator {
 		ja.setJobTracker(jobTrackValue);
 		ja.setNameNode(nameNodeValue);
 		ja.setMainClass(EngineConf.etlcmd_main_class);
-		ja.getArg().add(an.getProperty(ActionNode.key_cmd_class));
+		ja.getArg().add((String) an.getProperty(ActionNode.key_cmd_class));
 		ja.getArg().add(flow.getName());
 		if (!hasInstanceId){
 			ja.getArg().add(wfid);	
@@ -314,7 +399,7 @@ public class OozieGenerator {
 		boolean useFork = false;
 		ACTION fromAction=null;
 		FORK forkNode=null;
-		if (fromNode.getOutlets().size()>1){
+		if (flow.getOutLinks(fromNode.getName()).size()>1){//when fromNode has multiple out/next links, we need to generate a fork node
 			useFork=true;
 			String forkName = getForkNodeName(ln.getFromNodeName());
 			forkNode = getForkNode(wfa, forkName);
@@ -330,7 +415,7 @@ public class OozieGenerator {
 			}
 		}
 		String nextNodeName = ln.getToNodeName();
-		if (toNode.getInLets().size()>1){
+		if (flow.getInLinks(toNode.getName()).size()>1){//when toNode has multiple in links, we need to generate a join node
 			//may need to gen join, the toNode's corresponding join node is named as toNode.name+"_"+join
 			String joinNodeName = getJoinNodeName(ln.getToNodeName());
 			JOIN j = getJoinNode(wfa, joinNodeName);
@@ -418,11 +503,22 @@ public class OozieGenerator {
 				//gen node
 				if (node instanceof ActionNode){
 					ActionNode an = (ActionNode)node;
-					if (an.getExeType()==ExeType.mr){
+					ExeType exeType = ExeType.valueOf((String) an.getProperty(ActionNode.key_exe_type));
+					if (exeType==ExeType.mr){
 						act.setMapReduce(genMRAction(flow, an, hasInstanceId));
-					}else if (an.getExeType()==ExeType.java){
+					}else if (exeType==ExeType.java){
 						act.setJava(genJavaAction(flow, an, hasInstanceId));
 					}
+					wfa.getDecisionOrForkOrJoin().add(act);
+				}else if (node instanceof CallSubFlowNode){
+					CallSubFlowNode csfNode = (CallSubFlowNode)node;
+					//${nameNode}/project1/flow1/flow1_workflow.xml
+					String appPath = String.format("${nameNode}/%s/%s/%s_workflow.xml", csfNode.getPrjName(), 
+							csfNode.getSubFlowName(), csfNode.getSubFlowName());
+					SUBWORKFLOW subwf = new SUBWORKFLOW();
+					act.setSubWorkflow(subwf);
+					act.getSubWorkflow().setAppPath(appPath);
+					act.getSubWorkflow().setPropagateConfiguration(new FLAG());
 					wfa.getDecisionOrForkOrJoin().add(act);
 				}else if (node instanceof EndNode){
 					END wfend = new END();
@@ -461,15 +557,13 @@ public class OozieGenerator {
 	}
 	//2020-10-27T09:00Z
 	public static final String key_app_path="workflowAppUri";
-	private static String sdformat="yyyy-MM-dd'T'hh:mm:ss";
-	private static DateTimeFormatter df = DateTimeFormatter.ofPattern(sdformat);
 	public static COORDINATORAPP genCoordXml(Flow flow){
 		//default startTime=now, endTime = 3*duration+startTime, timezone:currentTimezone
 		int durationSec = flow.getStart().getDuration();
 		ZoneId zoneId = ZoneId.systemDefault();
 		ZonedDateTime now = ZonedDateTime.now(zoneId);
 		ZonedDateTime later = now.plus(durationSec, ChronoUnit.SECONDS);
-		return genCoordXml(flow, df.format(now), df.format(later), zoneId.getId());
+		return genCoordXml(flow, CoordConf.df.format(now), CoordConf.df.format(later), zoneId.getId());
 	}
 	
 	public static COORDINATORAPP genCoordXml(Flow flow, String startTime, String endTime, String timezone){

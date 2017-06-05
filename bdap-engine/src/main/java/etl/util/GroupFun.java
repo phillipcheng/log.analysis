@@ -46,13 +46,22 @@ public class GroupFun {
 	}
 	
 	public static String dtStandardize(String input, String inputFormat){
+		Date d = getStandardizeDt(input, inputFormat);
+		if (d!=null){
+			return FieldType.sdatetimeFormat.format(d);
+		}else{
+			return "";
+		}
+	}
+	
+	public static Date getStandardizeDt(String input, String inputFormat){
 		SafeSimpleDateFormat sdf = null;
 		
 		if (input != null)
 			input = input.trim();
 		
 		if (input == null || input.length() == 0)
-			return input;
+			return null;
 		else {
 			if (dtMap.containsKey(inputFormat)){
 				sdf = dtMap.get(inputFormat);
@@ -62,8 +71,35 @@ public class GroupFun {
 			}
 			try {
 				Date d = sdf.parse(input);
-				return FieldType.sdatetimeFormat.format(d);
+				return d;
 			}catch(Exception e){
+				logger.error("", e);
+				return null;
+			}
+		}
+	}
+	
+	public static String convertTimeStampToString(String input, String inputFormat,String timeZone){
+		SafeSimpleDateFormat sdf = null;
+		if(timeZone == null || "".equals(timeZone)){
+			timeZone = "GMT";
+		}
+		if (input != null)
+			input = input.trim();
+		if (input == null || input.length() == 0)
+			return input;
+		else {
+			try {
+			Date date = new Date(Long.parseLong(input));
+			if (dtMap.containsKey(inputFormat)){
+				sdf = dtMap.get(inputFormat);
+			}else{
+				sdf = new SafeSimpleDateFormat(inputFormat);
+				dtMap.put(inputFormat, sdf);
+			}
+			sdf.setTimeZone(TimeZone.getTimeZone(timeZone));
+			return sdf.format(date);
+			} catch(Exception e){
 				logger.error("", e);
 				return null;
 			}
@@ -146,8 +182,14 @@ public class GroupFun {
 	
 	//////////////
 	public static String getParentFolderName(String path){
-	    String rootToParent = path.substring(0, path.lastIndexOf('/', path.length() - 1));
-	    return rootToParent.substring(rootToParent.lastIndexOf('/', rootToParent.length() - 1) + 1);
+		int slashLastIndex = path.lastIndexOf('/', path.length() - 1);
+		if (slashLastIndex>=0){
+			String rootToParent = path.substring(0, slashLastIndex);
+			return rootToParent.substring(rootToParent.lastIndexOf('/', rootToParent.length() - 1) + 1);
+		}else{
+			logger.error(String.format("no slash in %s", path));
+			return null;
+		}
 	}
 	
 	///////////////

@@ -24,63 +24,59 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Lists;
 
 import etl.engine.ETLCmd;
+import etl.engine.types.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.IdxRange;
 import etl.util.ScriptEngineUtil;
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class CsvSplitCmd extends ETLCmd {
 	private static final long serialVersionUID = 1L;
 
 	public static final Logger logger = LogManager.getLogger(CsvSplitCmd.class);
 
-	private static final String SPLIT_KEYS = "split.keys";
-	private static final String SPLIT_KEYS_OMIT = "split.keys.omit";
-	private static final String SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
+	private static final @ConfigKey String cfgkey_SPLIT_KEYS = "split.keys";
+	private static final @ConfigKey(type=Boolean.class) String cfgkey_SPLIT_KEYS_OMIT = "split.keys.omit";
+	private static final @ConfigKey String cfgkey_SPLIT_KEYS_REDUCE_EXP = "split.keys.reduce.exp";
+	private static final @ConfigKey(type=Boolean.class) String cfgkey_input_endwithcomma = "input.endwithcomma";
 
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 	
 	private List<IdxRange> splitKeys;
 	private boolean splitKeysOmit;
+	private boolean inputEndWithComma;
 	
-	private CompiledScript splitKeysReduce;
+	private transient CompiledScript splitKeysReduce;
+	
+	public CsvSplitCmd(){
+		super();
+	}
 	
 	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public CsvSplitCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs,
-			String[] otherArgs) {
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		
-		splitKeys = IdxRange.parseString(getCfgString(SPLIT_KEYS, null));
-		splitKeysOmit = getCfgBoolean(SPLIT_KEYS_OMIT, false);
+		splitKeys = IdxRange.parseString(getCfgString(cfgkey_SPLIT_KEYS, null));
+		splitKeysOmit = getCfgBoolean(cfgkey_SPLIT_KEYS_OMIT, false);
+		inputEndWithComma = getCfgBoolean(cfgkey_input_endwithcomma, false);
 		
-		String cfg = getCfgString(SPLIT_KEYS_REDUCE_EXP, null);
+		String cfg = getCfgString(cfgkey_SPLIT_KEYS_REDUCE_EXP, null);
 		if (cfg != null && cfg.length() > 0)
 			splitKeysReduce = ScriptEngineUtil.compileScript(cfg);
 	}
-
-	public Map<String, Object> mapProcess(long offset, String row,
-			Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception {
-		Map<String, Object> ret = new HashMap<String, Object>();
-		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
-		CSVParser parser = null;
-		try {
-			parser = CSVParser.parse(row, CSVFormat.DEFAULT.withTrim());
-			for (CSVRecord csv : parser.getRecords())
-				vl.add(getTuple2(csv, splitKeys, splitKeysOmit));
-		} finally {
-			if (parser != null)
-				parser.close();
-		}
-		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
-		return ret;
-	}
-
+	
 	private Tuple2<String, String> getTuple2(CSVRecord csv, List<IdxRange> splitKeys, boolean splitKeysOmit) throws Exception {
 		List<String> keys = new ArrayList<String>();
 		StringBuilder buffer = new StringBuilder();
@@ -134,19 +130,30 @@ public class CsvSplitCmd extends ETLCmd {
 	}
 
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values, 
-			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String[]> ret = new ArrayList<String[]>();
-
-		Iterator<Text> it = values.iterator();
-		while (it.hasNext()) {
-			String v = it.next().toString();
-			ret.add(new String[]{v, null, reduceKey(key.toString(), v)});
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		super.init();
+		List<Tuple2<String, String>> vl = new ArrayList<Tuple2<String, String>>();
+		CSVParser parser = null;
+		try {
+			parser = CSVParser.parse(value, CSVFormat.DEFAULT.withTrim().withTrailingDelimiter(inputEndWithComma));
+			for (CSVRecord csv : parser.getRecords())
+				vl.add(getTuple2(csv, splitKeys, splitKeysOmit));
+		} finally {
+			if (parser != null)
+				parser.close();
 		}
-		
+		return vl;
+	}
+	
+	@Override
+	public Map<String, Object> mapProcess(long offset, String row,
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		List<Tuple2<String, String>> vl = flatMapToPair(null, row, context);
+		ret.put(RESULT_KEY_OUTPUT_TUPLE2, vl);
 		return ret;
 	}
-
+	
 	private String reduceKey(String key, String value) throws Exception {
 		if (splitKeysReduce != null) {
 			String[] keys;
@@ -169,9 +176,20 @@ public class CsvSplitCmd extends ETLCmd {
 			getSystemVariables().remove("keys");
 			getSystemVariables().remove(ETLCmd.VAR_FIELDS);
 			return result;
-			
 		} else {
 			return key;
 		}
+	}
+	
+	@Override
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
+		Iterator<? extends Object> it = values.iterator();
+		while (it.hasNext()) {
+			String v = it.next().toString();
+			ret.add(new Tuple3<String, String, String>(v, null, reduceKey(key.toString(), v)));
+		}
+		return ret;
 	}
 }

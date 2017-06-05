@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -28,6 +29,7 @@ public class ScriptEngineUtil {
 	}
 	
 	public static CompiledScript compileScript(String exp){
+		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine jsEngine = manager.getEngineByName("nashorn");
 		Compilable compEngine = (Compilable)jsEngine;
         CompiledScript cs = null;
@@ -40,7 +42,12 @@ public class ScriptEngineUtil {
 	}
 	
 	public static String eval(CompiledScript cs, Map<String, Object> variables){
-		Bindings bindings = new SimpleBindings();
+		Bindings bindings=cs.getEngine().getBindings(ScriptContext.ENGINE_SCOPE);//Get Engine Scope
+		if(bindings==null){
+			bindings=new SimpleBindings();
+			cs.getEngine().setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+		}
+		bindings.clear();
         if (variables!=null){
 			for (String key: variables.keySet()){
 				Object v = variables.get(key);
@@ -52,7 +59,7 @@ public class ScriptEngineUtil {
 			}
 		}
 		try {
-			Object ret = cs.eval(bindings);
+			Object ret = cs.eval();
 			logger.debug(String.format("eval get result: '%s'", ret));
 			if (ret!=null){
 				if (ret instanceof String){
@@ -67,14 +74,23 @@ public class ScriptEngineUtil {
 				}
 			}
 			return null;
-		} catch (ScriptException e) {
-			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
+		} catch (Exception e) {
+			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables), e);
 			return null;
 		}
 	}
 	
 	public static Object evalObject(CompiledScript cs, Map<String, Object> variables){
-		Bindings bindings = new SimpleBindings();
+		return evalObject(cs, null, variables);
+	}
+	
+	public static Object evalObject(CompiledScript cs, String orgExp, Map<String, Object> variables){
+		Bindings bindings=cs.getEngine().getBindings(ScriptContext.ENGINE_SCOPE);//Get Engine Scope
+		if(bindings==null){
+			bindings=new SimpleBindings();
+			cs.getEngine().setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+		}
+		bindings.clear();
         if (variables!=null){
 			for (String key: variables.keySet()){
 				Object v = variables.get(key);
@@ -86,11 +102,11 @@ public class ScriptEngineUtil {
 			}
 		}
 		try {
-			Object ret = cs.eval(bindings);
+			Object ret = cs.eval();
 			logger.debug(String.format("eval get result: '%s'", ret));
 			return ret;
-		} catch (ScriptException e) {
-			logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), cs, variables));
+		} catch (Exception e) {
+			logger.error(String.format("error msg: %s while eval %s, orgExp: %s, var map is %s", e.getMessage(), cs, orgExp, variables));
 			return null;
 		}
 	}
@@ -147,7 +163,7 @@ public class ScriptEngineUtil {
 				}
 			}
 			return ret;
-		} catch (ScriptException e) {
+		} catch (Exception e) {
 			if (logError){
 				logger.error(String.format("error msg: %s while eval %s, var map is %s", e.getMessage(), exp, variables));
 			}

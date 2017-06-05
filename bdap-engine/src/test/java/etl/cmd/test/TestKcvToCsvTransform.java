@@ -4,18 +4,18 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
+
+import etl.input.KCVInputFormat;
 
 public class TestKcvToCsvTransform extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestKcvToCsvTransform.class);
@@ -33,8 +33,10 @@ public class TestKcvToCsvTransform extends TestETLCmd {
 			String kcvtransProp = "kcv2csv.properties";
 			String[] kcvFiles = new String[]{"PJ24002A_BBG2.fix"};
 			// run job
+			getConf().set("header.line", "TIME:\\s*\\S+\\s*UNCERTAINTY:\\s*\\S+\\s*SOURCE:");
+			getConf().set("footer.line", "");
 			List<String> retlist = super.mapTest(remoteCsvFolder, remoteCsvOutputFolder, kcvtransProp, kcvFiles, 
-					cmdClassName, true);
+					cmdClassName, KCVInputFormat.class);
 			String regexPattern = "[\\s]+([A-Za-z0-9\\,\\. ]+)[\\s]+([A-Z][A-Z ]+)";
 			String line = null;
 			

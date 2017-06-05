@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -13,7 +14,7 @@ import java.util.zip.ZipOutputStream;
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -21,15 +22,37 @@ import org.apache.hadoop.fs.Path;
 public class Util {
 	public static final Logger logger = LogManager.getLogger(Util.class);
 	
+	public static List<int[]> createBatch(int batchSize, int totalSize){
+		List<int[]> batches = new ArrayList<int[]>();
+		int n = totalSize/batchSize;
+		int bn = totalSize%batchSize==0?n:n+1;
+		for (int i=0; i<bn; i++){
+			if (i!=bn-1){//not last one
+				batches.add(new int[]{i*batchSize, (i+1)*batchSize-1});
+			}else{
+				batches.add(new int[]{i*batchSize, totalSize-1});
+			}
+		}
+		return batches;
+	}
+	
 	public static String getCsv(List<String> csv, boolean newline){
+		return getCsv(csv,",",false,newline);
+	}
+	
+	public static String getCsv(List<String> csv, String delimiter, boolean escapingCSV, boolean newline){
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<csv.size(); i++){
 			String v = (String) csv.get(i);
 			if (v!=null){
-				sb.append(v);
+				if(escapingCSV==true){
+					sb.append(StringEscapeUtils.escapeCsv(v));
+				}else{
+					sb.append(v);
+				}				
 			}
 			if (i<csv.size()-1){
-				sb.append(",");
+				sb.append(delimiter);
 			}
 		}
 		if (newline){
@@ -91,5 +114,26 @@ public class Util {
 		zin.closeEntry();
 		zin.close();
 		return filecount;
+	}
+	
+	public static FileType guessFileType(String filePath) {
+		if (filePath.endsWith(".csv"))
+			return FileType.textData;
+		else if (filePath.endsWith(".txt"))
+			return FileType.textData;
+		else if (filePath.endsWith(".properties"))
+			return FileType.textData;
+		else if (filePath.endsWith(".xml"))
+			return FileType.textData;
+		else if (filePath.endsWith(".json"))
+			return FileType.textData;
+		else if (filePath.endsWith(".sql"))
+			return FileType.textData;
+		else if (filePath.endsWith(".template"))
+			return FileType.textData;
+		else if (filePath.endsWith(".schema"))
+			return FileType.textData;
+		else
+			return FileType.binaryData;
 	}
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- more bean definitions go here -->
+    
+    <bean id="flowMgr" class="etl.flow.oozie.OozieFlowMgr">
+    	<constructor-arg><bean factory-bean="flowDeployer" factory-method="getDeployMethod"></bean></constructor-arg>
+    	<property name="dateTimePattern" value="EEE, dd MMM yyyy HH:mm:ss z"/>
+    </bean>
+    
+    <bean id="appProjectService" class="dv.service.AppProjectService">
+	  <property name="projectRepository" ref="projectRepository"/>
+    </bean>
+    
+    <bean id="flowDeployer" class="etl.flow.deploy.FlowDeployer">
+    	<constructor-arg>
+    		<value>config/config.properties</value>
+    	</constructor-arg>
+    	<constructor-arg ref="appProjectService"/>
+    </bean>
+
+</beans>

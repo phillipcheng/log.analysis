@@ -1,9 +1,13 @@
 package etl.flow.oozie;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -11,38 +15,62 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.Resource;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import bdap.util.EngineConf;
+import bdap.util.FileType;
 import bdap.util.HdfsUtil;
 import bdap.util.JsonUtil;
+import bdap.util.Util;
 import bdap.util.XmlUtil;
 import dv.util.RequestUtil;
+import etl.engine.types.InputFormatType;
+import etl.flow.CoordConf;
+import etl.flow.Data;
 import etl.flow.Flow;
-import etl.flow.mgr.FileType;
+import etl.flow.deploy.DefaultDeployMethod;
+import etl.flow.deploy.DeployMethod;
+import etl.flow.deploy.EngineType;
+import etl.flow.deploy.FlowDeployer;
+import etl.flow.mgr.FlowInfo;
 import etl.flow.mgr.FlowMgr;
 import etl.flow.mgr.FlowServerConf;
 import etl.flow.mgr.InMemFile;
+import etl.flow.mgr.LogResource;
 import etl.flow.mgr.NodeInfo;
-import etl.flow.oozie.coord.COORDINATORAPP;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 
 public class OozieFlowMgr extends FlowMgr{
 	
 	public static final Logger logger = LogManager.getLogger(OozieFlowMgr.class);
+	private static final int DEFAULT_MAX_FILE_SIZE = 1048576; /* 1MB */
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
+	private static final InMemFile[] EMPTY_LOG_FILES = new InMemFile[0];
+	private static final Resource[] EMPTY_LOG_RESOURCES = new Resource[0];
 	private String dateTimePattern;
+	private FileSystem fs;
 	
-	private String getDir(FileType ft, String projectName, OozieConf oc){
-		if (ft == FileType.actionProperty || ft == FileType.engineProperty || 
-				ft==FileType.thirdpartyJar || ft == FileType.ftmappingFile || ft==FileType.log4j){
-			return String.format("%s/user/%s/%s/lib/", oc.getNameNode(), oc.getUserName(), projectName);
-		}else if (ft == FileType.oozieWfXml || ft == FileType.oozieCoordXml){
-			return String.format("%s/user/%s/%s/", oc.getNameNode(), oc.getUserName(), projectName);
-		}else{
-			logger.error("file type not supported:%s", ft);
-			return null;
-		}
+	public OozieFlowMgr() {
 	}
 	
+	public OozieFlowMgr(FileSystem fs) {
+		this.fs = fs;
+	}
+	
+	public OozieFlowMgr(DeployMethod deployMethod) {
+		if (deployMethod instanceof DefaultDeployMethod)
+			this.fs = ((DefaultDeployMethod) deployMethod).getFs();
+		else
+			this.fs = null;
+	}
+
 	public String genWfXmlFile(Flow flow){
 		return genWfXmlFile(flow, null, false);
 	}
@@ -65,76 +93,134 @@ public class OozieFlowMgr extends FlowMgr{
 		return new InMemFile(FileType.oozieWfXml, wfFileName, flowXml.getBytes());
 	}
 	
-	private InMemFile genCoordXml(Flow flow){
-		String coordFile = String.format("%s_coordinate.xml", flow.getName());
-		//gen flow_coordinate.xml
-		COORDINATORAPP coord = OozieGenerator.genCoordXml(flow);
-		byte[] content = XmlUtil.marshalToBytes(coord, "coordinate-app");
-		return new InMemFile(FileType.oozieCoordXml, coordFile, content);
+	private bdap.xml.config.Configuration.Property getWfIdConf(String wfId){
+		bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+		property.setName(OozieConf.key_wfInstanceId);
+		property.setValue(wfId);
+		return property;
 	}
 	
-	private bdap.xml.config.Configuration getBodyConf(OozieConf oc, String projectName, String flowName){
+	/*
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/
+	oozie.wf.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
+	note: ${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/ not needed in oozie.libpath, as can be implied from oozie.wf.application.path
+	 */
+	private bdap.xml.config.Configuration getWfConf(OozieConf oc, String projectDir, String flowName){
 		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
 		{
-			bdap.xml.config.Configuration.Property propUserName = new bdap.xml.config.Configuration.Property();
-			propUserName.setName(OozieConf.key_user_name);
-			propUserName.setValue(oc.getUserName());
-			bodyConf.getProperty().add(propUserName);
-		}{
-			bdap.xml.config.Configuration.Property propNameNode = new bdap.xml.config.Configuration.Property();
-			propNameNode.setName(OozieConf.key_nameNode);
-			propNameNode.setValue(oc.getNameNode());
-			bodyConf.getProperty().add(propNameNode);
-		}{
-			bdap.xml.config.Configuration.Property propJobTracker = new bdap.xml.config.Configuration.Property();
-			propJobTracker.setName(OozieConf.key_jobTracker);
-			propJobTracker.setValue(oc.getJobTracker());
-			bodyConf.getProperty().add(propJobTracker);
-		}{
-			bdap.xml.config.Configuration.Property queueName = new bdap.xml.config.Configuration.Property();
-			queueName.setName(OozieConf.key_queueName);
-			queueName.setValue(oc.getQueueName());
-			bodyConf.getProperty().add(queueName);
-		}{
 			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
 			oozieLibPath.setName(OozieConf.key_oozieLibPath);
 			oozieLibPath.setValue(oc.getOozieLibPath());
 			bodyConf.getProperty().add(oozieLibPath);
 		}{
-			bdap.xml.config.Configuration.Property oozieLibPath = new bdap.xml.config.Configuration.Property();
-			oozieLibPath.setName(OozieConf.key_useSystemPath);
-			oozieLibPath.setValue("true");
-			bodyConf.getProperty().add(oozieLibPath);
-		}{
 			bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
 			propWfAppPath.setName(OozieConf.key_oozieWfAppPath);
-			propWfAppPath.setValue(String.format("%s/user/%s/%s/%s_workflow.xml", oc.getNameNode(), oc.getUserName(), projectName, flowName));
+			String dir = getDir(FileType.oozieWfXml, projectDir, flowName, oc);
+			propWfAppPath.setValue(String.format("%s%s_workflow.xml", dir, flowName));
 			bodyConf.getProperty().add(propWfAppPath);
 		}
 		return bodyConf;
 	}
-
-	//deploy all the in-mem files and execute the workflow
-	public void deploy(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
-		//deploy to the server
-		deployFiles.add(super.genEnginePropertyFile(ec));
-		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-		for (InMemFile im:deployFiles){
-			String dir = getDir(im.getFileType(), projectName, oc);
-			String path = String.format("%s%s", dir, im.getFileName());
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+	
+	/*
+	oozie.libpath=${nameNode}/user/${user.name}/bdap-VVERSIONN/lib/,${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/lib/
+	oozie.coord.application.path=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_coordinator.xml
+	workflowAppUri=${nameNode}/user/${user.name}/pde-VVERSIONN/binfile/binfile_workflow.xml
+	flowName=test1
+	duration=15
+	start=2016-09-21T08:40Z
+	end=2020-10-27T09:00Z
+	*/
+	private bdap.xml.config.Configuration getCoordConf(OozieConf oc, CoordConf cc, String projectDir, String flowName){
+		bdap.xml.config.Configuration bodyConf = new bdap.xml.config.Configuration();
+		{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			String projectLibPath = getDir(FileType.thirdpartyJar, projectDir, flowName, oc);
+			property.setName(OozieConf.key_oozieLibPath);
+			property.setValue(String.format("%s,%s", oc.getOozieLibPath(), projectLibPath));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName(OozieConf.key_oozieCoordinateAppPath);
+			property.setValue(cc.getCoordPath());
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("workflowAppUri");
+			String dir = getDir(FileType.oozieWfXml, projectDir, flowName, oc);
+			property.setValue(String.format("%s%s_workflow.xml", dir, flowName));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("flowName");
+			property.setValue(flowName);
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("duration");
+			property.setValue(String.valueOf(cc.getDuration()));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("start");
+			property.setValue(String.valueOf(cc.getStartTime()));
+			bodyConf.getProperty().add(property);
+		}{
+			bdap.xml.config.Configuration.Property property = new bdap.xml.config.Configuration.Property();
+			property.setName("end");
+			property.setValue(String.valueOf(cc.getEndTime()));
+			bodyConf.getProperty().add(property);
 		}
+		return bodyConf;
+	}
+
+	//deploy all the in-mem files
+	public boolean deployFlowFromXml(String projectDir, String flowName, List<InMemFile> deployFiles, FlowDeployer fd){
+		//deploy to the server
+		deployFiles.add(super.genEnginePropertyFile(fd.getEngineConfig()));
+		uploadFiles(projectDir, flowName, deployFiles, fd);
+		return true;
 	}
 	
-	//deploy all the in-mem files and execute the workflow
-	public String deployAndRun(String projectName, String flowName, List<InMemFile> deployFiles, OozieConf oc, EngineConf ec){
-		deploy(projectName, flowName, deployFiles, oc, ec);
-		//start the job
+	//generate the wf.xml, action.properties, etlengine.propertis, and deploy it
+	@Override
+	public boolean deployFlow(String prjName, Flow flow, String[] jars, String[] propFiles, FlowDeployer fd) throws Exception{
+		String localProjectFolder = fd.getProjectLocalDir(prjName);
+		String localFlowFolder = String.format("%s/%s", localProjectFolder, flow.getName());
+		
+		List<InMemFile> imFiles = new ArrayList<InMemFile>();
+		//get jar
+		List<InMemFile> jarDU = FlowDeployer.getJarDU(localFlowFolder, jars);
+		imFiles.addAll(jarDU);
+		//get prop files
+		List<InMemFile> propDU = FlowDeployer.getPropDU(localFlowFolder, propFiles);
+		imFiles.addAll(propDU);
+		//gen wf xml
+		InMemFile wfXml = genWfXml(flow, null, false);
+		imFiles.add(wfXml);
+		//gen action.properties
+		List<InMemFile> actionPropertyFiles = super.genProperties(flow, EngineType.oozie);
+		imFiles.addAll(actionPropertyFiles);
+		//gen etlengine.properties
+		InMemFile enginePropertyFile = super.genEnginePropertyFile(fd.getEngineConfig());
+		imFiles.add(enginePropertyFile);
+		//deploy to the server
+		String projectDir = fd.getProjectHdfsDir(prjName);
+		uploadFiles(projectDir, flow.getName(), imFiles, fd);
+		return true;
+	}
+
+	@Override
+	public String executeFlow(String prjName, String flowName, FlowDeployer fd){
+		String projectDir = fd.getProjectHdfsDir(prjName);
+		OozieConf oc = fd.getOozieServerConf();
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> queryParamMap = new HashMap<String, String>();
 		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
-		bdap.xml.config.Configuration bodyConf = getBodyConf(oc, projectName, flowName);
-		String body = XmlUtil.marshalToString(bodyConf, "configuration");
+		bdap.xml.config.Configuration commonConf = getCommonConf(fd, prjName, flowName);
+		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
+		commonConf.getProperty().addAll(wfConf.getProperty());
+		String body = XmlUtil.marshalToString(commonConf, "configuration");
 		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
 		logger.info(String.format("post result:%s", result));
 		Map<String, String> vm = JsonUtil.fromJsonString(result, HashMap.class);
@@ -145,84 +231,122 @@ public class OozieFlowMgr extends FlowMgr{
 		}
 	}
 	
-	//transform the flow to workflow.xml, actionX.properties, then deploy and run
-	@Override
-	public String execute(String projectName, Flow flow, List<InMemFile> imFiles, 
-			FlowServerConf fsconf, EngineConf ec, String startNode, String instanceId) {
-		OozieConf oc = (OozieConf)fsconf;
-		//generate wf.xml
-		boolean useInstanceId = instanceId==null? false:true;
-		if (imFiles==null){
-			imFiles = new ArrayList<InMemFile>();
+	public String executeFlow(String prjName, String flowName, FlowDeployer fd, String wfId){
+		String projectDir = fd.getProjectHdfsDir(prjName);
+		OozieConf oc = fd.getOozieServerConf();
+		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
+		Map<String, String> queryParamMap = new HashMap<String, String>();
+		queryParamMap.put(OozieConf.key_oozie_action, OozieConf.value_action_start);
+		bdap.xml.config.Configuration commonConf = getCommonConf(fd, prjName, flowName);
+		bdap.xml.config.Configuration wfConf = getWfConf(oc, projectDir, flowName);
+		commonConf.getProperty().addAll(wfConf.getProperty());
+		bdap.xml.config.Configuration.Property wfIdProperty = getWfIdConf(wfId);
+		commonConf.getProperty().add(wfIdProperty);
+		String body = XmlUtil.marshalToString(commonConf, "configuration");
+		String result = RequestUtil.post(jobSumbitUrl, null, 0, queryParamMap, null, body);
+		logger.info(String.format("post result:%s", result));
+		Map<String, String> vm = JsonUtil.fromJsonString(result, HashMap.class);
+		if (vm!=null){
+			return vm.get("id");
+		}else{
+			return null;
 		}
-		InMemFile wfXml = genWfXml(flow, startNode, useInstanceId);
-		imFiles.add(wfXml);
-		//gen action.properties
-		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
-		imFiles.addAll(actionPropertyFiles);
-		String newInstanceId = deployAndRun(projectName, flow.getName(), imFiles, oc, ec);
-		return newInstanceId;
 	}
 	
 	@Override
-	public boolean deploy(String projectName, Flow flow, FlowServerConf fsconf, EngineConf ec) {
-		OozieConf oc = (OozieConf)fsconf;
-		List<InMemFile> imFiles = new ArrayList<InMemFile>();
-		//gen wf xml
-		InMemFile wfXml = genWfXml(flow, null, false);
-		imFiles.add(wfXml);
-		//gen coord xml
-		InMemFile coordXml = genCoordXml(flow);
-		imFiles.add(coordXml);
-		//gen action.properties
-		List<InMemFile> actionPropertyFiles = super.genProperties(flow);
-		imFiles.addAll(actionPropertyFiles);
-		//gen etlengine.properties
-		InMemFile enginePropertyFile = super.genEnginePropertyFile(ec);
-		imFiles.add(enginePropertyFile);
-		//deploy to the server
-		uploadFiles(projectName, imFiles.toArray(new InMemFile[]{}), fsconf, ec);
+	public String executeCoordinator(String prjName, String flowName, FlowDeployer fd, CoordConf cc){
+		String projectDir = fd.getProjectHdfsDir(prjName);
+		OozieConf oc = fd.getOozieServerConf();
 		//start the coordinator
 		String jobSumbitUrl=String.format("http://%s:%d/oozie/v1/jobs", oc.getOozieServerIp(), oc.getOozieServerPort());
 		Map<String, String> headMap = new HashMap<String, String>();
-		bdap.xml.config.Configuration bodyConf = getBodyConf(oc, projectName, flow.getName());
-		bdap.xml.config.Configuration.Property propWfAppPath = new bdap.xml.config.Configuration.Property();
-		propWfAppPath.setName(OozieConf.key_oozieCoordinateAppPath);
-		propWfAppPath.setValue(String.format("%s/user/%s/%s/%s_coordinator.xml", oc.getNameNode(), oc.getUserName(), projectName, flow.getName()));
-		bodyConf.getProperty().add(propWfAppPath);
-		String body = XmlUtil.marshalToString(bodyConf, "configuration");
-		RequestUtil.post(jobSumbitUrl, headMap, body);
-		return true;
+		bdap.xml.config.Configuration commonConf = getCommonConf(fd, prjName, flowName);
+		bdap.xml.config.Configuration coordConf = getCoordConf(oc, cc, projectDir, flowName);
+		commonConf.getProperty().addAll(coordConf.getProperty());
+		String body = XmlUtil.marshalToString(commonConf, "configuration");
+		String ret = RequestUtil.post(jobSumbitUrl, headMap, body);
+		Map<String, String> vm = JsonUtil.fromJsonString(ret, HashMap.class);
+		if (vm!=null){
+			return vm.get("id");
+		}else{
+			return null;
+		}
 	}
 
 	@Override
-	public void uploadFiles(String projectName, InMemFile[] files, FlowServerConf fsconf, EngineConf ec) {
-		OozieConf oc = (OozieConf) fsconf;
-		//deploy to the server
-		FileSystem fs = HdfsUtil.getHadoopFs(ec.getDefaultFs());
-		for (InMemFile im:files){
-			String dir = getDir(im.getFileType(), projectName, oc);
-			String path = String.format("%s%s", dir, im.getFileName());
-			logger.info(String.format("copy to %s", path));
-			HdfsUtil.writeDfsFile(fs, path, im.getContent());
+	public void executeAction(String projectName, Flow flow, List<InMemFile> imFiles, FlowServerConf fsconf,
+			EngineConf ec, String actionNode, String instanceId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public FlowInfo getFlowInfo(String projectName, FlowServerConf fsconf, String instanceId) {
+		if (instanceId != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobInfoUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			Map<String, Object> flowInfoMap = JsonUtil.fromJsonString(RequestUtil.get(jobInfoUrl, null, 0, headMap), HashMap.class);
+			FlowInfo flowInfo = new FlowInfo();
+			flowInfo.setId(instanceId);
+			flowInfo.setName((String) flowInfoMap.get("appName"));
+			flowInfo.setStatus((String) flowInfoMap.get("status"));
+			DateFormat dtFormat;
+			if (dateTimePattern != null)
+				dtFormat = new SimpleDateFormat(dateTimePattern, Locale.forLanguageTag("en-US"));
+			else
+				dtFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.forLanguageTag("en-US"));
+			String t = (String) flowInfoMap.get("startTime");
+			flowInfo.setStartTime(t);
+			t = (String) flowInfoMap.get("endTime");
+			flowInfo.setEndTime(t);
+			t = (String) flowInfoMap.get("createdTime");
+			flowInfo.setCreatedTime(t);
+			t = (String) flowInfoMap.get("lastModTime");
+			flowInfo.setLastModifiedTime(t);
+			return flowInfo;
 		}
+		return null;
+	}
+	
+	public Resource getFlowLogResource(String projectName, FlowServerConf fsconf, String instanceId) {
+		OozieConf oc = (OozieConf)fsconf;
+		String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=log", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+		Map<String, String> headMap = new HashMap<String, String>();
+		return RequestUtil.getResource(jobLogUrl, null, 0, headMap);
 	}
 
 	@Override
 	public String getFlowLog(String projectName, FlowServerConf fsconf, String instanceId) {
-		OozieConf oc = (OozieConf)fsconf;
-		String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=log", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
-		Map<String, String> headMap = new HashMap<String, String>();
-		return RequestUtil.get(jobLogUrl, null, 0, headMap);
+		Resource resource = getFlowLogResource(projectName, fsconf, instanceId);
+		InputStream in = null;
+		try {
+			if (resource != null && resource.isReadable()) {
+				in = resource.getInputStream();
+				return IOUtils.toString(in, StandardCharsets.UTF_8);
+			} else
+				return "";
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
+		}
+		return "";
 	}
 
 	@Override
-	public String getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public Resource[] getNodeLogResources(String projectName, FlowServerConf fsconf, String instanceId,
+			String nodeName) {
 		if (nodeName != null) {
 			OozieConf oc = (OozieConf)fsconf;
-			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			String jobInfoUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
 			Map<String, String> headMap = new HashMap<String, String>();
-			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobInfoUrl, null, 0, headMap), "actions", ArrayList.class);
 			if (actions != null) {
 				Map<String, Object> action = null;
 				for (Map<String, Object> a: actions) {
@@ -235,7 +359,7 @@ public class OozieFlowMgr extends FlowMgr{
 				if (action != null) {
 					String launcherJobId = null;
 					String childJobIds[] = null;
-					StringBuilder strbuf = new StringBuilder();
+					List<Resource> logFiles = new ArrayList<Resource>();
 					ArrayList<Map<String, Object>> jobAttempts;
 					String url;
 					Object t;
@@ -251,9 +375,9 @@ public class OozieFlowMgr extends FlowMgr{
 						jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
 						
 						for (Map<String, Object> a: jobAttempts) {
-							appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
-							appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
-							appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+							appendLog(logFiles, FileType.stderrLog, a.get("logsLink") + "/stderr?start=0");
+							appendLog(logFiles, FileType.stdoutLog, a.get("logsLink") + "/stdout?start=0");
+							appendLog(logFiles, FileType.sysLog, a.get("logsLink") + "/syslog?start=0");
 						}
 					}
 					
@@ -270,9 +394,9 @@ public class OozieFlowMgr extends FlowMgr{
 							jobAttempts = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "jobAttempts.jobAttempt", ArrayList.class);
 							
 							for (Map<String, Object> a: jobAttempts) {
-								appendLog(strbuf, a.get("logsLink") + "/stderr?start=0");
-								appendLog(strbuf, a.get("logsLink") + "/stdout?start=0");
-								appendLog(strbuf, a.get("logsLink") + "/syslog?start=0");
+								appendLog(logFiles, FileType.stderrLog, a.get("logsLink") + "/stderr?start=0");
+								appendLog(logFiles, FileType.stdoutLog, a.get("logsLink") + "/stdout?start=0");
+								appendLog(logFiles, FileType.sysLog, a.get("logsLink") + "/syslog?start=0");
 							}
 							
 							/* Task attempts */
@@ -288,9 +412,9 @@ public class OozieFlowMgr extends FlowMgr{
 													oc.getHistoryServer(), nodeAddressToId(fsconf, (String)taskAttempt.get("nodeHttpAddress")),
 													(String)taskAttempt.get("assignedContainerId"), (String)taskAttempt.get("id"), user);
 
-											appendLog(strbuf, url + "/stderr?start=0");
-											appendLog(strbuf, url + "/stdout?start=0");
-											appendLog(strbuf, url + "/syslog?start=0");
+											appendLog(logFiles, FileType.stderrLog, url + "/stderr?start=0");
+											appendLog(logFiles, FileType.stdoutLog, url + "/stdout?start=0");
+											appendLog(logFiles, FileType.sysLog, url + "/syslog?start=0");
 										}
 									}
 								}
@@ -298,11 +422,57 @@ public class OozieFlowMgr extends FlowMgr{
 						}
 					}
 					
-					return strbuf.toString();
+					return logFiles.toArray(EMPTY_LOG_RESOURCES);
 				}
 			}
 		}
-		return "";
+		return EMPTY_LOG_RESOURCES;
+	}
+
+	@Override
+	public InMemFile[] getNodeLog(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+		Resource[] resources = getNodeLogResources(projectName, fsconf, instanceId, nodeName);
+		if (resources != null) {
+			List<InMemFile> logFiles = new ArrayList<InMemFile>();
+			String log;
+    		InputStream in;
+			for (Resource r: resources) {
+				if (r instanceof LogResource) {
+					if (r != null && r.isReadable()) {
+						in = null;
+						try {
+							in = r.getInputStream();
+							log = IOUtils.toString(in, StandardCharsets.UTF_8);
+						} catch (IOException e) {
+							logger.error(e.getMessage(), e);
+							log = "";
+						} finally {
+							if (in != null)
+								try {
+									in.close();
+								} catch (IOException e) {
+									logger.error(e.getMessage(), e);
+								}
+						}
+					} else
+						log = "";
+					int logStart = log.indexOf("<pre>");
+					int logEnd = log.indexOf("</pre>");
+					if (logStart != -1 && logEnd != -1)
+						log = log.substring(logStart + 5, logEnd);
+					else
+						log = "";
+					
+					InMemFile logFile = new InMemFile();
+					logFile.setFileName(r.getFilename());
+					logFile.setFileType(((LogResource) r).getFiletype());
+					logFile.setTextContent(log);
+					logFiles.add(logFile);
+				}
+			}
+			return logFiles.toArray(EMPTY_LOG_FILES);
+		}
+		return EMPTY_LOG_FILES;
 	}
 	
 	private String nodeAddressToId(FlowServerConf fsconf, String nodeAddress) {
@@ -320,21 +490,16 @@ public class OozieFlowMgr extends FlowMgr{
 		return "";
 	}
 
-	private void appendLog(StringBuilder strbuf, String url) {
+	private void appendLog(List<Resource> logFiles, FileType fileType, String url) {
 		Map<String, String> headMap = new HashMap<String, String>();
-		String log = RequestUtil.get(url, null, 0, headMap);
-		int logStart = log.indexOf("<pre>");
-		int logEnd = log.indexOf("</pre>");
-		if (logStart != -1 && logEnd != -1)
-			log = log.substring(logStart + 5, logEnd);
-		else
-			log = "";
-		strbuf.append(url);
-		strbuf.append("\n");
-		strbuf.append("------------------------------------------\n");
-		strbuf.append(log);
-		strbuf.append("------------------------------------------\n");
-		strbuf.append("------------------------------------------\n");
+		Resource log = RequestUtil.getResource(url, null, 0, headMap);
+
+		if (fileType == null)
+			fileType = FileType.textData;
+		
+		/* Log file type STDOUT/ERROR/SYS */
+		LogResource logResource = new LogResource(log, url, fileType);
+		logFiles.add(logResource);
 	}
 
 	@Override
@@ -440,7 +605,7 @@ public class OozieFlowMgr extends FlowMgr{
 	}
 
 	@Override
-	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
+	public String[] listNodeInputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName) {
 		if (nodeName != null) {
 			OozieConf oc = (OozieConf)fsconf;
 			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
@@ -456,23 +621,241 @@ public class OozieFlowMgr extends FlowMgr{
 				}
 				
 				if (action != null) {
+					String childJobIds[] = null;
+					String url;
+					Object t = action.get("externalChildIDs");
+					if (t != null)
+						childJobIds = t.toString().split(",");
 					
+					if (childJobIds != null) {
+						List<Map<String,Object>> properties;
+						List<String> inputFiles = new ArrayList<String>();
+						for (String id: childJobIds) {
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/conf", oc.getHistoryServer(), id);
+							properties = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "conf.property", ArrayList.class);
+							for (Map<String, Object> prop: properties) {
+								if ("mapreduce.input.fileinputformat.inputdir".equals(prop.get("name"))) {
+									inputFiles.addAll(listDFSDir(ec, (String)prop.get("value")));
+									break;
+								}
+							}
+						}
+						return inputFiles.toArray(EMPTY_STRING_ARRAY);
+					}
 				}
+			}
+		}
+		return EMPTY_STRING_ARRAY;
+	}
+
+	@Override
+	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, EngineConf ec, String instanceId, String nodeName) {
+		if (nodeName != null) {
+			OozieConf oc = (OozieConf)fsconf;
+			String jobLogUrl=String.format("http://%s:%d/oozie/v2/job/%s?show=info", oc.getOozieServerIp(), oc.getOozieServerPort(), instanceId);
+			Map<String, String> headMap = new HashMap<String, String>();
+			ArrayList<Map<String, Object>> actions = JsonUtil.fromJsonString(RequestUtil.get(jobLogUrl, null, 0, headMap), "actions", ArrayList.class);
+			if (actions != null) {
+				Map<String, Object> action = null;
+				for (Map<String, Object> a: actions) {
+					if (nodeName.equals(a.get("name"))) {
+						action = a;
+						break;
+					}
+				}
+				
+				if (action != null) {
+					String childJobIds[] = null;
+					String url;
+					Object t = action.get("externalChildIDs");
+					if (t != null)
+						childJobIds = t.toString().split(",");
+					
+					if (childJobIds != null) {
+						List<Map<String,Object>> properties;
+						List<String> inputFiles = new ArrayList<String>();
+						for (String id: childJobIds) {
+							url = String.format("%s/ws/v1/history/mapreduce/jobs/%s/conf", oc.getHistoryServer(), id);
+							properties = JsonUtil.fromJsonString(RequestUtil.get(url, null, 0, headMap), "conf.property", ArrayList.class);
+							for (Map<String, Object> prop: properties) {
+								if ("mapreduce.output.fileoutputformat.outputdir".equals(prop.get("name"))) {
+									inputFiles.addAll(listDFSDir(ec, (String)prop.get("value")));
+									break;
+								}
+							}
+						}
+						return inputFiles.toArray(EMPTY_STRING_ARRAY);
+					}
+				}
+			}
+		}
+		return EMPTY_STRING_ARRAY;
+	}
+
+	private List<String> listDFSDir(EngineConf ec, String remoteDir) {
+		if (remoteDir != null) {
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			try {
+				if (fileSystem.isDirectory(new Path(remoteDir))) {
+					final Function<String, String> FULL_PATH_TRANSFORMER = new Function<String, String>() {
+					    public String apply(String fileName) {
+					    	if (remoteDir.endsWith(Path.SEPARATOR))
+					    		return remoteDir + fileName;
+					    	else
+					    		return remoteDir + Path.SEPARATOR + fileName;
+					    }
+					};
+					return Lists.transform(HdfsUtil.listDfsFile(fileSystem, remoteDir), FULL_PATH_TRANSFORMER);
+				} else {
+					return Lists.newArrayList(remoteDir);
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+			return Collections.emptyList();
+			
+		} else
+			return Collections.emptyList();
+	}
+	
+	private InMemFile getDFSFile(FileSystem fs, String filePath, InputFormatType dataFormat) {
+		Path p = new Path(filePath);
+		try {
+			if (fs.exists(p)) {
+				if (fs.isFile(p)) {
+					if (textType(dataFormat))
+						return new InMemFile(FileType.textData, filePath, HdfsUtil.readDfsTextFile(fs, filePath, DEFAULT_MAX_FILE_SIZE));
+					else
+						return new InMemFile(FileType.binaryData, filePath, HdfsUtil.readDfsFile(fs, filePath, DEFAULT_MAX_FILE_SIZE));
+				} else {
+					return new InMemFile(FileType.directoryList, filePath, directoryList(HdfsUtil.listDfsFilePath(fs, filePath, true)));
+				}
+			}
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+		}
+		
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data) {
+		if (data != null && !data.isInstance() && data.getLocation() != null && data.getLocation().length() > 0) {
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			
+			return getDFSFile(fileSystem, data.getLocation(), data.getDataFormat());
+		}
+		return null;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, Data data, FlowInfo flowInfo) {
+		if (data != null && data.isInstance() && data.getLocation() != null && data.getLocation().length() > 0) {
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			String filePath = data.getLocation();
+			if (!filePath.endsWith(Path.SEPARATOR))
+				filePath += Path.SEPARATOR;
+			
+			if (flowInfo != null && flowInfo.getId() != null)
+				filePath += flowInfo.getId();
+			
+			return getDFSFile(fileSystem, filePath, data.getDataFormat());
+		}
+		return null;
+	}
+	
+	private String directoryList(List<String> list) {
+		StringBuilder buffer = new StringBuilder();
+		if (list != null) {
+			for (String f: list) {
+				buffer.append(HdfsUtil.getRootPath(f));
+				buffer.append("\n");
+			}
+		}
+		return buffer.toString();
+	}
+
+	private boolean textType(InputFormatType dataFormat) {
+		if (dataFormat == null)
+			return false;
+		else if (InputFormatType.Binary.equals(dataFormat))
+			return false;
+		else
+			return true;
+	}
+
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, String filePath) {
+		return getDFSFile(ec, filePath, DEFAULT_MAX_FILE_SIZE);
+	}
+	
+	@Override
+	public InMemFile getDFSFile(EngineConf ec, String filePath, int maxFileSize) {
+		if (filePath != null) {
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			if (FileType.textData.equals(Util.guessFileType(filePath))) {
+				String text = HdfsUtil.readDfsTextFile(fileSystem, filePath, DEFAULT_MAX_FILE_SIZE);
+				if (text != null)
+					return new InMemFile(FileType.textData, filePath, text);
+				else
+					return null;
+			} else {
+				byte[] binary = HdfsUtil.readDfsFile(fileSystem, filePath, DEFAULT_MAX_FILE_SIZE);
+				if (binary != null)
+					return new InMemFile(FileType.binaryData, filePath, binary);
+				else
+					return null;
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public String[] listNodeOutputFiles(String projectName, FlowServerConf fsconf, String instanceId, String nodeName) {
-		// TODO Auto-generated method stub
+	public InMemFile getDFSFile(EngineConf ec, String filePath, long startLine, long endLine) {
+		if (filePath != null) {
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			String text = HdfsUtil.readDfsTextFile(fileSystem, filePath, startLine, endLine);
+			if (text != null)
+				return new InMemFile(FileType.textData, filePath, text, true);
+			else
+				return null;
+		}
 		return null;
 	}
-
-	@Override
-	public InMemFile getDFSFile(FlowServerConf fsconf, String filePath) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public boolean putDFSFile(EngineConf ec, String filePath, InMemFile file) {
+		if (filePath != null) {
+			FileSystem fileSystem;
+			if (this.fs != null)
+				fileSystem = this.fs;
+			else
+				fileSystem = HdfsUtil.getHadoopFs(ec.getDefaultFs());
+			if (FileType.textData.equals(file.getFileType()))
+				return HdfsUtil.writeDfsFile(fileSystem, filePath, file.getTextContent().getBytes(StandardCharsets.UTF_8), false);
+			else
+				return HdfsUtil.writeDfsFile(fileSystem, filePath, file.getContent(), false);
+		} else
+			return false;
 	}
 
 	public String getDateTimePattern() {

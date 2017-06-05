@@ -10,37 +10,28 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import bdap.util.PropertiesUtil;
+import etl.flow.deploy.EngineType;
 
 public class ActionNode extends Node{
 	
-	public static final String key_exe_type="exe.type";//
-	public static final String key_cmd_class="cmd.class";
-	public static final String key_input_format="input.format";
+	public static final String key_exe_type="exe.type";//etl.flow.ExeType
+	public static final String key_cmd_class="cmd.class";//the fully qualified class name of the cmd
 	
 	public static List<String> sysProperties = null;
 	
-	private Map<String, String> properties = new LinkedHashMap<String, String>();//preserving the insertion order
+	private Map<String, Object> properties = new LinkedHashMap<String, Object>();//preserving the insertion order
 	private List<String> addArgs = new ArrayList<String>();//additional list of arguments
-	
-	@JsonIgnore
-	private ExeType exeType;
 	
 	public ActionNode(){
 	}
 	
-	public ActionNode(String name, ExeType exeType){
+	public ActionNode(String name){
 		super(name);
-		this.exeType = exeType;
 	}
 	
-	//for writing test cases to construct action node from existing properties file
-	public ActionNode(String name, ExeType exeType, String propertiesFile){
-		this(name, exeType);
-		LinkedHashMap<String, String> map = PropertiesUtil.getPropertiesExactMap(propertiesFile);
-		for (String key: map.keySet()){
-			properties.put(key, map.get(key));
-		}
+	public ActionNode(String name, ExeType exeType){
+		super(name);
+		properties.put(key_exe_type, exeType.toString());
 	}
 	
 	@Override
@@ -58,48 +49,74 @@ public class ActionNode extends Node{
 		return true;
 	}
 	
-	public static List<String> getSysProperties(){
+	private static List<String> getSysPropertyNames(){
 		if (sysProperties==null){
-			sysProperties = Arrays.asList(new String[]{key_exe_type, key_cmd_class, key_input_format});
+			sysProperties = Arrays.asList(new String[]{key_exe_type, key_cmd_class});
 		}
 		return sysProperties;
 	}
 	
 	@JsonIgnore
-	public LinkedHashMap<String, String> getUserProperties(){
-		LinkedHashMap<String, String> userProperties = new LinkedHashMap<String, String>();
+	public LinkedHashMap<String, Object> getUserProperties(){
+		LinkedHashMap<String, Object> userProperties = new LinkedHashMap<String, Object>();
 		for (String key: properties.keySet()){
-			if (!getSysProperties().contains(key)){
+			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)){
 				userProperties.put(key, properties.get(key));
 			}
 		}
 		return userProperties;
 	}
+	
+	@JsonIgnore
+	public LinkedHashMap<String, Object> getAllProperties(EngineType et){
+		String etStr = et.toString()+".";
+		LinkedHashMap<String, Object> allProperties = new LinkedHashMap<String, Object>();
+		for (String key: properties.keySet()){
+			if (!getSysPropertyNames().contains(key) && !key.startsWith(sys_prop_prefix)
+					&& !key.startsWith(etStr)){
+				allProperties.put(key, properties.get(key));
+			}else if (key.startsWith(sys_prop_prefix)){
+				allProperties.put(key.substring(sys_prop_prefix.length()), properties.get(key));
+			}else if (key.startsWith(etStr)){
+				allProperties.put(key.substring(etStr.length()), properties.get(key));
+			}
+		}
+		return allProperties;
+	}
+	
+	@JsonIgnore
+	public LinkedHashMap<String, Object> getSysProperties(){
+		LinkedHashMap<String, Object> out = new LinkedHashMap<String, Object>();
+		for (String key: properties.keySet()){
+			if (key.startsWith(sys_prop_prefix)){
+				out.put(key.substring(sys_prop_prefix.length()), properties.get(key));
+			}
+		}
+		return out;
+	}
 
-	public String getProperty(String key){
+	public Object getProperty(String key, EngineType et){
+		Object ret=properties.get(et.toString() + "." + key);
+		if (ret==null){
+			ret=properties.get(key);
+		}
+		return ret;
+	}
+	
+	public Object getProperty(String key){
 		return properties.get(key);
 	}
 	@JsonAnySetter
-	public void putProperty(String key, String value){
+	public void putProperty(String key, Object value){
 		properties.put(key, value);
 	}
 	@JsonAnyGetter
-	public Map<String, String> getProperties() {
+	public Map<String, Object> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(Map<String, String> properties) {
+	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
-	}
-
-	@JsonIgnore
-	public ExeType getExeType() {
-		return exeType;
-	}
-
-	@JsonIgnore
-	public void setExeType(ExeType exeType) {
-		this.exeType = exeType;
 	}
 
 	public List<String> getAddArgs() {

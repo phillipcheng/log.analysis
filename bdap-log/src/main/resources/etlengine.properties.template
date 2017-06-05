@@ -1,0 +1,23 @@
+defaultFs=hdfs://192.85.247.104:19000
+
+kafka.bootstrap.servers=192.85.247.104:9092\,192.85.247.105:9092\,192.85.247.106:9092
+kafka.log.topic=log-analysis-topic
+kafka.enabled=true
+
+db.type=vertica
+db.driver=com.vertica.jdbc.Driver
+db.url=jdbc:vertica://192.85.247.104:5433/cmslab
+db.user=dbadmin
+db.password=password
+
+#for vertica load
+hdfs.webhdfs.root=http://192.85.247.104:50070/webhdfs/v1
+
+
+#load log cmd
+log.tmp.dir= '/preload/etllog/' + WFID + '/'
+log.csv.file='/preload/etllog/' + WFID + '/'
+log.schema.file=/preload/schema/logschema.txt
+log.db.prefix=etllog
+escape.char=/
+record.terminator=;

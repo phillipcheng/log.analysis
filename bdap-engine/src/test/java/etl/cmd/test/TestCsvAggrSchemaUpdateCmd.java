@@ -12,8 +12,9 @@ import org.junit.Test;
 import bdap.util.HdfsUtil;
 import etl.cmd.CsvAggregateCmd;
 import etl.engine.LogicSchema;
-import etl.util.DBType;
+import etl.engine.types.DBType;
 import etl.util.DBUtil;
+import etl.util.SchemaUtils;
 
 public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 	public static final Logger logger = LogManager.getLogger(TestCsvAggrSchemaUpdateCmd.class);
@@ -48,7 +49,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		DBUtil.executeSqls(dropSqls, cmd.getPc());
 		
 		//check the schema updated
-		LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
+		LogicSchema ls = SchemaUtils.fromRemoteJsonPath(this.getDefaultFS(), schemaFolder + schemaFile, LogicSchema.class);
 		String newTableName = "MyCore_aggr";
 		assertTrue(ls.hasTable(newTableName));
 		List<String> attrs = ls.getAttrNames(newTableName);
@@ -94,7 +95,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		DBUtil.executeSqls(dropSqls, cmd.getPc());
 		
 		//check the schema updated
-		LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
+		LogicSchema ls = SchemaUtils.fromRemoteJsonPath(getDefaultFS(), schemaFolder + schemaFile, LogicSchema.class);
 		String newTableName = "MyCore_aggr";
 		assertTrue(ls.hasTable(newTableName));
 		List<String> attrs = ls.getAttrNames(newTableName);
@@ -135,7 +136,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		DBUtil.executeSqls(dropSqls, cmd.getPc());
 		
 		//check the schema updated
-		LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
+		LogicSchema ls = SchemaUtils.fromRemoteJsonPath(getDefaultFS(), schemaFolder + schemaFile, LogicSchema.class);
 		String newTableName = "MyCore_aggr";
 		String newTableName1 = "MyCore1_aggr";
 		assertTrue(ls.hasTable(newTableName));
@@ -193,7 +194,7 @@ public class TestCsvAggrSchemaUpdateCmd extends TestETLCmd {
 		DBUtil.executeSqls(dropSqls, cmd.getPc());
 		
 		//check the schema updated
-		LogicSchema ls = (LogicSchema) HdfsUtil.fromDfsJsonFile(getFs(), schemaFolder + schemaFile, LogicSchema.class);
+		LogicSchema ls = SchemaUtils.fromRemoteJsonPath(getDefaultFS(), schemaFolder + schemaFile, LogicSchema.class);
 		String newTableName = "MyCoreMerge_";
 		assertTrue(ls.hasTable(newTableName));
 		List<String> attrs = ls.getAttrNames(newTableName);

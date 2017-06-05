@@ -29,6 +29,10 @@ public enum VarType {
     public String value() {
         return value;
     }
+    
+	public String toString() {
+		return value;
+	}
 
     public static VarType fromValue(String v) {
         for (VarType c: VarType.values()) {

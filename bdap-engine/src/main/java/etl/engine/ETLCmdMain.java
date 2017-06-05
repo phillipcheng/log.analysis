@@ -14,6 +14,8 @@ import java.util.concurrent.ScheduledFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import etl.engine.types.ProcessMode;
+
 public class ETLCmdMain {
 	
 	public static final Logger logger = LogManager.getLogger(ETLCmdMain.class);
@@ -53,6 +55,9 @@ public class ETLCmdMain {
 			String wfName = args[1];
 			String wfid = args[2];
 			String strStaticCfgs = args[3];
+			if (UNUSED.equals(strStaticCfgs)){
+				strStaticCfgs = null;
+			}
 			String defaultFs = null;
 			if (args.length>mandatoryArgNum){//optional defaultFs
 				defaultFs = args[mandatoryArgNum];
@@ -65,7 +70,7 @@ public class ETLCmdMain {
 				otherArgs = Arrays.copyOfRange(args, mandatoryArgNum+1, args.length);
 			}
 			ETLCmd cmd = EngineUtil.getInstance().getCmd(strCmdClassNames, strStaticCfgs, wfName, wfid, defaultFs, 
-					otherArgs, ProcessMode.SingleProcess);
+					otherArgs, ProcessMode.Single);
 			int exeInterval=0;
 			int exeSeconds=0;
 			if (otherArgs!=null){

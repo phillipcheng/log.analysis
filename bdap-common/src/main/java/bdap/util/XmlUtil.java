@@ -1,20 +1,35 @@
 package bdap.util;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.TreeMap;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 public class XmlUtil {
 	public static final Logger logger = LogManager.getLogger(XmlUtil.class);
@@ -83,5 +98,58 @@ public class XmlUtil {
 		}else{
 			return null;
 		}
+	}
+	
+	public static Document getDocument(String inputXml){
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			InputSource input = new InputSource(new StringReader(inputXml));
+			Document doc = builder.parse(input);
+			return doc;
+		}catch(Exception e){
+			logger.error(String.format("wrong input:%s", inputXml), e);
+			return null;
+		}
+	}
+	
+	public static Document getDocument(FileSystem fs, Path inputXml){
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			InputSource input = new InputSource(new BufferedReader(new InputStreamReader(fs.open(inputXml))));
+			Document doc = builder.parse(input);
+			return doc;
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	public static Document getDocumentFromLocalFile(String localFile){
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			InputSource input = new InputSource(Files.newBufferedReader(Paths.get(localFile), Charset.defaultCharset()));
+			Document doc = builder.parse(input);
+			return doc;
+		}catch(Exception e){
+			logger.error("", e);
+			return null;
+		}
+	}
+	
+	public static Node getNode(NodeList nl, int idx){
+		Node n = nl.item(idx);
+		n.getParentNode().removeChild(n);//for performance
+		return n;
+	}
+	
+	public static String nodeListToString(NodeList nl){
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<nl.getLength(); i++){
+			sb.append(nl.item(i).getTextContent()).append(",");
+		}
+		return sb.toString();
 	}
 }

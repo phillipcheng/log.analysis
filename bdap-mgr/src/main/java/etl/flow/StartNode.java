@@ -7,6 +7,7 @@ public class StartNode extends Node{
 	private int duration=30;//in seconds
 	
 	public StartNode(){	
+		super(start_node_name);
 	}
 	
 	public StartNode(int duration) {

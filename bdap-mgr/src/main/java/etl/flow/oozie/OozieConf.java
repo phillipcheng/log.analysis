@@ -15,11 +15,19 @@ public class OozieConf implements FlowServerConf {
 	public static final String key_rmWebApp="rmWebApp";
 	public static final String key_historyServer="historyServer";
 	public static final String key_queueName="queueName";
+	public static final String key_prjName="prjName";
+	public static final String key_prjFolder="prjFolder";
+	public static final String key_flowName="wfName";
+	public static final String key_wfInstanceId="wfInstance";
 	public static final String key_oozieLibPath="oozie.libpath";
 	public static final String key_useSystemPath="oozie.use.system.libpath";
 	public static final String key_oozieWfAppPath="oozie.wf.application.path";
 	public static final String key_oozieCoordinateAppPath="oozie.coord.application.path";
+	public static final String key_oozieWfNtfUrl="oozie.wf.workflow.notification.url";
+	public static final String key_oozieWfActionNtfUrl="oozie.wf.action.notification.url";
 	public static final String key_user_name="user.name";
+	public static final String key_yarn_historyserver="yarn_historyserver";
+	public static final String key_cmdClassName="cmdClassName";
 	
 	public static final String key_oozie_action="action";
 	public static final String value_action_start="start";
@@ -31,8 +39,11 @@ public class OozieConf implements FlowServerConf {
 	private String historyServer;
 	private String rmWebApp;
 	private String queueName = "default";
-	private String oozieLibPath;
+	private String oozieLibPath;//bdap platform lib path
+	private String oozieWfNtfUrl;
+	private String oozieWfActionNtfUrl;
 	private String userName;
+	private String yarnHistoryServer;
 	
 	public OozieConf(String confFile){
 		PropertiesConfiguration pc = PropertiesUtil.getPropertiesConfig(confFile);
@@ -42,16 +53,17 @@ public class OozieConf implements FlowServerConf {
 		jobTracker =pc.getString(key_jobTracker);
 		rmWebApp = pc.getString(key_rmWebApp);
 		historyServer = pc.getString(key_historyServer);
-		userName = pc.getString(key_user_name);
+		yarnHistoryServer = pc.getString(key_yarn_historyserver);
+		oozieWfNtfUrl = pc.getString(key_oozieWfNtfUrl);
+		oozieWfActionNtfUrl = pc.getString(key_oozieWfActionNtfUrl);
 	}
 	
-	public OozieConf(String oozieServerIp, int oozieServerPort, String nameNode, String jobTracker, String oozieLibPath, String userName){
+	public OozieConf(String oozieServerIp, int oozieServerPort, String nameNode, String jobTracker, String oozieLibPath){
 		this.oozieServerIp = oozieServerIp;
 		this.oozieServerPort = oozieServerPort;
 		this.nameNode = nameNode;
 		this.jobTracker = jobTracker;
 		this.oozieLibPath = oozieLibPath;
-		this.userName = userName;
 	}
 	public String getOozieLibPath() {
 		return oozieLibPath;
@@ -77,12 +89,6 @@ public class OozieConf implements FlowServerConf {
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
 	}
-	public String getUserName() {
-		return userName;
-	}
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
 	public String getOozieServerIp() {
 		return oozieServerIp;
 	}
@@ -107,5 +113,36 @@ public class OozieConf implements FlowServerConf {
 	public void setRmWebApp(String rmWebApp) {
 		this.rmWebApp = rmWebApp;
 	}
-	
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getYarnHistoryServer() {
+		return yarnHistoryServer;
+	}
+
+	public void setYarnHistoryServer(String yarnHistoryServer) {
+		this.yarnHistoryServer = yarnHistoryServer;
+	}
+
+	public String getOozieWfNtfUrl() {
+		return oozieWfNtfUrl;
+	}
+
+	public void setOozieWfNtfUrl(String oozieWfNtfUrl) {
+		this.oozieWfNtfUrl = oozieWfNtfUrl;
+	}
+
+	public String getOozieWfActionNtfUrl() {
+		return oozieWfActionNtfUrl;
+	}
+
+	public void setOozieWfActionNtfUrl(String oozieWfActionNtfUrl) {
+		this.oozieWfActionNtfUrl = oozieWfActionNtfUrl;
+	}
 }

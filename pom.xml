@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>bdap</groupId>
 	<artifactId>bdap.parent</artifactId>
-	<version>VERSION</version>
+	<version>VVERSIONN</version>
 	<name>bdap.parent</name>
 	<packaging>pom</packaging>
 	
@@ -27,6 +27,11 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-exec</artifactId>
 				<version>1.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.12</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-configuration</groupId>
@@ -67,6 +72,79 @@
 				<groupId>org.apache.hadoop</groupId>
 				<artifactId>hadoop-client</artifactId>
 				<version>2.7.3</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-common</artifactId>
+				<version>2.7.3</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-annotations</artifactId>
+				<version>2.7.3</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-hdfs</artifactId>
+				<version>2.7.3</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-mapreduce-client-app</artifactId>
+				<scope>provided</scope>
+				<version>2.7.3</version>
+			 </dependency>
+			 <dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-core_2.11</artifactId>
+				<version>2.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-yarn_2.11</artifactId>
+				<version>2.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-sql_2.11</artifactId>
+				<version>2.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+			  <groupId>org.apache.spark</groupId>
+			  <artifactId>spark-streaming_2.11</artifactId>
+			  <version>2.1.0</version>
+			  <scope>provided</scope>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.spark</groupId>
+			    <artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
+			    <version>2.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.kafka</groupId>
+				<artifactId>kafka-clients</artifactId>
+				<version>0.10.0.1</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.hive</groupId>
+			    <artifactId>hive-jdbc</artifactId>
+			    <version>2.1.1</version>
+			    <exclusions>
+					<exclusion>
+	                  <artifactId>javax.servlet</artifactId>
+	                  <groupId>org.eclipse.jetty.orbit</groupId>
+					</exclusion>
+				</exclusions>
+			    <scope>provided</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -106,7 +184,10 @@
 	<modules>
 		<module>bdap-common</module>
 		<module>bdap-engine</module>
+		<module>bdap-log</module>
 		<module>bdap-schemagen</module>
+		<module>bdap-pushagent</module>
 		<module>bdap-mgr</module>
+		<module>bdap-webapp</module>
 	</modules>
 </project>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../libs/bootstrap/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow_dashboard.css" />
+		<link rel="stylesheet" href="../libs/_business/css/dataFlow.css" />
+		<link rel="stylesheet" href="../libs/_business/css/rightup.css" />
+
+		<link rel="stylesheet" type="text/css" href="../libs/easyui/themes/bootstrap/easyui.css">
+		<link rel="stylesheet" type="text/css" href="../libs/easyui/themes/icon.css">
+		<link rel="stylesheet" type="text/css" href="../libs/_business/css/d3-context-menu.css" />
+		<link rel="stylesheet" type="text/css" href="../libs/_business/css/dataSetFlow.css" />
+		<link rel="stylesheet" type="text/css" href="../libs/_business/css/dataFlowChild.css" />
+
+		<script type="text/javascript" src="../libs/jquery/jquery.min.js"></script>
+		<script type="text/javascript" src="../libs/easyui/jquery.easyui.min.js"></script>
+		<script type="text/javascript" src="../libs/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="../libs/d3/d3.js"></script>
+		<script type="text/javascript" src="../libs/d3/lodash/lodash.min.js"></script>
+		<script type="text/javascript" src="../libs/d3/graphlib/graphlib.core.min.js"></script>
+		<script type="text/javascript" src="../libs/d3/dagre/dagre.core.min.js"></script>
+		<script type="text/javascript" src="../libs/d3/contextmenu/d3-context-menu.js"></script>
+
+		<script type="text/javascript" src="../libs/_business/js/const.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/json.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/init.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/event.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/enter.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/update.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/build.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/app.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/draw.js"></script>
+		
+		<script type="text/javascript" src="../libs/_business/js/dywindow.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/interact.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/load.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/run.js"></script>
+		<script type="text/javascript" src="../libs/_business/js/hp_schema.js"></script>
+
+	</head>
+
+	<body oncontextmenu="return false">
+		<!--
+			导航 #f57c00
+		-->
+		<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+			<div class="container-fluid" style="background: #f57c00;">
+				<div class="navbar-header">
+					<a id="a_title" style="color: #FFFFFF;" class="navbar-brand" href="javascript:;" onclick="_event.up_flow_name()"></a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<!-- <li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild();">loadFlow</a>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="load.loadBuild('flow1');">loadFlow</a>
+						</li> -->
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSet();">Dataset</a>
+						</li>
+						<!--<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSetShow();">dataSet Show</a>
+						</li>-->
+						<!--<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.dataSetHide();">dataSet Hide</a>
+						</li>-->
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.save();">Save</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="run.runFlow();">Run</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="run.getFlowLog();">FlowLog</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.start();">StartNode</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="app.end();">EndNode</a>
+						</li>
+						<!-- <li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="openLogWin();">openLogWin</a>
+						</li>
+						<li>
+							<a style="color: #FFFFFF;" href="javascript:;" onclick="openDatasetWin();">openDatasetWin</a>
+						</li> -->
+						<li class="dropdown">
+							<a style="color: #FFFFFF;" href="#" class="dropdown-toggle" data-toggle="dropdown">ActionNode<b class="caret"></b></a>
+							<ul class="dropdown-menu" id="actionList">
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12" style="height: 93vh;">
+					<div style="height:100%;" role="tabpanel" class="tab-pane active" id="home">
+						<div id="display" style="height:99%;width: 99%; position: absolute;">
+							<svg id="svg" style="height:100%;width: 100%;" onmousedown="_event.svg_onmousedown()" onmouseup="_event.svg_onmouseup()">
+								<defs>
+									<marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
+										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: gray;" />
+									</marker>
+									<marker id="arrowSelected" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
+										<path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: orangered;" />
+									</marker>
+									<marker id="circle" markerWidth="4" markerHeight="4" refx="2" refy="2">
+										<circle cx="2" cy="2" r="2" stroke="none" fill="#f00" onclick="init()" />
+									</marker>
+								</defs>
+							</svg>
+						</div>
+						<div id="dataset_div" class="dataset_div">
+							
+						</div>						
+						<!--<div id="dataset_div" class="dataset_div">
+							<svg id="svgdataset" style="width: 100%;height: 100%;">
+							</svg>
+						</div>-->
+						<div id="child_svg" class="child_svg" onclick="remoeToInitPosition()">
+							<svg id="svgsmall" style="height:100%;width: 100%;">
+								<g id="rectSmallContainer" transform="translate(75,75)scale(1,1)">
+
+								</g>
+							</svg>
+							<div id="child_small_svg" class="child_small_svg" style="width: 10px;height: 10px;">
+
+							</div>
+						</div>
+						<div id="divrightup" class="rightupcss">
+							<div class="rightupcssheader">
+								<div style="text-align: right;width: 100%;height: 10px;">
+									<span onclick="_event.propertySpanClick()">+</span></div>
+								<strong id="rightupcssheaderstring">Star</strong><br/>
+								<strong id="rightupcssheaderstringofcmdtype">Star</strong>
+							</div>
+							<div id="rightupcssbody" class="rightupcssbody">
+							</div>
+						</div>
+						<div id="divdatanode_in_Container" class="inDataContainer">
+						</div>
+						<div id="divdatanode_out_Container" class="outDataContainer">
+						</div>
+						<div id="divleftdatasetproperty">
+							<div id="datasetcssheader" class="rightupcssheader">
+								<strong id="datasetcssheaderstring">AAA</strong>
+							</div>
+							<div id="rightupcssbody" class="propertycssbody">
+								<input type="hidden" id="hidDataSetId" value="" />
+								<div class="sublistgroup">
+									<strong>name:</strong>
+									<input id="dataset_property_name" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+								</div>
+								<div class="sublistgroup">
+									<strong>location:</strong>
+									<input id="dataset_property_location" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />
+								</div>
+								<div class="sublistgroup">
+									<strong>dataFormat:</strong>
+									<select id="dataset_property_dataFormat" onchange="changeDataSetProeroty()">
+										<option value="Line">Line</option>
+										<option value="XML">XML</option>
+										<option value="Text">Text</option>
+										<option value="Binary">Binary</option>
+										<option value="Section">Section</option>
+										<option value="Mixed">Mixed</option>
+										<option value="FileName">FileName</option>
+									</select>
+									<!--<input id="dataset_property_dataFormat" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />-->
+								</div>
+								<div class="sublistgroup">
+									<strong>recordType:</strong>
+									<select id="dataset_property_recordType" onchange="changeDataSetProeroty()">
+										<option value="Path">Path</option>
+										<option value="KeyPath">KeyPath</option>
+										<option value="Value">Value</option>
+										<option value="KeyValue">KeyValue</option>
+									</select>
+									<!--<input id="dataset_property_recordType" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />-->
+								</div>
+								<div class="sublistgroup">
+									<strong>instance:</strong>
+									<!--<input id="dataset_property_instance" type="text" value="" placeholder="..." onkeyup="changeDataSetProeroty()" />-->
+									<input id="dataset_property_instance" type="checkbox" onchange="changeDataSetProeroty()" />
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<script>
+			init();
+		</script>
+
+		<!--<div id="logDetail" class="easyui-window" title="Log Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
+			<div class="easyui-tabs" style="width:100%;height:100%">
+				<div id="tab-info" title="Info" style="padding:10px;margin: 0px;">
+					This is the log content1.
+				</div>
+			</div>
+		</div>-->
+
+		<!-- <div id="datasetDetail" class="easyui-window" title="Data Info" data-options="border:'thin',cls:'c2',minimizable:false,inline:false,constrain:true" style="width:550px;height:300px;padding:0px;">
+			<div class="easyui-tabs" style="width:100%;height:100%">
+				<div id="tab-dataset" title="dataset" style="padding:0px;margin: 0px;">
+					<table id="dg1" style="margin:0px; padding:0px;"></table>
+				</div>
+				<div id="tab-dataschame" title="schame" style="padding:10px">
+					<table id="dg2"></table>
+				</div>
+			</div>
+		</div> -->
+		<!--	<div id="windowContentStart"></div>-->
+
+		<div id="d3contextmenu" class="d3-context-menu" style="display: none;">
+		</div>
+
+		<div class="panel-group" id="accordion" style="position: absolute;top:50px;left:5px;width: 300px;overflow-y: scroll;height: 90vh;">
+
+		</div>
+
+		<div id="divbackdrop" class="mui-backdrop mui-active mui-backdrop-action" style="display: none;"></div>
+	
+	</body>
+</html>

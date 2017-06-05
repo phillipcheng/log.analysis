@@ -48,3 +48,7 @@ $HIVE_HOME/bin/schematool -dbType derby -initSchema
 oozie setup
 OOZIE_ROOT=/Applications/oozie-4.2.0/
 $OOZIE_ROOT/bin/oozie-setup.sh sharelib create -fs hdfs://127.0.0.1:19000/
+
+
+
+oozie job -oozie http://localhost:11000/oozie -kill 14-20090525161321-oozie-joe

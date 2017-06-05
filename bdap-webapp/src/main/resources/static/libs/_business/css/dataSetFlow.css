@@ -1,0 +1,88 @@
+.dataset_div {
+	position: relative;
+	width: 250px;
+	height: 92vh;
+	border: 1px solid rgb(155, 155, 155);
+	background: #FFF;
+	z-index: 1;
+	opacity: 0.9;
+	display: none;
+}
+
+.dataSetG {}
+
+.dataSetG>rect {
+	fill: rgb(238, 238, 238);
+	stroke: rgb(255, 0, 0);
+	stroke-width: 1;
+}
+
+#divleftdatasetproperty {
+	position: absolute;
+	left: 270px;
+	top: 2px;
+	width: 297px;
+	height: 350px;
+	border: 1px solid rgb(155, 155, 155);
+	display: none;
+}
+
+/*#datasetcssheader {
+	width: 297px;
+	height: 30px;
+	background: #e9e9e9;
+	text-align: center;
+	padding: 10px;
+	font-size: 14pt;
+	font-family: 'Roboto', sans-serif;
+	vertical-align: middle;
+}*/
+
+.propertycssbody {
+	background: white;
+}
+
+.inDataContainer{
+	position: absolute;
+	left:305px;
+	top:5px;
+}
+
+.outDataContainer{
+	position: absolute;
+	left:305px;
+	bottom: 5px;
+}
+
+.divdatanode {
+	position: relative;
+	float: left;
+	width: 200px;
+	height: 150px;
+	border: 1px solid rgb(155, 155, 155);
+	z-index: 10;
+	display: block;
+}
+
+.divdatanodeheader{
+	background: silver;
+	height: 30px;
+}
+
+.divdatanodebody{
+	background: white;
+}
+
+.imgclose{
+	text-decoration: none;
+	background: url(../img/panel_tools.png) no-repeat -16px 0px;
+	margin-right: 5px;
+}
+
+
+.edgeData{
+	fill: none;
+	stroke: #bbb;
+	stroke-linecap: round;
+	stroke-width: 0.75;
+}

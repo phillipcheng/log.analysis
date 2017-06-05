@@ -39,6 +39,18 @@ public class TestGroupFun {
 	}
 	
 	@Test
+	public void testConvertTimeStampToString(){
+		String input = " 1424820819999  ";
+		String fomrmat = "yyyy-MM-dd HH:mm:ss";
+		String output = GroupFun.convertTimeStampToString(input,fomrmat,null);
+		logger.info(output);
+		Assert.assertEquals(output, "2015-02-24 23:33:39");
+		output = GroupFun.convertTimeStampToString("",fomrmat,null);
+		logger.info(output);
+		Assert.assertEquals(output, "");
+	}
+	
+	@Test
 	public void testSplitTimeRange() throws Exception{
 		
 		String[] value=GroupFun.splitTimeRange("2016-10-12 10:10:02", "2016-10-12 10:10:05", "yyyy-MM-dd HH:mm:ss", "UTC","yyyy-MM-dd HH:mm:ss.S",5000L);

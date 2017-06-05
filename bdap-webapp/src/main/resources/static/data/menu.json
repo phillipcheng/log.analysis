@@ -1,0 +1,22 @@
+{"menus":{
+	"menus":{
+			"menus":
+				[{
+					"menuid":"Flow",
+					"menuname":"Flow Manager",
+					"url":"flowList.html",
+					"icon":""
+				},{
+					"menuid":"Job",
+					"menuname":"Job Manager",
+					"url":"jobList.html",
+					"icon":""
+				},{
+					"menuid":"project",
+					"menuname":"Project manager",
+					"url":"projectList.html",
+					"icon":""
+				}]
+			}
+		}
+}

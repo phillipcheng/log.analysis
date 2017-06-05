@@ -8,8 +8,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -20,8 +18,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
+import etl.engine.types.ProcessMode;
+import etl.util.ConfigKey;
 import etl.util.ScriptEngineUtil;
 import etl.util.VarType;
+import scala.Tuple2;
 
 public class FileNameUpdateCmd extends ETLCmd {
 
@@ -31,10 +32,10 @@ public class FileNameUpdateCmd extends ETLCmd {
 	private static final int blockSize=1024;
 	
 	//cfgkey
-	public static final String cfgkey_incoming_folder="incomingFolder";
-	public static final String cfgkey_file_name="file.name";
-	public static final String cfgkey_headlines="headlines";
-	public static final String cfgkey_taillines="taillines";
+	public static final @ConfigKey String cfgkey_incoming_folder="incomingFolder";
+	public static final @ConfigKey String cfgkey_file_name="file.name";
+	public static final @ConfigKey(type=Integer.class,defaultValue="10") String cfgkey_headlines="headlines";
+	public static final @ConfigKey(type=Integer.class,defaultValue="10") String cfgkey_taillines="taillines";
 	
 	//var name
 	public static final String VAR_NAME_HEADLINES="headlines";
@@ -50,16 +51,20 @@ public class FileNameUpdateCmd extends ETLCmd {
 	}
 	
 	public FileNameUpdateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public FileNameUpdateCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public FileNameUpdateCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		incomingFolder =super.getCfgString(cfgkey_incoming_folder, null);
 		fileNameExp =super.getCfgString(cfgkey_file_name, null);
 		headlines=super.getCfgInt(cfgkey_headlines, 10);
@@ -70,7 +75,7 @@ public class FileNameUpdateCmd extends ETLCmd {
 	}
 	
 	@Override
-	public List<String> sgProcess() {
+	public List<String> sgProcess() throws Exception{
 		if(incomingFolder==null){
 			logger.error("The incoming folder is not assigned");
 			return null;
@@ -101,41 +106,7 @@ public class FileNameUpdateCmd extends ETLCmd {
 		}
 		return null;
 	}
-
-	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context){
-		Path path=new Path(row);
-		updateFileName(path);
-		return null;
-	}
 	
-	private void updateFileName(Path path) {
-		List<String> headlinesList=new ArrayList<String>();
-		List<String> taillinesList=new ArrayList<String>();
-		
-		if(readHeadTailLines(path, headlinesList, taillinesList)){
-			logger.debug("headlines:{}", headlinesList);
-			logger.debug("taillines:{}", taillinesList);
-		}
-		
-		super.getSystemVariables().put(VAR_NAME_HEADLINES, headlinesList.toArray(new String[0]));
-		super.getSystemVariables().put(VAR_NAME_TAILLINES, headlinesList.toArray(new String[0]));
-		super.getSystemVariables().put(VAR_NAME_FILE_NAME, path.getName());
-		
-		
-		
-		String fileName = (String) ScriptEngineUtil.eval(fileNameExp, VarType.STRING, super.getSystemVariables());
-		
-		fileName=path.getParent().toString()+"/"+fileName;
-		logger.info("Will rename to {}", fileName);
-		
-		try {
-			fs.rename(path, new Path(fileName));
-		}catch (Exception e) {
-			logger.error("Rename failed",e);
-		}
-	}
-
 	private boolean readHeadTailLines(Path path, List<String> headlinesList, List<String> taillinesList) {
 		logger.info("Start to read {} head & tail lines.", path.getName());
 		FSDataInputStream fsDataInputStream=null;
@@ -152,11 +123,10 @@ public class FileNameUpdateCmd extends ETLCmd {
 			        line=br.readLine();
 			    }
 			}
-					
 			
 			/*
 			 * Read tail lines:
-			 * read a block since tail with offset and combine with previous read block
+			 * read a block from tail with offset and combine with previous read block
 			 * transfer into string and count lines
 			 * if lines<=tail lines number and offset position=0: return lines
 			 * if lines<=tail lines number  and offset position>0: continue
@@ -204,7 +174,6 @@ public class FileNameUpdateCmd extends ETLCmd {
 					if (position < 0) position = 0;
 				}						
 			}while (continueFlag);
-			
 			return true;
 		} catch (IOException e){
 			logger.warn("Failed to read head & tail line.",e);
@@ -226,6 +195,47 @@ public class FileNameUpdateCmd extends ETLCmd {
 				}
 			}
 		}
+	}
+	
+	private String updateFileName(Path path) throws Exception{
+		List<String> headlinesList=new ArrayList<String>();
+		List<String> taillinesList=new ArrayList<String>();
 		
+		if(readHeadTailLines(path, headlinesList, taillinesList)){
+			logger.debug("headlines:{}", headlinesList);
+			logger.debug("taillines:{}", taillinesList);
+		}
+		
+		super.getSystemVariables().put(VAR_NAME_HEADLINES, headlinesList.toArray(new String[0]));
+		super.getSystemVariables().put(VAR_NAME_TAILLINES, headlinesList.toArray(new String[0]));
+		super.getSystemVariables().put(VAR_NAME_FILE_NAME, path.getName());
+		
+		String fileName = (String) ScriptEngineUtil.eval(fileNameExp, VarType.STRING, super.getSystemVariables());
+		
+		fileName=path.getParent().toString()+"/"+fileName;
+		logger.info("Will rename to {}", fileName);
+		
+		fs.rename(path, new Path(fileName));
+		return fileName;
+	}
+	
+	//output updated filename
+	@Override
+	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
+		init();
+		List<Tuple2<String, String>> ret = new ArrayList<Tuple2<String,String>>();
+		Path path=new Path(value);
+		String fileName = updateFileName(path);
+		if (context==null){//spark
+			ret.add(new Tuple2<String,String>(fileName, fileName));
+		}else{//mapreduce
+			ret.add(new Tuple2<String,String>(fileName, null));
+		}
+		return ret;
+	}
+	
+	@Override
+	public boolean hasReduce(){
+		return false;
 	}
 }

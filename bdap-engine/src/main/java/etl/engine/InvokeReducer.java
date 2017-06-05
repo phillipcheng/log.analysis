@@ -8,6 +8,8 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import etl.engine.types.ProcessMode;
+
 
 public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 	public static final Logger logger = LogManager.getLogger(InvokeMapper.class);
@@ -32,7 +34,7 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
 			String defaultFs = context.getConfiguration().get("fs.defaultFS");
 			logger.info(String.format("input file:%s, cmdClassName:%s, wfid:%s, staticConfigFile:%s, %s", inputdir, strCmdClassNames, wfid, 
 					strStaticConfigFiles, defaultFs));
-			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.MRProcess);
+			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.Reduce);
 		}
 		mos = new MultipleOutputs<Text,Text>(context);
 	}
@@ -40,6 +42,10 @@ public class InvokeReducer extends Reducer<Text, Text, Text, Text>{
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
     	mos.close();
+    	
+    	if (cmds != null)
+    		for (ETLCmd c: cmds)
+    			c.close();
     }
     
     @Override

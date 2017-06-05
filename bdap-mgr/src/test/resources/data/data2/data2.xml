@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+	<info>
+		<values>session01,action2,param1,10,0.5</values>
+		<values>session02,action2,param1,10,0.5</values>
+		<values>session03,action2,param1,10,0.5</values>
+		<values>session04,action2,param1,10,0.5</values>
+		<values>session05,action2,param1,10,0.5</values>
+		<values>session06,action2,param1,10,0.5</values>
+		<values>session07,action2,param1,10,0.5</values>
+		<values>session08,action2,param1,10,0.5</values>
+	</info>
+	<info>
+		<values>session09,action2,param1,10,0.5</values>
+		<values>session10,action2,param1,10,0.5</values>
+		<values>session11,action2,param1,10,0.5</values>
+		<values>session12,action2,param1,10,0.5</values>
+		<values>session13,action2,param1,10,0.5</values>
+		<values>session14,action2,param1,10,0.5</values>
+		<values>session15,action2,param1,10,0.5</values>
+		<values>session16,action2,param1,10,0.5</values>
+	</info>
+</data>

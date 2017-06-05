@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.CompiledScript;
+
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,23 +18,22 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.PairFunction;
-
 import bdap.util.Util;
 import etl.cmd.transform.ColOp;
 import etl.engine.ETLCmd;
-import etl.engine.MRMode;
-import etl.engine.OutputType;
-import etl.util.DBUtil;
+import etl.engine.EngineUtil;
+import etl.engine.types.MRMode;
+import etl.engine.types.OutputType;
+import etl.engine.types.ProcessMode;
+import etl.input.CombineWithFileNameTextInputFormat;
+import etl.util.ConfigKey;
 import etl.util.FieldType;
 import etl.util.ScriptEngineUtil;
-import etl.util.VarType;
 
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class CsvTransformCmd extends SchemaETLCmd{
 	private static final long serialVersionUID = 1L;
@@ -40,15 +41,20 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	public static final Logger logger = LogManager.getLogger(CsvTransformCmd.class);
 	
 	//cfgkey
-	public static final String cfgkey_input_endwithcomma="input.endwithcomma";
-	public static final String cfgkey_row_validation="row.validation";
-	public static final String cfgkey_col_op="col.op";
-	public static final String cfgkey_old_talbe="old.table";
-	public static final String cfgkey_add_fields="add.fields";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_input_endwithcomma="input.endwithcomma";
+	public static final @ConfigKey String cfgkey_input_endwithcomma_exp="input.endwithcomma.exp";
+	public static final @ConfigKey String cfgkey_row_validation="row.validation";
+	public static final @ConfigKey(type=String[].class) String cfgkey_col_op="col.op";
+	public static final @ConfigKey String cfgkey_old_talbe="old.table";
+	public static final @ConfigKey(type=String[].class) String cfgkey_add_fields="add.fields";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_output_escape_csv="output.escape.csv";
 	
 	private boolean inputEndWithComma=false;
-	private String rowValidation;
+	private String rowValidationStr;
+	private transient CompiledScript rowValidation;
+	private transient CompiledScript inputEndWithCommaCS;
 	private String oldTable;
+	private boolean outputEscapeCsv=false;
 	
 	private transient List<String> addFieldsNames;
 	private transient List<String> addFieldsTypes;
@@ -63,23 +69,38 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	}
 	
 	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, ProcessMode.Single);
+	}
+	
+	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs, ProcessMode pm){
+		init(wfName, wfid, staticCfg, null, defaultFs, otherArgs, pm);
 	}
 	
 	public CsvTransformCmd(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+		init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, ProcessMode.Single);
 	}
 	
 	@Override
-	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs){
-		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs);
+	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
+		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
 		this.setMrMode(MRMode.line);
+		String inputEndWithCommaStr;
 		inputEndWithComma = super.getCfgBoolean(cfgkey_input_endwithcomma, false);
-		rowValidation = super.getCfgString(cfgkey_row_validation, null);
+		rowValidationStr = super.getCfgString(cfgkey_row_validation, null);
+		inputEndWithCommaStr = super.getCfgString(cfgkey_input_endwithcomma_exp, null);
 		oldTable = super.getCfgString(cfgkey_old_talbe, null);
 		addFieldsNames = new ArrayList<String>();
 		addFieldsTypes = new ArrayList<String>();
 		colOpList = new ArrayList<ColOp>();
+		outputEscapeCsv=getCfgBoolean(cfgkey_output_escape_csv, false);
+		
+		// compile the expression to speedup
+		if (rowValidationStr != null && rowValidationStr.length() > 0)
+			rowValidation = ScriptEngineUtil.compileScript(rowValidationStr);
+		
+		// compile the expression to speedup
+		if (inputEndWithCommaStr != null && inputEndWithCommaStr.length() > 0)
+			inputEndWithCommaCS = ScriptEngineUtil.compileScript(inputEndWithCommaStr);
 		
 		//for dynamic trans
 		if (this.logicSchema!=null){
@@ -111,7 +132,6 @@ public class CsvTransformCmd extends SchemaETLCmd{
 	@Override
 	public List<String> sgProcess(){
 		List<String> attrs = logicSchema.getAttrNames(this.oldTable);
-		List<String> createTableSqls = new ArrayList<String>();
 		List<String> addFns = new ArrayList<String>();
 		List<FieldType> addFts = new ArrayList<FieldType>();
 		for (int i=0; i<addFieldsNames.size(); i++){
@@ -124,27 +144,37 @@ public class CsvTransformCmd extends SchemaETLCmd{
 			}
 		}
 		if (addFns.size()>0){
-			logicSchema.addAttributes(oldTable, addFns);
-			logicSchema.addAttrTypes(oldTable, addFts);
-			createTableSqls.addAll(DBUtil.genUpdateTableSql(addFns, addFts, oldTable, 
-					dbPrefix, super.getDbtype()));
-			return super.updateDynSchema(createTableSqls);
+			Map<String, List<String>> attrsMap = new HashMap<String, List<String>>();
+			Map<String, List<FieldType>> attrTypesMap =new HashMap<String, List<FieldType>>();
+			attrsMap.put(oldTable, addFns);
+			attrTypesMap.put(oldTable, addFts);
+			return super.updateSchema(attrsMap, attrTypesMap);
 		}else{
 			return null;
 		}
 	}
 
-	//value is each line
-	public Tuple2<String, String> mapToPair(String pathName, String value){
+	@Override
+	public List<Tuple2<String, String>> flatMapToPair(String tfName, String value, Mapper<LongWritable, Text, Text, Text>.Context context){
 		super.init();
-		this.getSystemVariables().put(VAR_NAME_PATH_NAME, pathName);
-		String tableName = getTableName(pathName);
 		String row = value;
 		String output="";
 		
 		//get all fiels
 		List<String> items = new ArrayList<String>();
-		items.addAll(Arrays.asList(row.split(",", -1)));
+		items.addAll(Arrays.asList(row.split(super.csvValueSep, -1)));
+		
+		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
+		//process row validation
+		if (rowValidation!=null){//put this 1st to improve performance
+			Object valid = ScriptEngineUtil.evalObject(rowValidation, super.getSystemVariables());
+			if (valid instanceof Boolean) {
+				if (!(Boolean)valid) {
+					logger.debug("invalid row:" + row);
+					return new ArrayList<Tuple2<String,String>>();//return empty tuple2 list
+				}
+			} /* If result is not boolean, the expression has no effect */
+		}
 		
 		//set the fieldsMap
 		Map<String, String> fieldMap = null;
@@ -158,92 +188,114 @@ public class CsvTransformCmd extends SchemaETLCmd{
 				}
 			}
 		}
-		
-		//process input ends with comma
-		if (inputEndWithComma){//remove the last empty item since row ends with comma
-			items.remove(items.size()-1);
+		//calculate whether use inputEndWithComma
+		boolean hasEndComma=inputEndWithComma;
+		if (inputEndWithCommaCS != null) {
+			Object result = ScriptEngineUtil.evalObject(inputEndWithCommaCS, super.getSystemVariables());
+			if (result instanceof Boolean && result!=null) {
+				hasEndComma=(Boolean) result;
+			} /* If result is not boolean, use the default */
 		}
-		super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
-		//process row validation
-		if (rowValidation!=null){
-			boolean valid = (Boolean) ScriptEngineUtil.eval(rowValidation, VarType.BOOLEAN, super.getSystemVariables());
-			if (!valid) {
-				logger.info("invalid row:" + row);
-				return null;
-			}
+		//process input ends with comma
+		if (hasEndComma){//remove the last empty item since row ends with comma
+			items.remove(items.size()-1);
 		}
 		
 		//process operation
 		super.getSystemVariables().put(ColOp.VAR_NAME_FIELD_MAP, fieldMap);
-		super.getSystemVariables().put(VAR_NAME_TABLE_NAME, tableName);
-		for (ColOp co: colOpList){
-			items = co.process(super.getSystemVariables());
-			super.getSystemVariables().put(ColOp.VAR_NAME_FIELDS, items.toArray(new String[0]));
+		super.getSystemVariables().put(VAR_NAME_TABLE_NAME, tfName);
+		try {
+			for (ColOp co: colOpList){
+				items = co.process(super.getSystemVariables(), items);
+			}
+		}catch(Exception e){
+			logger.error(String.format("error processing input:%s", row));
 		}
-		output = Util.getCsv(items, false);
-		logger.debug("output:" + output);
-		return new Tuple2<String, String>(tableName, output);
+		output = Util.getCsv(items, ",", outputEscapeCsv, false);
+		logger.debug(String.format("tableName:%s, output:%s", tfName, output));
+		return Arrays.asList(new Tuple2<String, String>(tfName, output));
 	}
 	
 	@Override
-	public Map<String, Object> mapProcess(long offset, String row, Mapper<LongWritable, Text, Text, Text>.Context context) {
-		Map<String, Object> retMap = new HashMap<String, Object>();
-		//process skip header
-		if (skipHeader && offset==0) {
-			logger.info("skip header:" + row);
-			return null;
+	public Map<String, Object> mapProcess(long offset, String row, 
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		if (SequenceFileInputFormat.class.isAssignableFrom(context.getInputFormatClass())){
+			String[] lines = row.split("\n");
+			String pathName = lines[0];
+			String tfName = getTableNameSetPathFileName(pathName);
+			boolean skipFirstLine = skipHeader;
+			if (!skipHeader && skipHeaderCS!=null){
+				boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, super.getSystemVariables());
+				skipFirstLine = skipFirstLine || skip;
+			}
+			int start=1;
+			if (skipFirstLine) start=2;
+			for (int i=start; i<lines.length; i++){
+				String line = lines[i];
+				List<Tuple2<String, String>> ret = flatMapToPair(tfName, line, context);
+				if (ret!=null) {
+					for (Tuple2<String, String> t:ret){
+						context.write(new Text(t._1), new Text(t._2));
+					}
+				}
+			}
+		}else{
+			String pathName = null;
+			//process skip header
+			if (skipHeader && offset==0) {
+				logger.info("skip header:" + row);
+				return null;
+			}
+			if (context.getInputSplit() instanceof FileSplit){
+				pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
+			}else if (context.getInputFormatClass().isAssignableFrom(CombineWithFileNameTextInputFormat.class)){
+				int idx = row.indexOf(CombineWithFileNameTextInputFormat.filename_value_sep);
+				pathName = row.substring(0, idx);
+				row = row.substring(idx+1);
+			}else{
+				logger.error(String.format("unsupported input split:%s", context.getInputSplit()));
+			}
+			String tfName = getTableNameSetPathFileName(pathName);
+			//process skip header exp
+			if (skipHeaderCS!=null && offset==0){
+				boolean skip = (boolean) ScriptEngineUtil.evalObject(skipHeaderCS, super.getSystemVariables());
+				if (skip){
+					logger.info("skip header:" + row);
+					return null;
+				}
+			}
+			List<Tuple2<String, String>> ret = flatMapToPair(tfName, row, context);
+			if (ret!=null) {
+				for (Tuple2<String, String> t:ret){
+					context.write(new Text(t._1), new Text(t._2));
+				}
+			}
 		}
-		String pathName = ((FileSplit) context.getInputSplit()).getPath().toString();
-		Tuple2<String, String> ret = mapToPair(pathName, row);
-		retMap.put(RESULT_KEY_OUTPUT_TUPLE2, Arrays.asList(ret));
-		return retMap;
+		return null;
 	}
 	
 	@Override
-	public List<String[]> reduceProcess(Text key, Iterable<Text> values,
+	public List<Tuple3<String, String, String>> reduceByKey(String key, Iterable<? extends Object> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
-		List<String[]> ret = new ArrayList<String[]>();	
-		Iterator<Text> it = values.iterator();
+		//write output using the lastpart of the path name.
+		String pathName = key.toString();
+		int lastSep = pathName.lastIndexOf("/");
+		String fileName = pathName.substring(lastSep+1);
+		Iterator<? extends Object> it = values.iterator();
+		List<Tuple3<String, String, String>> ret = new ArrayList<Tuple3<String, String, String>>();
 		while (it.hasNext()){
 			String v = it.next().toString();
+			String tableName = ETLCmd.SINGLE_TABLE;
 			if (super.getOutputType()==OutputType.multiple){
-				ret.add(new String[]{v, null, key.toString()});
+				tableName = fileName.toString();
+			}
+			if (context!=null){//map reduce
+				EngineUtil.processReduceKeyValue(v, null, tableName, context, mos);
 			}else{
-				ret.add(new String[]{v, null, ETLCmd.SINGLE_TABLE});
+				ret.add(new Tuple3<String, String, String>(v, null, tableName));
 			}
 		}
 		return ret;
-	}
-	
-	//key contain fileName, value is each line
-	@Override
-	public JavaPairRDD<String, String> sparkProcessKeyValue(JavaPairRDD<String, String> input, JavaSparkContext jsc){
-		JavaPairRDD<String, String> mapret = input.mapToPair(new PairFunction<Tuple2<String, String>, String, String>(){
-			private static final long serialVersionUID = 1L;
-			@Override
-			public Tuple2<String, String> call(Tuple2<String, String> t) throws Exception {
-				return mapToPair(t._1, t._2);
-			}
-		}).filter(new Function<Tuple2<String, String>, Boolean>(){
-			@Override
-			public Boolean call(Tuple2<String, String> v1) throws Exception {
-				if (v1==null){
-					return false;
-				}else{
-					return true;
-				}
-			}
-		});
-		JavaPairRDD<String, String> csvret=mapret;
-		if (super.getOutputType()==OutputType.single){
-			csvret = mapret.mapToPair(new PairFunction<Tuple2<String,String>, String,String>(){
-				@Override
-				public Tuple2<String, String> call(Tuple2<String, String> v1) throws Exception {
-					return new Tuple2<String,String>(ETLCmd.SINGLE_TABLE, v1._2);
-				}
-			});
-		}
-		return csvret;
 	}
 
 	public String getOldTable() {

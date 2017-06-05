@@ -6,15 +6,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bdap.util.EngineConf;
+import etl.engine.types.ProcessMode;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 	public static final Logger logger = LogManager.getLogger(InvokeMapper.class);
 	
 	private ETLCmd[] cmds = null;
+	private MultipleOutputs<Text, Text> mos;
 	
 	@Override
 	public void setup(Context context) throws IOException, InterruptedException {
@@ -27,12 +30,18 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 			String defaultFs = context.getConfiguration().get("fs.defaultFS");
 			logger.info(String.format("input file:%s, cmdClassName:%s, wfid:%s, staticConfigFile:%s, %s", inputdir, strCmdClassNames, wfid, 
 					strStaticConfigFiles, defaultFs));
-			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.MRProcess);
+			cmds = EngineUtil.getInstance().getCmds(strCmdClassNames, strStaticConfigFiles, wfName, wfid, defaultFs, null, ProcessMode.Map);
 		}
+		mos = new MultipleOutputs<Text,Text>(context);
 	}
 	
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+    	mos.close();
+    	
+    	if (cmds != null)
+    		for (ETLCmd c: cmds)
+    			c.close();
     }
     
 	//for each line of the inputfile, this will be invoked once
@@ -41,7 +50,7 @@ public class InvokeMapper extends Mapper<LongWritable, Text, Text, Text>{
 		if (cmds!=null){
 			logger.debug(String.format("in mapper, key:%s, values:%s", key, value));
 			String input = value.toString();
-			EngineUtil.getInstance().processMapperCmds(cmds, key.get(), input, context);
+			EngineUtil.getInstance().processMapperCmds(cmds, key.get(), input, context, mos);
 		}
 	}
 }

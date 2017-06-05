@@ -10,12 +10,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "@class")
 @JsonSubTypes({
+	@JsonSubTypes.Type(value = CallSubFlowNode.class, name = "callSubFlow"),
     @JsonSubTypes.Type(value = ActionNode.class, name = "action"),
     @JsonSubTypes.Type(value = StartNode.class, name = "start"),
     @JsonSubTypes.Type(value = EndNode.class, name = "end"),
     @JsonSubTypes.Type(value = Flow.class, name = "flow")
 })
-public class Node{
+public class Node implements Comparable<Node>{
+	public static final String sys_prop_prefix="sys.";
 	
 	private String name;
 	private List<NodeLet> inlets = new ArrayList<NodeLet>();
@@ -29,7 +31,7 @@ public class Node{
 	}
 	
 	public String toString(){
-		return String.format("%s,%d,%d", name);
+		return String.format("%s", name);
 	}
 	
 	@Override
@@ -64,5 +66,10 @@ public class Node{
 	
 	public List<NodeLet> getOutlets(){
 		return outlets;
+	}
+
+	@Override
+	public int compareTo(Node o) {
+		return this.name.compareTo(o.getName());
 	}
 }

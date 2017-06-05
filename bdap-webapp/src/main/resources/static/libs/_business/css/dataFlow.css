@@ -1,0 +1,318 @@
+html,
+body {
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	user-select: none;
+}
+
+.nodePropertyG {
+	fill: rgb(238, 238, 238);
+	stroke: red;
+	stroke-width: 1;
+}
+
+.nodePropertyG:hover {
+	cursor: pointer;
+}
+
+.nodeG {}
+
+.nodeG:hover {
+	cursor: crosshair;
+}
+
+.nodeG>text {
+	font-size: 15px
+}
+
+.nodeG>text:hover {
+	cursor: default;
+}
+
+.nodeG>rect {
+	stroke: silver;
+	stroke-width: 2;
+}
+
+.nodeG>circle{
+	
+}
+
+
+/*.nodeG:hover>rect {
+	fill: rgb(238, 238, 238);
+	stroke: red;
+	stroke-width: 2;
+}*/
+
+.nodeG>.nodePropertyG>rect {
+	fill: rgb(238, 238, 238);
+	stroke: rgb(155, 155, 155);
+	stroke-width: 2;
+}
+
+.nodeGSelected {}
+
+.nodeGSelected>rect {
+	fill: rgb(238, 238, 238);
+	stroke: red;
+	stroke-width: 4;
+}
+
+.nodeGSelected:hover>rect {
+	/*fill: rgb(238, 238, 238);*/
+	stroke: red;
+	stroke-width: 4;
+}
+
+.nodeGSelected>.nodePropertyG>rect {
+	/*fill: rgb(238, 238, 238);*/
+	stroke: rgb(255, 0, 0);
+	stroke-width: 1;
+}
+
+.nodeRun {
+	fill: green;
+}
+
+.nodeRun:hover {
+	stroke: white;
+	stroke-width: 2;
+	cursor: pointer;
+}
+
+.nodeLog {
+	fill: deepskyblue;
+}
+
+.nodeLog:hover {
+	stroke: white;
+	stroke-width: 2;
+	cursor: pointer;
+}
+
+.nodeZoom {
+	fill: red;
+}
+
+.nodeZoom:hover {
+	stroke: white;
+	stroke-width: 2;
+	cursor: pointer;
+}
+
+.minNodeG {}
+
+.inletsMinNodeG {}
+
+.outletsMinNodeG {}
+
+.minNodeCircle {
+	fill: red;
+	stroke-width: 1;
+	stroke: white;
+}
+
+.letsMinNodeCircle {
+	fill: #006EC3;
+	stroke-width: 1;
+	stroke: white;
+}
+
+.minNodePath {
+	stroke-width: 1;
+	stroke: white;
+}
+
+.letsMinNodePath {
+	stroke-width: 1;
+	stroke: white;
+}
+
+.minNodeG:hover>.minNodePath {
+	cursor: zoom-in;
+}
+
+.minNodeG:hover>.letsMinNodePath {
+	stroke-width: 1;
+	stroke: white;
+	cursor: pointer;
+}
+
+.minNodeG:hover>.minNodeCircle {
+	stroke: white;
+	stroke-width: 2;
+	cursor: zoom-in;
+}
+
+.minNodeG:hover>.letsMinNodeCircle {
+	stroke: white;
+	stroke-width: 2;
+	cursor: pointer;
+}
+
+.maxNodeG {}
+
+.maxNodeCircle {
+	fill: red;
+	stroke-width: 1;
+	stroke: white;
+}
+
+.maxNodePath {
+	stroke-width: 1;
+	stroke: white;
+}
+
+.maxNodeG:hover>.maxNodeCircle {
+	stroke: white;
+	stroke-width: 2;
+	cursor: zoom-out;
+}
+
+.edge {}
+
+.edge>path {
+	fill: none;
+	stroke: gray;
+	stroke-linecap: round;
+	stroke-width: 3px;
+}
+
+.edgeSelected {}
+
+.edgeSelected>path {
+	fill: none;
+	stroke: orangered;
+	stroke-linecap: round;
+	stroke-width: 3px;
+}
+
+.edge:hover {
+	cursor: crosshair;
+}
+
+.dataPath{
+	stroke: white;
+	stroke-width: 1px;
+}
+
+.outPath {
+	fill: orangered;
+	stroke: white;
+}
+
+.outPath:hover {
+	cursor: pointer;
+}
+
+.inPath {
+
+}
+
+.inPath>circle{
+	fill: cornflowerblue;
+	stroke: white;
+}
+
+.inPath>path{
+	stroke: white;
+	stroke-width: 1px;
+}
+
+
+.inPath:hover {
+	cursor: pointer;
+}
+
+.dataPathEdit {
+	stroke: white;
+	stroke-width: 2px;
+}
+
+.dataPathSelected{
+	fill:greenyellow;
+}
+
+.start {}
+
+.start>rect {
+	fill: #789938;
+}
+
+.start:hover>rect {
+	fill: #789938;
+	stroke: red;
+	stroke-width: 2;
+}
+
+.end {}
+
+.end>rect {
+	fill: #AE5F2E;
+}
+
+.end:hover>rect {
+	fill: #AE5F2E;
+	stroke: red;
+	stroke-width: 2;
+}
+
+.action {}
+
+.action>rect {
+	fill: rgb(238, 238, 238);
+}
+
+.action:hover>rect {
+	fill: rgb(238, 238, 238);
+	stroke: red;
+	stroke-width: 2;
+}
+
+.child_svg {
+	position: relative;
+	width: 150px;
+	height: 150px;
+	border: 1px solid rgb(155, 155, 155);
+	background: #FFF;
+	z-index: 1;
+	opacity: 0.5;
+}
+
+.child_svg:hover {
+	cursor: move;
+}
+
+.child_small_svg {
+	position: absolute;
+	border: 1px solid rgb(155, 155, 155);
+	background: #FFF;
+	opacity: 0.5;
+}
+
+.nodeSmallG {}
+
+.success {}
+
+.success>rect {
+	fill: #00FF00;
+}
+
+.success:hover>rect {
+	fill: #00FF00;
+	stroke: #000000;
+	stroke-width: 2;
+}
+
+.fail {}
+
+.fail>rect {
+	fill: #FF0000;
+}
+
+.fail:hover>rect {
+	fill: #FF0000;
+	stroke: #000000;
+	stroke-width: 2;
+}

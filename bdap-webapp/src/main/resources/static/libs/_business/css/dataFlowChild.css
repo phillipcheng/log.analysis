@@ -1,0 +1,15 @@
+.nodeChildG {}
+
+.nodeChildG>rect {
+	fill: rgb(238, 238, 238);
+	stroke: rgb(155, 155, 155);
+	stroke-width: 1;
+}
+
+.nodeChildG_Text{
+	font-size: 10px;
+}
+
+.nodeChildG:hover{
+	cursor: pointer;
+}

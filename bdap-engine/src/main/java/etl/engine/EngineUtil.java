@@ -9,12 +9,17 @@ import java.util.Map;
 import java.util.Properties;
 
 import scala.Tuple2;
+import scala.Tuple3;
 
 //log4j2
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 import bdap.util.PropertiesUtil;
+import bdap.util.SftpInfo;
+import etl.engine.types.MRMode;
+import etl.engine.types.ProcessMode;
 import etl.log.ETLLog;
 import etl.log.LogType;
 
@@ -119,6 +124,14 @@ public class EngineUtil {
 		return singleton;
 	}
 	
+	public SftpInfo getSftpInfo(){
+		String sftpHost = getEngineProp().getString("sftp.host");
+		String sftpUser = getEngineProp().getString("sftp.user");
+		int sftpPort = getEngineProp().getInt("sftp.port");
+		String sftpPass = getEngineProp().getString("sftp.pass");
+		return new SftpInfo(sftpUser, sftpPass, sftpHost, sftpPort);
+	}
+	
 	public void sendLog(String topicName, ETLLog etllog){
 		sendMsg(topicName, etllog.getType().toString(), etllog.toString());
 	}
@@ -187,18 +200,7 @@ public class EngineUtil {
 		}
 		
 		for (int i=0; i<cmds.length; i++){
-			try {
-				cmds[i] = (ETLCmd) Class.forName(cmdClassNames[i]).getConstructor(String.class, String.class, String.class, String.class, String[].class).
-						newInstance(wfName, wfid, staticCfgFiles[i], defaultFs, otherArgs);
-				cmds[i].setPm(pm);
-			}catch(Throwable t){
-				if (cmds[i]!=null){
-					logger.error(new ETLLog(cmds[i], null, t), t);
-				}else{
-					logger.error("", t);
-				}
-				return null;
-			}
+			cmds[i] = getCmd(cmdClassNames[i], staticCfgFiles[i], wfName, wfid, defaultFs, otherArgs, pm);
 		}
 		return cmds;
 	}
@@ -208,8 +210,8 @@ public class EngineUtil {
 		ETLCmd cmd = null;
 		try {
 			cmd = (ETLCmd) Class.forName(cmdClassName).getConstructor(String.class, String.class, String.class, 
-					String.class, String[].class).newInstance(wfName, wfid, configFile, defaultFs, otherArgs);
-			cmd.setPm(pm);
+					String.class, String[].class, ProcessMode.class).
+					newInstance(wfName, wfid, configFile, defaultFs, otherArgs, pm);
 		}catch(Throwable t){
 			if (cmd!=null){
 				logger.error(new ETLLog(cmd, null, t), t);
@@ -220,29 +222,59 @@ public class EngineUtil {
 		return cmd;
 	}
 	
+	public static void processReduceKeyValue(String k, String value, String tableName, 
+			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
+		String sep = context.getConfiguration().get("mapreduce.output.textoutputformat.separator", ",");
+		if (ParquetOutputFormat.class.isAssignableFrom(context.getOutputFormatClass())) {
+			/* In case of parquet output format, the output key should be null */
+			if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+				if (value!=null){
+					if (!"".equals(k.trim())){
+						context.write(null, new Text(k + sep + value));
+					}else{
+						context.write(null, new Text(value));
+					}
+				}else{
+					context.write(null, new Text(k));
+				}
+			}else{
+				if (value!=null){
+					mos.write((Text)null, new Text(k + sep + value), tableName);
+				}else{
+					mos.write((Text)null, new Text(k), tableName);
+				}
+			}
+		} else {
+			if (ETLCmd.SINGLE_TABLE.equals(tableName)){
+				if (value!=null){
+					if (!"".equals(k.trim())){
+						context.write(new Text(k), new Text(value));
+					}else{
+						context.write(new Text(value), null);
+					}
+				}else{
+					context.write(new Text(k), null);
+				}
+			}else{
+				if (value!=null){
+					mos.write(new Text(k), new Text(value), tableName);
+				}else{
+					mos.write(new Text(k), null, tableName);
+				}
+			}
+		}
+	}
+	
 	public void processReduceCmd(ETLCmd cmd, Text key, Iterable<Text> values, 
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		try {
-			List<String[]> rets = cmd.reduceProcess(key, values, context, mos);
+			List<Tuple3<String,String,String>> rets = cmd.reduceByKey(key.toString(), values, context, mos);
 			if (rets!=null){
-				for (String[] ret: rets){
-					if (ETLCmd.SINGLE_TABLE.equals(ret[2])){
-						if (ret[1]!=null){
-							if (!"".equals(ret[0].trim())){
-								context.write(new Text(ret[0]), new Text(ret[1]));
-							}else{
-								context.write(new Text(ret[1]), null);
-							}
-						}else{
-							context.write(new Text(ret[0]), null);
-						}
-					}else{
-						if (ret[1]!=null){
-							mos.write(new Text(ret[0]), new Text(ret[1]), ret[2]);
-						}else{
-							mos.write(new Text(ret[0]), null, ret[2]);
-						}
-					}
+				for (Tuple3<String,String,String> ret: rets){
+					String tableName=ret._3();
+					String value = ret._2();
+					String k = ret._1();
+					processReduceKeyValue(k, value, tableName, context, mos);
 				}
 			}
 		}catch(Throwable t){
@@ -250,7 +282,7 @@ public class EngineUtil {
 		}
 	}
 
-	public void processJavaCmd(ETLCmd cmd){
+	public void processJavaCmd(ETLCmd cmd) throws Exception{
 		Date startTime = new Date();
 		List<String> logoutputs = cmd.sgProcess();
 		Date endTime = new Date();
@@ -258,13 +290,13 @@ public class EngineUtil {
 	}
 	
 	public void processMapperCmds(ETLCmd[] cmds, long offset, String row, 
-			Mapper<LongWritable, Text, Text, Text>.Context context) {
+			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) {
 		String input = row;
 		for (int i=0; i<cmds.length; i++){
 			ETLCmd cmd = cmds[i];
 			try {
 				Date startTime = new Date();
-				Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context);
+				Map<String, Object> alloutputs = cmd.mapProcess(offset, input, context, mos);
 				Date endTime = new Date();
 				if (alloutputs!=null){
 					if (cmd.getMrMode()==MRMode.file){
@@ -299,9 +331,11 @@ public class EngineUtil {
 					}else if (alloutputs.containsKey(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2)){//for map-reduce mapper phrase, the result is key-value pair
 						if (alloutputs!=null && context!=null){
 							List<Tuple2<String, String>> tl = (List<Tuple2<String, String>>) alloutputs.get(ETLCmd.RESULT_KEY_OUTPUT_TUPLE2);
-							for (Tuple2<String, String> kv: tl){
-								if (kv!=null){
-									context.write(new Text(kv._1), new Text(kv._2));
+							if (tl!=null){
+								for (Tuple2<String, String> kv: tl){
+									if (kv!=null){
+										context.write(new Text(kv._1), new Text(kv._2));
+									}
 								}
 							}
 						}

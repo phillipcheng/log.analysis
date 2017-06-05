@@ -1,0 +1,122 @@
+<project name="preload" default="dist" basedir=".">
+	<property name="dist"  location="bdap-VVERSIONN"/>
+	<property name="src"  location="."/>
+	<property name="common.target"  location="bdap-common/target"/>
+	<property name="engine.target"  location="bdap-engine/target"/>
+	<property name="engine.src"  location="bdap-engine"/>
+	<property name="log.target"  location="bdap-log/target"/>
+	<property name="log.src"  location="bdap-log"/>
+	<property name="mgr.target"  location="bdap-mgr/target"/>
+	<property name="mgr.src"  location="bdap-mgr"/>
+	
+	<target name="dist" depends="clean">
+		<mkdir dir="${dist}"/>
+		<copy todir="${dist}/common/lib/"> <!-- copy thirdparty lib for oozie custom expression-->
+			<fileset dir="${common.target}/lib/">
+				<exclude name="servlet-api*"/>
+			</fileset>
+			<fileset dir="${common.target}">
+				<include name="bdap.*.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist}/engine/buildlib/"> <!-- copy thirdparty lib for spark to build driver program-->
+			<fileset dir="${engine.target}/lib/">
+			</fileset>
+			<fileset dir="${engine.target}">
+				<include name="bdap.*.jar"/>
+			</fileset>
+			<fileset dir="${mgr.target}">
+				<include name="bdap.*.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist}/engine/lib/"> <!-- copy thirdparty lib-->
+			<fileset dir="${engine.target}/lib/">
+				<include name="commons*.jar"/>
+				<include name="jackson-core-*.jar"/>
+				<include name="jackson-databind-*.jar"/>
+				<include name="jackson-annotations-*.jar"/>
+				<include name="jsch*.jar"/>
+				<include name="kafka-clients*.jar"/>
+				<include name="log4j-1.2.16.jar"/>
+				<include name="log4j-core-*.jar"/>
+				<include name="log4j-api-*.jar"/>
+				<include name="bdap.*.jar"/>
+				<include name="spark-core*.jar"/>
+				<include name="spark-sql*.jar"/>
+				<include name="spark-catalyst*.jar"/>
+				<include name="scala-library*.jar"/>
+				<include name="parquet-hadoop-bundle*.jar"/>
+			</fileset>
+			<fileset dir="${engine.src}/lib/">
+				<include name="*.jar"/>
+				</fileset>
+			<fileset dir="${engine.target}">
+				<include name="bdap.*.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist}/engine/bin"><!-- copy shell scripts -->
+			<fileset dir="${engine.src}/bin">
+				<include name="*.sh"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist}/engine/cfg"><!-- copy shell scripts -->
+			<fileset dir="${engine.src}/src/main/resources">
+				<include name="coordinator.xml"/>
+				<include name="sparkcmd_workflow.xml"/>
+				<include name="submitspark.sh"/>
+			</fileset>
+		</copy>
+		<!-- log module -->
+		<copy todir="${dist}/log/lib"><!-- copy lib-->
+            <fileset dir="${log.target}">
+                <include name="bdap*.jar"/>
+            </fileset>
+        </copy>
+		<copy todir="${dist}/log/bin"><!-- copy shell-->
+            <fileset dir="${log.src}/bin">
+            </fileset>
+        </copy>
+		<copy todir="${dist}/log/schema"><!-- copy schema-->
+            <fileset dir="${log.src}/src/main/resources">
+                <include name="logschema.txt"/>
+            </fileset>
+        </copy>
+		<copy todir="${dist}/log/sql"><!-- copy sql-->
+            <fileset dir="${log.src}/sql">
+            </fileset>
+        </copy>
+		<copy todir="${dist}/log/cfg"><!-- copy cfg-->
+			<fileset dir="${log.src}/src/main/resources">
+	            <include name="etlengine.properties.template"/>
+	            <include name="log4j*"/>
+	        </fileset>
+        </copy>
+		<!-- mgr module -->
+		<copy todir="${dist}/mgr/lib"><!-- copy lib-->
+            <fileset dir="${mgr.target}/lib">
+            </fileset>
+			<fileset dir="${mgr.target}/">
+				<include name="bdap*"/>
+			</fileset>
+        </copy>
+		<copy todir="${dist}/mgr/bin"><!-- copy shell and properties-->
+            <fileset dir="${mgr.src}/bin">
+            </fileset>
+			<fileset dir="${mgr.src}/src/test/resources">
+				<exclude name="flow1"/>
+			</fileset>
+        </copy>
+		<copy todir="${dist}/mgr/cfg"><!-- copy cfg and test case-->
+            <fileset dir="${mgr.src}/src/test/resources">
+            	<exclude name="flow1/data/"/>
+            	<exclude name="flow1/expected/"/>
+            </fileset>
+        </copy>
+		<tar destfile="${src}/bdap-VVERSIONN.tar" basedir="${dist}"/>
+		<gzip destfile="${src}/bdap-VVERSIONN.tar.gz" src="${src}/bdap-VVERSIONN.tar"/>
+	</target>
+	
+	<target name="clean">
+		 <delete dir="${dist}"></delete>
+	</target>
+</project>
