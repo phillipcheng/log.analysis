@@ -191,7 +191,15 @@ public class GroupFun {
 			return null;
 		}
 	}
-	
+		//////////////
+	public static String spiltbysinglespace(String str){
+		String newstr = str.replaceAll(" ", ",").trim();
+		if(newstr.lastIndexOf(",") == (newstr.length() - 1))
+		{
+			newstr = newstr.substring(0, newstr.length() - 1);
+		}
+		return newstr;
+	}
 	///////////////
 	public static String subnumber(String hexStr, int beginByteIndex, int endByteIndex, String defaultValue) {
 		byte[] byteArray=hexStringToByteArray(hexStr);
