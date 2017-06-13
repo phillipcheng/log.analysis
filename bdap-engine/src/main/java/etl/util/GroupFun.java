@@ -200,6 +200,26 @@ public class GroupFun {
 		}
 		return newstr;
 	}
+		//////////////
+	/**
+	 * format  e.g. yyyy-MMM-dd hh.mm.ss.S a
+	 * @param input
+	 * @param inputFormat
+	 * @return
+	 */
+	public static String dtEnglishFormat(String input, String inputFormat){
+		SimpleDateFormat format = new SimpleDateFormat(inputFormat,  Locale.ENGLISH);
+		String returnStr = "";
+		try {
+			Date d = format.parse(input);
+			if (d!=null){
+				returnStr = FieldType.sdatetimeFormat.format(d);
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return returnStr;
+	}
 	///////////////
 	public static String subnumber(String hexStr, int beginByteIndex, int endByteIndex, String defaultValue) {
 		byte[] byteArray=hexStringToByteArray(hexStr);
