@@ -12,6 +12,11 @@ public class DynamicTableSchema {
 	private List<String> fieldIds;
 	private String[] valueSample;//used to guess type, if type is not known before hand
 	private List<FieldType> types;//if this is not set, guess it from values
+	private List<String> valueList;
+	
+	
+	public DynamicTableSchema(){
+	}
 	
 	//values can be null
 	public DynamicTableSchema(String name, List<String> fieldNames, String[] values, List<FieldType> types){
@@ -70,6 +75,19 @@ public class DynamicTableSchema {
 
 	public void setFieldIds(List<String> fieldIds) {
 		this.fieldIds = fieldIds;
+	}
+
+	public List<String> getValueList() {
+		return valueList;
+	}
+
+	public void setValueList(List<String> valueList) {
+		this.valueList = valueList;
+	}
+	
+	public void copyValueListToArray(){
+		valueSample = valueList.toArray(new String[]{});
+		valueList.clear();
 	}
 
 }
