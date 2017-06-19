@@ -190,11 +190,11 @@ public class DBUtil {
 	
 	public static String genCopyHdfsSql(String prefix, List<String> fieldNameList, String tn, String dbschema, 
 			String rootWebHdfs, String csvFileName, String username, DBType dbType){		
-		return genCopyHdfsSql(prefix, fieldNameList, tn, dbschema, rootWebHdfs, csvFileName, username, dbType, ",", "\"");
+		return genCopyHdfsSql(prefix, fieldNameList, tn, dbschema, rootWebHdfs, csvFileName, username, dbType, ",", "\"", null, null);
 	}
 	
 	public static String genCopyHdfsSql(String prefix, List<String> fieldNameList, String tn, String dbschema, 
-			String rootWebHdfs, String csvFileName, String username, DBType dbType, String delimiter, String enclosedBy){
+			String rootWebHdfs, String csvFileName, String username, DBType dbType, String delimiter, String enclosedBy, String escapeChar, String recordTerminator){
 		if (DBType.HIVE == dbType){
 			return String.format("load data inpath '%s%s' into table %s.%s", rootWebHdfs, csvFileName, dbschema, tn);
 		}else{
@@ -213,7 +213,14 @@ public class DBUtil {
 					copysql.append(",");
 				}
 			}
-			copysql.append(String.format(") SOURCE Hdfs(url='%s%s*',username='%s') delimiter '%s';", rootWebHdfs, csvFileName, username, delimiter));
+			copysql.append(String.format(") SOURCE Hdfs(url='%s%s*',username='%s') delimiter '%s'", rootWebHdfs, csvFileName, username, delimiter));
+			if(escapeChar!=null && !escapeChar.isEmpty()){
+				copysql.append(String.format(" escape as '%s'", escapeChar));
+			}
+			if(recordTerminator!=null && !recordTerminator.isEmpty()){
+				copysql.append(String.format(" record terminator '%s'", recordTerminator));
+			}
+			copysql.append(" ;");
 			return copysql.toString();
 		}
 	}

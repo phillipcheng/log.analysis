@@ -1,7 +1,9 @@
 package etl.cmd;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,6 +31,7 @@ import etl.engine.ETLCmd;
 import etl.engine.types.DBType;
 import etl.engine.types.InputFormatType;
 import etl.engine.types.ProcessMode;
+import etl.log.LogMarker;
 import etl.util.ConfigKey;
 import etl.util.DBUtil;
 import etl.util.ScriptEngineUtil;
@@ -52,6 +55,9 @@ public class LoadDataCmd extends SchemaETLCmd{
 	//before execute load for each table, it will clean table if specified in the paramater. -ALL- means all table will be cleaned. Only used has table name used.
 	public static final @ConfigKey String cfgkey_clean_tables="clean.tables";
 	
+	public static final @ConfigKey String cfgkey_escape_char="escape.char";	
+	public static final @ConfigKey String cfgkey_record_terminator="record.terminator";
+	
 	//system variables
 	public static final String VAR_ROOT_WEB_HDFS="rootWebHdfs";
 	public static final String VAR_USERNAME="userName";
@@ -72,6 +78,9 @@ public class LoadDataCmd extends SchemaETLCmd{
 	private String[] tableNames;
 	private transient CompiledScript beforeLoadTableSqlsCS=null;
 	private List<String> cleanTableNames=new ArrayList<String>();
+	
+	private String escapeChar=null;
+	private String recordTerminator=null;
 	
 	
 	private transient List<String> sgCopySql = new ArrayList<String>();//for sgProcess
@@ -126,11 +135,18 @@ public class LoadDataCmd extends SchemaETLCmd{
 		String[] cleanTables=super.getCfgStringArray(cfgkey_clean_tables);
 		if(cleanTables!=null){
 			cleanTableNames=Arrays.asList(cleanTables);
+			logger.info(String.format("cleanTables:%s", String.join(",", cleanTables)));
 		}
 		
+		this.escapeChar=super.getCfgString(cfgkey_escape_char, null);
+		logger.info(String.format("escapeChar:%s", escapeChar));
+		
+		this.recordTerminator=super.getCfgString(cfgkey_record_terminator, null);		
+		logger.info(String.format("cfgkey_record_terminator:%s", cfgkey_record_terminator));
 	}
 	
-	private List<String> prepareTableCopySQLs(String tableName, String[] files) {
+	private List<String> prepareTableCopySQLs(String tableName, String[] files, String escapeChar, String recordTerminator) {
+		
 		List<String> newCopysqls = new ArrayList<String>();
 		try{
 			String sql = null;
@@ -152,7 +168,7 @@ public class LoadDataCmd extends SchemaETLCmd{
 						logger.info("Table:{}, Delimiter:{}, Files:\n{}, ",new Object[]{tableName, delimiter, files==null?"":String.join("\n", files)});
 						
 						sql = DBUtil.genCopyHdfsSql(null, logicSchema.getAttrNames(tableName), tableName, 
-								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype(),delimiter, "\"");
+								dbPrefix, this.webhdfsRoot, csvFileName, this.userName, this.getDbtype(),delimiter, "\"", this.escapeChar, this.recordTerminator);
 					}
 					newCopysqls.add(sql);
 
@@ -197,24 +213,25 @@ public class LoadDataCmd extends SchemaETLCmd{
 					csvFileName = ScriptEngineUtil.eval(this.csCsvFile, this.getSystemVariables());
 					files = new String[] {csvFileName};
 					copysqls.addAll(
-						prepareTableCopySQLs(tableName, files)
+						prepareTableCopySQLs(tableName, files, this.escapeChar, this.recordTerminator)
 					);
 				}
 			}else{//just evaluate the loadSql
 				csvFileName = ScriptEngineUtil.eval(this.csCsvFile, this.getSystemVariables());
 				files = new String[] {csvFileName};
 				copysqls.addAll(
-					prepareTableCopySQLs(null, files)
+					prepareTableCopySQLs(null, files,this.escapeChar, this.recordTerminator)
 				);
 			}
 		}catch(Exception e){
 			logger.error("", e);
 		}
-		
+				
 		if (super.getDbtype()!=DBType.NONE){
 			int rowsAdded = DBUtil.executeSqls(copysqls, super.getPc());
 			logInfo.add(rowsAdded+"");
 		}
+		
 		sgCopySql = copysqls;
 		
 		return  logInfo;
@@ -253,12 +270,12 @@ public class LoadDataCmd extends SchemaETLCmd{
 			}
 			
 			if (NO_TABLE_CONFIGURED.equals(key.toString())){
-				sqls.addAll(prepareTableCopySQLs(null, files));
+				sqls.addAll(prepareTableCopySQLs(null, files,this.escapeChar, this.recordTerminator));
 			} else {
 				if(cleanTableNames.contains("-ALL-") || cleanTableNames.contains(key)){
 					sqls.add(generateCleanTableSQL(key));
 				}
-				sqls.addAll(prepareTableCopySQLs(key.toString(), files));
+				sqls.addAll(prepareTableCopySQLs(key.toString(), files,this.escapeChar, this.recordTerminator));
 			}			
 			
 			if (super.getDbtype()!=DBType.NONE){
@@ -292,7 +309,14 @@ public class LoadDataCmd extends SchemaETLCmd{
 	public List<Tuple3<String,String,String>> reduceByKey(String key, Iterable<? extends Object> values,
 			Reducer<Text, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {
 		String[] files = itToSet(values);
+		Date startdt=new Date();
 		int rows = executeSqls(key.toString(), files);
+		Date enddt=new Date();
+		
+		//AUDIT how many rows added.
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		logger.info(LogMarker.AUDIT.marker, String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s", sdf.format(startdt),sdf.format(enddt),wfName,wfid,getClass().getName(), rows, "","",""));
+		
 		List<Tuple3<String,String,String>> ret = new ArrayList<Tuple3<String,String,String>>();
 		ret.add(new Tuple3<String,String,String>(key.toString(), Integer.toString(rows), ETLCmd.SINGLE_TABLE));
 		return ret;

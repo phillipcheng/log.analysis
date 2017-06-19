@@ -164,7 +164,7 @@ public class ETLLog implements Serializable{
 	
 	public String toString(){
 		if (LogType.etlexception==type){
-			return String.format("%s,%s,%s,%s,%s", ssdf.format(start), wfName, wfid, actionName, StringEscapeUtils.escapeCsv(exception));
+			return String.format("%s,%s,%s,%s,%s", ssdf.format(start), wfName, wfid, actionName, exception);
 		}else{
 			String userCounts;
 			if (actionName.contains(SendLogCmd.class.getName())){

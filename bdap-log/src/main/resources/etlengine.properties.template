@@ -2,7 +2,7 @@ defaultFs=hdfs://192.85.247.104:19000
 
 kafka.bootstrap.servers=192.85.247.104:9092\,192.85.247.105:9092\,192.85.247.106:9092
 kafka.log.topic=log-analysis-topic
-kafka.enabled=false
+kafka.enabled=true
 
 db.type=vertica
 db.driver=com.vertica.jdbc.Driver
@@ -10,22 +10,14 @@ db.url=jdbc:vertica://192.85.247.104:5433/cmslab
 db.user=dbadmin
 db.password=password
 
-#db.type=none
-
-#db.type=hive
-#db.driver=org.apache.hive.jdbc.HiveDriver
-#db.url=jdbc:hive2://127.0.0.1:10000/
-#db.user=cheyi
-#db.password=
-
-#for none not needed
 #for vertica load
 hdfs.webhdfs.root=http://192.85.247.104:50070/webhdfs/v1
-#for hive load
-#hdfs.webhdfs.root=hdfs://127.0.0.1:19000
+
 
 #load log cmd
-log.tmp.dir= /bdap-VVERSIONN/etllog/
-log.csv.file='/bdap-VVERSIONN/etllog/' + WFID + '/' + tableName
-log.schema.file=/bdap-VVERSIONN/schema/logschema.txt
+log.tmp.dir= '/preload/etllog/' + WFID + '/'
+log.csv.file='/preload/etllog/' + WFID + '/'
+log.schema.file=/preload/schema/logschema.txt
 log.db.prefix=etllog
+escape.char=/
+record.terminator=;
