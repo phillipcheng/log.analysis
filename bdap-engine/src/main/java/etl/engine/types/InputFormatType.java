@@ -14,5 +14,6 @@ public enum InputFormatType {
 	Binary,//
 	Section,//for kcv
 	Mixed,//join will follow
+	StaXML,
 	
 }

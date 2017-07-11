@@ -14,7 +14,7 @@ public class XmlTableProperties {
 	private List<String> skipNodesXpath;
 	private Map<String,String> formatTimeMap ;//format time string
 	private String useFileName; // filename as field
-	private boolean pde4G;
+	private String ttFF; //special for pde 4G
 	
 	
 	public XmlTableProperties(String tableName, String startNodeXpath, List<String> stopNodesXpath,
@@ -68,11 +68,13 @@ public class XmlTableProperties {
 	public void setUseFileName(String useFileName) {
 		this.useFileName = useFileName;
 	}
-	public boolean isPde4G() {
-		return pde4G;
+	public String getTtFF() {
+		return ttFF;
 	}
-	public void setPde4G(boolean pde4g) {
-		pde4G = pde4g;
+	public void setTtFF(String ttFF) {
+		this.ttFF = ttFF;
 	}
+
+	
 	
 }

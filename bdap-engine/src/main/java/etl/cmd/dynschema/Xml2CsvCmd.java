@@ -104,8 +104,8 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 			tableProperty.setFormatTimeMap(formatTimeMap);
 			String useFileName = super.getCfgString(table + cfgkey_table_field_use_filename , null);
 			tableProperty.setUseFileName(useFileName);
-			boolean pde4G = super.getCfgBoolean(table + cfgkey_table_trans_requirment_ttff, false);
-			tableProperty.setPde4G(pde4G);
+			String ttff = super.getCfgString(table + cfgkey_table_trans_requirment_ttff, null);
+			tableProperty.setTtFF(ttff);
 			tablePropertiesMap.put(table, tableProperty);
 		}
 		
@@ -149,11 +149,9 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 			int index = row.indexOf("\n");
 			String pathName = row.substring(0,index);
 			String tfName = getTableNameSetPathFileName(pathName);
-			
-			InputSplit inputSplit = context.getInputSplit();
-			String fileName = ((FileSplit) inputSplit).getPath().getName(); 
+			 
 			String line = row.substring(index+1);
-			List<Tuple2<String, String>> ret = flatMapToPair(fileName, line, context);
+			List<Tuple2<String, String>> ret = flatMapToPair(tfName, line, context);
 			if (ret!=null) {
 				for (Tuple2<String, String> t:ret){
 					context.write(new Text(t._1), new Text(t._2));
@@ -207,6 +205,8 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 			Mapper<LongWritable, Text, Text, Text>.Context context) {
 		
 		try {
+			InputSplit inputSplit = context.getInputSplit();
+			String fileName = ((FileSplit) inputSplit).getPath().getName();
 			List<Tuple2<String, String>> csvList = new ArrayList<Tuple2<String, String>>();
 			Document dc = DocumentHelper.parseText(text);
 			List<Element> elemNodeList = dc.selectNodes(nodeRootPath);
@@ -219,9 +219,9 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 					XmlTableProperties tablePro = tablePropertiesMap.get(tableName);
 					List<String> parentList = tablePro.getParentNodesXpath();
 					String useFileNameAs = tablePro.getUseFileName();
-					boolean isPDE4G = tablePro.isPde4G();
+					String ttFF = tablePro.getTtFF();
 					if(useFileNameAs != null){
-						orgValueMap.put(useFileNameAs, key);
+						orgValueMap.put(useFileNameAs, fileName);
 					}
 					
 					for(String node:parentList){
@@ -241,7 +241,7 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 						mapList.add(dataMap);
 						//if self is leafs 
 						if(tablePro.getLeafsNodesXpath().contains("./"+e.getPath(e))){
-							dataMap.put(attrIdNameMap.get(e.getPath()), "'"+formatElementValue(e.asXML()).replace(" ", "")+"'");
+							dataMap.put(attrIdNameMap.get(e.getPath()), "'"+formatElementValue(e.asXML()).replaceAll(">\\s+<","> <")+"'");
 						}else{
 							getNodesValue(e, e,tablePro,mapList);
 						}
@@ -258,8 +258,9 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 									vs[j] = map.get(fieldName);
 								}
 							}
-							if(isPDE4G ){
-								vs[vs.length-1] = getTTFF(string2Time(vs[15]), string2Time(vs[2]));
+							if(ttFF != null ){
+								String[] indexs = ttFF.split(":");
+								vs[vs.length-1] = getTTFF(string2Time(vs[Integer.valueOf(indexs[0])]), string2Time(vs[Integer.valueOf(indexs[1])]));
 							}
 							String csv = Util.getCsv(Arrays.asList(vs), false);
 							csvList.add(new Tuple2<String, String>(tableName, csv));
@@ -328,7 +329,7 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 				int start = length*(listIndex-1);
 				for (int i = 0; i < length; i++) {
 					if(tablePro.getLeafsNodesXpath().contains("./"+e.getPath(originalNode))){
-						mapList.get(start+i).put(fieldNameMap.get(e.getPath()),"'"+formatElementValue(e.asXML())+"'");
+						mapList.get(start+i).put(fieldNameMap.get(e.getPath()),"'"+formatElementValue(e.asXML()).replaceAll(">\\s+<","> <")+"'");
 					}else{
 						getListNodeValues(e,originalNode,tablePro.getLeafsNodesXpath(),tablePro.getSkipNodesXpath(),mapList.get(start+i));
 					}
@@ -337,7 +338,7 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 			}else{
 				if(tablePro.getLeafsNodesXpath().contains("./"+e.getPath(originalNode))){
 					for (int i = 0; i < length; i++) {
-						mapList.get(i).put(fieldNameMap.get(e.getPath()),"'"+formatElementValue(e.asXML())+"'");
+						mapList.get(i).put(fieldNameMap.get(e.getPath()),"'"+formatElementValue(e.asXML()).replaceAll(">\\s+<","> <")+"'");
 					}
 				}else if(tablePro.getSkipNodesXpath().contains("./"+e.getPath(originalNode))) {
 					//skip all below elements
@@ -367,7 +368,7 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 				continue;
 			}
 			if(stopList.contains("./"+e.getPath(originalNode))){
-				valueMap.put(attrIdNameMap.get(e.getPath()),"'"+formatElementValue(e.asXML())+"'");
+				valueMap.put(attrIdNameMap.get(e.getPath()),"'"+formatElementValue(e.asXML()).replaceAll(">\\s+<","> <")+"'");
 			}else if(skipList.contains("./"+e.getPath(originalNode))) {
 				//skip all below elements
 			}else{
