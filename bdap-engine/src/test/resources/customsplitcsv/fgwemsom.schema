@@ -1,0 +1,4036 @@
+{
+  "tableIdNameMap" : { "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,CODE,COUNT" : "FGW_EMS_OM_1",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GRD,CODE,COUNT" : "FGW_EMS_OM_2",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,PORT,ERR_ID,COUNT" : "FGW_EMS_OM_3",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,PORT,PRMT_PKT,PRMT_SIZE(KB),DENY_PKT,DENY_SIZE(KB)" : "FGW_EMS_OM_4",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,PORT,RX_L2_DROP,RX_L3_DROP,RX_SVC_DROP,RX_ETC_DROP,RX_TOTAL,TX_L2_DROP,TX_L3_DROP,TX_SVC_DROP,TX_ETC_DROP,TX_TOTAL" : "FGW_EMS_OM_5",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GWENB,HO_RQD,HO_REQ_ACK,HO_FAIL,HO_NOTI,PTH_SW_REQ,HO_CANC,ENB_STS_TR,HO_CMD,HO_PRE_FL,HO_REQ,PTH_SW_ACK,PTH_SW_FL,HO_CANC_ACK,MME_STS_TR" : "FGW_EMS_OM_6",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,PORT,64_RX_SIZE(KB),64_RX_PKT,64_TX_SIZE(KB),64_TX_PKT,128_RX_SIZE(KB),128_RX_PKT,128_TX_SIZE(KB),128_TX_PKT,256_RX_SIZE(KB),256_RX_PKT,256_TX_SIZE(KB),256_TX_PKT,512_RX_SIZE(KB),512_RX_PKT,512_TX_SIZE(KB),512_TX_PKT,1024_RX_SIZE(KB),1024_RX_PKT,1024_TX_SIZE(KB),1024_TX_PKT,1500_RX_SIZE(KB),1500_RX_PKT,1500_TX_SIZE(KB),1500_TX_PKT,1501~_RX_SIZE(KB),1501~_RX_PKT,1501~_TX_SIZE(KB),1501~_TX_PKT" : "FGW_EMS_OM_7",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,STS,CPU,IN_PKT,IN_PKT_DLV,IN_FWD,IN_HDR_ERR,IN_ADDR_ERR,IN_PROT_ERR,IN_DISC,REAS_REQ,REASD,OUT_PKT_REQ,FRAG_PKT" : "FGW_EMS_OM_8",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,HO_CMD,HO_PRE_FL,HO_REQ,PTH_SW_ACK,PTH_SW_FL,HO_CANC_ACK,MME_STS_TR,HO_RQD,HO_REQ_ACK,HO_FAIL,HO_NOTI,PTH_SW_REQ,HO_CANC,ENB_STS_TR" : "FGW_EMS_OM_9",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,SETUP_RSP,SETUP_FAIL,MME_CNF,ENB_CNF_ACK,ENB_CNF_FL,MME_CNF_TNF,MME_DIR_TR,WRT_WRN_REQ,KILL_REQ,RST_RCV,RST_ACK_RCV,OVLD_START,OVLD_STOP,ERR_RCV,SETUP_REQ,MME_CNF_ACK,MME_CNF_FL,ENB_CNF,ENB_CNF_TNF,ENB_DIR_TR,WRT_WRN_RSP,KILL_RSP,RST_SND,RST_ACK_SND,ERR_SND" : "FGW_EMS_OM_10",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,PAGING,DOWN_NAS,RAB_STP_REQ,RAB_MOD_REQ,RAB_REL_CMD,ICX_STP_REQ,UCX_REL_CMD,UCX_MOD_REQ,DOWN_CDMA,ERR_SND,DL_UE_LPPA,DL_NUE_LPPA,UE_CAPA_REQ,INIT_UE,UP_NAS,NAS_NON,RAB_STP_RSP,RAB_MOD_RSP,RAB_REL_REQ,RAB_REL_RSP,ICX_STP_RSP,ICX_STP_FL,UCX_REL_REQ,UCX_REL_CPT,UCX_MOD_RSP,UCX_MOD_FL,UECAP_INFO,UP_CDMA,ERR_RCV,UL_UE_LPPA,UL_NUE_LPPA,UE_CAPA_RSP" : "FGW_EMS_OM_11",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,STS,CPU,AVG_LD(%),PEAK_LD(%),USER(%),SYS(%),IDLE(%),MEM_USED(MB),MEM_USED(%),MEM_FREE(MB),MEM_FREE(%),MEM_PEAK(MB),MEM_PEAK(%)" : "FGW_EMS_OM_12",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,ENB,HO_RQD,HO_REQ_ACK,HO_FAIL,HO_NOTI,PTH_SW_REQ,HO_CANC,ENB_STS_TR,HO_CMD,HO_PRE_FL,HO_REQ,PTH_SW_ACK,PTH_SW_FL,HO_CANC_ACK,MME_STS_TR" : "FGW_EMS_OM_13",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GWENB,INIT_UE,UP_NAS,NAS_NON,RAB_STP_RSP,RAB_MOD_RSP,RAB_REL_REQ,RAB_REL_RSP,ICX_STP_RSP,ICX_STP_FL,UCX_REL_REQ,UCX_REL_CPT,UCX_MOD_RSP,UCX_MOD_FL,UECAP_INFO,UP_CDMA,ERR_RCV,UL_UE_LPPA,UL_NUE_LPPA,UE_CAPA_RSP,DOWN_NAS,RAB_STP_REQ,RAB_MOD_REQ,RAB_REL_CMD,ICX_STP_REQ,UCX_REL_CMD,UCX_MOD_REQ,DOWN_CDMA,ERR_SND,DL_UE_LPPA,DL_NUE_LPPA,UE_CAPA_REQ" : "FGW_EMS_OM_14",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,SCSC,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_MME_TO,ERR_ENB_TO,NOR_REL,REL_BEF_SUC,LONG_REL" : "FGW_EMS_OM_15",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,PORT,RX_SIZE(KB),RX_PKT,RX_UNI_PKT,RX_MULTI_PKT,RX_BROAD_PKT,RX_FRAG_PKT,RX_OOO_PKT,RX_DROP_PKT,RX_BEARER_PKT,RX_SIGNAL_PKT,RX_NETCTL_PKT,RX_AVG_KBPS,RX_PEAK_KBPS,RX_AVG_PPS,RX_PEAK_PPS,RX_BEARER_TX/RX,TX_SIZE(KB),TX_PKT,TX_UNI_PKT,TX_MULTI_PKT,TX_BROAD_PKT,TX_FRAG_PKT,TX_OOO_PKT,TX_DROP_PKT,TX_BEARER_PKT,TX_SIGNAL_PKT,TX_NETCTL_PKT,TX_AVG_KBPS,TX_PEAK_KBPS,TX_AVG_PPS,TX_PEAK_PPS,TX_BEARER_TX/RX" : "FGW_EMS_OM_16",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GWENB,RST_RCV,RST_ACK_RCV,SETUP_REQ,ENB_CNF,MME_CNF_ACK,MME_CNF_FL,ERR_RCV,ENB_CNF_TNF,ENB_DIR_TR,WRT_WRN_RSP,KILL_RSP,RST_SND,RST_ACK_SND,SETUP_RSP,SETUP_FL,ENB_CNF_ACK,ENB_CNF_FL,MME_CNF,OVLD_START,OVLD_STOP,ERR_SND,MME_CNF_TNF,MME_DIR_TR,WRT_WRN_REQ,KILL_REQ" : "FGW_EMS_OM_17",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,PORT,RX_SIZE(KB),RX_PKT,RX_DROP,RX_BAD_FRM,RX_CRC_ERR,RX_AVG_KBPS,RX_PEAK_KBPS,RX_AVG_PPS,RX_PEAK_PPS,TX_SIZE(KB),TX_PKT,TX_DROP,TX_BAD_FRM,TX_CRC_ERR,TX_AVG_KBPS,TX_PEAK_KBPS,TX_AVG_PPS,TX_PEAK_PPS" : "FGW_EMS_OM_18",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,CPU,MOUNT_ON,TOTAL(MB),USED(MB),FREE(MB),USAGE(%)" : "FGW_EMS_OM_19",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GWENB,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_MME_TO,ERR_ENB_TO,NOR_REL,REL_BEF_SUC,LONG_REL" : "FGW_EMS_OM_20",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,PAG_RCV,ERR_INTNL,ERR_PROTO" : "FGW_EMS_OM_21",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,NODE,CPU,TOT_PROC,DROP" : "FGW_EMS_OM_22",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_ENB_TO,MODIFY,RELEASE" : "FGW_EMS_OM_23",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,SCSC,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_ENB_TO,MODIFY,RELEASE" : "FGW_EMS_OM_24",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GWENB,PAG_SND,ERR_INTNL" : "FGW_EMS_OM_25",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_MME_TO,ERR_ENB_TO,NOR_REL,REL_BEF_SUC,LONG_REL" : "FGW_EMS_OM_26",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,ENB,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_ENB_TO,MODIFY,RELEASE" : "FGW_EMS_OM_27",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,ENB,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_MME_TO,ERR_ENB_TO,NOR_REL,REL_BEF_SUC,LONG_REL" : "FGW_EMS_OM_28",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,MME,X2_ATTEMPT,X2_SUCCESS,X2_CANCEL,X2_IND_FWD,X2_S1_REL,X2_ERR_MSG,X2_TO_MSG,X2_BR_FAIL,X2_BR_TO,X2_ETC_ERR,S1_SRC_ATTEMPT,S1_SRC_SUCCESS,S1_SRC_CANCEL,S1_SRC_IND_FWD,S1_SRC_S1_REL,S1_SRC_ERR_MSG,S1_SRC_TO_MSG,S1_SRC_BR_FAIL,S1_SRC_BR_TO,S1_SRC_ETC_ERR,S1_TAR_ATTEMPT,S1_TAR_SUCCESS,S1_TAR_CANCEL,S1_TAR_IND_FWD,S1_TAR_S1_REL,S1_TAR_ERR_MSG,S1_TAR_TO_MSG,S1_TAR_BR_FAIL,S1_TAR_BR_TO,S1_TAR_ETC_ERR" : "FGW_EMS_OM_29",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GWENB,ATTEMPT,SUCCESS,ERR_PROTO,ERR_BEARER,ERR_ENB_TO,MODIFY,RELEASE" : "FGW_EMS_OM_30",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,ENB,PAG_SND,ERR_INTNL" : "FGW_EMS_OM_31",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,GWENB,X2_ATTEMPT,X2_SUCCESS,X2_CANCEL,X2_IND_FWD,X2_S1_REL,X2_ERR_MSG,X2_TO_MSG,X2_BR_FAIL,X2_BR_TO,X2_ETC_ERR,S1_SRC_ATTEMPT,S1_SRC_SUCCESS,S1_SRC_CANCEL,S1_SRC_IND_FWD,S1_SRC_S1_REL,S1_SRC_ERR_MSG,S1_SRC_TO_MSG,S1_SRC_BR_FAIL,S1_SRC_BR_TO,S1_SRC_ETC_ERR,S1_TAR_ATTEMPT,S1_TAR_SUCCESS,S1_TAR_CANCEL,S1_TAR_IND_FWD,S1_TAR_S1_REL,S1_TAR_ERR_MSG,S1_TAR_TO_MSG,S1_TAR_BR_FAIL,S1_TAR_BR_TO,S1_TAR_ETC_ERR" : "FGW_EMS_OM_32",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,ENB,RST_RCV,RST_ACK_RCV,SETUP_REQ,ENB_CNF,MME_CNF_ACK,MME_CNF_FL,ERR_RCV,ENB_CNF_TNF,ENB_DIR_TR,WRT_WRN_RSP,KILL_RSP,RST_SND,RST_ACK_SND,SETUP_RSP,SETUP_FL,ENB_CNF_ACK,ENB_CNF_FL,MME_CNF,OVLD_START,OVLD_STOP,ERR_SND,MME_CNF_TNF,MME_DIR_TR,WRT_WRN_REQ,KILL_REQ" : "FGW_EMS_OM_33",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,ENB,INIT_UE,UP_NAS,NAS_NON,RAB_STP_RSP,RAB_MOD_RSP,RAB_REL_REQ,RAB_REL_RSP,ICX_STP_RSP,ICX_STP_FL,UCX_REL_REQ,UCX_REL_CPT,UCX_MOD_RSP,UCX_MOD_FL,UECAP_INFO,UP_CDMA,ERR_RCV,UL_UE_LPPA,UL_NUE_LPPA,UE_CAPA_RSP,DOWN_NAS,RAB_STP_REQ,RAB_MOD_REQ,RAB_REL_CMD,ICX_STP_REQ,UCX_REL_CMD,UCX_MOD_REQ,DOWN_CDMA,ERR_SND,DL_UE_LPPA,DL_NUE_LPPA,UE_CAPA_REQ" : "FGW_EMS_OM_34",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,SCSC,X2_ATTEMPT,X2_SUCCESS,X2_CANCEL,X2_IND_FWD,X2_S1_REL,X2_ERR_MSG,X2_TO_MSG,X2_BR_FAIL,X2_BR_TO,X2_ETC_ERR,S1_SRC_ATTEMPT,S1_SRC_SUCCESS,S1_SRC_CANCEL,S1_SRC_IND_FWD,S1_SRC_S1_REL,S1_SRC_ERR_MSG,S1_SRC_TO_MSG,S1_SRC_BR_FAIL,S1_SRC_BR_TO,S1_SRC_ETC_ERR,S1_TAR_ATTEMPT,S1_TAR_SUCCESS,S1_TAR_CANCEL,S1_TAR_IND_FWD,S1_TAR_S1_REL,S1_TAR_ERR_MSG,S1_TAR_TO_MSG,S1_TAR_BR_FAIL,S1_TAR_BR_TO,S1_TAR_ETC_ERR" : "FGW_EMS_OM_35",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,ENB,X2_ATTEMPT,X2_SUCCESS,X2_CANCEL,X2_IND_FWD,X2_S1_REL,X2_ERR_MSG,X2_TO_MSG,X2_BR_FAIL,X2_BR_TO,X2_ETC_ERR,S1_SRC_ATTEMPT,S1_SRC_SUCCESS,S1_SRC_CANCEL,S1_SRC_IND_FWD,S1_SRC_S1_REL,S1_SRC_ERR_MSG,S1_SRC_TO_MSG,S1_SRC_BR_FAIL,S1_SRC_BR_TO,S1_SRC_ETC_ERR,S1_TAR_ATTEMPT,S1_TAR_SUCCESS,S1_TAR_CANCEL,S1_TAR_IND_FWD,S1_TAR_S1_REL,S1_TAR_ERR_MSG,S1_TAR_TO_MSG,S1_TAR_BR_FAIL,S1_TAR_BR_TO,S1_TAR_ETC_ERR" : "FGW_EMS_OM_36",
+		     "#NE_NAME,NE_VERSION,CATEGORY,GROUP,EVENT_TIME,NODE,DEST,PATH,RX_SIZE(KB),RX_PKT,RX_DROP,RX_BAD_FRM,RX_CRC_ERR,RX_AVG_KBPS,RX_PEAK_KBPS,RX_AVG_PPS,RX_PEAK_PPS,TX_SIZE(KB),TX_PKT,TX_DROP,TX_BAD_FRM,TX_CRC_ERR,TX_AVG_KBPS,TX_PEAK_KBPS,TX_AVG_PPS,TX_PEAK_PPS" : "FGW_EMS_OM_37"
+
+},
+  "attrIdNameMap" : { },
+  "attrNameMap" : {
+    "FGW_EMS_OM_2" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GRD", "CODE", "COUNT" ],
+    "FGW_EMS_OM_3" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "PORT", "ERR_ID", "COUNT" ],
+    "FGW_EMS_OM_1" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "CODE", "COUNT" ],
+    "FGW_EMS_OM_28" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "ENB", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_MME_TO", "ERR_ENB_TO", "NOR_REL", "REL_BEF_SUC", "LONG_REL" ],
+    "FGW_EMS_OM_29" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "X2_ATTEMPT", "X2_SUCCESS", "X2_CANCEL", "X2_IND_FWD", "X2_S1_REL", "X2_ERR_MSG", "X2_TO_MSG", "X2_BR_FAIL", "X2_BR_TO", "X2_ETC_ERR", "S1_SRC_ATTEMPT", "S1_SRC_SUCCESS", "S1_SRC_CANCEL", "S1_SRC_IND_FWD", "S1_SRC_S1_REL", "S1_SRC_ERR_MSG", "S1_SRC_TO_MSG", "S1_SRC_BR_FAIL", "S1_SRC_BR_TO", "S1_SRC_ETC_ERR", "S1_TAR_ATTEMPT", "S1_TAR_SUCCESS", "S1_TAR_CANCEL", "S1_TAR_IND_FWD", "S1_TAR_S1_REL", "S1_TAR_ERR_MSG", "S1_TAR_TO_MSG", "S1_TAR_BR_FAIL", "S1_TAR_BR_TO", "S1_TAR_ETC_ERR" ],
+    "FGW_EMS_OM_26" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_MME_TO", "ERR_ENB_TO", "NOR_REL", "REL_BEF_SUC", "LONG_REL" ],
+    "FGW_EMS_OM_27" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "ENB", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_ENB_TO", "MODIFY", "RELEASE" ],
+    "FGW_EMS_OM_24" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "SCSC", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_ENB_TO", "MODIFY", "RELEASE" ],
+    "FGW_EMS_OM_25" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GWENB", "PAG_SND", "ERR_INTNL" ],
+    "FGW_EMS_OM_22" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "NODE", "CPU", "TOT_PROC", "DROP" ],
+    "FGW_EMS_OM_8" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "STS", "CPU", "IN_PKT", "IN_PKT_DLV", "IN_FWD", "IN_HDR_ERR", "IN_ADDR_ERR", "IN_PROT_ERR", "IN_DISC", "REAS_REQ", "REASD", "OUT_PKT_REQ", "FRAG_PKT" ],
+    "FGW_EMS_OM_23" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_ENB_TO", "MODIFY", "RELEASE" ],
+    "FGW_EMS_OM_9" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "HO_CMD", "HO_PRE_FL", "HO_REQ", "PTH_SW_ACK", "PTH_SW_FL", "HO_CANC_ACK", "MME_STS_TR", "HO_RQD", "HO_REQ_ACK", "HO_FAIL", "HO_NOTI", "PTH_SW_REQ", "HO_CANC", "ENB_STS_TR" ],
+    "FGW_EMS_OM_20" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GWENB", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_MME_TO", "ERR_ENB_TO", "NOR_REL", "REL_BEF_SUC", "LONG_REL" ],
+    "FGW_EMS_OM_6" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GWENB", "HO_RQD", "HO_REQ_ACK", "HO_FAIL", "HO_NOTI", "PTH_SW_REQ", "HO_CANC", "ENB_STS_TR", "HO_CMD", "HO_PRE_FL", "HO_REQ", "PTH_SW_ACK", "PTH_SW_FL", "HO_CANC_ACK", "MME_STS_TR" ],
+    "FGW_EMS_OM_21" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "PAG_RCV", "ERR_INTNL", "ERR_PROTO" ],
+    "FGW_EMS_OM_7" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "PORT", "_64_RX_SIZE_KB", "_64_RX_PKT", "_64_TX_SIZE_KB", "_64_TX_PKT", "_128_RX_SIZE_KB", "_128_RX_PKT", "_128_TX_SIZE_KB", "_128_TX_PKT", "_256_RX_SIZE_KB", "_256_RX_PKT", "_256_TX_SIZE_KB", "_256_TX_PKT", "_512_RX_SIZE_KB", "_512_RX_PKT", "_512_TX_SIZE_KB", "_512_TX_PKT", "_1024_RX_SIZE_KB", "_1024_RX_PKT", "_1024_TX_SIZE_KB", "_1024_TX_PKT", "_1500_RX_SIZE_KB", "_1500_RX_PKT", "_1500_TX_SIZE_KB", "_1500_TX_PKT", "_1501_RX_SIZE_KB", "_1501_RX_PKT", "_1501_TX_SIZE_KB", "_1501_TX_PKT" ],
+    "FGW_EMS_OM_4" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "PORT", "PRMT_PKT", "PRMT_SIZE_KB", "DENY_PKT", "DENY_SIZE_KB" ],
+    "FGW_EMS_OM_5" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "PORT", "RX_L2_DROP", "RX_L3_DROP", "RX_SVC_DROP", "RX_ETC_DROP", "RX_TOTAL", "TX_L2_DROP", "TX_L3_DROP", "TX_SVC_DROP", "TX_ETC_DROP", "TX_TOTAL" ],
+    "FGW_EMS_OM_19" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "CPU", "MOUNT_ON", "TOTAL_MB", "USED_MB", "FREE_MB", "USAGE_per_cent" ],
+    "FGW_EMS_OM_17" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GWENB", "RST_RCV", "RST_ACK_RCV", "SETUP_REQ", "ENB_CNF", "MME_CNF_ACK", "MME_CNF_FL", "ERR_RCV", "ENB_CNF_TNF", "ENB_DIR_TR", "WRT_WRN_RSP", "KILL_RSP", "RST_SND", "RST_ACK_SND", "SETUP_RSP", "SETUP_FL", "ENB_CNF_ACK", "ENB_CNF_FL", "MME_CNF", "OVLD_START", "OVLD_STOP", "ERR_SND", "MME_CNF_TNF", "MME_DIR_TR", "WRT_WRN_REQ", "KILL_REQ" ],
+    "FGW_EMS_OM_18" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "PORT", "RX_SIZE_KB", "RX_PKT", "RX_DROP", "RX_BAD_FRM", "RX_CRC_ERR", "RX_AVG_KBPS", "RX_PEAK_KBPS", "RX_AVG_PPS", "RX_PEAK_PPS", "TX_SIZE_KB", "TX_PKT", "TX_DROP", "TX_BAD_FRM", "TX_CRC_ERR", "TX_AVG_KBPS", "TX_PEAK_KBPS", "TX_AVG_PPS", "TX_PEAK_PPS" ],
+    "FGW_EMS_OM_15" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "SCSC", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_MME_TO", "ERR_ENB_TO", "NOR_REL", "REL_BEF_SUC", "LONG_REL" ],
+    "FGW_EMS_OM_37" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "DEST", "PATH", "RX_SIZE_KB", "RX_PKT", "RX_DROP", "RX_BAD_FRM", "RX_CRC_ERR", "RX_AVG_KBPS", "RX_PEAK_KBPS", "RX_AVG_PPS", "RX_PEAK_PPS", "TX_SIZE_KB", "TX_PKT", "TX_DROP", "TX_BAD_FRM", "TX_CRC_ERR", "TX_AVG_KBPS", "TX_PEAK_KBPS", "TX_AVG_PPS", "TX_PEAK_PPS" ],
+    "FGW_EMS_OM_16" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "PORT", "RX_SIZE_KB", "RX_PKT", "RX_UNI_PKT", "RX_MULTI_PKT", "RX_BROAD_PKT", "RX_FRAG_PKT", "RX_OOO_PKT", "RX_DROP_PKT", "RX_BEARER_PKT", "RX_SIGNAL_PKT", "RX_NETCTL_PKT", "RX_AVG_KBPS", "RX_PEAK_KBPS", "RX_AVG_PPS", "RX_PEAK_PPS", "RX_BEARER_TX_division_RX", "TX_SIZE_KB", "TX_PKT", "TX_UNI_PKT", "TX_MULTI_PKT", "TX_BROAD_PKT", "TX_FRAG_PKT", "TX_OOO_PKT", "TX_DROP_PKT", "TX_BEARER_PKT", "TX_SIGNAL_PKT", "TX_NETCTL_PKT", "TX_AVG_KBPS", "TX_PEAK_KBPS", "TX_AVG_PPS", "TX_PEAK_PPS", "TX_BEARER_TX_division_RX" ],
+    "FGW_EMS_OM_13" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "ENB", "HO_RQD", "HO_REQ_ACK", "HO_FAIL", "HO_NOTI", "PTH_SW_REQ", "HO_CANC", "ENB_STS_TR", "HO_CMD", "HO_PRE_FL", "HO_REQ", "PTH_SW_ACK", "PTH_SW_FL", "HO_CANC_ACK", "MME_STS_TR" ],
+    "FGW_EMS_OM_35" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "SCSC", "X2_ATTEMPT", "X2_SUCCESS", "X2_CANCEL", "X2_IND_FWD", "X2_S1_REL", "X2_ERR_MSG", "X2_TO_MSG", "X2_BR_FAIL", "X2_BR_TO", "X2_ETC_ERR", "S1_SRC_ATTEMPT", "S1_SRC_SUCCESS", "S1_SRC_CANCEL", "S1_SRC_IND_FWD", "S1_SRC_S1_REL", "S1_SRC_ERR_MSG", "S1_SRC_TO_MSG", "S1_SRC_BR_FAIL", "S1_SRC_BR_TO", "S1_SRC_ETC_ERR", "S1_TAR_ATTEMPT", "S1_TAR_SUCCESS", "S1_TAR_CANCEL", "S1_TAR_IND_FWD", "S1_TAR_S1_REL", "S1_TAR_ERR_MSG", "S1_TAR_TO_MSG", "S1_TAR_BR_FAIL", "S1_TAR_BR_TO", "S1_TAR_ETC_ERR" ],
+    "FGW_EMS_OM_14" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GWENB", "INIT_UE", "UP_NAS", "NAS_NON", "RAB_STP_RSP", "RAB_MOD_RSP", "RAB_REL_REQ", "RAB_REL_RSP", "ICX_STP_RSP", "ICX_STP_FL", "UCX_REL_REQ", "UCX_REL_CPT", "UCX_MOD_RSP", "UCX_MOD_FL", "UECAP_INFO", "UP_CDMA", "ERR_RCV", "UL_UE_LPPA", "UL_NUE_LPPA", "UE_CAPA_RSP", "DOWN_NAS", "RAB_STP_REQ", "RAB_MOD_REQ", "RAB_REL_CMD", "ICX_STP_REQ", "UCX_REL_CMD", "UCX_MOD_REQ", "DOWN_CDMA", "ERR_SND", "DL_UE_LPPA", "DL_NUE_LPPA", "UE_CAPA_REQ" ],
+    "FGW_EMS_OM_36" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "ENB", "X2_ATTEMPT", "X2_SUCCESS", "X2_CANCEL", "X2_IND_FWD", "X2_S1_REL", "X2_ERR_MSG", "X2_TO_MSG", "X2_BR_FAIL", "X2_BR_TO", "X2_ETC_ERR", "S1_SRC_ATTEMPT", "S1_SRC_SUCCESS", "S1_SRC_CANCEL", "S1_SRC_IND_FWD", "S1_SRC_S1_REL", "S1_SRC_ERR_MSG", "S1_SRC_TO_MSG", "S1_SRC_BR_FAIL", "S1_SRC_BR_TO", "S1_SRC_ETC_ERR", "S1_TAR_ATTEMPT", "S1_TAR_SUCCESS", "S1_TAR_CANCEL", "S1_TAR_IND_FWD", "S1_TAR_S1_REL", "S1_TAR_ERR_MSG", "S1_TAR_TO_MSG", "S1_TAR_BR_FAIL", "S1_TAR_BR_TO", "S1_TAR_ETC_ERR" ],
+    "FGW_EMS_OM_11" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "PAGING", "DOWN_NAS", "RAB_STP_REQ", "RAB_MOD_REQ", "RAB_REL_CMD", "ICX_STP_REQ", "UCX_REL_CMD", "UCX_MOD_REQ", "DOWN_CDMA", "ERR_SND", "DL_UE_LPPA", "DL_NUE_LPPA", "UE_CAPA_REQ", "INIT_UE", "UP_NAS", "NAS_NON", "RAB_STP_RSP", "RAB_MOD_RSP", "RAB_REL_REQ", "RAB_REL_RSP", "ICX_STP_RSP", "ICX_STP_FL", "UCX_REL_REQ", "UCX_REL_CPT", "UCX_MOD_RSP", "UCX_MOD_FL", "UECAP_INFO", "UP_CDMA", "ERR_RCV", "UL_UE_LPPA", "UL_NUE_LPPA", "UE_CAPA_RSP" ],
+    "FGW_EMS_OM_33" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "ENB", "RST_RCV", "RST_ACK_RCV", "SETUP_REQ", "ENB_CNF", "MME_CNF_ACK", "MME_CNF_FL", "ERR_RCV", "ENB_CNF_TNF", "ENB_DIR_TR", "WRT_WRN_RSP", "KILL_RSP", "RST_SND", "RST_ACK_SND", "SETUP_RSP", "SETUP_FL", "ENB_CNF_ACK", "ENB_CNF_FL", "MME_CNF", "OVLD_START", "OVLD_STOP", "ERR_SND", "MME_CNF_TNF", "MME_DIR_TR", "WRT_WRN_REQ", "KILL_REQ" ],
+    "FGW_EMS_OM_12" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "NODE", "STS", "CPU", "AVG_LD_per_cent", "PEAK_LD_per_cent", "USER_per_cent", "SYS_per_cent", "IDLE_per_cent", "MEM_USED_MB", "MEM_USED_per_cent", "MEM_FREE_MB", "MEM_FREE_per_cent", "MEM_PEAK_MB", "MEM_PEAK_per_cent" ],
+    "FGW_EMS_OM_34" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "ENB", "INIT_UE", "UP_NAS", "NAS_NON", "RAB_STP_RSP", "RAB_MOD_RSP", "RAB_REL_REQ", "RAB_REL_RSP", "ICX_STP_RSP", "ICX_STP_FL", "UCX_REL_REQ", "UCX_REL_CPT", "UCX_MOD_RSP", "UCX_MOD_FL", "UECAP_INFO", "UP_CDMA", "ERR_RCV", "UL_UE_LPPA", "UL_NUE_LPPA", "UE_CAPA_RSP", "DOWN_NAS", "RAB_STP_REQ", "RAB_MOD_REQ", "RAB_REL_CMD", "ICX_STP_REQ", "UCX_REL_CMD", "UCX_MOD_REQ", "DOWN_CDMA", "ERR_SND", "DL_UE_LPPA", "DL_NUE_LPPA", "UE_CAPA_REQ" ],
+    "FGW_EMS_OM_31" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "ENB", "PAG_SND", "ERR_INTNL" ],
+    "FGW_EMS_OM_10" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "MME", "SETUP_RSP", "SETUP_FAIL", "MME_CNF", "ENB_CNF_ACK", "ENB_CNF_FL", "MME_CNF_TNF", "MME_DIR_TR", "WRT_WRN_REQ", "KILL_REQ", "RST_RCV", "RST_ACK_RCV", "OVLD_START", "OVLD_STOP", "ERR_RCV", "SETUP_REQ", "MME_CNF_ACK", "MME_CNF_FL", "ENB_CNF", "ENB_CNF_TNF", "ENB_DIR_TR", "WRT_WRN_RSP", "KILL_RSP", "RST_SND", "RST_ACK_SND", "ERR_SND" ],
+    "FGW_EMS_OM_32" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GWENB", "X2_ATTEMPT", "X2_SUCCESS", "X2_CANCEL", "X2_IND_FWD", "X2_S1_REL", "X2_ERR_MSG", "X2_TO_MSG", "X2_BR_FAIL", "X2_BR_TO", "X2_ETC_ERR", "S1_SRC_ATTEMPT", "S1_SRC_SUCCESS", "S1_SRC_CANCEL", "S1_SRC_IND_FWD", "S1_SRC_S1_REL", "S1_SRC_ERR_MSG", "S1_SRC_TO_MSG", "S1_SRC_BR_FAIL", "S1_SRC_BR_TO", "S1_SRC_ETC_ERR", "S1_TAR_ATTEMPT", "S1_TAR_SUCCESS", "S1_TAR_CANCEL", "S1_TAR_IND_FWD", "S1_TAR_S1_REL", "S1_TAR_ERR_MSG", "S1_TAR_TO_MSG", "S1_TAR_BR_FAIL", "S1_TAR_BR_TO", "S1_TAR_ETC_ERR" ],
+    "FGW_EMS_OM_30" : [ "NE_NAME", "NE_VERSION", "CATEGORY", "FGW_group", "EVENT_TIME", "GWENB", "ATTEMPT", "SUCCESS", "ERR_PROTO", "ERR_BEARER", "ERR_ENB_TO", "MODIFY", "RELEASE" ]
+  },
+  "attrTypeMap" : {
+    "FGW_EMS_OM_2" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_3" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_1" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_28" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_29" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_26" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_27" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_24" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_25" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_22" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_8" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_23" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_9" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_20" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_6" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_21" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_7" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_4" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_5" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_19" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_17" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_18" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_15" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_37" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_16" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_13" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_35" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_14" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_36" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_11" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_33" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_12" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_34" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_31" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_10" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_32" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ],
+    "FGW_EMS_OM_30" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    } ]
+  },
+  "index" : false
+}
