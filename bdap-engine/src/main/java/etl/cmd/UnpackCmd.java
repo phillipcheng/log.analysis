@@ -170,7 +170,12 @@ public class UnpackCmd extends ETLCmd {
 					longKey = 0;
 					while ((entry = in.getNextEntry()) != null) {
 						if (!entry.isDirectory() && outputFileFilter.accept(null, entry.getName())) {
-							destFile = outputFolder + entry.getName();
+							if(filenameAppend){
+								destFile = outputFolder + new StringBuffer(entry.getName())
+										.insert(entry.getName().lastIndexOf("/")+1, fileName+".");
+							}else{
+								destFile = outputFolder + entry.getName();
+							}	
 				            key = new LongWritable(longKey);
 				            value = new Text();
 				            value.set(destFile);
