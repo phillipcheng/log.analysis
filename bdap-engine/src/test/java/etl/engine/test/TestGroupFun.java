@@ -62,5 +62,13 @@ public class TestGroupFun {
 		Assert.assertEquals("2016-10-12 10:10:00.0,2016-10-12 10:10:04.999", value[0]);
 		Assert.assertEquals("2016-10-12 10:10:05.0,2016-10-12 10:10:09.999", value[1]);
 	}
+	
+	@Test
+	public void testspiltbysinglespace() throws Exception{
+		
+		String value=GroupFun.spiltbysinglespace("5 1289755 707652 582103 ");
+		
+		Assert.assertEquals("5,1289755,707652,582103", value);
+	}
 
 }

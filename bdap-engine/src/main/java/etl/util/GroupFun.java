@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Locale; 
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -191,7 +192,35 @@ public class GroupFun {
 			return null;
 		}
 	}
-	
+		//////////////
+	public static String spiltbysinglespace(String str){
+		String newstr = str.replaceAll(" ", ",").trim();
+		if(newstr.lastIndexOf(",") == (newstr.length() - 1))
+		{
+			newstr = newstr.substring(0, newstr.length() - 1);
+		}
+		return newstr;
+	}
+		//////////////
+	/**
+	 * format  e.g. yyyy-MMM-dd hh.mm.ss.S a
+	 * @param input
+	 * @param inputFormat
+	 * @return
+	 */
+	public static String dtEnglishFormat(String input, String inputFormat){
+		SimpleDateFormat format = new SimpleDateFormat(inputFormat,  Locale.ENGLISH);
+		String returnStr = "";
+		try {
+			Date d = format.parse(input);
+			if (d!=null){
+				returnStr = FieldType.sdatetimeFormat.format(d);
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return returnStr;
+	}
 	///////////////
 	public static String subnumber(String hexStr, int beginByteIndex, int endByteIndex, String defaultValue) {
 		byte[] byteArray=hexStringToByteArray(hexStr);
