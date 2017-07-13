@@ -188,12 +188,13 @@ public class OozieGenerator {
 				add.setName(prop_input_pathfilter);
 				add.setValue(prop_input_path_globexpfilter);
 				pl.add(add);
+				pathFilter.add(String.valueOf(sysProperties.get(key)));
 			}
 			CONFIGURATION.Property cp = new CONFIGURATION.Property();
 			cp.setName(key);
 			cp.setValue(String.valueOf(sysProperties.get(key)));
 			pl.add(cp);
-			pathFilter.add(String.valueOf(sysProperties.get(key)));
+			
 		}
 		//all the input dataset to this action should have the same inputformattype, datatype/recordtype
 		InputFormatType ift = null;

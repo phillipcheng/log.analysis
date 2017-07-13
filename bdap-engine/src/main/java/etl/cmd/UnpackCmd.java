@@ -42,11 +42,13 @@ public class UnpackCmd extends ETLCmd {
 	public static final Logger logger = LogManager.getLogger(UnpackCmd.class);
 	public static final @ConfigKey String cfgkey_input_file_filter="input.file.filter";
 	public static final @ConfigKey String cfgkey_output_file_filter="output.file.filter";
+	public static final @ConfigKey(type=Boolean.class) String cfgkey_file_append="filename.append";
 	private static final byte[] NEW_LINE = "\n".getBytes(StandardCharsets.UTF_8);
 	
 	private FilenameFilter inputFileFilter;
 	private FilenameFilter outputFileFilter;
 	private boolean sequenceFile;
+	private boolean filenameAppend;
 	
 	public UnpackCmd(){
 		super();
@@ -97,6 +99,7 @@ public class UnpackCmd extends ETLCmd {
 		} else {
 			this.outputFileFilter = TrueFileFilter.TRUE;
 		}
+		filenameAppend=getCfgBoolean(cfgkey_file_append, false);
 	}
 
 	public boolean hasReduce() {
@@ -167,7 +170,12 @@ public class UnpackCmd extends ETLCmd {
 					longKey = 0;
 					while ((entry = in.getNextEntry()) != null) {
 						if (!entry.isDirectory() && outputFileFilter.accept(null, entry.getName())) {
-							destFile = outputFolder + entry.getName();
+							if(filenameAppend){
+								destFile = outputFolder + new StringBuffer(entry.getName())
+										.insert(entry.getName().lastIndexOf("/")+1, fileName+".");
+							}else{
+								destFile = outputFolder + entry.getName();
+							}	
 				            key = new LongWritable(longKey);
 				            value = new Text();
 				            value.set(destFile);
@@ -187,7 +195,16 @@ public class UnpackCmd extends ETLCmd {
 				} else {
 					while ((entry = in.getNextEntry()) != null) {
 						if (!entry.isDirectory() && outputFileFilter.accept(null, entry.getName())) {
-							destFile = outputFolder + entry.getName();
+							if(filenameAppend){
+								i = path.getName().indexOf('.');
+								if (i > 0)
+									fileName = path.getName().substring(0, i);
+								else
+									fileName = path.getName();
+								destFile = outputFolder + fileName + "." + entry.getName();
+							}else{
+								destFile = outputFolder + entry.getName();
+							}
 							fsOut = null;
 							try {
 								fsOut = fs.create(new Path(destFile));

@@ -551,6 +551,102 @@ public abstract class SchemaETLCmd extends ETLCmd{
 		return loginfo;
 	}
 
+	private LogicSchema dropTableExitField(LogicSchema tableSchema, String schemaFile, String name, List<String> attrIds, List<String> attrNames,
+			List<FieldType> attrTypes, List<String> loginfo) throws Exception{
+		List<String> existAttrs = tableSchema.getAttrNames(name);
+		List<FieldType> exitTypeList = tableSchema.getAttrTypes(name);
+		Map<String, String> attrIdNameMap = tableSchema.getAttrIdNameMap();
+		{
+			int i;
+			String attrId;
+			//update schema, happens only when the schema is updated by external force
+			
+			//check new attribute
+			List<FieldType> newAttrTypes = new ArrayList<FieldType>();
+			List<String> newAttrNames = new ArrayList<String>();
+			for (i = 0; i < attrNames.size(); i++) {//for every attr
+				String attrName = attrNames.get(i);
+				if (existAttrs.contains(attrName)) {
+					int index = existAttrs.indexOf(attrName);
+					newAttrNames.add(attrName);
+					newAttrTypes.add(attrTypes.get(i));
+					
+					attrIdNameMap.remove(attrIds.get(i));
+					exitTypeList.remove(index);
+					existAttrs.remove(index);
+					i--;
+				}
+			}
+			
+			
+			//generate alter table
+			List<String> updateTableSqls = DBUtil.genDropFiedSql(newAttrNames, newAttrTypes, name, 
+					dbPrefix, getDbtype());
+			
+			//update/create create-table-sql
+			logger.info(String.format("drop column sqls are:%s", updateTableSqls));
+			
+			//update logic schema file
+			if (schemaFile != null)
+				safeWriteSchemaFile(defaultFs, schemaFile, tableSchema.isIndex(), tableSchema);
+			
+			//execute the sql
+			if (dbtype != DBType.NONE){
+				int result = DBUtil.executeSqls(updateTableSqls, super.getPc());
+				//gen report info
+				for (String sql: updateTableSqls) {
+					i = result > 0 ? 1 : 0;
+					loginfo.add(System.currentTimeMillis() + ":" + i + ":" + sql);
+					result --;
+				}
+			} else
+				for (String sql: updateTableSqls) {
+					loginfo.add(System.currentTimeMillis() + ":0:" + sql);
+			}
+			
+			return tableSchema;
+		}
+	}
+	
+	
+	protected List<String> removeTableField(String id, String name, List<String> attrIds, List<String> attrNames, List<FieldType> attrTypes) throws Exception {
+		if(attrNames == null || attrNames.size() == 0){
+			return null;
+		}
+		List<String> loginfo = new ArrayList<String>();
+		InterProcessLock lock;
+		
+
+	 if (LockType.jvm.equals(lockType))
+			lock = new JVMLock();
+		else
+			lock = new EmptyLock();
+		
+		if (!lock.acquire(ZK_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS))
+        {
+            throw new IllegalStateException("Client could not acquire the lock");
+        } try {
+            logger.debug("Client get the lock");
+            
+            /* Reload the schema */
+    		if (schemaFile != null && SchemaUtils.existsRemoteJsonPath(defaultFs, schemaFile)) {
+    			this.logicSchema = SchemaUtils.fromRemoteJsonPath(defaultFs, schemaFile, LogicSchema.class);
+    		} else {
+    			this.logicSchema = SchemaUtils.newRemoteInstance(defaultFs, schemaFile);
+				logger.warn(String.format("schema file %s not exists.", schemaFile));
+    		}
+			this.getSystemVariables().put(VAR_LOGIC_SCHEMA, logicSchema);
+    		//update existing fieldType
+			logicSchema = dropTableExitField(logicSchema, schemaFile, name, attrIds, attrNames, attrTypes, loginfo);
+			
+        } finally {
+        	logger.debug("Client releasing the lock");
+            lock.release(); // always release the lock in a finally block
+        }
+        
+		return loginfo;
+	}
+	
 	public DBType getDbtype() {
 		return dbtype;
 	}
