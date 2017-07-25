@@ -12,10 +12,10 @@ public class XmlTableProperties {
 	private List<String> leafsNodesXpath;
 	private List<String> parentNodesXpath;
 	private List<String> skipNodesXpath;
-	private Map<String,String> formatTimeMap ;//format time string
+	/*private Map<String,String> formatTimeMap ;//format time string
 	private String useFileName; // filename as field
 	private String ttFF; //special for pde 4G
-	
+*/	
 	
 	public XmlTableProperties(String tableName, String startNodeXpath, List<String> stopNodesXpath,
 			List<String> parentNodesXpath,List<String> skipNodesXpath) {
@@ -56,24 +56,7 @@ public class XmlTableProperties {
 	public void setSkipNodesXpath(List<String> skipNodesXpath) {
 		this.skipNodesXpath = skipNodesXpath;
 	}
-	public Map<String, String> getFormatTimeMap() {
-		return formatTimeMap;
-	}
-	public void setFormatTimeMap(Map<String, String> formatTimeMap) {
-		this.formatTimeMap = formatTimeMap;
-	}
-	public String getUseFileName() {
-		return useFileName;
-	}
-	public void setUseFileName(String useFileName) {
-		this.useFileName = useFileName;
-	}
-	public String getTtFF() {
-		return ttFF;
-	}
-	public void setTtFF(String ttFF) {
-		this.ttFF = ttFF;
-	}
+
 
 	
 	
