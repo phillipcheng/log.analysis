@@ -1,5 +1,6 @@
 package etl.cmd.dynschema;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.script.CompiledScript;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -32,6 +35,7 @@ import bdap.util.Util;
 import etl.cmd.SchemaETLCmd;
 import etl.engine.ETLCmd;
 import etl.engine.EngineUtil;
+import etl.engine.types.MRMode;
 import etl.engine.types.OutputType;
 import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
@@ -55,15 +59,23 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 	public static final @ConfigKey String cfgkey_node_associate=".node.associate";
 	public static final @ConfigKey String cfgkey_table_common_element="common.node.associate";
 	
-	public static final @ConfigKey String cfgkey_table_field_stringformat=".field.string.format";
+//	public static final @ConfigKey String cfgkey_table_field_stringformat=".field.string.format";
 	
 	//special for pde_4G
-	public static final @ConfigKey String cfgkey_table_field_use_filename=".field.use.filename";
-	public static final @ConfigKey(type=Boolean.class) String cfgkey_table_trans_requirment_ttff=".requirment.TTFF";
+//	public static final @ConfigKey String cfgkey_table_field_use_filename=".field.use.filename";
+//	public static final @ConfigKey(type=Boolean.class) String cfgkey_table_trans_requirment_ttff=".requirment.TTFF";
+	
+//	public static final String VAR_NAME_ORIGIN_TABLE_NAME="originTableName";
+	public static final @ConfigKey String cfgkey_table_set="set"; //table field set operation
+	public static final @ConfigKey String cfgkey_table_set_when_exist="setWhenExist";//table field set operation if condition meet.
+	public static final @ConfigKey String cfgkey_table_insert_filter_condition=".insert.filter.condition";
 	
 	private String nodeRootPath;
 	private String[] tables;
 	private transient Map<String, XmlTableProperties> tablePropertiesMap;
+	
+	private transient Map<String,TableOpConfig> tableOpConfigMap=null;
+	private transient Map<String,CompiledScript> filterInsertMap=null;
 	
 	
 	
@@ -82,10 +94,64 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 	@Override
 	public void init(String wfName, String wfid, String staticCfg, String prefix, String defaultFs, String[] otherArgs, ProcessMode pm){
 		super.init(wfName, wfid, staticCfg, prefix, defaultFs, otherArgs, pm);
+		this.setMrMode(MRMode.line);
 		nodeRootPath = super.getCfgString(cfgkey_node_root_path,null);
 		tables = super.getCfgStringArray(cfgkey_tables);
 		initTablePropertiesMap();
+		initTableOpConfig();
+		initFilterInsertMap();
 		
+	}
+	
+	public Map<String,TableOpConfig> initTableOpConfig(){
+		tableOpConfigMap=new HashMap<String,TableOpConfig>();
+		for(String table:tables){
+			TableOpConfig tableOpConfig=getTableOpConfig(table);
+			tableOpConfigMap.put(table, tableOpConfig);
+		}		
+		return tableOpConfigMap;
+	}
+	
+	private void initFilterInsertMap(){
+		filterInsertMap=new HashMap<String,CompiledScript>();
+		for(String table:tables){
+			String filterInsertStr = super.getCfgString(table + cfgkey_table_insert_filter_condition , null);
+			if(filterInsertStr != null){
+				CompiledScript filterCS = ScriptEngineUtil.compileScript(filterInsertStr);
+				filterInsertMap.put(table, filterCS);
+			}
+		}		
+	}
+	
+	private TableOpConfig getTableOpConfig(String tablename){
+		TableOpConfig tableOpConfig=tableOpConfigMap.get(tablename);
+		if(tableOpConfig!=null) return tableOpConfig;
+		
+		//Read TableOpConfig
+		String[] opSetWhenExist=super.getCfgStringArray(tablename+"."+cfgkey_table_set_when_exist);
+		String[] commonOpSetWhenExist=super.getCfgStringArray("table.common."+cfgkey_table_set_when_exist);
+		String[] opSet=super.getCfgStringArray(tablename+"."+cfgkey_table_set);
+		
+		List<FieldOp> fieldOps=new ArrayList<FieldOp>();
+		if(opSetWhenExist!=null && opSetWhenExist.length>0){
+			for(String op:opSetWhenExist){
+				fieldOps.add(new FieldOp(FieldOp.OP_TYPE_SET_WHEN_EXIST,op));
+			}
+		}
+		
+		if(commonOpSetWhenExist!=null && commonOpSetWhenExist.length>0){
+			for(String op:commonOpSetWhenExist){
+				fieldOps.add(new FieldOp(FieldOp.OP_TYPE_SET_WHEN_EXIST,op));
+			}
+		}
+		if(opSet!=null && opSet.length>0){
+			for(String op:opSet){
+				fieldOps.add(new FieldOp(FieldOp.OP_TYPE_SET,op));
+			}
+		}
+		
+		tableOpConfig=new TableOpConfig(fieldOps);
+		return tableOpConfig;
 	}
 	
 	private void initTablePropertiesMap(){
@@ -100,17 +166,17 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 			parentNodeList.addAll(Arrays.asList(commonElement));
 			parentNodeList.addAll(Arrays.asList(parentNode));
 			XmlTableProperties tableProperty = new XmlTableProperties(table,startNode, Arrays.asList(stopNode), parentNodeList,Arrays.asList(skipNode));
-			Map<String,String> formatTimeMap = initFormatTimeConfig(table);
-			tableProperty.setFormatTimeMap(formatTimeMap);
-			String useFileName = super.getCfgString(table + cfgkey_table_field_use_filename , null);
-			tableProperty.setUseFileName(useFileName);
-			String ttff = super.getCfgString(table + cfgkey_table_trans_requirment_ttff, null);
-			tableProperty.setTtFF(ttff);
+//			Map<String,String> formatTimeMap = initFormatTimeConfig(table);
+//			tableProperty.setFormatTimeMap(formatTimeMap);
+//			String useFileName = super.getCfgString(table + cfgkey_table_field_use_filename , null);
+//			tableProperty.setUseFileName(useFileName);
+//			String ttff = super.getCfgString(table + cfgkey_table_trans_requirment_ttff, null);
+//			tableProperty.setTtFF(ttff);
 			tablePropertiesMap.put(table, tableProperty);
 		}
 		
 	}
-	private Map<String,String> initFormatTimeConfig(String table){
+/*	private Map<String,String> initFormatTimeConfig(String table){
 		Map<String,String> strFormatMap = new HashMap<String,String>();
 		String[] formatTimeArr = super.getCfgStringArray(table + cfgkey_table_field_stringformat);
 		if(formatTimeArr == null){
@@ -141,7 +207,7 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 		}
 		return null;
 		
-	}
+	}*/
 	@Override
 	public Map<String, Object> mapProcess(long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception{
@@ -218,22 +284,21 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 					HashMap<String, String> orgValueMap = new HashMap<>();
 					XmlTableProperties tablePro = tablePropertiesMap.get(tableName);
 					List<String> parentList = tablePro.getParentNodesXpath();
-					String useFileNameAs = tablePro.getUseFileName();
-					String ttFF = tablePro.getTtFF();
-					if(useFileNameAs != null){
-						orgValueMap.put(useFileNameAs, fileName);
-					}
+//					String useFileNameAs = tablePro.getUseFileName();
+//					String ttFF = tablePro.getTtFF();
+//					if(useFileNameAs != null){
+//						orgValueMap.put(useFileNameAs, fileName);
+//					}
 					
 					for(String node:parentList){
 						Node elem =  root.selectSingleNode(node);
-						if(elem == null){
-							continue;
+						if(elem != null){
+							orgValueMap.put(attrIdNameMap.get(node), elem.getText());
 						}
-						orgValueMap.put(attrIdNameMap.get(elem.getPath()), elem.getText());
 					}
 					
 					List<Element> eList =  root.selectNodes(tablePro.getStartNodeXpath());
-					Map<String,String> stringFormatMap = tablePro.getFormatTimeMap();
+//					Map<String,String> stringFormatMap = tablePro.getFormatTimeMap();
 					for(Element e: eList){ 
 						// init map list
 						List<HashMap<String, String>> mapList = new ArrayList<HashMap<String, String>>();
@@ -245,25 +310,56 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 						}else{
 							getNodesValue(e, e,tablePro,mapList);
 						}
+						
+						// get AttrNames list
 						List<String> orgAttrs = logicSchema.getAttrNames(tableName);
 						for(HashMap<String, String> map:mapList){
-							int length = orgAttrs.size();
-							String[] vs = new String[length];
-							for(int j=0; j< length; j++){
-								String fieldName = orgAttrs.get(j);
-								String strFormat = stringFormatMap.get(fieldName);
-								if(strFormat != null){
-									vs[j] = formatString(map.get(fieldName),strFormat);
-								}else{
-									vs[j] = map.get(fieldName);
+							
+							//do insert filter
+							CompiledScript insertFilter = filterInsertMap.get(tableName);
+							if(insertFilter != null){
+								Map<String, Object> allVars=new HashMap<String, Object>();
+								allVars.put("record", map);
+								Boolean isInsert=(Boolean)ScriptEngineUtil.evalObject(insertFilter, allVars);
+								if(!isInsert){
+									continue;
 								}
 							}
-							if(ttFF != null ){
-								String[] indexs = ttFF.split(":");
-								vs[vs.length-1] = getTTFF(string2Time(vs[Integer.valueOf(indexs[0])]), string2Time(vs[Integer.valueOf(indexs[1])]));
+							
+							
+//							getSystemVariables().put(VAR_NAME_ORIGIN_TABLE_NAME, tableName);
+							
+							TableOpConfig tableOpConfig=tableOpConfigMap.get(tableName);
+							//check table whether correct
+							if(tableOpConfig==null ){
+//								int length = orgAttrs.size();
+//								String[] vs = new String[length];
+//								for(int j=0; j< length; j++){
+//									String fieldName = orgAttrs.get(j);
+//									vs[j] = map.get(fieldName);
+//								}
+//								String csv = Util.getCsv(Arrays.asList(vs), false);
+//								csvList.add(new Tuple2<String, String>(tableName, csv));
+							}else{
+								//execute field op
+								List<FieldOp> fieldOps=tableOpConfig.getFieldOps();
+								for(FieldOp fieldOp:fieldOps){
+									fieldOp.execute(map, this.getSystemVariables());
+								}
 							}
-							String csv = Util.getCsv(Arrays.asList(vs), false);
-							csvList.add(new Tuple2<String, String>(tableName, csv));
+							
+							List<String> listValues = new ArrayList<String>();
+							for (String attrtName : orgAttrs) {
+								if(map.containsKey(attrtName)){
+									listValues.add(map.get(attrtName));
+								}else{
+									listValues.add(null);
+								}
+							}
+							logger.debug(listValues);
+							String output = Util.getCsv(listValues, ",", true, false);
+							csvList.add(new Tuple2<String, String>(tableName, output));
+							
 						}
 					}
 					
@@ -422,21 +518,106 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 		return ret;
 	}
 	
-	public static Date string2Time(String timeStr){
-		if(timeStr == null || timeStr.equals("")){
-			return null;
+
+	
+	public class TableOpConfig implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private List<FieldOp> fieldOps;
+		
+		public TableOpConfig(List<FieldOp> fieldOps) {
+			super();
+			this.fieldOps=fieldOps;
 		}
-		 try {
-			return FieldType.sdatetimeFormat.parse(timeStr);
-		} catch (ParseException e) {
-			logger.error(e.getMessage());
+		public List<FieldOp> getFieldOps() {
+			return fieldOps;
 		}
-		return null;
+		public void setFieldOps(List<FieldOp> fieldOps) {
+			this.fieldOps = fieldOps;
+		}	
+		
 	}
-	private String getTTFF(Date endTime,Date startTime){
-		if(endTime == null || startTime == null){
-			return null;
+	
+	public class FieldOp implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		public static final int OP_TYPE_SET=1;
+		public static final int OP_TYPE_SET_WHEN_EXIST=2;
+		
+		private int opType;
+		private String fieldName;
+		private String checkFieldName;
+		private CompiledScript valCS;
+		
+		public void execute(Map<String,String> record, Map<String,Object> variables){
+			if(opType==OP_TYPE_SET){
+				Map<String, Object> allVars=new HashMap<String, Object>();
+				allVars.putAll(variables);
+				allVars.put("record", record);
+				String value=(String)ScriptEngineUtil.evalObject(valCS, allVars);
+				record.put(fieldName, value);
+			}else if(opType==OP_TYPE_SET_WHEN_EXIST){
+				if(record.containsKey(checkFieldName)){
+					Map<String, Object> allVars=new HashMap<String, Object>();
+					allVars.putAll(variables);
+					allVars.put("record", record);
+					String value=(String)ScriptEngineUtil.evalObject(valCS, allVars);
+					record.put(fieldName, value);
+				}
+			}
 		}
-		return (endTime.getTime()-startTime.getTime()) +"";
+		
+		public FieldOp(int opType, String opConfig) {
+			super();
+			this.opType=opType;
+			if(opType==OP_TYPE_SET){
+				int idx=opConfig.indexOf(":");
+				fieldName=opConfig.substring(0,idx);
+				String opExp=opConfig.substring(idx+1, opConfig.length());
+				valCS = ScriptEngineUtil.compileScript(opExp);
+			}else if(opType==OP_TYPE_SET_WHEN_EXIST){
+				int idx=opConfig.indexOf(':');
+				int idx2=opConfig.indexOf(':', idx+1);
+				fieldName=opConfig.substring(0,idx);
+				checkFieldName=opConfig.substring(idx+1,idx2);
+				String opExp=opConfig.substring(idx2+1, opConfig.length());
+				valCS = ScriptEngineUtil.compileScript(opExp);
+			}			
+		}
+		
+		public int getOpType() {
+			return opType;
+		}
+		public void setOpType(int opType) {
+			this.opType = opType;
+		}
+		public String getFieldName() {
+			return fieldName;
+		}
+		public void setFieldName(String fieldName) {
+			this.fieldName = fieldName;
+		}
+
+		public String getCheckFieldName() {
+			return checkFieldName;
+		}
+
+		public void setCheckFieldName(String checkFieldName) {
+			this.checkFieldName = checkFieldName;
+		}
+
+		public CompiledScript getValCS() {
+			return valCS;
+		}
+
+		public void setValCS(CompiledScript valCS) {
+			this.valCS = valCS;
+		}
+			 
 	}
+	
 }
