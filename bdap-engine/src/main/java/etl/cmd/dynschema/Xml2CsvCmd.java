@@ -1,10 +1,8 @@
 package etl.cmd.dynschema;
 
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,8 +37,6 @@ import etl.engine.types.MRMode;
 import etl.engine.types.OutputType;
 import etl.engine.types.ProcessMode;
 import etl.util.ConfigKey;
-import etl.util.FieldType;
-import etl.util.GroupFun;
 import etl.util.ScriptEngineUtil;
 import etl.util.XmlTableProperties;
 import scala.Tuple2;
@@ -294,6 +290,8 @@ public class Xml2CsvCmd extends SchemaETLCmd{
 						Node elem =  root.selectSingleNode(node);
 						if(elem != null){
 							orgValueMap.put(attrIdNameMap.get(node), elem.getText());
+						}else{
+							orgValueMap.put(attrIdNameMap.get(node), null);
 						}
 					}
 					
