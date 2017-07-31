@@ -116,6 +116,19 @@ public class DBUtil {
 			return new FieldType(VarType.STRING,Math.max(20, 2*len));
 		}
 	}
+	public static FieldType guessDBType(String name,String value){
+		int len = value.length();
+		try {
+			if((name.endsWith("time") || name.endsWith("Time")) && value.length() > 8){
+				return new FieldType(VarType.TIMESTAMP, 0, 0);
+			}else{
+				Float.parseFloat(value);
+				return new FieldType(VarType.NUMERIC, Math.max(20, 2*len), 4);
+			}
+		}catch(Exception e){
+			return new FieldType(VarType.STRING,Math.max(20, 2*len));
+		}
+	}
 
 	public static String genCreateTableSql(List<String> fieldNameList, List<FieldType> fieldTypeList, 
 			String tn, String dbschema, DBType dbtype, StoreFormat sf){
@@ -131,7 +144,7 @@ public class DBUtil {
 				tablesql.append(",");
 			}
 		}
-		tablesql.append(")");
+		tablesql.append(");");
 		if (DBType.HIVE == dbtype){
 			if (StoreFormat.parquet==sf){
 				tablesql.append(" STORED AS PARQUET");
@@ -150,7 +163,7 @@ public class DBUtil {
 		if (DBType.VERTICA == dbtype || DBType.NONE == dbtype){
 			for (int i=0; i<fieldNameList.size(); i++){
 				String name = normalizeDBFieldName(fieldNameList.get(i));
-				updateSqls.add(String.format("alter table %s.%s add column %s %s", dbschema, tn, 
+				updateSqls.add(String.format("alter table %s.%s add column %s %s;", dbschema, tn, 
 						name, fieldTypeList.get(i).toSql(dbtype)));
 			}
 		}else{
@@ -168,10 +181,35 @@ public class DBUtil {
 		}
 		return updateSqls;
 	}
+	
+	public static List<String> genDropFiedSql(List<String> fieldNameList, List<FieldType> fieldTypeList, 
+			String tn, String dbschema, DBType dbtype){
+		List<String> updateSqls = new ArrayList<String>();
+		if (DBType.VERTICA == dbtype || DBType.NONE == dbtype){
+			for (int i=0; i<fieldNameList.size(); i++){
+				String name = normalizeDBFieldName(fieldNameList.get(i));
+				updateSqls.add(String.format("alter table %s.%s drop column %s;", dbschema, tn, 
+						name));
+			}
+		}else{
+			StringBuffer sb = new StringBuffer();
+			sb.append(String.format("alter table %s.%s drop columns (", dbschema, tn));
+			for (int i=0; i<fieldNameList.size(); i++){
+				String name = normalizeDBFieldName(fieldNameList.get(i));
+				sb.append(String.format("%s", name));
+				if (i<fieldNameList.size()-1){
+					sb.append(",");
+				}
+			}
+			sb.append(");");
+			updateSqls.add(sb.toString());
+		}
+		return updateSqls;
+	}
 
 	public static String genDropTableSql(String tn, String dbschema){
 		StringBuffer tablesql = new StringBuffer();
-		tablesql.append(String.format("drop table %s.%s", dbschema, tn));
+		tablesql.append(String.format("drop table %s.%s;", dbschema, tn));
 		return tablesql.toString();
 	}
 

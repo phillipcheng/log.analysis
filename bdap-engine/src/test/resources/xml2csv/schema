@@ -1,0 +1,169 @@
+{
+  "tableIdNameMap" : {
+    "Trans" : "Trans",
+    "LCSAP" : "LCSAP"
+  },
+  "attrIdNameMap" : {
+    "TransId" : "Trans_Id",
+    "BeginTime" : "Date",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/eme_pos/msid" : "Primary_Id",
+    "Messages/MLP/EME_LIR/@time" : "MLP_RequestTime",
+	"Messages/MLP/EME_LIA/@time" : "MLP_ResponseTime",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/eme_pos/@pos_method" : "MLP_PosMethod",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/eme_pos/@result_type" : "MLP_resulttype",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/eme_pos/pd/shape/CircularArea/coord/X" : "MLP_Lat",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/eme_pos/pd/shape/CircularArea/coord/Y" : "MLP_Long",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/eme_pos/pd/shape/CircularArea/radius" : "MLP_radius",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/NSN_CellIdentity/NSN_utran-cell-id-3gpp" : "MLP_CellId",   
+    "Messages/LCSAP/LocationRequest/IMSI" : "Primary_Id",
+    "Messages/LCSAP/LocationRequest/IMEI" : "IMEI",
+    "Messages/LCSAP[@dir='uplink' and LocationRequest[LCSClientType[text()='EmergencyServices']]/MessageType/TypeOfMessage[text()='InitiatingMessage']]/@time" : "MLP_RequestTime",
+	"Messages/LCSAP[@dir='downlink' and LocationResponse/MessageType/TypeOfMessage[text()='SuccessfulOutcome']]/@time" : "MLP_ResponseTime",
+    "Positioning/CandidatePosition/PositionResult/PosMethod" : "MLP_PosMethod",
+    "Messages/LCSAP/LocationResponse/MessageType/TypeOfMessage" : "MLP_resulttype",
+    "Messages/LCSAP/LocationResponse/LocationEstimate/EllipsoidPointWithAltitudeAndUncertaintyEllipsoid/GeographicalCoordinates/DegreesOfLatitude" : "MLP_Lat",
+    "Messages/LCSAP/LocationResponse/LocationEstimate/EllipsoidPointWithAltitudeAndUncertaintyEllipsoid/GeographicalCoordinates/DegreesOfLongitude" : "MLP_Long",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/eme_pos/pd/shape/CircularArea/radius" : "MLP_radius",
+    "Messages/MLP/EME_LIA/svc_result/eme_lia/NSN_CellIdentity/NSN_utran-cell-id-3gpp" : "MLP_CellId",
+    "Messages/LCSAP/LocationRequest/LCSClientType" : "LCSClientType"
+  },
+  "attrNameMap" : {
+    "Trans" : [ "Site_Id", "Trans_Id", "Date", "Primary_Id", "MLP_RequestTime","MLP_ResponseTime", "MLP_PosMethod", "MLP_resulttype", "MLP_Lat", "MLP_Long", "MLP_radius", "MLP_CellId","TTFF" ],
+    "LCSAP" : [ "Site_Id", "Trans_Id", "Date", "Primary_Id", "MLP_RequestTime","MLP_ResponseTime", "MLP_PosMethod", "MLP_resulttype", "MLP_Lat", "MLP_Long", "MLP_radius", "MLP_CellId","TTFF" ]
+  },
+  "attrTypeMap" : {
+    "Trans" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 52,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+	}, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 26,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 26,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "STRING",
+      "size" : 34,
+      "precision" : 0,
+      "scale" : 0      
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 0
+    }],
+     "LCSAP" : [ {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 40,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 52,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+	}, {
+      "type" : "TIMESTAMP",
+      "size" : 0,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 20,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 26,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "STRING",
+      "size" : 26,
+      "precision" : 0,
+      "scale" : 0
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 4
+    }, {
+      "type" : "STRING",
+      "size" : 34,
+      "precision" : 0,
+      "scale" : 0      
+    }, {
+      "type" : "NUMERIC",
+      "size" : 0,
+      "precision" : 20,
+      "scale" : 0
+    }]
+  },
+  "index" : false
+}

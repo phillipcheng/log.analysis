@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Locale; 
+import java.text.ParseException;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -191,7 +195,35 @@ public class GroupFun {
 			return null;
 		}
 	}
-	
+		//////////////
+	public static String spiltbysinglespace(String str){
+		String newstr = str.replaceAll(" ", ",").trim();
+		if(newstr.lastIndexOf(",") == (newstr.length() - 1))
+		{
+			newstr = newstr.substring(0, newstr.length() - 1);
+		}
+		return newstr;
+	}
+		//////////////
+	/**
+	 * format  e.g. yyyy-MMM-dd hh.mm.ss.S a
+	 * @param input
+	 * @param inputFormat
+	 * @return
+	 */
+	public static String dtEnglishFormat(String input, String inputFormat){
+		SimpleDateFormat format = new SimpleDateFormat(inputFormat,  Locale.ENGLISH);
+		String returnStr = "";
+		try {
+			Date d = format.parse(input);
+			if (d!=null){
+				returnStr = FieldType.sdatetimeFormat.format(d);
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return returnStr;
+	}
 	///////////////
 	public static String subnumber(String hexStr, int beginByteIndex, int endByteIndex, String defaultValue) {
 		byte[] byteArray=hexStringToByteArray(hexStr);
@@ -273,6 +305,36 @@ public class GroupFun {
 			logger.error("With Exception:",e);
 			return null;
 		}
+		
+	}
+	
+	public static String getSubString(String str,String formatStr){
+		if(str == null){
+			return null;
+		}
+		Pattern pattern = Pattern.compile(formatStr);
+        Matcher  m = pattern.matcher(str);
+        if(m.matches()){
+            return m.group(1);
+        }
+        return null;
+	}
+	
+	public static String dateSubtract(String startDate ,String endDate){
+		try {
+			if(startDate == null || endDate == null){
+				return null;
+			}
+			Date dateEnd = FieldType.sdatetimeFormat.parse(endDate);
+			Date dateBegin = FieldType.sdatetimeFormat.parse(startDate);
+			if(dateEnd == null || dateBegin == null){
+				return null;
+			}
+			return String.valueOf((dateEnd.getTime() - dateBegin.getTime())/1000);
+		} catch (Exception e) {
+			logger.error("", e.getMessage());
+		}
+		return null;
 		
 	}
 }

@@ -304,6 +304,8 @@ public abstract class ETLCmd implements Serializable{
 			return etl.input.XmlInputFormat.class;
 		}else if (InputFormatType.CombineXML == ift){
 			return etl.input.CombineXmlInputFormat.class;
+		}else if (InputFormatType.StaXML == ift){
+			return etl.input.StandardXmlInputFormat.class;
 		}else if (InputFormatType.CombineWithFileNameText == ift){
 			return etl.input.CombineWithFileNameTextInputFormat.class;
 		}else if (InputFormatType.FileName == ift){
