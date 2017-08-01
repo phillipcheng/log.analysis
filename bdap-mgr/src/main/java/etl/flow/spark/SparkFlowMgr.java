@@ -170,8 +170,8 @@ public class SparkFlowMgr extends OozieFlowMgr {
 	}
 
 	/*
-	oozie.libpath=${nameNode}/bdap-VVERSIONN/lib/
-	oozie.wf.application.path=${nameNode}/bdap-VVERSIONN/cfg/sparkcmd_workflow.xml
+	oozie.libpath=${nameNode}/bdap-r0.6.0/lib/
+	oozie.wf.application.path=${nameNode}/bdap-r0.6.0/cfg/sparkcmd_workflow.xml
 	yarn_historyserver=
 	 */
 	private bdap.xml.config.Configuration getWfConf(OozieConf oc, String prjName, String flowName, FlowDeployer fd){
@@ -247,7 +247,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 			}
 			
 		} else if ("ssh".equals(sparkServerConf.getSparkLaunchMode())) {
-			String appResource = String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), "bdap.engine-VVERSIONN.jar");
+			String appResource = String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), "bdap.engine-r0.6.0.jar");
 			logger.info(appResource);
 			
 			String user = fd.getPc().getString("ssh.server.user", "dbadmin");
@@ -341,7 +341,7 @@ public class SparkFlowMgr extends OozieFlowMgr {
 			String fqClassCmdName = SparkGenerator.getFQClassName(prjName, flowName);
 			String wfId = flowName + Long.toString(System.currentTimeMillis());
 			String bdapLibPath = String.format("%s%s/lib", fd.getDefaultFS(), fd.getPlatformRemoteDist());
-			String appResource = String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), "bdap.engine-VVERSIONN.jar");
+			String appResource = String.format("%s%s/lib/%s", fd.getDefaultFS(), fd.getPlatformRemoteDist(), "bdap.engine-r0.6.0.jar");
 			logger.info(appResource);
 
 			List<String> libfiles = fd.listFiles(bdapLibPath);

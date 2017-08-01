@@ -1,6 +1,6 @@
 #!/bin/bash
 
-process=$(ps -ef | grep bdap.pushagent-VVERSIONN.jar | grep -v grep)
+process=$(ps -ef | grep bdap.pushagent-r0.6.0.jar | grep -v grep)
 if [ -z "$process" ];
 then
 	echo "Push agent is not running."
