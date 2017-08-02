@@ -46,6 +46,8 @@
 				<include name="spark-catalyst*.jar"/>
 				<include name="scala-library*.jar"/>
 				<include name="parquet-hadoop-bundle*.jar"/>
+				<include name="jaxen*.jar"/>
+				<include name="dom4j*.jar"/>
 			</fileset>
 			<fileset dir="${engine.src}/lib/">
 				<include name="*.jar"/>
