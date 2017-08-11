@@ -44,9 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
@@ -80,12 +78,25 @@ public class JobHelper {
 	public static final String CFG_SCAN_JOB_FILTER="scan.job.filter";
 	public static final String CFG_WORKFLOW_ID="wfid";
 	public static final String CFG_MAPREDUCE_OUTPUT_FILEOUTPUTFORMAT_OUTPUTDIR="mapreduce.output.fileoutputformat.outputdir";
+	public static final String CFG_OOZIE_WF_APPLICATION_PATH="oozie.wf.application.path";
+	public static final String CFG_OOZIE_WF_RERUN_SKIP_NODES="oozie.wf.rerun.skip.nodes";
+	public static final String CFG_MAX_CONCURRENT_JOBS="max.concurrent.jobs";
+	public static final String CFG_OOZIE_USER_NAME="oozie.user.name";
+	
 	//for job.<AppName>. only
 	public static final String CFG_SCAN_NODES="scan.nodes";
-	public static final String CFG_SCAN_PATHS="scan.paths";
-	
+	public static final String CFG_SCAN_PATHS="scan.paths";	
 	
 	private String scanJobFilter;
+	private int maxConcurrentJobs;
+	
+	public static Set<String> rerunableStatus;
+	{
+		rerunableStatus=new HashSet<String>();
+		rerunableStatus.add("SUCCEEDED");
+		rerunableStatus.add("KILLED");
+		rerunableStatus.add("FAILED");
+	}
 	
 	public static void main(String[] args) throws Exception{
 		JobHelper jobHelper=new JobHelper();
@@ -106,16 +117,123 @@ public class JobHelper {
 		}		
 	}
 	
-	private void rerun() {
-		String rerunJobFile=commandLine.getOptionValue("rerun");
-		List<String> jobIdList;
+	private void rerun() {		
+		String[] rerunParams=commandLine.getOptionValues("rerun");
+		String rerunJobFile=rerunParams[0];
+		String rerunResultFile=rerunParams[1];
+		
+		logger.info("Start to rerun job, rerun job list:{}, rerun result output:{}", rerunJobFile, rerunResultFile);
+		List<String> jobInfoList=null;
+		FileOutputStream fos=null;
 		try {
-			FileUtils.readLines(new File(rerunJobFile));
+			jobInfoList=FileUtils.readLines(new File(rerunJobFile));
+			fos=FileUtils.openOutputStream(new File(rerunResultFile));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Failed to access rerun job files.",e);
+			System.exit(1);
 		}
 		
+		if(jobInfoList==null) return;
+		
+		int jobIdx=0;
+		for(String jobInfo:jobInfoList){
+			jobIdx++;
+			String[] jobInfoItems = jobInfo.split(",", -1);
+			if(jobInfoItems==null || jobInfoItems.length==0) continue;
+			String jobId=jobInfoItems[0];
+			logger.info("Start to rerun job({}/{}): {}", jobIdx++,jobInfoList.size(),jobId);
+			try{
+				WorkflowJob job = oozieClient.getJobInfo(jobId);
+				if(job==null){
+					logger.info("Job doesn't exist, skip!", jobId);
+					IOUtils.write(String.format("%s,SKIP_NOT_EXIST\n",jobId), fos);
+					continue;
+				}
+				String jobStatus=job.getStatus().toString();
+				if(!rerunableStatus.contains(jobStatus)){
+					logger.info("Job status is {}, skip. It must be SUCCEEDED,FAILED,KILLED.");
+					IOUtils.write(String.format("%s,SKIP_INCORRECT_STATUS\n",jobId), fos);
+					continue;
+				}
+				Properties jobReadConf = loadXMLConfiguration(job.getConf());
+//				String wfApplicationPath=jobReadConf.getProperty(CFG_OOZIE_WF_APPLICATION_PATH);
+//				if(wfApplicationPath==null || wfApplicationPath.isEmpty()){
+//					logger.info("Get empty oozie.wf.application.path, skip.");
+//					IOUtils.write(String.format("%s,SKIP_ERROR_WF_APP_PATH\n",jobId), fos);
+//					continue;
+//				}
+				
+				PropertiesConfiguration jobProperties = jobsProperties.get(job.getAppName());
+				String wfRerunSkipNodes=jobProperties.getString(CFG_OOZIE_WF_RERUN_SKIP_NODES);
+				if(wfRerunSkipNodes==null || wfRerunSkipNodes.isEmpty()){
+					logger.info("Recently rerun skip nodes must specified.");
+					IOUtils.write(String.format("%s,SKIP_ERROR_SKIP_NODES_MANDATORY\n",jobId), fos);
+					continue;
+				}
+				
+				Properties jobRerunConf=new Properties();
+				jobRerunConf.putAll(jobReadConf);
+				jobRerunConf.setProperty(CFG_OOZIE_WF_RERUN_SKIP_NODES, wfRerunSkipNodes);
+				
+							
+				checkMaximumConcurrentJob();
+				oozieClient.reRun(jobId, jobRerunConf);
+				WorkflowJob submitJob = checkJobStatus(jobId);
+				logger.info("Complete rerun with status:{}.", submitJob.getStatus().toString());
+				IOUtils.write(String.format("%s,%s\n",jobId,submitJob.getStatus().toString()), fos);
+				
+			}catch (Exception e) {
+				logger.warn(String.format("Failed to rerun job:%s}",jobId), e);
+				try {
+					IOUtils.write(String.format("%s,SKIP_ERROR_UNKNOWN\n",jobId), fos);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
+		
+		IOUtils.closeQuietly(fos);
+		
+	}
+	
+	private void checkMaximumConcurrentJob(){
+		while(true){
+			try {
+				List<WorkflowJob> jobs = oozieClient.getJobsInfo("status=PREP;status=RUNNING", 1, this.maxConcurrentJobs+1);
+				if(jobs!=null & jobs.size()<this.maxConcurrentJobs) break;
+				logger.info("Waiting other job complete. Jobs:{}/{}", jobs.size(), this.maxConcurrentJobs);
+				Thread.sleep(10000L);
+			} catch (Exception e) {
+				logger.warn("Retry check max concurrent job.", e);
+				try {
+					Thread.sleep(10000L);
+				} catch (InterruptedException e1) {
+				}
+			}
+		}	
+	}
+	
+	private WorkflowJob checkJobStatus(String jobId){
+		while(true){
+			try {
+				WorkflowJob job = oozieClient.getJobInfo(jobId);
+				if(job!=null){
+					String jobStatus=job.getStatus().toString();
+					if(!"RUNNING".equalsIgnoreCase(jobStatus) && !"PREP".equalsIgnoreCase(jobStatus)){
+						return job;
+					}
+				}
+				logger.info("Waiting job:{} complete.", jobId);
+				Thread.sleep(10000L);
+			} catch (Exception e) {
+				logger.warn("Retry check job status.", e);
+				try {
+					Thread.sleep(10000L);
+				} catch (InterruptedException e1) {
+				}
+			}
+		}	
 	}
 	
 	private void scan() {
@@ -127,7 +245,7 @@ public class JobHelper {
 		try {
 			fos=FileUtils.openOutputStream(new File(scanOutputFile));
 		} catch (IOException e) {
-			logger.error(String.format("Cannot create scan output file:%s"));
+			logger.error(String.format("Cannot create scan output file"),e);
 			System.exit(1);
 		}
 		int start = 1;
@@ -192,67 +310,63 @@ public class JobHelper {
 						}
 					}
 				}
-				
-				
-//				if (scanNodes != null && scanNodes.length > 0) {
-//					for (String node : scanNodes) {
-//						List<WorkflowAction> actions = job.getActions();
-//						WorkflowAction matchedAction = null;
-//						if (actions != null && actions.size() > 0) {
-//							for (WorkflowAction action : actions) {
-//								if (node.equalsIgnoreCase(action.getName())) {
-//									matchedAction = action;
-//									break;
-//								}
-//							}
-//						}
-//						if (matchedAction == null) {
-//							nodeStatusList.add(String.format("%s=NotExist", node));
-//						} else {
-//							nodeStatusList.add(String.format("%s=%s", node, matchedAction.getStatus().name()));
-//							Properties actionProperties = loadXMLConfiguration(matchedAction.getConf());
-//							String outputDir = actionProperties
-//									.getProperty(CFG_MAPREDUCE_OUTPUT_FILEOUTPUTFORMAT_OUTPUTDIR);
-//							scanPaths.add(outputDir);
-//						}
-//					}
-//				}
 
 				// scan paths
 				List<String> scanPathResult = new ArrayList<String>();
-				long totalFiles = 0;
+				int totalFileCount=0;
+				long totalFileSize = 0;				
 				for (String pathStr : scanPaths) {
 					Path path = new Path(pathStr);
 					if (hdfs.exists(path)) {
-						if (hdfs.isDirectory(path)) {
-							RemoteIterator<LocatedFileStatus> files = hdfs.listFiles(path, true);
-							long pathFiles = 0;
-							while (files.hasNext()) {
-								LocatedFileStatus fileStatus = files.next();
-								if(fileStatus.isDirectory()){
-									int filesCount=getNumberOfInputFiles(fileStatus, hdfs);
-									pathFiles=pathFiles+filesCount;
-								}else{
-									if(!"_SUCCESS".equalsIgnoreCase(fileStatus.getPath().getName())){
-										totalFiles++;
-										pathFiles++;
-									}
-								}
-							}
-							scanPathResult.add(String.format("%s=%s", pathStr, pathFiles));
-						} else {
-							scanPathResult.add(String.format("%s=1", pathStr));
-							totalFiles++;
-						}
+						FileStatus fileStatus = hdfs.getFileStatus(path);
+						Tuple2<Integer, Long> result = getNumberAndSizeOfInputFiles(fileStatus, hdfs);
+						int pathFileCount=result._1;
+						long pathFileSize=result._2;
+						totalFileCount+=pathFileCount;
+						totalFileSize+=pathFileSize;
+						scanPathResult.add(String.format("%s=%s(%s)", pathStr, pathFileCount,pathFileSize));
 					} else {
-						scanPathResult.add(String.format("%s=0", pathStr));
+						scanPathResult.add(String.format("%s=0(0)", pathStr));
 					}
 				}
+//				long totalFiles = 0;
+//				for (String pathStr : scanPaths) {
+//					Path path = new Path(pathStr);
+//					if (hdfs.exists(path)) {
+//						if (hdfs.isDirectory(path)) {
+//							RemoteIterator<LocatedFileStatus> files = hdfs.listFiles(path, true);
+//							long pathFiles = 0;
+//							while (files.hasNext()) {
+//								LocatedFileStatus fileStatus = files.next();
+//								if(fileStatus.isDirectory()){
+//									long filesCount=getNumberOfInputFiles(fileStatus, hdfs);
+//									pathFiles=pathFiles+filesCount;
+//								}else{
+//									if(!"_SUCCESS".equalsIgnoreCase(fileStatus.getPath().getName())){
+//										totalFiles++;
+//										pathFiles++;
+//									}
+//								}
+//							}
+//							scanPathResult.add(String.format("%s=%s", pathStr, pathFiles));
+//						} else {
+//							scanPathResult.add(String.format("%s=1", pathStr));
+//							totalFiles++;
+//						}
+//					} else {
+//						scanPathResult.add(String.format("%s=0", pathStr));
+//					}
+//				}
 
-				// jobid, appName, job created time, jobStatus, totalFiles,
-				// actionStatus, pathFileCount
-				String info = String.format("%s,%s,%s,%s,%s,%s,%s\r\n", job.getId(), appName, sdf.format(job.getCreatedTime()),
-						job.getStatus(), totalFiles, String.join("|", nodeStatusList),String.join("|", scanPathResult));
+				// jobid, appName, job created time, jobStatus, totalFiles, actionStatus, pathFileCount
+//				String info = String.format("%s,%s,%s,%s,%s,%s,%s\r\n", job.getId(), appName, sdf.format(job.getCreatedTime()),
+//						job.getStatus(), totalFiles, String.join("|", nodeStatusList),String.join("|", scanPathResult));
+				
+				
+				
+				// jobid, appName, job created time, jobStatus, totalFileCount,totalFileSize, actionStatus, pathFileCount				
+				String info = String.format("%s,%s,%s,%s,%s,%s,%s,%s\r\n", job.getId(), appName, sdf.format(job.getCreatedTime()),
+						job.getStatus(), totalFileCount, totalFileSize, String.join("|", nodeStatusList),String.join("|", scanPathResult));
 				IOUtils.write(info, fos);
 			} catch (Exception e) {				
 				logger.warn("Failed to scan job:{}", jobId);
@@ -260,6 +374,34 @@ public class JobHelper {
 		}
 		
 		IOUtils.closeQuietly(fos);
+	}
+	
+	private Tuple2<Integer,Long> getNumberAndSizeOfInputFiles(FileStatus status, FileSystem fs) throws IOException  {
+	    int inputFileCount=0;
+	    long inputFileSize=0;
+	    if(status.isDirectory()) {
+	        FileStatus[] files = fs.listStatus(status.getPath());
+	        for(FileStatus file: files) {
+	        	Tuple2<Integer,Long> result=getNumberAndSizeOfInputFiles(file, fs);
+	        	inputFileCount+=result._1;
+	        	inputFileSize +=result._2;
+	        }
+	    } else {
+	        inputFileCount=1;
+	        inputFileSize=status.getLen();
+	    }
+
+	    return new Tuple2<Integer,Long>(inputFileCount,inputFileSize);
+	}
+	
+	public static class Tuple2<T1,T2>{
+		public T1 _1;
+		public T2 _2;
+		
+		public Tuple2(T1 _1, T2 _2) {
+			this._1=_1;
+			this._2=_2;
+		}
 	}
 	
 	/**
@@ -283,6 +425,28 @@ public class JobHelper {
 
 	    return inputFileCount;
 	}
+	
+	/**
+	 * Recursively determines size of input files in an HDFS directory
+	 *
+	 * @param status instance of FileStatus
+	 * @param fs instance of FileSystem
+	 * @return size of input files within particular HDFS directory
+	 * @throws IOException
+	 */
+	private long getSizeOfInputFiles(FileStatus status, FileSystem fs) throws IOException  {
+	    long size = 0;
+	    if(status.isDirectory()) {
+	        FileStatus[] files = fs.listStatus(status.getPath());
+	        for(FileStatus file: files) {
+	            size += getSizeOfInputFiles(file, fs);
+	        }
+	    } else {
+	    	size=status.getLen();
+	    }
+
+	    return size;
+	}
 
 	private void init(String[] args) throws Exception {
 		sdf=new SimpleDateFormat("YYYY-MM-dd hh:mm:ss.SSSS");
@@ -293,7 +457,7 @@ public class JobHelper {
 		options.addOption(configOption);
 		Option scanOption = OptionBuilder.withArgName( "file" ).hasArg().withDescription(resourceBundle.getString("cli_scan_description")).create( "scan" );
 		options.addOption(scanOption);
-		options.addOption(Option.builder("rerun").hasArg().argName("file").desc(resourceBundle.getString("cli_rerun_description")).build());
+		options.addOption(Option.builder("rerun").hasArg().numberOfArgs(2).argName("file").desc(resourceBundle.getString("cli_rerun_description")).build());
 		options.addOption("help", false, resourceBundle.getString("cli_help_description"));
 		
 		CommandLineParser parser = new DefaultParser(); 
@@ -321,6 +485,7 @@ public class JobHelper {
 		}
 		
 		this.scanJobFilter=config.getString(CFG_SCAN_JOB_FILTER, "status=KILLED;status=FAILED");
+		this.maxConcurrentJobs=config.getInt(CFG_MAX_CONCURRENT_JOBS,5);
 		
 		//read job configuration
 		readJobProperties();
