@@ -1,10 +1,10 @@
 JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk.x86_64/
-SPARK_HOME=/data/spark-2.1.0-bin-hadoop2.7
+SPARK_HOME=/data/spark-2.0.0-bin-hadoop2.7
 #ENGINE_LIB=hdfs://192.85.247.104:19000/bdap-VVERSIONN/engine/lib
 #LOG_LIB=hdfs://192.85.247.104:19000/bdap-VVERSIONN/log/lib
 ENGINE_LIB=/data/bdap-VVERSIONN/engine/lib
 LOG_LIB=/data/bdap-VVERSIONN/log/lib
-export HADOOP_CONF_DIR=/data/hadoop-2.7.3/etc/hadoop/
+export HADOOP_CONF_DIR=/data/hadoop-2.5.2/etc/hadoop/
 
 $SPARK_HOME/bin/spark-submit \
   --class etl.log.StreamLogProcessor \
