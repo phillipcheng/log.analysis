@@ -83,6 +83,12 @@ public class Main implements Job {
 		JobDataMap ctxMap = context.getMergedJobDataMap();
 		logger.info("Execute by trigger: {}", context.getTrigger().getKey());
 		
+		String a="dfdfdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+		int b=1;
+		while(b==1){
+			a=a+a;
+		}
+		
 		String destDirRule = ctxMap.getString(DEST_SERVER_DIR_RULE);
 		
 		if (destDirRule != null) {
