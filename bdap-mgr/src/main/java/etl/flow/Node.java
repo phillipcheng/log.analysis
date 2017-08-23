@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
     @JsonSubTypes.Type(value = ActionNode.class, name = "action"),
     @JsonSubTypes.Type(value = StartNode.class, name = "start"),
     @JsonSubTypes.Type(value = EndNode.class, name = "end"),
+    @JsonSubTypes.Type(value = DecisionNode.class, name = "decision"),
     @JsonSubTypes.Type(value = Flow.class, name = "flow")
 })
 public class Node implements Comparable<Node>{
