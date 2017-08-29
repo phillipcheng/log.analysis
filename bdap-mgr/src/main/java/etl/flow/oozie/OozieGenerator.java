@@ -20,6 +20,7 @@ import etl.flow.ActionNode;
 import etl.flow.CallSubFlowNode;
 import etl.flow.CoordConf;
 import etl.flow.Data;
+import etl.flow.DecisionNode;
 import etl.flow.EndNode;
 import etl.flow.ExeType;
 import etl.flow.Flow;
@@ -34,6 +35,8 @@ import etl.flow.oozie.coord.COORDINATORAPP;
 import etl.flow.oozie.wf.ACTION;
 import etl.flow.oozie.wf.ACTIONTRANSITION;
 import etl.flow.oozie.wf.CONFIGURATION;
+import etl.flow.oozie.wf.DECISION;
+import etl.flow.oozie.wf.DEFAULT;
 import etl.flow.oozie.wf.DELETE;
 import etl.flow.oozie.wf.END;
 import etl.flow.oozie.wf.FLAG;
@@ -47,6 +50,8 @@ import etl.flow.oozie.wf.PARAMETERS;
 import etl.flow.oozie.wf.PREPARE;
 import etl.flow.oozie.wf.START;
 import etl.flow.oozie.wf.SUBWORKFLOW;
+import etl.flow.oozie.wf.SWITCH;
+import etl.flow.oozie.wf.CASE;
 import etl.flow.oozie.wf.WORKFLOWAPP;
 import etl.util.GlobExpPathFilter;
 
@@ -521,6 +526,22 @@ public class OozieGenerator {
 					act.getSubWorkflow().setAppPath(appPath);
 					act.getSubWorkflow().setPropagateConfiguration(new FLAG());
 					wfa.getDecisionOrForkOrJoin().add(act);
+				}else if (node instanceof DecisionNode){
+					DECISION decision = new DECISION();
+					SWITCH oozieSwitch = new SWITCH();
+					
+					CASE oozieCase = new CASE();
+					oozieCase.setTo(((DecisionNode) node).getCase_default());
+					oozieCase.setValue(((DecisionNode) node).getCase_condition());
+					
+					DEFAULT oozieDefault = new DEFAULT();
+					oozieDefault.setTo(((DecisionNode) node).getFlow_default());
+					
+					oozieSwitch.getCase().add(oozieCase);
+					oozieSwitch.setDefault(oozieDefault);
+					decision.setName(node.getName());
+					decision.setSwitch(oozieSwitch);
+					wfa.getDecisionOrForkOrJoin().add(decision);
 				}else if (node instanceof EndNode){
 					END wfend = new END();
 					wfend.setName(EndNode.end_node_name);
