@@ -340,8 +340,11 @@ public class EngineUtil {
 							}
 						}
 					}else{
-						logger.info("no output.");
+						//only "log","lineoutput","mapoutput" are recognized
+						logger.warn(String.format("unrecognized output:%s", alloutputs));
 					}
+				}else{
+					//alloutputs is null, that is fine, the mapper has written the output to the context already
 				}
 			}catch(Throwable t){
 				logger.error(new ETLLog(cmd, null, t), t);

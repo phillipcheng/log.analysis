@@ -31,7 +31,6 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
@@ -113,6 +112,8 @@ public abstract class ETLCmd implements Serializable{
 	private transient Configuration conf;
 	
 	private ProcessMode pm = ProcessMode.Single;
+	//file:each input value is an input file, system will send log message after processing each line
+	//line:each input value is a line within a data file, system will not send log message for each of them since that is too much
 	private MRMode mrMode = MRMode.line;
 	private boolean sendLog = true;//command level send log flag
 	
@@ -245,7 +246,19 @@ public abstract class ETLCmd implements Serializable{
 		return null;
 	}
 	
-	//base map method sub class needs to implement, for both mapreduce and spark
+	/**
+	 * base map method for both mapreduce and spark
+	 * if the output for single row input is too big, you can implement #mapProcess directly
+	 * otherwise this will be invoked via the parent class(this class) #mapProcess implementation
+	 * 
+	 * @param tableName: if the input is a key-value pair, tableName is the key part
+	 * 				if there is fileName to tableName map configured, tableName is the fileName-mapped tableName
+	 * 				otherwise talbeName is the fileName
+	 * @param value
+	 * @param context
+	 * @return
+	 * @throws Exception
+	 */
 	public List<Tuple2<String, String>> flatMapToPair(String tableName, String value, Mapper<LongWritable, Text, Text, Text>.Context context) throws Exception{
 		logger.error(String.format("Empty flatMapToPair impl!!! %s", this));
 		return null;
@@ -481,13 +494,11 @@ public abstract class ETLCmd implements Serializable{
 	}
 	
 	/**
-	 * map function in map-only or map-reduce mode, for map mode: output null for no key or value
 	 * @return map may contains following key:
-	 * ETLCmd.RESULT_KEY_LOG: list of String user defined log info
-	 * ETLCmd.RESULT_KEY_OUTPUT: list of String output
-	 * ETLCmd.RESULT_KEY_OUTPUT_MAP: list of Tuple2<key, value>
-	 * null, if in the mapper it write to context directly for performance
-	 * in the value map, if it contains only 1 value, the key should be ETLCmd.RESULT_KEY_OUTPUT
+	 * ETLCmd.RESULT_KEY_LOG: list of String user defined log info for mrMode=file (engine will send log for you)
+	 * ETLCmd.RESULT_KEY_OUTPUT: list of String output to be written to context (useful for chained commands)
+	 * ETLCmd.RESULT_KEY_OUTPUT_MAP: list of Tuple2<key, value> to be written to context
+	 * map can be null, if it has written to context directly for performance
 	 */
 	public Map<String, Object> mapProcess(long offset, String row, 
 			Mapper<LongWritable, Text, Text, Text>.Context context, MultipleOutputs<Text, Text> mos) throws Exception {

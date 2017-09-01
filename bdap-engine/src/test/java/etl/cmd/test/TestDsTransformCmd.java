@@ -44,10 +44,10 @@ public class TestDsTransformCmd extends TestETLCmd {
 		//assertion
 		logger.info("Output is:\n"+String.join("\n", output));
 		assertEquals(4, output.size());
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 09:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2016-12-12 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59.0,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056.0,105.0,106.0,13.0,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 10:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,10.0,0.0,0.0,0.0,0.0,0.0,0,2016-12-12 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59.0,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056.0,105.0,106.0,13.0,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
-		assertTrue(output.contains("000003FE234C,A,E,2016-12-01 10:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,10.0,0.0,0.0,0.0,0.0,0.0,0,2016-12-01 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,59.0,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,64056.0,105.0,106.0,13.0,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
-		assertTrue(output.contains("71DB021D7868,A,E,2016-12-12 11:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12.0,12.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,,,,,0,,,,,,,0,0,0,0,,,,,,"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 09:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,,2016-12-12 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,,,,,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-12 10:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,,2016-12-12 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,,,,,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ALU"));
+		assertTrue(output.contains("000003FE234C,A,E,2016-12-01 10:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,10,0,0,0,0,0,,2016-12-01 03:30:01.0,BBTPNJ33-FDB-01-2,000003FE234C,BBTPNJ33-FDB-01-2,,InService,25027,311480-0E74101,07920,1.0.0.21,2016-09-28 03:29:38.0,,,,,42.381736,-71.932083,MA,eFemto,311480-FA12E1C,ERIC"));
+		assertTrue(output.contains("71DB021D7868,A,E,2016-12-12 11:00:00.0,2016-12-12 10:00:00.0,0,262216706,13,0,0,2,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,"));
 	}
 	
 	@Test
@@ -150,7 +150,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
 		String hour = GroupFun.hour(dt, dtformat);
 		String day = GroupFun.day(dt, dtformat);
-		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0,0,0,114258.0,114258.0",
+		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,,,,114258.00000,114258.00000",
 				hour, day);
 		logger.info("Excpet has:{}",csv);
 		assertTrue(output.contains(csv));
@@ -190,7 +190,7 @@ public class TestDsTransformCmd extends TestETLCmd {
 		String dtformat = "yyyy-MM-dd'T'HH:mm:ssXXX";
 		String hour = GroupFun.hour(dt, dtformat);
 		String day = GroupFun.day(dt, dtformat);
-		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,0,0,0,114258.0,114258.0",
+		String csv=String.format("%s,%s,PT300S,QDSD0101vSGS-L-NK-20,lcp-1,QDSD0101vSGS-L-NK-20-VLR-00,,,,114258.00000,114258.00000",
 				hour, day);
 		logger.info(String.format("expect contains: \n%s", csv));
 		assertTrue(output.contains(csv));
