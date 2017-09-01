@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import etl.engine.ETLCmd;
 import etl.engine.EngineUtil;
+import etl.engine.types.ProcessMode;
 import etl.log.ETLLog;
 import etl.log.LogType;
 
@@ -25,6 +26,11 @@ public class SendLogCmd extends ETLCmd{
 	}
 	
 	public SendLogCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs){
+		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
+		kac = new KafkaAdaptorCmd(super.getPc());
+	}
+	
+	public SendLogCmd(String wfName, String wfid, String staticCfg, String defaultFs, String[] otherArgs,ProcessMode pm){
 		super(wfName, wfid, staticCfg, defaultFs, otherArgs);
 		kac = new KafkaAdaptorCmd(super.getPc());
 	}
